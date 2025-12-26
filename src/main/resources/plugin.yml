@@ -1,0 +1,9 @@
+name: IdunnTemplates
+version: '0.1-ALPHA'
+main: com.jackyblackson.idunntemplates.IdunnTemplates
+api-version: '1.21'
+prefix: IdunnTemplates
+load: STARTUP
+authors: [ Jacky Blackson ]
+description: 11111
+website: https://taixue.cc
