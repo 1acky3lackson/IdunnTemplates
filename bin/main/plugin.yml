@@ -4,6 +4,11 @@ main: com.jackyblackson.idunntemplates.IdunnTemplates
 api-version: '1.21'
 prefix: IdunnTemplates
 load: STARTUP
+depend: [WorldEdit]
 authors: [ Jacky Blackson ]
+commands:
+  idunn:
+    description: Main command for IdunnTemplates
+    usage: /idunn <subcommand> [args]
 description: 11111
 website: https://taixue.cc
