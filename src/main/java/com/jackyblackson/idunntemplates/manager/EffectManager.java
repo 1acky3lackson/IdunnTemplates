@@ -12,22 +12,30 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EffectManager extends BukkitRunnable implements Listener {
 
     private final TemplateManager templateManager;
     private final InstanceRepository instanceRepository;
     private final SessionManager sessionManager;
+    
+    private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
 
     private static final double VIEW_DISTANCE = 48.0;
+    private static final double GRID_SPACING = 10.0;
 
     public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager) {
         this.templateManager = templateManager;
@@ -43,18 +51,22 @@ public class EffectManager extends BukkitRunnable implements Listener {
     }
 
     private void handlePlayer(Player player) {
+        // State tracking for BossBar
+        String bossBarTitle = null;
+        BarColor bossBarColor = null;
+        
         // 1. Check Wand
         var session = sessionManager.getSession(player.getUniqueId());
-        if (session == null) return;
-        
-        String wandMat = session.getPreference().getWandMaterialName();
         boolean holdingWand = false;
-        try {
-            Material mat = Material.valueOf(wandMat);
-            if (player.getInventory().getItemInMainHand().getType() == mat) {
-                holdingWand = true;
-            }
-        } catch (IllegalArgumentException ignored) {}
+        if (session != null) {
+            String wandMat = session.getPreference().getWandMaterialName();
+            try {
+                Material mat = Material.valueOf(wandMat);
+                if (player.getInventory().getItemInMainHand().getType() == mat) {
+                    holdingWand = true;
+                }
+            } catch (IllegalArgumentException ignored) {}
+        }
 
         if (holdingWand) {
             ParticleUtil.spawnMagicParticles(player.getLocation().add(0, 1, 0));
@@ -63,34 +75,35 @@ public class EffectManager extends BukkitRunnable implements Listener {
         Location pLoc = player.getLocation();
 
         // 2. Template Origins (Master)
-        // Check all templates? Maybe too many. 
-        // Optimize: Check templates in same world and distance
         for (Template t : templateManager.getTemplates()) {
             TemplateMetadata meta = t.getMetadata();
             if (!meta.getWorldId().equals(pLoc.getWorld().getUID())) continue;
             
             Location min = new Location(pLoc.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
-            if (min.distance(pLoc) > VIEW_DISTANCE) continue;
+            if (min.distance(pLoc) > VIEW_DISTANCE * 2) continue; // optimization
             
-            // Calculate max
             Location max = min.clone().add(meta.getWidth(), meta.getHeight(), meta.getLength());
             
-            // Determine permission
-            // Permission node: idunn.commit.<path> ?? Or prompt says "commit permission"
-            // Usually "idunn.template.commit" or "idunn.template.edit" + path
-            // Let's assume generic "idunn.template.commit.all" or specific
             boolean canCommit = hasCommitPermission(player, t);
-            
             Particle particle = canCommit ? Particle.HAPPY_VILLAGER : Particle.ANGRY_VILLAGER;
-            // Draw Box (AABB)
-            drawAABB(min, max, particle);
+            
+            // Draw Grid Box
+            if (min.distance(pLoc) < VIEW_DISTANCE) {
+                ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, particle);
+            }
+            
+            // Check Inside for BossBar
+            if (isInAABB(pLoc, min, max)) {
+                bossBarTitle = (canCommit ? ChatColor.GREEN : ChatColor.RED) + "Template Master: " + t.getPath();
+                bossBarColor = canCommit ? BarColor.GREEN : BarColor.RED;
+            }
         }
 
         // 3. Instances
         List<Instance> instances = instanceRepository.getAllLoadedInstances();
         for (Instance inst : instances) {
             if (!inst.getWorldId().equals(pLoc.getWorld().getUID())) continue;
-            if (Math.abs(inst.getX() - pLoc.getX()) > VIEW_DISTANCE || Math.abs(inst.getZ() - pLoc.getZ()) > VIEW_DISTANCE) continue;
+            if (Math.abs(inst.getX() - pLoc.getX()) > VIEW_DISTANCE * 2 || Math.abs(inst.getZ() - pLoc.getZ()) > VIEW_DISTANCE * 2) continue;
 
             Template t = templateManager.getTemplate(inst.getTemplateId());
             if (t == null) continue;
@@ -98,18 +111,66 @@ public class EffectManager extends BukkitRunnable implements Listener {
             Location[] corners = calculateCorners(inst, t);
             Location center = calculateCenter(corners);
             
-            boolean isInside = isInside(pLoc, corners);
+            // Since we know corners align to axes (0/90/180/270 rot), we can extract min/max for AABB check
+            double minX = corners[0].getX(), minY = corners[0].getY(), minZ = corners[0].getZ();
+            double maxX = corners[6].getX(), maxY = corners[6].getY(), maxZ = corners[6].getZ();
+            Location min = new Location(pLoc.getWorld(), minX, minY, minZ);
+            Location max = new Location(pLoc.getWorld(), maxX, maxY, maxZ);
+
+            boolean isInside = isInAABB(pLoc, min, max);
             
             if (holdingWand || isInside) {
                 // Draw Box
-                ParticleUtil.drawBox(corners, Particle.END_ROD);
-                // Draw Line to Center
-                ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1);
+                if (min.distance(pLoc) < VIEW_DISTANCE) {
+                    ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.END_ROD);
+                    // Draw Line to Center
+                    ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1);
+                }
+            }
+            
+            if (isInside) {
+                if (bossBarTitle == null) {
+                    bossBarTitle = ChatColor.BLUE + "Instance: " + t.getPath() + " (" + inst.getId().substring(0,8) + ")";
+                    bossBarColor = BarColor.BLUE;
+                }
+            }
+        }
+        
+        // Update BossBar
+        updateBossBar(player, bossBarTitle, bossBarColor);
+    }
+    
+    private void updateBossBar(Player player, String title, BarColor color) {
+        BossBar bar = activeBossBars.get(player.getUniqueId());
+        
+        if (title == null) {
+            if (bar != null) {
+                bar.removeAll();
+                activeBossBars.remove(player.getUniqueId());
+            }
+            return;
+        }
+        
+        if (bar == null) {
+            bar = Bukkit.createBossBar(title, color, BarStyle.SOLID);
+            bar.addPlayer(player);
+            activeBossBars.put(player.getUniqueId(), bar);
+        } else {
+            bar.setTitle(title);
+            bar.setColor(color);
+            if (!bar.getPlayers().contains(player)) {
+                bar.addPlayer(player);
             }
         }
     }
     
-    // Simple AABB draw
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        BossBar bar = activeBossBars.remove(event.getPlayer().getUniqueId());
+        if (bar != null) bar.removeAll();
+    }
+    
+    // Simple AABB draw (Deprecated in favor of Grid)
     private void drawAABB(Location min, Location max, Particle particle) {
         Location[] c = new Location[8];
         c[0] = min;
@@ -195,34 +256,6 @@ public class EffectManager extends BukkitRunnable implements Listener {
             z += c.getZ();
         }
         return new Location(corners[0].getWorld(), x/8, y/8, z/8);
-    }
-    
-    private boolean isInside(Location loc, Location[] corners) {
-        // Point in Polygon/Polyhedron check. 
-        // Since it's a convex cuboid, we can check if point is "between" all opposing face pairs.
-        // Or simplified: transform point to local space (inverse transform) and check 0 <= p <= size.
-        // Given we only have corners here and rotation might be arbitrary 90 deg steps.
-        // Actually, with just 90 degree rotations, it's always an AABB? No, if rotated 45 it wouldn't be. 
-        // But WorldEdit/Minecraft usually does 0, 90, 180, 270. So it IS an AABB aligned to axes?
-        // Wait, if I rotate 90, the box is still axis-aligned.
-        // Yes! Minecraft blocks are always axis aligned.
-        // So we can just find min/max of the corners.
-        
-        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
-        
-        for (Location c : corners) {
-            minX = Math.min(minX, c.getX());
-            minY = Math.min(minY, c.getY());
-            minZ = Math.min(minZ, c.getZ());
-            maxX = Math.max(maxX, c.getX());
-            maxY = Math.max(maxY, c.getY());
-            maxZ = Math.max(maxZ, c.getZ());
-        }
-        
-        return loc.getX() >= minX && loc.getX() <= maxX &&
-               loc.getY() >= minY && loc.getY() <= maxY &&
-               loc.getZ() >= minZ && loc.getZ() <= maxZ;
     }
     
     private boolean hasCommitPermission(Player p, Template t) {

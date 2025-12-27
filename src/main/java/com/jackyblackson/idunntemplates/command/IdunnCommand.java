@@ -19,14 +19,25 @@ public class IdunnCommand implements TabExecutor {
     private final Map<String, IdunnSubCommand> subCommands = new HashMap<>();
 
     public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager) {
-        subCommands.put("save", new SaveCommand(templateManager));
-        subCommands.put("place", new PlaceCommand(templateManager, instanceManager));
-        subCommands.put("commit", new CommitCommand(templateManager));
-        subCommands.put("list", new ListCommand(templateManager));
+        // Template Group
+        CommandGroup templateGroup = new CommandGroup();
+        templateGroup.register("list", new ListCommand(templateManager));
+        templateGroup.register("create", new SaveCommand(templateManager));
+        templateGroup.register("commit", new CommitCommand(templateManager));
+        templateGroup.register("tp", new TemplateTpCommand(templateManager));
+        subCommands.put("template", templateGroup);
+
+        // Instance Group
+        CommandGroup instanceGroup = new CommandGroup();
+        instanceGroup.register("place", new PlaceCommand(templateManager, instanceManager));
+        instanceGroup.register("list", new InstancesCommand(templateManager, instanceRepository));
+        instanceGroup.register("tp", new TpCommand(instanceRepository));
+        subCommands.put("instance", instanceGroup);
+
+        // Root Commands
         subCommands.put("reload", new ReloadCommand(templateManager));
-        subCommands.put("instances", new InstancesCommand(templateManager, instanceRepository));
-        subCommands.put("tp", new TpCommand(instanceRepository));
         subCommands.put("pref", new PrefCommand(sessionManager));
+        subCommands.put("tp", new SmartTpCommand(templateManager, instanceRepository));
     }
 
     @Override
@@ -49,7 +60,7 @@ public class IdunnCommand implements TabExecutor {
             subCmd.execute(player, args);
             return true;
         } else {
-            player.sendMessage(ChatColor.RED + "Unknown subcommand: " + subName);
+            player.sendMessage(ChatColor.RED + "Unknown command: " + subName);
             return false;
         }
     }
