@@ -180,10 +180,36 @@ public class FileInstanceRepository implements InstanceRepository {
         List<Instance> all = new ArrayList<>();
         for (Map<String, List<Instance>> worldMap : cache.values()) {
             for (List<Instance> list : worldMap.values()) {
-                all.addAll(list);
+                all.addAll(list.stream().filter(ins -> !ins.isDeleted()).toList());
             }
         }
         return all;
+    }
+
+    @Override
+    public CompletableFuture<Void> hardDelete(Instance instance) {
+        return CompletableFuture.runAsync(() -> {
+            UUID worldId = instance.getWorldId();
+            String key = getPartitionKeyFromBlock(instance.getX(), instance.getZ());
+            
+            // Update cache first
+            cache.computeIfAbsent(worldId, k -> new ConcurrentHashMap<>());
+            
+            Map<String, List<Instance>> worldCache = cache.get(worldId);
+            List<Instance> instances = worldCache.get(key);
+            if (instances == null) {
+                instances = loadPartitionFromDisk(worldId, key);
+                worldCache.put(key, instances);
+            }
+            
+            // Remove
+            boolean removed = instances.removeIf(i -> i.getId().equals(instance.getId()));
+            
+            if (removed) {
+                // Save to disk
+                savePartitionToDisk(worldId, key, instances);
+            }
+        }, ioExecutor);
     }
     
     public void shutdown() {

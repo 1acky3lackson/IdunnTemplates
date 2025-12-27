@@ -41,9 +41,9 @@ public class Template {
         com.sk89q.worldedit.math.BlockVector3 origin = clip.getOrigin();
         
         cachedOriginOffset = new org.bukkit.util.Vector(
-            min.getX() - origin.getX(),
-            min.getY() - origin.getY(),
-            min.getZ() - origin.getZ()
+            min.x() - origin.x(),
+            min.y() - origin.y(),
+            min.z() - origin.z()
         );
         return cachedOriginOffset;
     }

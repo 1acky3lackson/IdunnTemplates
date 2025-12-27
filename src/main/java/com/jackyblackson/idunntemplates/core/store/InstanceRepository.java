@@ -44,4 +44,10 @@ public interface InstanceRepository {
      * Useful for global updates.
      */
     List<Instance> getAllLoadedInstances();
+
+    /**
+     * Permanently removes an instance from the repository.
+     * @param instance The instance to remove
+     */
+    CompletableFuture<Void> hardDelete(Instance instance);
 }

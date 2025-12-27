@@ -91,7 +91,7 @@ public class CommitCommand extends BaseSubCommand {
             com.sk89q.worldedit.function.operation.ForwardExtentCopy copy = new com.sk89q.worldedit.function.operation.ForwardExtentCopy(
                     editSession, region, clipboard, region.getMinimumPoint()
             );
-            com.sk89q.worldedit.function.operation.Operations.complete(copy);
+            com.sk89q.worldedit.function.operation.Operations.completeLegacy(copy);
         } catch (Exception e) {
             player.sendMessage(ChatColor.RED + "Failed to capture template: " + e.getMessage());
             e.printStackTrace();

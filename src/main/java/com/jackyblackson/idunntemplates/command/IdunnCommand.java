@@ -1,6 +1,8 @@
 package com.jackyblackson.idunntemplates.command;
 
 import com.jackyblackson.idunntemplates.command.sub.*;
+import com.jackyblackson.idunntemplates.command.sub.internal.UndoInstanceCommand;
+import com.jackyblackson.idunntemplates.command.sub.sets.*;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.manager.InstanceManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
@@ -25,14 +27,28 @@ public class IdunnCommand implements TabExecutor {
         templateGroup.register("create", new SaveCommand(templateManager));
         templateGroup.register("commit", new CommitCommand(templateManager));
         templateGroup.register("tp", new TemplateTpCommand(templateManager));
+        templateGroup.register("place", new PlaceCommand(templateManager, instanceManager));
         subCommands.put("template", templateGroup);
 
         // Instance Group
         CommandGroup instanceGroup = new CommandGroup();
-        instanceGroup.register("place", new PlaceCommand(templateManager, instanceManager));
         instanceGroup.register("list", new InstancesCommand(templateManager, instanceRepository));
         instanceGroup.register("tp", new TpCommand(instanceRepository));
+        instanceGroup.register("undo", new UndoInstanceCommand(instanceRepository));
         subCommands.put("instance", instanceGroup);
+        
+        // Sets Group
+        CommandGroup setsGroup = new CommandGroup();
+        setsGroup.register("add", new SetsAddCommand(sessionManager, templateManager));
+        setsGroup.register("remove", new SetsRemoveCommand(sessionManager));
+        setsGroup.register("clear", new SetsClearCommand(sessionManager));
+        setsGroup.register("prop", new SetsPropCommand(sessionManager));
+        setsGroup.register("save", new SetsSaveCommand(sessionManager));
+        setsGroup.register("load", new SetsLoadCommand(sessionManager));
+        setsGroup.register("list", new SetsListCommand(sessionManager));
+        setsGroup.register("place", new SetsPlaceCommand(sessionManager, templateManager, instanceManager));
+        setsGroup.register("view", new SetsViewCommand(sessionManager));
+        subCommands.put("set", setsGroup);
 
         // Root Commands
         subCommands.put("reload", new ReloadCommand(templateManager));

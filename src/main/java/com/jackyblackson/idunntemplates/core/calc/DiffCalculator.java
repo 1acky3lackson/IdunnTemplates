@@ -201,7 +201,7 @@ public class DiffCalculator {
                     .ignoreAirBlocks(false)
                     .build();
 
-            Operations.complete(operation);
+            Operations.completeLegacy(operation);
 //            editSession.q
             editSession.flushQueue(); // Crucial for FAWE to finish processing
         } catch (WorldEditException e) {

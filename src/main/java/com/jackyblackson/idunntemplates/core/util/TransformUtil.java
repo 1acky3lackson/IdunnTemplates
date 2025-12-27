@@ -10,6 +10,7 @@ import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import org.bukkit.Location;
 
 public class TransformUtil {
 
@@ -69,9 +70,25 @@ public class TransformUtil {
                     .to(origin)
                     .ignoreAirBlocks(false)
                     .build();
-            Operations.complete(op);
+            Operations.completeLegacy(op);
         } catch (Exception e) { e.printStackTrace(); }
 
         return target;
+    }
+
+    public static BlockVector3 getInstanceMinPos(Location location, Clipboard clipboard) {
+        var offset = clipboard.getRegion().getMinimumPoint();
+        var origin = clipboard.getOrigin();
+        return BlockVector3.at(
+                location.getBlockX(),
+                location.getBlockY(),
+                location.getBlockZ()
+        ).subtract(
+                BlockVector3.at(
+                        origin.x(),
+                        origin.y(),
+                        origin.z()
+                ).subtract(offset)
+        );
     }
 }

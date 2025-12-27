@@ -33,10 +33,12 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private final SessionManager sessionManager;
     
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
+    private final Map<UUID, List<BossBar>> activeSetBars = new ConcurrentHashMap<>();
 
     private static final double VIEW_DISTANCE = 48.0;
     private static final double GRID_SPACING = 10.0;
-
+    
+    // ... constructor ...
     public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager) {
         this.templateManager = templateManager;
         this.instanceRepository = instanceRepository;
@@ -47,6 +49,65 @@ public class EffectManager extends BukkitRunnable implements Listener {
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             handlePlayer(player);
+            handlePlayerSet(player);
+        }
+    }
+    
+    private void handlePlayerSet(Player player) {
+        var session = sessionManager.getSession(player.getUniqueId());
+        if (session == null) return;
+        
+        com.jackyblackson.idunntemplates.core.set.TemplateSet set = session.getPreference().getCurrentSet();
+        List<com.jackyblackson.idunntemplates.core.set.TemplateSetSource> sources = set.getSources();
+        
+        List<BossBar> bars = activeSetBars.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+        
+        if (sources.isEmpty()) {
+            // Clear all
+            for (BossBar b : bars) {
+                b.removeAll();
+            }
+            bars.clear();
+            return;
+        }
+        
+        // We need 1 header + N source bars
+        int needed = 1 + sources.size();
+        
+        // Adjust size
+        while (bars.size() < needed) {
+            BossBar b = Bukkit.createBossBar("", BarColor.PURPLE, BarStyle.SOLID);
+            b.addPlayer(player);
+            bars.add(b);
+        }
+        while (bars.size() > needed) {
+            BossBar b = bars.remove(bars.size() - 1);
+            b.removeAll();
+        }
+        
+        // Update Content
+        // Header
+        int totalTemplates = set.resolveTemplates(templateManager).size();
+        String header = String.format("Sets: %d templates, rotate: %s, flipx: %s, flipz: %s",
+                totalTemplates, set.getRotate(), set.getFlipX(), set.getFlipZ());
+        bars.get(0).setTitle(header);
+        
+        // Sources
+        for (int i = 0; i < sources.size(); i++) {
+            com.jackyblackson.idunntemplates.core.set.TemplateSetSource src = sources.get(i);
+            // Count templates for this source (approximate or resolving?)
+            // Spec: "=== [Weight] (Count templates) Path ==="
+            // We can resolve just for this source to get count.
+            // This might be heavy if done every tick.
+            // Maybe cache or just resolve (it loops templates). Template count isn't huge (thousands?). Should be fine every 0.5s.
+            
+            // Temporary set to resolve single source
+            com.jackyblackson.idunntemplates.core.set.TemplateSet tmp = new com.jackyblackson.idunntemplates.core.set.TemplateSet();
+            tmp.addSource(src.getPath(), src.getWeight());
+            int count = tmp.resolveTemplates(templateManager).size();
+            
+            String line = String.format("[%.1f] (%d templates) %s", src.getWeight(), count, src.getPath());
+            bars.get(i+1).setTitle(line);
         }
     }
 
@@ -168,6 +229,11 @@ public class EffectManager extends BukkitRunnable implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         BossBar bar = activeBossBars.remove(event.getPlayer().getUniqueId());
         if (bar != null) bar.removeAll();
+        
+        List<BossBar> setBars = activeSetBars.remove(event.getPlayer().getUniqueId());
+        if (setBars != null) {
+            for (BossBar b : setBars) b.removeAll();
+        }
     }
     
     // Simple AABB draw (Deprecated in favor of Grid)

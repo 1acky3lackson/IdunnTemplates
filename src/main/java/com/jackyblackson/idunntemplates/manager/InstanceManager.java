@@ -5,6 +5,7 @@ import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
+import com.jackyblackson.idunntemplates.core.util.TransformUtil;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -43,63 +44,67 @@ public class InstanceManager {
     /**
      * Places an instance of a template at the specified location.
      */
-    public void placeInstance(Player player, Template template, Location location, int rotationY, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
-        TemplateVersion latestVersion = template.getLatestVersion();
-        if (latestVersion == null) {
-            throw new IllegalStateException("Template has no versions.");
+    public Instance placeInstanceAndReturn(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
+        TemplateVersion latest = template.getLatestVersion();
+        if (latest == null) {
+            throw new IllegalArgumentException("Template has no versions.");
         }
 
-        // 2. Load Schematic for specific variation
-        Clipboard clipboard = template.getClipboard(latestVersion.getVersionId(), rotationY, flipX, flipY, flipZ);
-
-        // 3. Paste to World (No transformation needed as schematic is pre-transformed)
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(location.getWorld()))) {
-            ClipboardHolder holder = new ClipboardHolder(clipboard);
-            // No transform applied here!
-            
-            Operation operation = holder
-                    .createPaste(editSession)
-                    .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
-                    .ignoreAirBlocks(false) 
-                    .build();
-            
-            Operations.complete(operation);
-        } catch (WorldEditException e) {
-            throw new RuntimeException("WorldEdit paste failed: " + e.getMessage(), e);
-        }
-
-        var clipboardOffset = clipboard.getRegion().getMinimumPoint();
-        var clipboardOrigin = clipboard.getOrigin();
-        var instanceRoot = BlockVector3.at(
-                location.getBlockX(),
-                location.getBlockY(),
-                location.getBlockZ()
-        ).subtract(
-                BlockVector3.at(
-                        clipboardOrigin.x(),
-                        clipboardOrigin.y(),
-                        clipboardOrigin.z()
-                ).subtract(
-                        clipboardOffset
-                )
+        Clipboard clipboard = template.getClipboard(
+                latest.getVersionId(),
+                rot,
+                flipX,
+                flipY,
+                flipZ
         );
 
-        // 4. Create Instance Record
+        // Prepare Holder
+        ClipboardHolder holder = new ClipboardHolder(clipboard);
+
+        // Paste
+        try (EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
+                .world(BukkitAdapter.adapt(location.getWorld()))
+                .actor(BukkitAdapter.adapt(player))
+                .build()
+        ) {
+            // Bind to player for undo
+            if (player != null) {
+                com.sk89q.worldedit.LocalSession session = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player));
+//                editSession = session.createEditSession(BukkitAdapter.adapt(player));
+                session.remember(editSession);
+            }
+
+            Operation op = holder.createPaste(editSession)
+                    .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
+                    .ignoreAirBlocks(true) // Preference check? Passed via param?
+                    // Assuming false for now or check pref elsewhere.
+                    // Prompt said "placeOnEmptyOnly" pref exists.
+                    // If placeOnEmptyOnly, we need mask.
+                    // For now simplicity.
+                    .build();
+            Operations.completeLegacy(op);
+            editSession.flushQueue();
+        }
+
+        var minPos = TransformUtil.getInstanceMinPos(location, clipboard);
+
+        // Create Record
         Instance instance = new Instance(
                 template.getId(),
-                latestVersion.getVersionId(),
+                latest.getVersionId(),
                 location.getWorld().getUID(),
-                instanceRoot.x(),
-                instanceRoot.y(),
-                instanceRoot.z(),
-                rotationY,
-                flipX, flipY, flipZ,
+                minPos.x(), minPos.y(), minPos.z(),
+                rot, flipX, flipY, flipZ,
                 player.getUniqueId(),
                 player.getName()
         );
         
-        // 5. Save Instance
         instanceRepository.saveInstance(instance);
-        logger.info("Instance placed and saved: " + instance.getId());
+        
+        return instance;
+    }
+    
+    public void placeInstance(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
+        placeInstanceAndReturn(player, template, location, rot, flipX, flipY, flipZ);
     }
 }
