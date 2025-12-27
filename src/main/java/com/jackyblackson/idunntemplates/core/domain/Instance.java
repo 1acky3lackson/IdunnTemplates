@@ -1,0 +1,71 @@
+package com.jackyblackson.idunntemplates.core.domain;
+
+import java.util.UUID;
+
+public class Instance {
+    private final String id;
+    private final UUID templateId; // Changed from String templatePath
+    private String currentVersionId;
+
+    // Anchor position in the World
+    private final UUID worldId;
+    private final int x;
+    private final int y;
+    private final int z;
+
+    // Transformation
+    private final int rotationY; // 0, 90, 180, 270
+    private final boolean flipX;
+    private final boolean flipY;
+    private final boolean flipZ;
+
+    private boolean autoUpdate = true;
+    private final long placedAt;
+    private final UUID placedBy;
+
+    private final String placedByName;
+    
+    private Long deletedTimestamp; // Soft delete
+
+    public Instance(UUID templateId, String currentVersionId, UUID worldId, int x, int y, int z, int rotationY, boolean flipX, boolean flipY, boolean flipZ, UUID placedBy, String placedByName) {
+        this.id = UUID.randomUUID().toString();
+        this.templateId = templateId;
+        this.currentVersionId = currentVersionId;
+        this.worldId = worldId;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.rotationY = rotationY;
+        this.flipX = flipX;
+        this.flipY = flipY;
+        this.flipZ = flipZ;
+        this.placedBy = placedBy;
+        this.placedAt = System.currentTimeMillis();
+        this.placedByName = placedByName;
+    }
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public UUID getTemplateId() { return templateId; }
+    public String getCurrentVersionId() { return currentVersionId; }
+    public void setCurrentVersionId(String currentVersionId) { this.currentVersionId = currentVersionId; }
+    
+    public UUID getWorldId() { return worldId; }
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public int getZ() { return z; }
+    
+    public int getRotationY() { return rotationY; }
+    public boolean isFlipX() { return flipX; }
+    public boolean isFlipY() { return flipY; }
+    public boolean isFlipZ() { return flipZ; }
+    
+    public boolean isAutoUpdate() { return autoUpdate; }
+    public void setAutoUpdate(boolean autoUpdate) { this.autoUpdate = autoUpdate; }
+    
+    public long getPlacedAt() { return placedAt; }
+    public UUID getPlacedBy() { return placedBy; }
+    
+    public boolean isDeleted() { return deletedTimestamp != null; }
+    public void setDeletedTimestamp(Long deletedTimestamp) { this.deletedTimestamp = deletedTimestamp; }
+}

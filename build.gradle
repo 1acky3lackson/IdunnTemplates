@@ -19,7 +19,8 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT")
-    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.3.9")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.12.0")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.12.0") { transitive = false }
 }
 
 tasks {

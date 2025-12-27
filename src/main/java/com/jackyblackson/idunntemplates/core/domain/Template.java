@@ -1,16 +1,66 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+
+import javax.sound.sampled.Clip;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class Template {
     private final String name;
+    private final String path; // Relative path for display/commands
     private final File directory;
     private final TemplateMetadata metadata;
 
-    public Template(String name, File directory, TemplateMetadata metadata) {
+    private final UUID id;
+
+    private final Map<String, Clipboard> cachedClipboard = new HashMap<>();
+
+    public Clipboard getClipboard(String versionId) {
+        if (this.cachedClipboard.containsKey(versionId)) {
+            return this.cachedClipboard.get(versionId);
+        }
+        File file = new File(this.directory, versionId + ".schem");
+        if (!file.exists()) return null;
+
+        ClipboardFormat format = ClipboardFormats.findByAlias("schem");
+        if (format == null) format = ClipboardFormats.findByAlias("sponge");
+
+        try {
+            assert format != null;
+            try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+                var result = reader.read();
+                this.cachedClipboard.put(versionId, result);
+                return result;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Template(String name, String path, File directory, TemplateMetadata metadata) {
         this.name = name;
+        this.path = path;
         this.directory = directory;
         this.metadata = metadata;
+        this.id = metadata.getTemplateId();
+    }
+    
+    public String getPath() {
+        return path;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public String getName() {

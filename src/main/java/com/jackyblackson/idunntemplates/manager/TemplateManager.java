@@ -1,25 +1,125 @@
 package com.jackyblackson.idunntemplates.manager;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
+import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class TemplateManager {
 
     private final TemplateStorage storage;
+    private TemplateUpdater updater;
+    private final Map<UUID, Template> idCache = new ConcurrentHashMap<>();
+    private final Map<String, Template> pathCache = new ConcurrentHashMap<>();
 
     public TemplateManager(TemplateStorage storage) {
         this.storage = storage;
+        IdunnTemplates.getInstance().getLogger().info("Scanning for all templates...");
+        reloadTemplates();
+        IdunnTemplates.getInstance().getLogger().info("Finished, get " + idCache.size() + " unique templates.");
+    }
+    
+    public void reloadTemplates() {
+        idCache.clear();
+        pathCache.clear();
+        try {
+            java.util.List<Template> loaded = storage.loadAllTemplates();
+            for (Template t : loaded) {
+                // Cache by ID
+                idCache.put(t.getId(), t);
+                
+                // Cache by Normalized Path (User Friendly)
+                String normalized = normalizePath(t.getPath());
+                pathCache.put(normalized, t);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private String normalizePath(String rawPath) {
+        // rawPath: users/jacky/_mytmpl
+        // wanted: users/jacky/mytmpl
+        int lastSlash = rawPath.lastIndexOf('/');
+        if (lastSlash >= 0) {
+            String parent = rawPath.substring(0, lastSlash);
+            String name = rawPath.substring(lastSlash + 1);
+            if (name.startsWith("_")) name = name.substring(1);
+            return parent + "/" + name;
+        } else {
+            if (rawPath.startsWith("_")) return rawPath.substring(1);
+            return rawPath;
+        }
+    }
+    
+    public java.util.Collection<Template> getTemplates() {
+        return java.util.Collections.unmodifiableCollection(idCache.values());
+    }
+    
+    public void setUpdater(TemplateUpdater updater) {
+        this.updater = updater;
+    }
+
+    /**
+     * Commits a new version to an existing template.
+     */
+    public void commitTemplate(Player player, Template template, String message, Clipboard clipboard) throws Exception {
+        InstanceRepository instanceRepository = IdunnTemplates.getInstance().getInstanceRepository();
+        TemplateUpdater templateUpdater = IdunnTemplates.getInstance().getTemplateUpdater();
+        
+         // 1. Create Version
+        String versionId = generateVersionId();
+        TemplateVersion version = new TemplateVersion(versionId, player.getUniqueId(), message);
+
+         // 2. Save Version
+        storage.saveTemplateVersion(template, version, clipboard);
+        
+        // Update cache (ensure metadata/versions are up to date in cache objects)
+        // Since 'template' reference is what we modify, and it's in cache, we might be fine.
+        // But if storage returned a new object or we want to be safe:
+        // (TemplateStorage.saveTemplateVersion updates the passed template object in memory too? Yes, see code)
+        
+         // 3. Trigger Update
+        TemplateVersion newVer = template.getLatestVersion();
+        List<Instance> allLoaded = instanceRepository.getAllLoadedInstances();
+
+        // Filter by template ID
+        List<Instance> targets = allLoaded.stream()
+                .filter(i -> i.getTemplateId().equals(template.getId()))
+                .collect(Collectors.toList());
+
+        player.sendMessage(ChatColor.YELLOW + "Found " + targets.size() + " active instances. Updating...");
+
+        templateUpdater.updateInstances(template, newVer, targets);
+
+        player.sendMessage(ChatColor.GREEN + "Update process finished.");
+    }
+    
+    public Template getTemplate(String path) {
+        // path is user input: users/jacky/mytmpl
+        // We check pathCache
+        return pathCache.get(path);
+    }
+    
+    public Template getTemplate(UUID id) {
+        return idCache.get(id);
     }
 
     /**
@@ -30,7 +130,7 @@ public class TemplateManager {
      * @param clipboard The WorldEdit clipboard.
      * @return The created Template.
      * @throws IllegalArgumentException If permissions are missing or name is invalid.
-     * @throws IOException If IO fails.
+     * @throws Exception If IO fails.
      */
     public Template createTemplate(Player player, String name, String subPath, Clipboard clipboard) throws Exception {
         // 1. Determine Path and Check Permissions
@@ -44,11 +144,6 @@ public class TemplateManager {
             // Path permission check: idunn.template.save.dir1.dir2
             String permNode = "idunn.template.save." + subPath.replace("/", ".");
             if (!player.hasPermission(permNode)) {
-                // Check parent permissions if strict match fails? 
-                // Doc says: "If player has parent dir permission, child also recursively."
-                // So we check from specific to general? No, usually wildcards handle this, 
-                // or we check if they have "idunn.template.save.dir1" which implies dir1.*
-                // For now, let's implement a simple check. If they have the exact node or a parent node.
                 if (!hasRecursivePermission(player, subPath)) {
                     throw new SecurityException("You do not have permission to save to " + subPath);
                 }
@@ -59,21 +154,13 @@ public class TemplateManager {
         // 2. Prepare Metadata
         Region region = clipboard.getRegion();
         BlockVector3 min = region.getMinimumPoint();
-        BlockVector3 origin = clipboard.getOrigin(); 
-        // Note: Clipboard origin is where the player copied from relative to the selection.
-        // The doc says "Anchor Point: minX, minY, minZ of the selection".
-        // But WorldEdit clipboard usually works relative to an origin. 
-        // If we strictly follow the doc: "Anchor Point = min coords of cuboid".
-        // Let's store the min coords as the anchor.
-        
-        // However, for correct pasting, we usually care about the relation between 0,0,0 in the schem and the paste loc.
-        // In the schematic, the blocks are stored relative to the clipboard origin.
         
         TemplateMetadata metadata = new TemplateMetadata(
+                UUID.randomUUID(),
                 player.getUniqueId(),
                 System.currentTimeMillis(),
-                player.getWorld().getUID(), // This might be issue if WE selection is cross-world (unlikely)
-                min.getX(), min.getY(), min.getZ(),
+                player.getWorld().getUID(),
+                min.x(), min.y(), min.z(),
                 region.getWidth(), region.getHeight(), region.getLength()
         );
 
@@ -82,13 +169,16 @@ public class TemplateManager {
         TemplateVersion version = new TemplateVersion(versionId, player.getUniqueId(), "Initial creation");
 
         // 4. Save
-        return storage.saveNewTemplate(finalPath, name, metadata, clipboard, version);
+        Template t = storage.saveNewTemplate(finalPath, name, metadata, clipboard, version);
+        
+        // 5. Update Cache
+        idCache.put(t.getId(), t);
+        pathCache.put(normalizePath(t.getPath()), t);
+        
+        return t;
     }
 
     private boolean hasRecursivePermission(Player player, String path) {
-        // Check "idunn.template.save.dir1.dir2"
-        // Check "idunn.template.save.dir1"
-        // Check "idunn.template.save"
         String[] parts = path.split("/");
         StringBuilder current = new StringBuilder("idunn.template.save");
         if (player.hasPermission(current.toString())) return true;
@@ -102,6 +192,6 @@ public class TemplateManager {
 
     private String generateVersionId() {
         long now = System.currentTimeMillis();
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(String.valueOf(now).getBytes(StandardCharsets.UTF_8));
+        return Long.toString(now);
     }
 }

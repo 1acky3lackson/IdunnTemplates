@@ -26,6 +26,12 @@ public interface TemplateStorage {
     Template loadTemplate(String path) throws IOException;
 
     /**
+     * Loads all available templates from the storage.
+     * @return A list of all loaded templates.
+     */
+    java.util.List<Template> loadAllTemplates() throws IOException;
+
+    /**
      * Updates the metadata on disk.
      */
     void updateMetadata(Template template) throws IOException;

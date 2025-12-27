@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class TemplateMetadata {
+    private UUID templateId;
     private UUID creatorId;
     private long creationTime;
     private UUID worldId;
@@ -28,7 +29,8 @@ public class TemplateMetadata {
     // No-args constructor for serialization
     public TemplateMetadata() {}
 
-    public TemplateMetadata(UUID creatorId, long creationTime, UUID worldId, int anchorX, int anchorY, int anchorZ, int width, int height, int length) {
+    public TemplateMetadata(UUID templateId, UUID creatorId, long creationTime, UUID worldId, int anchorX, int anchorY, int anchorZ, int width, int height, int length) {
+        this.templateId = templateId;
         this.creatorId = creatorId;
         this.creationTime = creationTime;
         this.worldId = worldId;
@@ -57,6 +59,7 @@ public class TemplateMetadata {
     }
     
     // Getters
+    public UUID getTemplateId() { return templateId; }
     public UUID getCreatorId() { return creatorId; }
     public long getCreationTime() { return creationTime; }
     public UUID getWorldId() { return worldId; }
