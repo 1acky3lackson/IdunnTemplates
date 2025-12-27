@@ -8,6 +8,7 @@ import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.listener.ChunkListener;
 import com.jackyblackson.idunntemplates.manager.InstanceManager;
+import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import com.jackyblackson.idunntemplates.manager.TemplateUpdater;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,6 +24,7 @@ public final class IdunnTemplates extends JavaPlugin {
     private TemplateManager templateManager;
     private InstanceRepository instanceRepository;
     private InstanceManager instanceManager;
+    private SessionManager sessionManager;
     private BlockComparator blockComparator;
     private TemplateUpdater templateUpdater;
 
@@ -42,6 +44,10 @@ public final class IdunnTemplates extends JavaPlugin {
 
     public InstanceManager getInstanceManager() {
         return instanceManager;
+    }
+    
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     public BlockComparator getBlockComparator() {
@@ -78,9 +84,11 @@ public final class IdunnTemplates extends JavaPlugin {
         // 2. Setup Storage
         File templateDir = new File(getDataFolder(), "templates");
         File instancesDir = new File(getDataFolder(), "instances");
+        File playerDir = new File(getDataFolder(), "player_data");
         
         if (!templateDir.exists()) templateDir.mkdirs();
         if (!instancesDir.exists()) instancesDir.mkdirs();
+        if (!playerDir.exists()) playerDir.mkdirs();
         
         this.templateStorage = new FileTemplateStorage(templateDir);
         this.instanceRepository = new FileInstanceRepository(instancesDir, getLogger());
@@ -94,12 +102,19 @@ public final class IdunnTemplates extends JavaPlugin {
         this.templateManager.setUpdater(templateUpdater);
         
         this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger());
+        this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger());
 
         // 5. Register Commands
-        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, templateUpdater, instanceRepository));
+        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager));
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
+        getServer().getPluginManager().registerEvents(sessionManager, this);
+
+        // 7. Load Sessions for Online Players (Handle Reloads)
+        for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+            sessionManager.onPlayerJoin(new org.bukkit.event.player.PlayerJoinEvent(p, null));
+        }
 
         getLogger().info("IdunnTemplates has been enabled!");
     }
@@ -109,6 +124,13 @@ public final class IdunnTemplates extends JavaPlugin {
         // Plugin shutdown logic
         if (instanceRepository instanceof FileInstanceRepository) {
             ((FileInstanceRepository) instanceRepository).shutdown();
+        }
+        
+        if (sessionManager != null) {
+            // Save all sessions
+             for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+                 sessionManager.saveSession(p.getUniqueId());
+             }
         }
     }
 }
