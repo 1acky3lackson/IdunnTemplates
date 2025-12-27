@@ -65,10 +65,72 @@ public class TemplateSet {
      * Resolves all templates from sources with their effective weights.
      */
     public Map<Template, Double> resolveTemplates(TemplateManager manager) {
+        return resolveTemplates(manager, null, false);
+    }
+
+    /**
+     * Resolves templates with support for recursive sets.
+     * @param manager TemplateManager
+     * @param setResolver Function to resolve a set name to a TemplateSet. Input is "namespace:name".
+     * @param isGlobalContext If true, this set is being resolved in a global context, so it cannot reference private sets.
+     */
+    public Map<Template, Double> resolveTemplates(TemplateManager manager, java.util.function.Function<String, TemplateSet> setResolver, boolean isGlobalContext) {
+        return resolveTemplatesRecursive(manager, setResolver, isGlobalContext, new HashSet<>());
+    }
+
+    private Map<Template, Double> resolveTemplatesRecursive(TemplateManager manager, 
+                                                            java.util.function.Function<String, TemplateSet> setResolver, 
+                                                            boolean isGlobalContext,
+                                                            Set<String> visitedSets) {
         Map<Template, Double> result = new HashMap<>();
         
         for (TemplateSetSource source : sources) {
             String path = source.getPath();
+            
+            // 1. Check if it is a Set Reference
+            // Format: "set:ns:name" or "ns:name" (if we treat all non-slash as sets? No, conflict with templates)
+            // Safer to require "set:" prefix OR "ns:name" where ns contains "." or is "global"?
+            // User said: "Recursive use other sets...".
+            // Let's assume if it starts with "set:" it is explicitly a set.
+            // Or if it matches "namespace:name" pattern.
+            boolean isSetRef = path.startsWith("set:") || path.contains(":");
+            
+            if (isSetRef) {
+                if (setResolver == null) continue;
+                
+                String setName = path.startsWith("set:") ? path.substring(4) : path;
+                
+                // Security Check: Global cannot use Personal
+                if (isGlobalContext) {
+                    // Check if target is personal
+                    // Assuming personal sets have "player." in namespace
+                    if (setName.startsWith("player.") || (setName.contains(":") && setName.split(":")[0].startsWith("player."))) {
+                        // Skip illegal reference
+                        continue; 
+                    }
+                }
+                
+                // Cycle Detection
+                if (visitedSets.contains(setName)) continue;
+                Set<String> newVisited = new HashSet<>(visitedSets);
+                newVisited.add(setName);
+                
+                TemplateSet childSet = setResolver.apply(setName);
+                if (childSet != null) {
+                    // Recurse
+                    // Child context: if we are global, child must be treated as global context (or just we are in global chain)
+                    // If we are private, we can reference global or private.
+                    Map<Template, Double> childResult = childSet.resolveTemplatesRecursive(manager, setResolver, isGlobalContext, newVisited);
+                    
+                    // Merge child result with weight
+                    for (Map.Entry<Template, Double> entry : childResult.entrySet()) {
+                        merge(result, entry.getKey(), entry.getValue() * source.getWeight());
+                    }
+                }
+                continue;
+            }
+            
+            // 2. Normal Template/Directory resolution
             // Clean path
             if (path.startsWith("/")) path = path.substring(1);
             
@@ -80,25 +142,12 @@ public class TemplateSet {
             }
             
             // Treat as directory prefix
-            // Normalize path for prefix check: "users/jacky" -> "users/jacky/"
             String prefix = path.endsWith("/") ? path : path + "/";
             
             for (Template cand : manager.getTemplates()) {
                 String cPath = cand.getPath();
-                if (cPath.startsWith("_")) cPath = cPath.substring(1); // Handle internal storage paths if exposed
+                if (cPath.startsWith("_")) cPath = cPath.substring(1); 
                 
-                // My TemplateManager normalize logic might strip leading _.
-                // Let's assume manager.getTemplates() returns loaded templates.
-                // We compare paths.
-                // Template path: users/jacky/mytmpl
-                
-                // Check if starts with prefix (directory)
-                // Need to handle both raw path and display path logic
-                
-                // Let's rely on string containment for now.
-                // A better way might be manager.getTemplatesUnder(path)
-                
-                // Assuming path stored in Template is the full relative path
                 if (cand.getPath().startsWith(prefix) || cand.getPath().equals(path)) {
                     merge(result, cand, source.getWeight());
                 }
@@ -116,7 +165,11 @@ public class TemplateSet {
     }
     
     public Template pickRandom(TemplateManager manager) {
-        Map<Template, Double> map = resolveTemplates(manager);
+        return pickRandom(manager, null, false);
+    }
+
+    public Template pickRandom(TemplateManager manager, java.util.function.Function<String, TemplateSet> setResolver, boolean isGlobalContext) {
+        Map<Template, Double> map = resolveTemplates(manager, setResolver, isGlobalContext);
         if (map.isEmpty()) return null;
         
         double total = 0;

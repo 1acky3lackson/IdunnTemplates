@@ -39,6 +39,13 @@ public class SessionManager implements Listener {
         return sessions.get(playerId);
     }
     
+    public PlayerPreference getOrLoadPreference(UUID playerId) {
+        if (sessions.containsKey(playerId)) {
+            return sessions.get(playerId).getPreference();
+        }
+        return loadPreference(playerId);
+    }
+    
     public void saveSession(UUID playerId) {
         PlayerSession session = sessions.get(playerId);
         if (session != null) {

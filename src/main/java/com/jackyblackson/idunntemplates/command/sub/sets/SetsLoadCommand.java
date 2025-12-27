@@ -4,6 +4,7 @@ import com.jackyblackson.idunntemplates.command.sub.BaseSubCommand;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import com.jackyblackson.idunntemplates.core.domain.PlayerPreference;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import com.jackyblackson.idunntemplates.manager.SetManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -14,9 +15,11 @@ import java.util.List;
 public class SetsLoadCommand extends BaseSubCommand {
 
     private final SessionManager sessionManager;
+    private final SetManager setManager;
 
-    public SetsLoadCommand(SessionManager sessionManager) {
+    public SetsLoadCommand(SessionManager sessionManager, SetManager setManager) {
         this.sessionManager = sessionManager;
+        this.setManager = setManager;
     }
 
     @Override
@@ -27,12 +30,14 @@ public class SetsLoadCommand extends BaseSubCommand {
             return;
         }
         
-        String name = args[1];
+        String rawName = args[1];
         PlayerPreference pref = sessionManager.getSession(player.getUniqueId()).getPreference();
         
-        TemplateSet saved = pref.getSavedSets().get(name);
+        // Use SetManager logic: try explicit, then player.<me>, then global
+        TemplateSet saved = setManager.getSet(rawName, player.getName());
+        
         if (saved == null) {
-            player.sendMessage(ChatColor.RED + "Preset not found: " + name);
+            player.sendMessage(ChatColor.RED + "Preset not found: " + rawName);
             return;
         }
         
@@ -48,13 +53,20 @@ public class SetsLoadCommand extends BaseSubCommand {
         pref.setCurrentSet(current);
         sessionManager.saveSession(player.getUniqueId());
         
-        player.sendMessage(ChatColor.GREEN + "Loaded preset: " + name);
+        player.sendMessage(ChatColor.GREEN + "Loaded preset: " + rawName);
     }
 
     @Override
     public List<String> tabComplete(Player player, String[] args) {
         if (args.length == 2) {
-            return filter(new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet()), args[1]);
+            List<String> list = new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
+            // Add global sets
+            for (String ns : setManager.getLoadedNamespaces()) {
+                for (String name : setManager.getGlobalNamespace(ns).keySet()) {
+                    list.add(ns + ":" + name);
+                }
+            }
+            return filter(list, args[1]);
         }
         return Collections.emptyList();
     }

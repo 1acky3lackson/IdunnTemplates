@@ -31,6 +31,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private final TemplateManager templateManager;
     private final InstanceRepository instanceRepository;
     private final SessionManager sessionManager;
+    private final SetManager setManager;
     
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
     private final Map<UUID, List<BossBar>> activeSetBars = new ConcurrentHashMap<>();
@@ -39,10 +40,11 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private static final double GRID_SPACING = 10.0;
     
     // ... constructor ...
-    public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager) {
+    public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager) {
         this.templateManager = templateManager;
         this.instanceRepository = instanceRepository;
         this.sessionManager = sessionManager;
+        this.setManager = setManager;
     }
 
     @Override
@@ -57,10 +59,22 @@ public class EffectManager extends BukkitRunnable implements Listener {
         var session = sessionManager.getSession(player.getUniqueId());
         if (session == null) return;
         
-        com.jackyblackson.idunntemplates.core.set.TemplateSet set = session.getPreference().getCurrentSet();
-        List<com.jackyblackson.idunntemplates.core.set.TemplateSetSource> sources = set.getSources();
-        
+        com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref = session.getPreference();
         List<BossBar> bars = activeSetBars.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+
+        // Check preference
+        if (!pref.isBossBarSet()) {
+            if (!bars.isEmpty()) {
+                for (BossBar b : bars) {
+                    b.removeAll();
+                }
+                bars.clear();
+            }
+            return;
+        }
+
+        com.jackyblackson.idunntemplates.core.set.TemplateSet set = pref.getCurrentSet();
+        List<com.jackyblackson.idunntemplates.core.set.TemplateSetSource> sources = set.getSources();
         
         if (sources.isEmpty()) {
             // Clear all
@@ -87,7 +101,8 @@ public class EffectManager extends BukkitRunnable implements Listener {
         
         // Update Content
         // Header
-        int totalTemplates = set.resolveTemplates(templateManager).size();
+        // Resolve total templates including recursive sets
+        int totalTemplates = set.resolveTemplates(templateManager, name -> setManager.getSet(name, player.getName()), false).size();
         String header = String.format("Sets: %d templates, rotate: %s, flipx: %s, flipz: %s",
                 totalTemplates, set.getRotate(), set.getFlipX(), set.getFlipZ());
         bars.get(0).setTitle(header);
@@ -95,16 +110,11 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // Sources
         for (int i = 0; i < sources.size(); i++) {
             com.jackyblackson.idunntemplates.core.set.TemplateSetSource src = sources.get(i);
-            // Count templates for this source (approximate or resolving?)
-            // Spec: "=== [Weight] (Count templates) Path ==="
-            // We can resolve just for this source to get count.
-            // This might be heavy if done every tick.
-            // Maybe cache or just resolve (it loops templates). Template count isn't huge (thousands?). Should be fine every 0.5s.
             
             // Temporary set to resolve single source
             com.jackyblackson.idunntemplates.core.set.TemplateSet tmp = new com.jackyblackson.idunntemplates.core.set.TemplateSet();
             tmp.addSource(src.getPath(), src.getWeight());
-            int count = tmp.resolveTemplates(templateManager).size();
+            int count = tmp.resolveTemplates(templateManager, name -> setManager.getSet(name, player.getName()), false).size();
             
             String line = String.format("[%.1f] (%d templates) %s", src.getWeight(), count, src.getPath());
             bars.get(i+1).setTitle(line);
@@ -116,11 +126,13 @@ public class EffectManager extends BukkitRunnable implements Listener {
         String bossBarTitle = null;
         BarColor bossBarColor = null;
         
-        // 1. Check Wand
         var session = sessionManager.getSession(player.getUniqueId());
+        com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref = (session != null) ? session.getPreference() : null;
+
+        // 1. Check Wand
         boolean holdingWand = false;
-        if (session != null) {
-            String wandMat = session.getPreference().getWandMaterialName();
+        if (pref != null) {
+            String wandMat = pref.getWandMaterialName();
             try {
                 Material mat = Material.valueOf(wandMat);
                 if (player.getInventory().getItemInMainHand().getType() == mat) {
@@ -129,7 +141,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        if (holdingWand) {
+        if (holdingWand && pref != null && pref.isParticleWand()) {
             ParticleUtil.spawnMagicParticles(player.getLocation().add(0, 1, 0));
         }
 
@@ -150,13 +162,17 @@ public class EffectManager extends BukkitRunnable implements Listener {
             
             // Draw Grid Box
             if (min.distance(pLoc) < VIEW_DISTANCE) {
-                ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, particle);
+                if (pref != null && pref.isParticleTemplateBoundaries()) {
+                    ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, particle);
+                }
             }
             
             // Check Inside for BossBar
             if (isInAABB(pLoc, min, max)) {
-                bossBarTitle = (canCommit ? ChatColor.GREEN : ChatColor.RED) + "Template Master: " + t.getPath();
-                bossBarColor = canCommit ? BarColor.GREEN : BarColor.RED;
+                if (pref != null && pref.isBossBarTemplate()) {
+                    bossBarTitle = (canCommit ? ChatColor.GREEN : ChatColor.RED) + "Template Master: " + t.getPath();
+                    bossBarColor = canCommit ? BarColor.GREEN : BarColor.RED;
+                }
             }
         }
 
@@ -183,16 +199,20 @@ public class EffectManager extends BukkitRunnable implements Listener {
             if (holdingWand || isInside) {
                 // Draw Box
                 if (min.distance(pLoc) < VIEW_DISTANCE) {
-                    ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.END_ROD);
-                    // Draw Line to Center
-                    ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1);
+                    if (pref != null && pref.isParticleInstanceBoundaries()) {
+                        ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.END_ROD);
+                        // Draw Line to Center
+                        ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1);
+                    }
                 }
             }
             
             if (isInside) {
                 if (bossBarTitle == null) {
-                    bossBarTitle = ChatColor.BLUE + "Instance: " + t.getPath() + " (" + inst.getId().substring(0,8) + ")";
-                    bossBarColor = BarColor.BLUE;
+                    if (pref != null && pref.isBossBarInstance()) {
+                        bossBarTitle = ChatColor.BLUE + "Instance: " + t.getPath() + " (" + inst.getId().substring(0,8) + ")";
+                        bossBarColor = BarColor.BLUE;
+                    }
                 }
             }
         }

@@ -28,11 +28,16 @@ public final class IdunnTemplates extends JavaPlugin {
     private BlockComparator blockComparator;
     private TemplateUpdater templateUpdater;
     private com.jackyblackson.idunntemplates.manager.EffectManager effectManager;
+    private com.jackyblackson.idunntemplates.manager.SetManager setManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
     public TemplateStorage getTemplateStorage() {
         return templateStorage;
+    }
+    
+    public com.jackyblackson.idunntemplates.manager.SetManager getSetManager() {
+        return setManager;
     }
 
     public TemplateManager getTemplateManager() {
@@ -86,10 +91,12 @@ public final class IdunnTemplates extends JavaPlugin {
         File templateDir = new File(getDataFolder(), "templates");
         File instancesDir = new File(getDataFolder(), "instances");
         File playerDir = new File(getDataFolder(), "player_data");
+        File setsDir = new File(getDataFolder(), "sets");
         
         if (!templateDir.exists()) templateDir.mkdirs();
         if (!instancesDir.exists()) instancesDir.mkdirs();
         if (!playerDir.exists()) playerDir.mkdirs();
+        if (!setsDir.exists()) setsDir.mkdirs();
         
         this.templateStorage = new FileTemplateStorage(templateDir);
         this.instanceRepository = new FileInstanceRepository(instancesDir, getLogger());
@@ -105,10 +112,12 @@ public final class IdunnTemplates extends JavaPlugin {
         this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger());
         this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger());
         
-        this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager);
+        this.setManager = new com.jackyblackson.idunntemplates.manager.SetManager(setsDir, sessionManager, getLogger());
+        
+        this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager, setManager);
 
         // 5. Register Commands
-        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager));
+        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager));
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);

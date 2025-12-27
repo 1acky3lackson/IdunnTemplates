@@ -6,6 +6,7 @@ import com.jackyblackson.idunntemplates.command.sub.sets.*;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.manager.InstanceManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -20,7 +21,7 @@ public class IdunnCommand implements TabExecutor {
 
     private final Map<String, IdunnSubCommand> subCommands = new HashMap<>();
 
-    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager) {
+    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager) {
         // Template Group
         CommandGroup templateGroup = new CommandGroup();
         templateGroup.register("list", new ListCommand(templateManager));
@@ -39,15 +40,22 @@ public class IdunnCommand implements TabExecutor {
         
         // Sets Group
         CommandGroup setsGroup = new CommandGroup();
-        setsGroup.register("add", new SetsAddCommand(sessionManager, templateManager));
+        
+        CommandGroup setsAddGroup = new CommandGroup();
+        setsAddGroup.register("path", new SetsAddPathCommand(sessionManager, templateManager));
+        setsAddGroup.register("subset", new SetsAddSubsetCommand(sessionManager, setManager));
+        setsGroup.register("add", setsAddGroup);
+        
         setsGroup.register("remove", new SetsRemoveCommand(sessionManager));
         setsGroup.register("clear", new SetsClearCommand(sessionManager));
         setsGroup.register("prop", new SetsPropCommand(sessionManager));
-        setsGroup.register("save", new SetsSaveCommand(sessionManager));
-        setsGroup.register("load", new SetsLoadCommand(sessionManager));
-        setsGroup.register("list", new SetsListCommand(sessionManager));
-        setsGroup.register("place", new SetsPlaceCommand(sessionManager, templateManager, instanceManager));
+        setsGroup.register("save", new SetsSaveCommand(sessionManager, setManager));
+        setsGroup.register("load", new SetsLoadCommand(sessionManager, setManager));
+        setsGroup.register("list", new SetsListCommand(sessionManager, setManager));
+        setsGroup.register("place", new SetsPlaceCommand(sessionManager, templateManager, instanceManager, setManager));
         setsGroup.register("view", new SetsViewCommand(sessionManager));
+        setsGroup.register("update", new SetsUpdateCommand(sessionManager, setManager));
+        setsGroup.register("transferToGlobal", new SetsTransferCommand(sessionManager, setManager));
         subCommands.put("set", setsGroup);
 
         // Root Commands

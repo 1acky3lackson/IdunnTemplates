@@ -5,6 +5,7 @@ import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import com.jackyblackson.idunntemplates.manager.InstanceManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -17,11 +18,13 @@ public class SetsPlaceCommand extends BaseSubCommand {
     private final SessionManager sessionManager;
     private final TemplateManager templateManager;
     private final InstanceManager instanceManager;
+    private final SetManager setManager;
 
-    public SetsPlaceCommand(SessionManager sessionManager, TemplateManager templateManager, InstanceManager instanceManager) {
+    public SetsPlaceCommand(SessionManager sessionManager, TemplateManager templateManager, InstanceManager instanceManager, SetManager setManager) {
         this.sessionManager = sessionManager;
         this.templateManager = templateManager;
         this.instanceManager = instanceManager;
+        this.setManager = setManager;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class SetsPlaceCommand extends BaseSubCommand {
             return;
         }
         
-        Template t = set.pickRandom(templateManager);
+        Template t = set.pickRandom(templateManager, name -> setManager.getSet(name, player.getName()), false);
         if (t == null) {
             player.sendMessage(ChatColor.RED + "Could not resolve any templates from current set.");
             return;

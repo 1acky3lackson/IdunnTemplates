@@ -58,6 +58,48 @@ public class PrefCommand extends BaseSubCommand {
             pref.setPlaceOnEmptyOnly(val);
             sessionManager.saveSession(player.getUniqueId());
             player.sendMessage(ChatColor.GREEN + "Set placeOnEmptyOnly to: " + val);
+        } else if (prefSub.equalsIgnoreCase("particles")) {
+            // /idunn pref particles <type> <true|false>
+            if (args.length < 4) {
+                player.sendMessage(ChatColor.RED + "Usage: /idunn pref particles <template|instance|wand> <true|false>");
+                return;
+            }
+            String type = args[2].toLowerCase();
+            boolean val = Boolean.parseBoolean(args[3]);
+            boolean found = true;
+            switch (type) {
+                case "template" -> pref.setParticleTemplateBoundaries(val);
+                case "instance" -> pref.setParticleInstanceBoundaries(val);
+                case "wand" -> pref.setParticleWand(val);
+                default -> found = false;
+            }
+            if (!found) {
+                player.sendMessage(ChatColor.RED + "Unknown particle type. Options: template, instance, wand");
+                return;
+            }
+            sessionManager.saveSession(player.getUniqueId());
+            player.sendMessage(ChatColor.GREEN + "Set particle preference '" + type + "' to: " + val);
+        } else if (prefSub.equalsIgnoreCase("bossbar")) {
+            // /idunn pref bossbar <type> <true|false>
+            if (args.length < 4) {
+                player.sendMessage(ChatColor.RED + "Usage: /idunn pref bossbar <template|instance|set> <true|false>");
+                return;
+            }
+            String type = args[2].toLowerCase();
+            boolean val = Boolean.parseBoolean(args[3]);
+            boolean found = true;
+            switch (type) {
+                case "template" -> pref.setBossBarTemplate(val);
+                case "instance" -> pref.setBossBarInstance(val);
+                case "set" -> pref.setBossBarSet(val);
+                default -> found = false;
+            }
+            if (!found) {
+                player.sendMessage(ChatColor.RED + "Unknown bossbar type. Options: template, instance, set");
+                return;
+            }
+            sessionManager.saveSession(player.getUniqueId());
+            player.sendMessage(ChatColor.GREEN + "Set bossbar preference '" + type + "' to: " + val);
         } else {
             player.sendMessage(ChatColor.RED + "Unknown preference option.");
         }
@@ -69,6 +111,8 @@ public class PrefCommand extends BaseSubCommand {
             List<String> opts = new ArrayList<>();
             opts.add("wand");
             opts.add("placeOnEmptyOnly");
+            opts.add("particles");
+            opts.add("bossbar");
             return filter(opts, args[1]);
         }
         if (args.length == 3) {
@@ -79,6 +123,23 @@ public class PrefCommand extends BaseSubCommand {
                 List<String> bools = new ArrayList<>();
                 bools.add("true"); bools.add("false");
                 return filter(bools, args[2]);
+            }
+            if (args[1].equalsIgnoreCase("particles")) {
+                List<String> types = new ArrayList<>();
+                types.add("template"); types.add("instance"); types.add("wand");
+                return filter(types, args[2]);
+            }
+            if (args[1].equalsIgnoreCase("bossbar")) {
+                List<String> types = new ArrayList<>();
+                types.add("template"); types.add("instance"); types.add("set");
+                return filter(types, args[2]);
+            }
+        }
+        if (args.length == 4) {
+            if (args[1].equalsIgnoreCase("particles") || args[1].equalsIgnoreCase("bossbar")) {
+                List<String> bools = new ArrayList<>();
+                bools.add("true"); bools.add("false");
+                return filter(bools, args[3]);
             }
         }
         return Collections.emptyList();
