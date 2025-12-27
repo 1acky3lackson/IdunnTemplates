@@ -24,6 +24,29 @@ public class Template {
     private final UUID id;
 
     private final Map<String, Clipboard> cachedClipboard = new HashMap<>();
+    
+    // Cache for particle effects
+    private org.bukkit.util.Vector cachedOriginOffset = null;
+
+    public org.bukkit.util.Vector getOriginOffset() {
+        if (cachedOriginOffset != null) return cachedOriginOffset;
+        
+        TemplateVersion latest = getLatestVersion();
+        if (latest == null) return new org.bukkit.util.Vector(0,0,0);
+        
+        Clipboard clip = getClipboard(latest.getVersionId());
+        if (clip == null) return new org.bukkit.util.Vector(0,0,0);
+        
+        com.sk89q.worldedit.math.BlockVector3 min = clip.getRegion().getMinimumPoint();
+        com.sk89q.worldedit.math.BlockVector3 origin = clip.getOrigin();
+        
+        cachedOriginOffset = new org.bukkit.util.Vector(
+            min.getX() - origin.getX(),
+            min.getY() - origin.getY(),
+            min.getZ() - origin.getZ()
+        );
+        return cachedOriginOffset;
+    }
 
     public Clipboard getClipboard(String versionId) {
         if (this.cachedClipboard.containsKey(versionId)) {

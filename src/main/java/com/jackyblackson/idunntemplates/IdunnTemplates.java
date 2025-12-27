@@ -27,6 +27,7 @@ public final class IdunnTemplates extends JavaPlugin {
     private SessionManager sessionManager;
     private BlockComparator blockComparator;
     private TemplateUpdater templateUpdater;
+    private com.jackyblackson.idunntemplates.manager.EffectManager effectManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
@@ -103,6 +104,8 @@ public final class IdunnTemplates extends JavaPlugin {
         
         this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger());
         this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger());
+        
+        this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager);
 
         // 5. Register Commands
         Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager));
@@ -110,8 +113,13 @@ public final class IdunnTemplates extends JavaPlugin {
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
         getServer().getPluginManager().registerEvents(sessionManager, this);
+        getServer().getPluginManager().registerEvents(effectManager, this);
+        
+        // 7. Tasks
+        // Run particle effects every 10 ticks (0.5s)
+        effectManager.runTaskTimer(this, 20L, 10L);
 
-        // 7. Load Sessions for Online Players (Handle Reloads)
+        // 8. Load Sessions for Online Players (Handle Reloads)
         for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
             sessionManager.onPlayerJoin(new org.bukkit.event.player.PlayerJoinEvent(p, null));
         }
