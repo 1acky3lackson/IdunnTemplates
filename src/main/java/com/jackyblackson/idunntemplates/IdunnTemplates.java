@@ -99,7 +99,7 @@ public final class IdunnTemplates extends JavaPlugin {
         Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, templateUpdater, instanceRepository));
         
         // 6. Register Listeners
-        getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, getLogger()), this);
+        getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
 
         getLogger().info("IdunnTemplates has been enabled!");
     }

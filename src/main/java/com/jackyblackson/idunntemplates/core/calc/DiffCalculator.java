@@ -50,16 +50,16 @@ public class DiffCalculator {
             BlockVector3 origin,
             World world
     ) {
-        logger.info(String.format("Starting Diff Calculation. Origin: %s, World: %s", origin, world.getName()));
+//        logger.info(String.format("Starting Diff Calculation. Origin: %s, World: %s", origin, world.getName()));
         
         Map<BlockVector3, BlockState> changes = new HashMap<>();
 
         // 1. "Paste" Old Clipboard to memory to get transformed B_old
-        logger.info("Simulating paste for Old Clipboard...");
+//        logger.info("Simulating paste for Old Clipboard...");
         Map<BlockVector3, BlockState> oldBlocks = getTransformedBlocks(oldClip, transform);
 
         // 2. "Paste" New Clipboard to memory to get transformed B_new
-        logger.info("Simulating paste for New Clipboard...");
+//        logger.info("Simulating paste for New Clipboard...");
         Map<BlockVector3, BlockState> newBlocks = getTransformedBlocks(newClip, transform);
 
         // 3. Determine Union of Bounds (Relative to Origin 0,0,0 of the paste)
@@ -67,7 +67,7 @@ public class DiffCalculator {
         allPositions.addAll(oldBlocks.keySet());
         allPositions.addAll(newBlocks.keySet());
         
-        logger.info("Total unique block positions to check: " + allPositions.size());
+//        logger.info("Total unique block positions to check: " + allPositions.size());
 
         int countIgnored = 0;
         int countSkippedNull = 0;
@@ -80,7 +80,7 @@ public class DiffCalculator {
         for (BlockVector3 relPos : allPositions) {
             // Absolute World Position
             BlockVector3 worldPos = relPos.add(origin);
-            System.out.printf("  ===> %s -> %s\n", relPos, worldPos);
+//            System.out.printf("  ===> %s -> %s\n", relPos, worldPos);
             
             // B_old: Block in old template (transformed)
             BlockState bo = oldBlocks.get(relPos);
@@ -133,8 +133,8 @@ public class DiffCalculator {
             }
         }
 
-        logger.info(String.format("Diff Stats: [Total: %d] [Changes: %d] [Ignored: %d] [SkippedNull: %d] [Updated(Clean): %d] [Updated(Idle): %d] [Skipped(Conflict): %d] [NoChange: %d]",
-                allPositions.size(), changes.size(), countIgnored, countSkippedNull, countUpdateUnmodified, countUpdateIdle, countSkippedConflict, countNoChangeNeeded));
+//        logger.info(String.format("Diff Stats: [Total: %d] [Changes: %d] [Ignored: %d] [SkippedNull: %d] [Updated(Clean): %d] [Updated(Idle): %d] [Skipped(Conflict): %d] [NoChange: %d]",
+//                allPositions.size(), changes.size(), countIgnored, countSkippedNull, countUpdateUnmodified, countUpdateIdle, countSkippedConflict, countNoChangeNeeded));
 
         return changes;
     }
@@ -143,7 +143,7 @@ public class DiffCalculator {
         Map<BlockVector3, BlockState> blockMap = new HashMap<>();
         Region region = clipboard.getRegion();
         BlockVector3 minPos = region.getMinimumPoint();
-        System.out.println("getMinimumPoint = " + minPos);
+//        System.out.println("getMinimumPoint = " + minPos);
 
         // Iterate through all blocks in the clipboard's region
         for (BlockVector3 position : region) {
@@ -160,7 +160,7 @@ public class DiffCalculator {
 
             // 3. Convert back to BlockVector3 (integer coordinates)
             BlockVector3 newPos = transformedVector.toBlockPoint();
-            System.out.printf("      -=-> at %s = r%s => %s, block = %s\n", position, relPos, newPos, block);
+//            System.out.printf("      -=-> at %s = r%s => %s, block = %s\n", position, relPos, newPos, block);
             // 4. Store in your map
             blockMap.put(newPos, block);
         }

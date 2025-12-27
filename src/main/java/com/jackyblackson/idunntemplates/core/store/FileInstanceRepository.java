@@ -27,9 +27,10 @@ public class FileInstanceRepository implements InstanceRepository {
     // Cache: WorldUUID -> (PartitionKey -> List<Instance>)
     // PartitionKey string format: "x.z"
     // Using a simple in-memory cache for now. In production, consider memory management.
-    // However, since we only load partitions when chunks are loaded, and (theoretically) unload when chunks unload (Phase 2 doesn't mandate unload logic yet),
-    // this map might grow. For now, we assume server memory is sufficient.
     private final Map<UUID, Map<String, List<Instance>>> cache = new ConcurrentHashMap<>();
+    
+    // Reference Counting: WorldUUID -> (PartitionKey -> Count)
+    private final Map<UUID, Map<String, java.util.concurrent.atomic.AtomicInteger>> partitionRefCounts = new ConcurrentHashMap<>();
 
     private static final int PARTITION_SIZE = 8; // 8x8 chunks
 
@@ -94,6 +95,10 @@ public class FileInstanceRepository implements InstanceRepository {
         return CompletableFuture.supplyAsync(() -> {
             String key = getPartitionKey(chunkX, chunkZ);
             
+            // Ref Count Management
+            Map<String, java.util.concurrent.atomic.AtomicInteger> worldCounts = partitionRefCounts.computeIfAbsent(worldId, k -> new ConcurrentHashMap<>());
+            worldCounts.computeIfAbsent(key, k -> new java.util.concurrent.atomic.AtomicInteger(0)).incrementAndGet();
+
             Map<String, List<Instance>> worldCache = cache.computeIfAbsent(worldId, k -> new ConcurrentHashMap<>());
             
             if (worldCache.containsKey(key)) {
@@ -103,6 +108,29 @@ public class FileInstanceRepository implements InstanceRepository {
             List<Instance> loaded = loadPartitionFromDisk(worldId, key);
             worldCache.put(key, loaded);
             return loaded;
+        }, ioExecutor);
+    }
+    
+    @Override
+    public void unloadInstancesForChunk(UUID worldId, int chunkX, int chunkZ) {
+        CompletableFuture.runAsync(() -> {
+            String key = getPartitionKey(chunkX, chunkZ);
+            Map<String, java.util.concurrent.atomic.AtomicInteger> worldCounts = partitionRefCounts.get(worldId);
+            if (worldCounts != null) {
+                java.util.concurrent.atomic.AtomicInteger count = worldCounts.get(key);
+                if (count != null) {
+                    int current = count.decrementAndGet();
+                    if (current <= 0) {
+                        // Unload from cache
+                        Map<String, List<Instance>> worldCache = cache.get(worldId);
+                        if (worldCache != null) {
+                            worldCache.remove(key);
+                        }
+                        // Reset count to 0 to be safe
+                        if (current < 0) count.set(0);
+                    }
+                }
+            }
         }, ioExecutor);
     }
     

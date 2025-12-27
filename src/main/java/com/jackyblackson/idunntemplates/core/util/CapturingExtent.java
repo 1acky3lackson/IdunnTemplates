@@ -60,7 +60,7 @@ public class CapturingExtent extends AbstractDelegateExtent implements World {
     @Override
     public <T extends BlockStateHolder<T>> boolean setBlock(BlockVector3 position, T block) throws WorldEditException {
         // We capture the BlockState.
-        System.out.printf("    -> Extent.setBlock, pos = %s, block = %s%n", position.toString(), block.toString());
+//        System.out.printf("    -> Extent.setBlock, pos = %s, block = %s%n", position.toString(), block.toString());
         if (block instanceof BlockState) {
             blocks.put(position, (BlockState) block);
         } else if (block instanceof BaseBlock) {
@@ -72,7 +72,7 @@ public class CapturingExtent extends AbstractDelegateExtent implements World {
     @Override
     public <B extends BlockStateHolder<B>> boolean setBlock(BlockVector3 position, B block, SideEffectSet sideEffects) throws WorldEditException {
         // We capture the BlockState.
-        System.out.printf("    -> world.setBlock, pos = %s, block = %s%n", position.toString(), block.toString());
+//        System.out.printf("    -> world.setBlock, pos = %s, block = %s%n", position.toString(), block.toString());
         if (block instanceof BlockState) {
             blocks.put(position, (BlockState) block);
         } else if (block instanceof BaseBlock) {

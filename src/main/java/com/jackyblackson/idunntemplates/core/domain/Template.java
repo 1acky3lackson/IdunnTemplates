@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
 import com.jackyblackson.idunntemplates.IdunnTemplates;
+import com.jackyblackson.idunntemplates.core.util.TransformUtil;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
@@ -45,6 +46,16 @@ public class Template {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public Clipboard getClipboard(String versionId, int rotation, boolean flipX, boolean flipY, boolean flipZ) {
+        return TransformUtil.transformClipboard(
+                this.getClipboard(versionId),
+                rotation,
+                flipX,
+                flipY,
+                flipZ
+        );
     }
 
     public Template(String name, String path, File directory, TemplateMetadata metadata) {

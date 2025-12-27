@@ -11,16 +11,16 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.function.operation.ChangeSetExecutor;
+import com.sk89q.worldedit.history.change.BlockChange;
+import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
+import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.world.block.BlockState;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -61,7 +61,7 @@ public class TemplateUpdater {
             updateSingleInstance(template, instance, newVersion);
             updatedCount++;
         }
-        logger.info("Update batch complete. Processed: " + updatedCount + ", Skipped: " + skippedCount);
+//        logger.info("Update batch complete. Processed: " + updatedCount + ", Skipped: " + skippedCount);
     }
     
     private void updateSingleInstance(Template template, Instance instance, TemplateVersion newVersion) {
@@ -70,15 +70,16 @@ public class TemplateUpdater {
         // Load Variations
         int rot = instance.getRotationY();
         boolean flipX = instance.isFlipX();
+        boolean flipY = instance.isFlipY();
         boolean flipZ = instance.isFlipZ(); // Assumed FlipZ based on previous context, prompt said Z flip.
         
-        Clipboard oldClip = loadVariationClipboard(template, instance.getCurrentVersionId(), rot, flipX, flipZ);
+        Clipboard oldClip = loadTransformedClipboard(template, instance.getCurrentVersionId(), rot, flipX, flipY, flipZ);
         if (oldClip == null) {
             logger.warning("Skipping update for instance " + instance.getId() + ": Old version " + instance.getCurrentVersionId() + " not found.");
             return;
         }
 
-        Clipboard newClip = loadVariationClipboard(template, newVersion.getVersionId(), rot, flipX, flipZ);
+        Clipboard newClip = loadTransformedClipboard(template, newVersion.getVersionId(), rot, flipX, flipY, flipZ);
         if (newClip == null) {
              logger.warning("Skipping update for instance " + instance.getId() + ": New version " + newVersion.getVersionId() + " not found.");
              return;
@@ -106,12 +107,23 @@ public class TemplateUpdater {
             return;
         }
         
-        logger.info("Applying " + changes.size() + " block changes to instance " + instance.getId());
+//        logger.info("Applying " + changes.size() + " block changes to instance " + instance.getId());
+
 
         // 5. Apply Changes
-        try (EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))) {
+        try (
+                EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))
+        ) {
+//            try(var changeSet = new BlockOptimizedHistory()){
+//
+//                session.setBlocks(changeSet, ChangeSetExecutor.Type.REDO);
+//            }
             for (Map.Entry<BlockVector3, BlockState> entry : changes.entrySet()) {
-                session.setBlock(entry.getKey(), entry.getValue());
+                var pos = entry.getKey();
+                session.setBlock(
+                        pos.x(), pos.y(), pos.z(),
+                        entry.getValue()
+                );
             }
             // Session auto-flush on close
         } catch (Exception e) {
@@ -123,30 +135,12 @@ public class TemplateUpdater {
         // 6. Update Instance Record
         instance.setCurrentVersionId(newVersion.getVersionId());
         instanceRepository.saveInstance(instance);
-        logger.info("Successfully updated instance " + instance.getId() + " to version " + newVersion.getVersionId());
+//        logger.info("Successfully updated instance " + instance.getId() + " to version " + newVersion.getVersionId());
     }
 
-    private Clipboard loadVariationClipboard(Template template, String versionId, int rot, boolean flipX, boolean flipZ) {
-        // Try to load pre-generated variation
-        File variationsDir = new File(template.getDirectory(), "variations");
-        String filename = versionId + "_" + rot + "_" + flipX + "_" + flipZ + ".schem";
-        File file = new File(variationsDir, filename);
-        
-        if (file.exists()) {
-            com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByFile(file);
-            if (format == null) format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByAlias("schem");
-            try (com.sk89q.worldedit.extent.clipboard.io.ClipboardReader reader = format.getReader(new FileInputStream(file))) {
-                return reader.read();
-            } catch (IOException e) {
-                logger.warning("Failed to load variation " + filename + ": " + e.getMessage());
-            }
-        }
-        
-        // Fallback: Load base and transform
-        Clipboard base = template.getClipboard(versionId);
-        if (base == null) return null;
-        
-        return createTransformedClipboard(base, rot, flipX, flipZ);
+    private Clipboard loadTransformedClipboard(Template template, String versionId, int rot, boolean flipX, boolean flipY, boolean flipZ) {
+        // Load base and transform
+        return template.getClipboard(versionId, rot, flipX, flipY, flipZ);
     }
 
     private Clipboard createTransformedClipboard(Clipboard original, int rot, boolean flipX, boolean flipZ) {
@@ -205,9 +199,5 @@ public class TemplateUpdater {
         } catch (Exception e) { e.printStackTrace(); }
         
         return target;
-    }
-
-    public Clipboard loadClipboard(Template template, String versionId) {
-        return template.getClipboard(versionId);
     }
 }

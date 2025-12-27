@@ -50,24 +50,7 @@ public class InstanceManager {
         }
 
         // 2. Load Schematic for specific variation
-        // Format: <versionId>_<rot>_<flipX>_<flipZ>.schem in 'variations' subfolder
-        File variationsDir = new File(template.getDirectory(), "variations");
-        String filename = latestVersion.getVersionId() + "_" + rotationY + "_" + flipX + "_" + flipZ + ".schem";
-        File schemFile = new File(variationsDir, filename);
-        
-        if (!schemFile.exists()) {
-             // Fallback for backward compatibility or error?
-             // Prompt asked to simplify logic, so we assume variations exist.
-             throw new java.io.FileNotFoundException("Variation schematic not found: " + filename + ". Please re-commit the template to generate variations.");
-        }
-
-        Clipboard clipboard;
-        ClipboardFormat format = ClipboardFormats.findByFile(schemFile);
-        if (format == null) format = ClipboardFormats.findByAlias("schem");
-        
-        try (ClipboardReader reader = format.getReader(new FileInputStream(schemFile))) {
-            clipboard = reader.read();
-        }
+        Clipboard clipboard = template.getClipboard(latestVersion.getVersionId(), rotationY, flipX, flipY, flipZ);
 
         // 3. Paste to World (No transformation needed as schematic is pre-transformed)
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(location.getWorld()))) {

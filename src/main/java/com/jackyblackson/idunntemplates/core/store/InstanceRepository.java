@@ -24,6 +24,15 @@ public interface InstanceRepository {
      * @return A list of loaded instances (may be empty if no file exists)
      */
     CompletableFuture<List<Instance>> loadInstancesForChunk(UUID worldId, int chunkX, int chunkZ);
+
+    /**
+     * Unloads instances for a specific chunk.
+     * Should be called when a chunk is unloaded to free memory.
+     * @param worldId The world UUID
+     * @param chunkX The X coordinate of the chunk
+     * @param chunkZ The Z coordinate of the chunk
+     */
+    void unloadInstancesForChunk(UUID worldId, int chunkX, int chunkZ);
     
     /**
      * Optional: explicitly save a partition to disk immediately.
