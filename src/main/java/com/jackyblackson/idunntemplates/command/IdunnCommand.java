@@ -62,6 +62,7 @@ public class IdunnCommand implements TabExecutor {
         subCommands.put("reload", new ReloadCommand(templateManager));
         subCommands.put("pref", new PrefCommand(sessionManager));
         subCommands.put("tp", new SmartTpCommand(templateManager, instanceRepository));
+        subCommands.put("commit", new SmartCommitCommand(templateManager));
     }
 
     @Override

@@ -103,7 +103,10 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // Header
         // Resolve total templates including recursive sets
         int totalTemplates = set.resolveTemplates(templateManager, name -> setManager.getSet(name, player.getName()), false).size();
-        String header = String.format("Sets: %d templates, rotate: %s, flipx: %s, flipz: %s",
+        String header = String.format(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Sets: " + ChatColor.WHITE + "%d" + ChatColor.GRAY + " templates, " +
+                ChatColor.YELLOW + "rotate: " + ChatColor.WHITE + "%s" + ChatColor.GRAY + ", " +
+                ChatColor.YELLOW + "flipx: " + ChatColor.WHITE + "%s" + ChatColor.GRAY + ", " +
+                ChatColor.YELLOW + "flipz: " + ChatColor.WHITE + "%s",
                 totalTemplates, set.getRotate(), set.getFlipX(), set.getFlipZ());
         bars.get(0).setTitle(header);
         
@@ -116,7 +119,9 @@ public class EffectManager extends BukkitRunnable implements Listener {
             tmp.addSource(src.getPath(), src.getWeight());
             int count = tmp.resolveTemplates(templateManager, name -> setManager.getSet(name, player.getName()), false).size();
             
-            String line = String.format("[%.1f] (%d templates) %s", src.getWeight(), count, src.getPath());
+            String line = String.format(ChatColor.GRAY + "[" + ChatColor.GREEN + "%.1f" + ChatColor.GRAY + "] " +
+                    ChatColor.GRAY + "(" + ChatColor.WHITE + "%d" + ChatColor.GRAY + ") " +
+                    ChatColor.AQUA + "%s", src.getWeight(), count, src.getPath());
             bars.get(i+1).setTitle(line);
         }
     }
@@ -170,7 +175,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             // Check Inside for BossBar
             if (isInAABB(pLoc, min, max)) {
                 if (pref != null && pref.isBossBarTemplate()) {
-                    bossBarTitle = (canCommit ? ChatColor.GREEN : ChatColor.RED) + "Template Master: " + t.getPath();
+                    bossBarTitle = (canCommit ? ChatColor.GREEN : ChatColor.RED) + "" + ChatColor.BOLD + "Template Master: " + ChatColor.WHITE + t.getPath();
                     bossBarColor = canCommit ? BarColor.GREEN : BarColor.RED;
                 }
             }
@@ -210,7 +215,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             if (isInside) {
                 if (bossBarTitle == null) {
                     if (pref != null && pref.isBossBarInstance()) {
-                        bossBarTitle = ChatColor.BLUE + "Instance: " + t.getPath() + " (" + inst.getId().substring(0,8) + ")";
+                        bossBarTitle = ChatColor.BLUE + "" + ChatColor.BOLD + "Instance: " + ChatColor.WHITE + t.getPath() + ChatColor.GRAY + " (" + inst.getId().substring(0,8) + ")";
                         bossBarColor = BarColor.BLUE;
                     }
                 }
@@ -219,6 +224,40 @@ public class EffectManager extends BukkitRunnable implements Listener {
         
         // Update BossBar
         updateBossBar(player, bossBarTitle, bossBarColor);
+        
+        // 4. Action Bar
+        sendActionBar(player, pref, session);
+    }
+    
+    private void sendActionBar(Player player, com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref, com.jackyblackson.idunntemplates.core.domain.PlayerSession session) {
+        if (pref == null || !pref.isShowActionBar()) return;
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(ChatColor.GOLD).append("[Idunn] ");
+        
+        // EmptyOnly Status
+        sb.append(ChatColor.YELLOW).append("EmptyOnly: ");
+        if (pref.isPlaceOnEmptyOnly()) {
+            sb.append(ChatColor.GREEN).append("ON");
+        } else {
+            sb.append(ChatColor.RED).append("OFF");
+        }
+        
+        // Next Template Info
+        if (session != null) {
+            var next = session.getNextPlacement();
+            if (next != null && next.getTemplate() != null) {
+                sb.append(ChatColor.GRAY).append(" | ");
+                sb.append(ChatColor.AQUA).append("Next: ").append(ChatColor.WHITE).append(next.getTemplate().getName());
+                sb.append(ChatColor.GRAY).append(" (");
+                sb.append("Rot:").append(next.getRotation());
+                if (next.isFlipX()) sb.append(", FlipX");
+                if (next.isFlipZ()) sb.append(", FlipZ");
+                sb.append(")");
+            }
+        }
+        
+        player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, new net.md_5.bungee.api.chat.TextComponent(sb.toString()));
     }
     
     private void updateBossBar(Player player, String title, BarColor color) {

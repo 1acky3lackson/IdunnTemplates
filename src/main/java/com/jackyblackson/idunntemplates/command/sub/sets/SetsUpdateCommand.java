@@ -8,6 +8,7 @@ import com.jackyblackson.idunntemplates.manager.SetManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -119,6 +120,20 @@ public class SetsUpdateCommand extends BaseSubCommand {
 
     @Override
     public List<String> tabComplete(Player player, String[] args) {
+        if (args.length == 2) {
+            List<String> list = new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
+            
+            // Add global sets the player can update
+            for (String ns : setManager.getLoadedNamespaces()) {
+                if (player.hasPermission("idunn.set.update." + ns)) {
+                    for (String name : setManager.getGlobalNamespace(ns).keySet()) {
+                        list.add(ns + ":" + name);
+                    }
+                }
+            }
+            
+            return filter(list, args[1]);
+        }
         return Collections.emptyList();
     }
 }

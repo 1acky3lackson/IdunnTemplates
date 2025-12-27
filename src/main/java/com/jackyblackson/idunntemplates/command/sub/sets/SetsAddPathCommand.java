@@ -45,6 +45,7 @@ public class SetsAddPathCommand extends BaseSubCommand {
         TemplateSet set = sessionManager.getSession(player.getUniqueId()).getPreference().getCurrentSet();
         set.addSource(path, weight);
         sessionManager.saveSession(player.getUniqueId());
+        sessionManager.regenerateNextPlacement(player.getUniqueId());
         
         player.sendMessage(ChatColor.GREEN + "Added path source: " + path + " (Weight: " + weight + ")");
     }

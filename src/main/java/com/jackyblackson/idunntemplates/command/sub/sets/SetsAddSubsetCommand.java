@@ -56,6 +56,7 @@ public class SetsAddSubsetCommand extends BaseSubCommand {
         TemplateSet set = sessionManager.getSession(player.getUniqueId()).getPreference().getCurrentSet();
         set.addSource(sourcePath, weight);
         sessionManager.saveSession(player.getUniqueId());
+        sessionManager.regenerateNextPlacement(player.getUniqueId());
         
         player.sendMessage(ChatColor.GREEN + "Added subset source: " + subset + " (Weight: " + weight + ")");
     }

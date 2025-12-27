@@ -30,6 +30,7 @@ public class SetsRemoveCommand extends BaseSubCommand {
         
         if (set.removeSource(path)) {
             sessionManager.saveSession(player.getUniqueId());
+            sessionManager.regenerateNextPlacement(player.getUniqueId());
             player.sendMessage(ChatColor.GREEN + "Removed source: " + path);
         } else {
             player.sendMessage(ChatColor.RED + "Source not found in current set.");

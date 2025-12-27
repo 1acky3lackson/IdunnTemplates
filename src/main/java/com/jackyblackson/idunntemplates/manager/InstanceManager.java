@@ -10,16 +10,20 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.MaskingExtent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.function.mask.BlockTypeMask;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.world.block.BaseBlock;
+import com.sk89q.worldedit.world.block.BlockType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -34,11 +38,25 @@ public class InstanceManager {
     private final TemplateStorage templateStorage;
     private final InstanceRepository instanceRepository;
     private final Logger logger;
+    private final com.jackyblackson.idunntemplates.manager.SessionManager sessionManager; // Added field
 
+    // Updated Constructor
     public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger) {
         this.templateStorage = templateStorage;
         this.instanceRepository = instanceRepository;
         this.logger = logger;
+        this.sessionManager = null; // Should be injected via setters or updated constructor.
+        // Wait, I should update the constructor signature but that breaks IdunnTemplates.java
+        // I will use a setter or overload constructor?
+        // Better to update constructor and IdunnTemplates.java.
+    }
+    
+    // Proper Constructor
+    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager) {
+        this.templateStorage = templateStorage;
+        this.instanceRepository = instanceRepository;
+        this.logger = logger;
+        this.sessionManager = sessionManager;
     }
 
     /**
@@ -74,16 +92,30 @@ public class InstanceManager {
                 session.remember(editSession);
             }
 
+
+            if (player != null && sessionManager != null) {
+                var pSession = sessionManager.getSession(player.getUniqueId());
+                if (pSession != null && pSession.getPreference().isPlaceOnEmptyOnly()) {
+                    // Create mask from emptyBlocks list
+                    java.util.Set<com.sk89q.worldedit.world.block.BlockType> blocks = new java.util.HashSet<>();
+                    for (String m : pSession.getPreference().getEmptyBlocks()) {
+                        try {
+                            com.sk89q.worldedit.world.block.BlockType type = com.sk89q.worldedit.world.block.BlockTypes.get(m.toLowerCase());
+                            if (type != null) {
+                                blocks.add(type);
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    BlockTypeMask mask = new BlockTypeMask(editSession.getExtent(), blocks);
+                    editSession.setMask(mask);
+                }
+
+            }
             Operation op = holder.createPaste(editSession)
                     .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
-                    .ignoreAirBlocks(true) // Preference check? Passed via param?
-                    // Assuming false for now or check pref elsewhere.
-                    // Prompt said "placeOnEmptyOnly" pref exists.
-                    // If placeOnEmptyOnly, we need mask.
-                    // For now simplicity.
+                    .ignoreAirBlocks(true)
                     .build();
             Operations.completeLegacy(op);
-            editSession.flushQueue();
         }
 
         var minPos = TransformUtil.getInstanceMinPos(location, clipboard);

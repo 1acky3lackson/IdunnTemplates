@@ -87,7 +87,7 @@ public class FileTemplateStorage implements TemplateStorage {
             IdunnTemplates.getInstance().getLogger().info(String.format(
                     "Load idunn template [%s] from %s with %d version(s)",
                     name,
-                    dirName,
+                    templateDir,
                     metadata.getVersions().size()
             ));
             

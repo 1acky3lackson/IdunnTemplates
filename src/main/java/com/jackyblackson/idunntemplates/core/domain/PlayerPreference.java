@@ -3,13 +3,17 @@ package com.jackyblackson.idunntemplates.core.domain;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import org.bukkit.Material;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PlayerPreference {
     
     private String wandMaterialName;
     private boolean placeOnEmptyOnly;
+    private List<String> emptyBlocks;
 
     // Effect Preferences
     private boolean particleTemplateBoundaries = true;
@@ -21,6 +25,9 @@ public class PlayerPreference {
     private boolean bossBarInstance = true;
     private boolean bossBarSet = true;
     
+    // Action Bar Preference
+    private boolean showActionBar = true;
+    
     private TemplateSet currentSet = new TemplateSet();
     private Map<String, TemplateSet> savedSets = new HashMap<>();
 
@@ -28,6 +35,15 @@ public class PlayerPreference {
         // Defaults
         this.wandMaterialName = Material.GOLDEN_HOE.name();
         this.placeOnEmptyOnly = false;
+        // emptyBlocks initialized lazily or via setter
+    }
+
+    public boolean isShowActionBar() {
+        return showActionBar;
+    }
+
+    public void setShowActionBar(boolean showActionBar) {
+        this.showActionBar = showActionBar;
     }
 
     public String getWandMaterialName() {
@@ -44,6 +60,17 @@ public class PlayerPreference {
 
     public void setPlaceOnEmptyOnly(boolean placeOnEmptyOnly) {
         this.placeOnEmptyOnly = placeOnEmptyOnly;
+    }
+    
+    public List<String> getEmptyBlocks() {
+        if (emptyBlocks == null) {
+            emptyBlocks = new ArrayList<>();
+        }
+        return emptyBlocks;
+    }
+    
+    public void setEmptyBlocks(List<String> emptyBlocks) {
+        this.emptyBlocks = emptyBlocks;
     }
 
     public boolean isParticleTemplateBoundaries() {
@@ -93,7 +120,7 @@ public class PlayerPreference {
     public void setBossBarSet(boolean bossBarSet) {
         this.bossBarSet = bossBarSet;
     }
-    
+
     public TemplateSet getCurrentSet() {
         return currentSet;
     }

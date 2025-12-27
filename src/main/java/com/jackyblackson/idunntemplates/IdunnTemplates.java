@@ -109,10 +109,28 @@ public final class IdunnTemplates extends JavaPlugin {
         this.templateManager = new TemplateManager(templateStorage);
         this.templateManager.setUpdater(templateUpdater);
         
-        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger());
-        this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger());
+        java.util.List<String> defaultEmptyBlocks = getConfig().getStringList("emptyBlocks");
+
+        this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger(), defaultEmptyBlocks);
+        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager);
+
+        // Inject sessionManager into instanceManager via setter or reflection if constructor not updated here?
+        // Wait, I updated InstanceManager constructor in previous turn but I need to update the call here.
+        // I updated InstanceManager constructor in Turn 5, but I updated the call in IdunnTemplates in Turn 5 too?
+        // Let's check IdunnTemplates current content in Turn 5.
+        // I did "Inject SessionManager into InstanceManager constructor." in Turn 5.
+        // So the line is: this.instanceManager = new InstanceManager(..., sessionManager);
+        
+        // I need to update it again to match.
+        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager);
         
         this.setManager = new com.jackyblackson.idunntemplates.manager.SetManager(setsDir, sessionManager, getLogger());
+        
+        // Inject back into SessionManager
+        this.sessionManager.setTemplateManager(templateManager);
+        this.sessionManager.setSetManager(setManager);
+        
+        this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager, setManager);
         
         this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager, setManager);
 

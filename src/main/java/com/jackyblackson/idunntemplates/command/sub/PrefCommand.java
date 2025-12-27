@@ -1,6 +1,10 @@
 package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -20,14 +24,13 @@ public class PrefCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn pref <subcmd> ...
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn pref <wand|placeOnEmptyOnly>");
+            player.sendMessage(ChatColor.RED + "Usage: /idunn pref <wand|placeOnEmptyOnly|particles|bossbar|emptyBlocks|actionBar>");
             return;
         }
         String prefSub = args[1].toLowerCase();
         
         com.jackyblackson.idunntemplates.core.domain.PlayerSession session = sessionManager.getSession(player.getUniqueId());
         if (session == null) {
-            // Should not happen if listener works, but just in case
             player.sendMessage(ChatColor.RED + "Session not found. Please rejoin.");
             return;
         }
@@ -35,7 +38,6 @@ public class PrefCommand extends BaseSubCommand {
 
         if (prefSub.equals("wand")) {
             if (args.length > 2 && args[2].equalsIgnoreCase("bind")) {
-                // /idunn pref wand bind
                 org.bukkit.Material type = player.getInventory().getItemInMainHand().getType();
                 if (type == org.bukkit.Material.AIR) {
                     player.sendMessage(ChatColor.RED + "You cannot bind Air as a wand.");
@@ -45,11 +47,9 @@ public class PrefCommand extends BaseSubCommand {
                 sessionManager.saveSession(player.getUniqueId());
                 player.sendMessage(ChatColor.GREEN + "Bound magic wand to: " + type.name());
             } else {
-                // /idunn pref wand
                 player.sendMessage(ChatColor.GOLD + "Current Magic Wand: " + ChatColor.WHITE + pref.getWandMaterialName());
             }
         } else if (prefSub.equalsIgnoreCase("placeonemptyonly")) {
-            // /idunn pref placeOnEmptyOnly <true|false>
             if (args.length < 3) {
                 player.sendMessage(ChatColor.RED + "Usage: /idunn pref placeOnEmptyOnly <true|false>");
                 return;
@@ -58,8 +58,68 @@ public class PrefCommand extends BaseSubCommand {
             pref.setPlaceOnEmptyOnly(val);
             sessionManager.saveSession(player.getUniqueId());
             player.sendMessage(ChatColor.GREEN + "Set placeOnEmptyOnly to: " + val);
+        } else if (prefSub.equalsIgnoreCase("actionbar")) {
+            if (args.length < 3) {
+                player.sendMessage(ChatColor.RED + "Usage: /idunn pref actionBar <true|false>");
+                return;
+            }
+            boolean val = Boolean.parseBoolean(args[2]);
+            pref.setShowActionBar(val);
+            sessionManager.saveSession(player.getUniqueId());
+            player.sendMessage(ChatColor.GREEN + "Set actionBar to: " + val);
+        } else if (prefSub.equalsIgnoreCase("emptyblocks")) {
+            if (args.length < 3) {
+                player.sendMessage(ChatColor.RED + "Usage: /idunn pref emptyBlocks <list|add|remove>");
+                return;
+            }
+            String action = args[2].toLowerCase();
+            if (action.equals("list")) {
+                player.sendMessage(ChatColor.GOLD + "=== Empty Blocks List ===");
+                for (String block : pref.getEmptyBlocks()) {
+                    TextComponent msg = new TextComponent("- " + block + " ");
+                    msg.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+                    
+                    TextComponent del = new TextComponent("[X]");
+                    del.setColor(net.md_5.bungee.api.ChatColor.RED);
+                    del.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn pref emptyBlocks remove " + block));
+                    del.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to remove").create()));
+                    
+                    msg.addExtra(del);
+                    player.spigot().sendMessage(msg);
+                }
+            } else if (action.equals("add")) {
+                if (args.length < 4) {
+                    player.sendMessage(ChatColor.RED + "Usage: /idunn pref emptyBlocks add <MATERIAL>");
+                    return;
+                }
+                String mat = args[3].toUpperCase();
+                try {
+                    org.bukkit.Material.valueOf(mat); // Validate
+                } catch (IllegalArgumentException e) {
+                    player.sendMessage(ChatColor.RED + "Invalid material: " + mat);
+                    return;
+                }
+                if (!pref.getEmptyBlocks().contains(mat)) {
+                    pref.getEmptyBlocks().add(mat);
+                    sessionManager.saveSession(player.getUniqueId());
+                    player.sendMessage(ChatColor.GREEN + "Added " + mat + " to empty blocks list.");
+                } else {
+                    player.sendMessage(ChatColor.RED + "Already in list.");
+                }
+            } else if (action.equals("remove")) {
+                if (args.length < 4) {
+                    player.sendMessage(ChatColor.RED + "Usage: /idunn pref emptyBlocks remove <MATERIAL>");
+                    return;
+                }
+                String mat = args[3].toUpperCase();
+                if (pref.getEmptyBlocks().remove(mat)) {
+                    sessionManager.saveSession(player.getUniqueId());
+                    player.sendMessage(ChatColor.GREEN + "Removed " + mat + " from empty blocks list.");
+                } else {
+                    player.sendMessage(ChatColor.RED + "Not in list.");
+                }
+            }
         } else if (prefSub.equalsIgnoreCase("particles")) {
-            // /idunn pref particles <type> <true|false>
             if (args.length < 4) {
                 player.sendMessage(ChatColor.RED + "Usage: /idunn pref particles <template|instance|wand> <true|false>");
                 return;
@@ -80,7 +140,6 @@ public class PrefCommand extends BaseSubCommand {
             sessionManager.saveSession(player.getUniqueId());
             player.sendMessage(ChatColor.GREEN + "Set particle preference '" + type + "' to: " + val);
         } else if (prefSub.equalsIgnoreCase("bossbar")) {
-            // /idunn pref bossbar <type> <true|false>
             if (args.length < 4) {
                 player.sendMessage(ChatColor.RED + "Usage: /idunn pref bossbar <template|instance|set> <true|false>");
                 return;
@@ -113,13 +172,15 @@ public class PrefCommand extends BaseSubCommand {
             opts.add("placeOnEmptyOnly");
             opts.add("particles");
             opts.add("bossbar");
+            opts.add("emptyBlocks");
+            opts.add("actionBar");
             return filter(opts, args[1]);
         }
         if (args.length == 3) {
             if (args[1].equalsIgnoreCase("wand")) {
                 return filter(Collections.singletonList("bind"), args[2]);
             }
-            if (args[1].equalsIgnoreCase("placeOnEmptyOnly")) {
+            if (args[1].equalsIgnoreCase("placeOnEmptyOnly") || args[1].equalsIgnoreCase("actionBar")) {
                 List<String> bools = new ArrayList<>();
                 bools.add("true"); bools.add("false");
                 return filter(bools, args[2]);
@@ -134,12 +195,23 @@ public class PrefCommand extends BaseSubCommand {
                 types.add("template"); types.add("instance"); types.add("set");
                 return filter(types, args[2]);
             }
+            if (args[1].equalsIgnoreCase("emptyBlocks")) {
+                List<String> opts = new ArrayList<>();
+                opts.add("list"); opts.add("add"); opts.add("remove");
+                return filter(opts, args[2]);
+            }
         }
         if (args.length == 4) {
             if (args[1].equalsIgnoreCase("particles") || args[1].equalsIgnoreCase("bossbar")) {
                 List<String> bools = new ArrayList<>();
                 bools.add("true"); bools.add("false");
                 return filter(bools, args[3]);
+            }
+            if (args[1].equalsIgnoreCase("emptyBlocks") && args[2].equalsIgnoreCase("remove")) {
+                 com.jackyblackson.idunntemplates.core.domain.PlayerSession session = sessionManager.getSession(player.getUniqueId());
+                 if (session != null) {
+                     return filter(session.getPreference().getEmptyBlocks(), args[3]);
+                 }
             }
         }
         return Collections.emptyList();

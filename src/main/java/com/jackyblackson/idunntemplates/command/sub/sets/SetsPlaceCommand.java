@@ -29,53 +29,43 @@ public class SetsPlaceCommand extends BaseSubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        TemplateSet set = sessionManager.getSession(player.getUniqueId()).getPreference().getCurrentSet();
+        var session = sessionManager.getSession(player.getUniqueId());
+        if (session == null) return;
+        
+        TemplateSet set = session.getPreference().getCurrentSet();
         if (set.getSources().isEmpty()) {
             player.sendMessage(ChatColor.RED + "Current set is empty.");
             return;
         }
         
-        Template t = set.pickRandom(templateManager, name -> setManager.getSet(name, player.getName()), false);
-        if (t == null) {
+        // Use pre-calculated placement
+        com.jackyblackson.idunntemplates.core.domain.PlayerSession.NextPlacement next = session.getNextPlacement();
+        if (next == null) {
+            // Try generating now if missing
+            sessionManager.regenerateNextPlacement(player.getUniqueId());
+            next = session.getNextPlacement();
+        }
+        
+        if (next == null || next.getTemplate() == null) {
             player.sendMessage(ChatColor.RED + "Could not resolve any templates from current set.");
             return;
         }
         
-        int rot = set.resolveRotation();
-        boolean fx = set.resolveFlipX();
+        Template t = next.getTemplate();
+        int rot = next.getRotation();
+        boolean fx = next.isFlipX();
         boolean fy = false;
-        boolean fz = set.resolveFlipZ(); // Usually only one flip needed? Spec said "flipx" and "flipy".
-        // Minecraft structures usually have rotation (y) and mirror (left/right -> flip z or x).
-        // My domain model has flipX/Y/Z.
-        // Spec says: "x flip", "y flip".
-        // Let's map setFlipY to domain flipZ (horizontal mirror) if that's what makes sense in MC, 
-        // OR map to vertical flip if supported.
-        // Usually vertical flip is rare.
-        // Assuming spec "y flip" means flip along Y axis (mirroring X/Z)? No that's rotation.
-        // Assuming spec means FlipX and FlipZ (Horizontal mirrors).
-        // But the field in TemplateSet I made is flipY.
-        // Let's map flipY to flipZ for now as it's common to have 2 horizontal mirrors.
-        
-        fz = fy; 
-        fy = false; // Vertical flip usually off.
+        boolean fz = next.isFlipZ();
 
         player.sendMessage(ChatColor.YELLOW + "Placing from set: " + t.getName());
         
         try {
             // We need to capture the created instance ID for Undo.
-            // InstanceManager.placeInstance returns void currently.
-            // I need to update InstanceManager to return the Instance.
             com.jackyblackson.idunntemplates.core.domain.Instance inst = 
                 instanceManager.placeInstanceAndReturn(player, t, player.getLocation(), rot, fx, fy, fz);
                 
-            // Message handled in InstanceManager? Or here?
-            // The spec says: "place command... need to tell player selected template... and undo option".
-            // Since InstanceManager handles logic, maybe I should move the messaging logic to a shared utility or let InstanceManager handle it?
-            // But InstanceManager is generic.
-            // Let's modify InstanceManager.placeInstance to return Instance, and handle messaging here.
-            // Wait, existing PlaceCommand also needs this message.
-            
-            // I will update InstanceManager to return Instance, and then send the message here.
+            // Regenerate next
+            sessionManager.regenerateNextPlacement(player.getUniqueId());
             
             // Generate clickable message
             net.md_5.bungee.api.chat.TextComponent msg = new net.md_5.bungee.api.chat.TextComponent("Placed " + t.getName() + " (" + inst.getId().substring(0,8) + ") ");

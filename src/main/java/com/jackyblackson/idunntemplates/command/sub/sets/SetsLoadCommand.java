@@ -52,6 +52,7 @@ public class SetsLoadCommand extends BaseSubCommand {
         
         pref.setCurrentSet(current);
         sessionManager.saveSession(player.getUniqueId());
+        sessionManager.regenerateNextPlacement(player.getUniqueId());
         
         player.sendMessage(ChatColor.GREEN + "Loaded preset: " + rawName);
     }

@@ -22,6 +22,7 @@ public class SetsClearCommand extends BaseSubCommand {
         TemplateSet set = sessionManager.getSession(player.getUniqueId()).getPreference().getCurrentSet();
         set.clear();
         sessionManager.saveSession(player.getUniqueId());
+        sessionManager.regenerateNextPlacement(player.getUniqueId());
         player.sendMessage(ChatColor.GREEN + "Current set cleared.");
     }
 

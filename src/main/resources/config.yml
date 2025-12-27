@@ -6,3 +6,18 @@ update:
     - "minecraft:water"
     - "minecraft:lava"
     - "minecraft:light"
+
+emptyBlocks:
+  - "AIR"
+  - "CAVE_AIR"
+  - "VOID_AIR"
+  - "WATER"
+  - "LAVA"
+  - "GRASS"
+  - "TALL_GRASS"
+  - "SEAGRASS"
+  - "TALL_SEAGRASS"
+  - "FERN"
+  - "LARGE_FERN"
+  - "DEAD_BUSH"
+  - "SNOW"
