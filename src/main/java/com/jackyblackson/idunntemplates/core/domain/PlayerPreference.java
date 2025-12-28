@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import org.bukkit.Material;
 
@@ -30,6 +31,9 @@ public class PlayerPreference {
     
     private TemplateSet currentSet = new TemplateSet();
     private Map<String, TemplateSet> savedSets = new HashMap<>();
+    
+    // Key: Material Name, Value: BrushSession
+    private Map<String, BrushSession> boundBrushes = new HashMap<>();
 
     public PlayerPreference() {
         // Defaults
@@ -131,5 +135,13 @@ public class PlayerPreference {
     
     public Map<String, TemplateSet> getSavedSets() {
         return savedSets;
+    }
+    
+    public Map<String, BrushSession> getBoundBrushes() {
+        return boundBrushes;
+    }
+    
+    public void setBoundBrushes(Map<String, BrushSession> boundBrushes) {
+        this.boundBrushes = boundBrushes;
     }
 }
