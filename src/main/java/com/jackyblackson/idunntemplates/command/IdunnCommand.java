@@ -1,15 +1,14 @@
 package com.jackyblackson.idunntemplates.command;
 
-import com.jackyblackson.idunntemplates.command.sub.*;
-import com.jackyblackson.idunntemplates.command.sub.brush.BrushBindCommand;
-import com.jackyblackson.idunntemplates.command.sub.brush.BrushUnbindCommand;
+import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetLoadCommand;
+import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetSaveCommand;
+import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetUpdateCommand;
+import com.jackyblackson.idunntemplates.command.sub.brush.*;
 import com.jackyblackson.idunntemplates.command.sub.internal.UndoInstanceCommand;
 import com.jackyblackson.idunntemplates.command.sub.sets.*;
+import com.jackyblackson.idunntemplates.command.sub.*; // Restore this
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
-import com.jackyblackson.idunntemplates.manager.InstanceManager;
-import com.jackyblackson.idunntemplates.manager.SessionManager;
-import com.jackyblackson.idunntemplates.manager.SetManager;
-import com.jackyblackson.idunntemplates.manager.TemplateManager;
+import com.jackyblackson.idunntemplates.manager.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,7 +22,7 @@ public class IdunnCommand implements TabExecutor {
 
     private final Map<String, IdunnSubCommand> subCommands = new HashMap<>();
 
-    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager) {
+    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager) {
         // Template Group
         CommandGroup templateGroup = new CommandGroup();
         templateGroup.register("list", new ListCommand(templateManager));
@@ -64,6 +63,16 @@ public class IdunnCommand implements TabExecutor {
         CommandGroup brushGroup = new CommandGroup();
         brushGroup.register("bind", new BrushBindCommand(sessionManager, templateManager, setManager));
         brushGroup.register("unbind", new BrushUnbindCommand(sessionManager));
+        brushGroup.register("trigger", new BrushTriggerCommand(brushManager, sessionManager));
+        brushGroup.register("modify", new BrushModifyCommand(sessionManager));
+        brushGroup.register("source", new BrushSourceCommand(sessionManager, templateManager, setManager));
+        
+        CommandGroup presetGroup = new CommandGroup();
+        presetGroup.register("save", new BrushPresetSaveCommand(brushPresetManager, sessionManager));
+        presetGroup.register("update", new BrushPresetUpdateCommand(brushPresetManager, sessionManager));
+        presetGroup.register("load", new BrushPresetLoadCommand(brushPresetManager, sessionManager));
+        brushGroup.register("preset", presetGroup);
+        
         subCommands.put("brush", brushGroup);
 
         // Root Commands

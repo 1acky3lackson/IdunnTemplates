@@ -1,8 +1,9 @@
 package com.jackyblackson.idunntemplates.core.domain.brush;
 
+import com.jackyblackson.idunntemplates.core.domain.PlayerSession;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 
-public class BrushSettings {
+public class BrushSettings implements Cloneable {
     
     private TemplateSet content;
     private RotationMode rotation = RotationMode.FIXED_0;
@@ -10,9 +11,28 @@ public class BrushSettings {
     private FlipMode flipZ = FlipMode.FALSE;
     private boolean noAir = true;
     private boolean emptyOnly = true;
+    
+    private transient PlayerSession.NextPlacement nextPlacement;
 
     public BrushSettings() {
         this.content = new TemplateSet();
+    }
+    
+    public BrushSettings(BrushSettings other) {
+        this.rotation = other.rotation;
+        this.flipX = other.flipX;
+        this.flipZ = other.flipZ;
+        this.noAir = other.noAir;
+        this.emptyOnly = other.emptyOnly;
+        
+        // Deep copy content
+        this.content = new TemplateSet();
+        if (other.content != null) {
+            for (var src : other.content.getSources()) {
+                this.content.addSource(src.getPath(), src.getWeight());
+            }
+        }
+        // nextPlacement is transient, start null
     }
 
     public TemplateSet getContent() {
@@ -61,6 +81,19 @@ public class BrushSettings {
 
     public void setEmptyOnly(boolean emptyOnly) {
         this.emptyOnly = emptyOnly;
+    }
+    
+    public PlayerSession.NextPlacement getNextPlacement() {
+        return nextPlacement;
+    }
+
+    public void setNextPlacement(PlayerSession.NextPlacement nextPlacement) {
+        this.nextPlacement = nextPlacement;
+    }
+    
+    @Override
+    public BrushSettings clone() {
+        return new BrushSettings(this);
     }
 
     public enum RotationMode {

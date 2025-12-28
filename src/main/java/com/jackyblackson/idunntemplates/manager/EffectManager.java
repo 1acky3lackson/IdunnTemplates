@@ -4,8 +4,11 @@ import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
+import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
+import com.jackyblackson.idunntemplates.core.domain.brush.BrushSettings;
 import com.jackyblackson.idunntemplates.core.effect.ParticleUtil;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
+import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -32,6 +35,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private final InstanceRepository instanceRepository;
     private final SessionManager sessionManager;
     private final SetManager setManager;
+    private final BrushManager brushManager;
     
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
     private final Map<UUID, List<BossBar>> activeSetBars = new ConcurrentHashMap<>();
@@ -40,19 +44,128 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private static final double GRID_SPACING = 10.0;
     
     // ... constructor ...
-    public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager) {
+    public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager) {
         this.templateManager = templateManager;
         this.instanceRepository = instanceRepository;
         this.sessionManager = sessionManager;
         this.setManager = setManager;
+        this.brushManager = brushManager;
     }
 
     @Override
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             handlePlayer(player);
-            handlePlayerSet(player);
+            if (!handlePlayerBrush(player)) {
+                handlePlayerSet(player);
+            }
         }
+    }
+
+    private boolean handlePlayerBrush(Player player) {
+        var session = sessionManager.getSession(player.getUniqueId());
+        if (session == null) return false;
+        
+        org.bukkit.inventory.ItemStack item = player.getInventory().getItemInMainHand();
+        String matName = ItemUtil.getBrushKey(item);
+        if (matName == null) return false;
+        
+        BrushSession brushSession = session.getPreference().getBoundBrushes().get(matName);
+        if (brushSession == null || brushSession.getChannels().isEmpty()) return false;
+        
+        List<BossBar> bars = activeSetBars.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+        
+        Map<String, BrushSettings> channels = brushSession.getChannels();
+        int needed = channels.size();
+        
+        // Adjust size
+        while (bars.size() < needed) {
+            BossBar b = Bukkit.createBossBar("", BarColor.BLUE, BarStyle.SOLID);
+            b.addPlayer(player);
+            bars.add(b);
+        }
+        while (bars.size() > needed) {
+            BossBar b = bars.remove(bars.size() - 1);
+            b.removeAll();
+        }
+        
+        int i = 0;
+        List<String> sortedKeys = new ArrayList<>(channels.keySet());
+        sortedKeys.sort((a, b) -> {
+            int scoreA = a.equals("right") ? 1 : (a.equals("left") ? 2 : 3);
+            int scoreB = b.equals("right") ? 1 : (b.equals("left") ? 2 : 3);
+            if (scoreA != scoreB) return scoreA - scoreB;
+            return a.compareTo(b);
+        });
+        
+        for (String ch : sortedKeys) {
+            BrushSettings settings = channels.get(ch);
+            
+            if (settings.getNextPlacement() == null) {
+                brushManager.updateNextPlacement(settings, player);
+            }
+            
+            String title = formatBrushBar(ch, settings);
+            bars.get(i).setTitle(title);
+            bars.get(i).setColor(BarColor.BLUE);
+            i++;
+        }
+        
+        return true;
+    }
+    
+    private String formatBrushBar(String channel, BrushSettings settings) {
+        int count = settings.getContent().getSources().size();
+        
+        String nextPath = "None";
+        if (settings.getNextPlacement() != null && settings.getNextPlacement().getTemplate() != null) {
+             nextPath = settings.getNextPlacement().getTemplate().getPath();
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(ChatColor.GOLD).append(channel.toUpperCase())
+          .append(ChatColor.GRAY).append("(total ").append(count).append(") ")
+          .append(ChatColor.DARK_GRAY).append("| ")
+          .append(ChatColor.AQUA).append("next: ").append(ChatColor.WHITE).append(nextPath)
+          .append(ChatColor.DARK_GRAY).append(" | ");
+          
+        sb.append(ChatColor.YELLOW).append("R-");
+        if (settings.getRotation() == BrushSettings.RotationMode.RANDOM) {
+            sb.append("rand");
+        } else {
+             if (settings.getRotation().name().startsWith("FIXED_")) {
+                 sb.append(settings.getRotation().name().substring(6));
+             } else {
+                 sb.append(settings.getRotation().name().toLowerCase());
+             }
+        }
+        sb.append(" ");
+        
+        sb.append(ChatColor.YELLOW).append("F-");
+        
+        ChatColor colX;
+        if (settings.getFlipX() == BrushSettings.FlipMode.TRUE) colX = ChatColor.GREEN;
+        else if (settings.getFlipX() == BrushSettings.FlipMode.FALSE) colX = ChatColor.RED;
+        else colX = ChatColor.GOLD;
+        sb.append(colX).append("X");
+        
+        ChatColor colZ;
+        if (settings.getFlipZ() == BrushSettings.FlipMode.TRUE) colZ = ChatColor.GREEN;
+        else if (settings.getFlipZ() == BrushSettings.FlipMode.FALSE) colZ = ChatColor.RED;
+        else colZ = ChatColor.GOLD;
+        sb.append(colZ).append("Z");
+        
+        sb.append(" ");
+        
+        if (settings.isNoAir()) {
+            sb.append(ChatColor.WHITE).append("noair ");
+        }
+        
+        if (settings.isEmptyOnly()) {
+            sb.append(ChatColor.WHITE).append("emptyOnly ");
+        }
+        
+        return sb.toString();
     }
     
     private void handlePlayerSet(Player player) {

@@ -26,6 +26,7 @@ public final class IdunnTemplates extends JavaPlugin {
     private TemplateUpdater templateUpdater;
     private com.jackyblackson.idunntemplates.manager.EffectManager effectManager;
     private com.jackyblackson.idunntemplates.manager.SetManager setManager;
+    private BrushPresetManager brushPresetManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
@@ -35,6 +36,10 @@ public final class IdunnTemplates extends JavaPlugin {
     
     public com.jackyblackson.idunntemplates.manager.SetManager getSetManager() {
         return setManager;
+    }
+    
+    public BrushPresetManager getBrushPresetManager() {
+        return brushPresetManager;
     }
 
     public TemplateManager getTemplateManager() {
@@ -127,12 +132,13 @@ public final class IdunnTemplates extends JavaPlugin {
         this.sessionManager.setTemplateManager(templateManager);
         this.sessionManager.setSetManager(setManager);
         
-        this.effectManager = new EffectManager(templateManager, instanceRepository, sessionManager, setManager);
-        
         BrushManager brushManager = new BrushManager(sessionManager, templateManager, instanceManager, setManager);
+        this.effectManager = new EffectManager(templateManager, instanceRepository, sessionManager, setManager, brushManager);
+        
+        this.brushPresetManager = new BrushPresetManager(getDataFolder(), getLogger());
 
         // 5. Register Commands
-        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager));
+        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager));
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);

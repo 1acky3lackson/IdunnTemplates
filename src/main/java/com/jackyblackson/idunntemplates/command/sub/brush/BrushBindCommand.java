@@ -41,6 +41,11 @@ public class BrushBindCommand extends BaseSubCommand {
         }
 
         String channel = args[1].toLowerCase();
+        if (!channel.matches("[a-z0-9_]+")) {
+            player.sendMessage(ChatColor.RED + "Channel name must be alphanumeric (a-z, 0-9, _).");
+            return;
+        }
+
         String type = args[2].toLowerCase();
         String value = args[3];
 

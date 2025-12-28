@@ -3,50 +3,42 @@ package com.jackyblackson.idunntemplates.command.sub.brush;
 import com.jackyblackson.idunntemplates.command.sub.BaseSubCommand;
 import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
+import com.jackyblackson.idunntemplates.manager.BrushManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import com.jackyblackson.idunntemplates.manager.SetManager;
+import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BrushUnbindCommand extends BaseSubCommand {
+public class BrushTriggerCommand extends BaseSubCommand {
 
+    private final BrushManager brushManager;
     private final SessionManager sessionManager;
 
-    public BrushUnbindCommand(SessionManager sessionManager) {
+    public BrushTriggerCommand(BrushManager brushManager, SessionManager sessionManager) {
+        this.brushManager = brushManager;
         this.sessionManager = sessionManager;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        // /idunn brush unbind <channel>
+        // /idunn brush trigger <channel>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush unbind <channel>");
+            player.sendMessage(ChatColor.RED + "Usage: /idunn brush trigger <channel>");
             return;
         }
+
+        String channel = args[1];
+        boolean success = brushManager.triggerBrush(player, channel);
         
-        String channel = args[1].toLowerCase();
-        ItemStack item = player.getInventory().getItemInMainHand();
-        String matName = ItemUtil.getBrushKey(item);
-        
-        if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item.");
-            return;
-        }
-        
-        var session = sessionManager.getSession(player.getUniqueId());
-        var pref = session.getPreference();
-        BrushSession brushSession = pref.getBoundBrushes().get(matName);
-        
-        if (brushSession != null && brushSession.getSettings(channel) != null) {
-            brushSession.removeSettings(channel);
-            sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Unbound channel '" + channel + "' from " + matName);
-        } else {
-            player.sendMessage(ChatColor.YELLOW + "No brush bound to channel '" + channel + "' on " + matName);
+        if (!success) {
+            player.sendMessage(ChatColor.RED + "Failed to trigger brush channel '" + channel + "'. Check if it is bound or if you are looking at a block.");
         }
     }
 
@@ -59,9 +51,10 @@ public class BrushUnbindCommand extends BaseSubCommand {
                 var session = sessionManager.getSession(player.getUniqueId());
                 BrushSession bs = session.getPreference().getBoundBrushes().get(matName);
                 if (bs != null) {
-                    return new ArrayList<>(bs.getChannels().keySet());
+                    return filter(new ArrayList<>(bs.getChannels().keySet()), args[1]);
                 }
             }
+            return filter(Arrays.asList("left", "right"), args[1]);
         }
         return Collections.emptyList();
     }

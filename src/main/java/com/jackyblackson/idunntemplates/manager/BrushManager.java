@@ -1,8 +1,10 @@
 package com.jackyblackson.idunntemplates.manager;
 
+import com.jackyblackson.idunntemplates.core.domain.PlayerSession;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
 import com.jackyblackson.idunntemplates.core.domain.brush.BrushSettings;
+import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import com.jackyblackson.idunntemplates.core.util.MessageUtil;
 import org.bukkit.Material;
@@ -43,12 +45,6 @@ public class BrushManager implements Listener {
         
         if (matName == null) return;
         
-        var session = sessionManager.getSession(player.getUniqueId());
-        if (session == null) return;
-        
-        BrushSession brushSession = session.getPreference().getBoundBrushes().get(matName);
-        if (brushSession == null) return;
-        
         String channel = null;
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             channel = "right";
@@ -57,55 +53,82 @@ public class BrushManager implements Listener {
         }
         
         if (channel == null) return;
+
+        // Prevent block breaking on left click if brush bound (or checked in triggerBrush)
+        // We need to check existence before triggering to decide on cancelling event?
+        // For now, let's try to trigger. If it returns true (executed or found), we cancel left click.
+        // Actually, logic says: "If brush bound... cancel".
         
-        BrushSettings settings = brushSession.getSettings(channel);
-        if (settings == null) return;
-        
-        // Prevent block breaking on left click if brush bound
-        if (channel.equals("left")) {
+        boolean executed = triggerBrush(player, channel);
+        if (channel.equals("left") && executed) {
             event.setCancelled(true);
         }
+    }
+
+    public boolean triggerBrush(Player player, String channel) {
+        ItemStack item = player.getInventory().getItemInMainHand();
+        String matName = ItemUtil.getBrushKey(item);
+        if (matName == null) return false;
+
+        var session = sessionManager.getSession(player.getUniqueId());
+        if (session == null) return false;
+
+        BrushSession brushSession = session.getPreference().getBoundBrushes().get(matName);
+        BrushSettings settings = null;
         
+        if (brushSession != null) {
+            settings = brushSession.getSettings(channel);
+        }
+
+        // Default Wand Logic
+        if (settings == null && item.getType() == Material.BLAZE_ROD && "right".equalsIgnoreCase(channel)) {
+            // Create temporary settings using global set
+            TemplateSet globalSet = session.getPreference().getCurrentSet();
+            if (globalSet != null && !globalSet.getSources().isEmpty()) {
+                settings = new BrushSettings();
+                settings.setContent(globalSet); // Share reference or clone? Reference is fine for reading.
+                // Inherit default settings
+            }
+        }
+
+        if (settings == null) return false;
+
         // RayTrace
         RayTraceResult trace = player.rayTraceBlocks(MAX_DISTANCE);
-        if (trace == null || trace.getHitBlock() == null) return;
-        
+        if (trace == null || trace.getHitBlock() == null) return false;
+
         // Execute placement
         executeBrush(player, settings, trace.getHitBlock().getLocation());
+        return true;
     }
     
     public void executeBrush(Player player, BrushSettings settings, org.bukkit.Location targetLoc) {
-        Template t = settings.getContent().pickRandom(templateManager, name -> setManager.getSet(name, player.getName()), false);
-        if (t == null) return;
-        
-        int rot = resolveRotation(settings.getRotation());
-        boolean fx = resolveFlip(settings.getFlipX());
-        boolean fy = false;
-        boolean fz = resolveFlip(settings.getFlipZ());
-        
-        // Use emptyOnly and noAir preferences?
-        // InstanceManager has placeOnEmptyOnly support based on PlayerPreference.
-        // BrushSettings has its own emptyOnly.
-        // We might need to override player preference context or pass it to InstanceManager.
-        // Current InstanceManager reads PlayerPreference directly.
-        // To support brush-specific overrides, InstanceManager needs refactoring or we temporary mod preference? No.
-        // Ideally InstanceManager should accept placement flags.
-        // For Phase 4.2, we stick to basic placement.
-        // We can check emptyOnly here manually before calling place?
-        // RayTrace hit a block, so it's not air. 
-        // If emptyOnly is true, we should check if the hit block is "empty" (replaceable)?
-        // Wait, brush usually places "on top" or "at" the block.
-        // If "at", it replaces.
-        // If "on top", we need adjacent.
-        // Usually brushes replace.
-        // Let's assume replace at targetLoc.
-        
+        if (settings.getNextPlacement() == null) {
+            updateNextPlacement(settings, player);
+        }
+        var next = settings.getNextPlacement();
+        if (next == null || next.getTemplate() == null) return;
+
         try {
-            var instance = instanceManager.placeInstanceAndReturn(player, t, targetLoc, rot, fx, fy, fz);
+            var instance = instanceManager.placeInstanceAndReturn(player, next.getTemplate(), targetLoc, next.getRotation(), next.isFlipX(), false, next.isFlipZ());
             MessageUtil.sendMessageAfterPlace(instance, player);
+            // Update for next time
+            updateNextPlacement(settings, player);
         } catch (Exception e) {
             player.sendMessage(org.bukkit.ChatColor.RED + "Brush error: " + e.getMessage());
         }
+    }
+
+    public void updateNextPlacement(BrushSettings settings, Player player) {
+        Template t = settings.getContent().pickRandom(templateManager, name -> setManager.getSet(name, player.getName()), false);
+        if (t == null) {
+            settings.setNextPlacement(null);
+            return;
+        }
+        int rot = resolveRotation(settings.getRotation());
+        boolean fx = resolveFlip(settings.getFlipX());
+        boolean fz = resolveFlip(settings.getFlipZ());
+        settings.setNextPlacement(new PlayerSession.NextPlacement(t, rot, fx, fz));
     }
     
     private int resolveRotation(BrushSettings.RotationMode mode) {
