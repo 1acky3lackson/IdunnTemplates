@@ -12,14 +12,19 @@ IdunnTemplates 是一个基于 Minecraft Spigot/Paper 的高级建筑模板与�
 2.  **源头更新，全局同步**：所有实例都关联到同一个模板。一旦修改并提交了模板的母版（Master），所有关联的实例都会自动更新，极大地降低了修改成本。
 3.  **非破坏性编辑**：实例的放置和更新通过 WorldEdit API 进行，支持 Undo 操作。
 4.  **多样化放置**：支持模板组（Template Set），允许定义多个模板及其权重，随机放置以丰富建筑多样性。
-5.  **可视化辅助**：提供粒子特效和 BossBar/ActionBar 提示，直观显示模板范围、当前选中的模板组信息以及放置预览。
-6.  **权限与安全**：基于权限系统的操作控制，以及基于 WorldEdit Mask 的放置保护（如仅限空方块放置）。
+5.  **灵活的远程构建**：引入**模板笔刷系统**，通过**多通道（Channels）**绑定（如左/右键及自定义按键），让单个工具能承载多种构建逻辑；通过**笔刷预设（Presets）**，一键切换复杂的笔刷配置。
+6.  **可视化辅助**：提供粒子特效和 BossBar/ActionBar 提示，直观显示模板范围、当前选中的模板组信息以及放置预览。
+7.  **权限与安全**：基于权限系统的操作控制，以及基于 WorldEdit Mask 的放置保护（如仅限空方块放置）。
 
 ## 主要功能
 
 *   **模板管理**：创建、保存、更新模板。模板拥有版本控制，始终保持最新。
 *   **实例系统**：基于模板放置实例。实例记录了位置、旋转、翻转状态。
 *   **模板组（Set）**：支持将多个模板组合，设置权重，实现随机放置。支持命名空间（全局/个人）和递归引用。
+*   **模板笔刷（Brush）**：
+    *   **多通道绑定**：将不同的 Set/Path 绑定到物品的 Left/Right 或自定义通道。
+    *   **笔刷预设**：保存和加载包含多个通道配置的复杂笔刷设置，支持跨玩家共享。
+    *   **可视化预览**：BossBar 实时显示笔刷状态及“下一次放置”的预览信息。
 *   **智能交互**：
     *   **魔杖（Wand）**：绑定物品作为魔杖，右键快速放置实例。
     *   **粒子特效**：显示模板母版范围、实例范围、放置预览。
@@ -63,7 +68,21 @@ IdunnTemplates 是一个基于 Minecraft Spigot/Paper 的高级建筑模板与�
     *   设置随机旋转：`/idunn set prop rotate random`
     *   设置随机翻转：`/idunn set prop flipx random`
 
-### 5. 偏好设置
+### 5. 笔刷系统 (Brush System)
+将模板或模板组绑定到物品上，通过远程射线放置。
+1.  **绑定笔刷**：
+    *   `/idunn brush bind right path <path> [-r] [-x] [-z]`：绑定右键，使用指定路径，可选随机旋转/翻转。
+    *   `/idunn brush bind left set <name>`：绑定左键，使用指定模板组。
+2.  **笔刷预设**：
+    *   保存当前物品所有笔刷配置：`/idunn brush preset save <name> "My Brush"`
+    *   加载预设：`/idunn brush preset load all <name>`
+    *   加载特定通道：`/idunn brush preset load channel right <name> left` (将预设的 right 通道加载到当前物品的 left 通道)
+3.  **高级操作**：
+    *   自定义通道：`/idunn brush bind custom1 ...`，通过 `/idunn brush trigger custom1` 触发。
+    *   修改属性：`/idunn brush modify right rotate 90`。
+    *   添加来源：`/idunn brush source add path right <new_path>`。
+
+### 6. 偏好设置
 *   限制仅在空方块放置：`/idunn pref placeOnEmptyOnly true`
 *   管理空方块列表：`/idunn pref emptyBlocks list/add/remove`
 *   开关 Action Bar 提示：`/idunn pref actionBar true`
@@ -114,6 +133,22 @@ IdunnTemplates 是一个基于 Minecraft Spigot/Paper 的高级建筑模板与�
 | `transferToGlobal <name> <ns:new>`| 将个人预设转移到全局/其他命名空间。 |
 | `place` | 从当前 Set 随机抽取一个模板并在脚下放置。 |
 
+### 笔刷管理 (`/idunn brush ...`)
+
+| 指令格式 | 描述 |
+| :--- | :--- |
+| `bind <channel> path/set <val> [flags]` | 绑定笔刷到手持物品的指定通道 (right/left/custom)。flags: `-r`(random rot), `-x`/`-z`(flip)。 |
+| `unbind <channel>` | 解绑指定通道。 |
+| `trigger <channel>` | 手动触发指定通道的笔刷放置逻辑。 |
+| `modify <channel> <prop> <val>` | 修改笔刷属性 (rotate, flipx, flipz, noair, emptyonly)。 |
+| `source add <path/set> <val> [w]` | 向笔刷添加新的内容源。 |
+| `source list <channel>` | 列出笔刷的所有内容源。 |
+| `source remove <channel> <index>` | 移除笔刷内容源。 |
+| `preset save [<ns>:]<name>` | 保存当前物品笔刷配置为预设。 |
+| `preset update [<ns>:]<name>` | 更新笔刷预设。 |
+| `preset load all [<ns>:]<name>` | 加载预设的所有通道到当前物品。 |
+| `preset load channel ...` | 加载预设的特定通道。 |
+
 ### 个人偏好 (`/idunn pref ...`)
 
 | 指令格式 | 描述 |
@@ -135,3 +170,5 @@ IdunnTemplates 是一个基于 Minecraft Spigot/Paper 的高级建筑模板与�
 *   `idunn.template.modify.<path>`: 修改特定路径模板。
 *   `idunn.set.create.global`: 在 global 命名空间创建 Set。
 *   `idunn.set.update.global`: 更新 global 命名空间 Set。
+*   `idunn.brush.preset.save.<namespace>`: 保存/更新笔刷预设到指定命名空间。
+*   `idunn.brush.preset.load.<namespace>`: 从指定命名空间加载笔刷预设。
