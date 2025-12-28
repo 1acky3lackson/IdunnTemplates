@@ -1,6 +1,8 @@
 package com.jackyblackson.idunntemplates.command;
 
 import com.jackyblackson.idunntemplates.command.sub.*;
+import com.jackyblackson.idunntemplates.command.sub.brush.BrushBindCommand;
+import com.jackyblackson.idunntemplates.command.sub.brush.BrushUnbindCommand;
 import com.jackyblackson.idunntemplates.command.sub.internal.UndoInstanceCommand;
 import com.jackyblackson.idunntemplates.command.sub.sets.*;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
@@ -57,6 +59,12 @@ public class IdunnCommand implements TabExecutor {
         setsGroup.register("update", new SetsUpdateCommand(sessionManager, setManager));
         setsGroup.register("transferToGlobal", new SetsTransferCommand(sessionManager, setManager));
         subCommands.put("set", setsGroup);
+        
+        // Brush Group
+        CommandGroup brushGroup = new CommandGroup();
+        brushGroup.register("bind", new BrushBindCommand(sessionManager, templateManager, setManager));
+        brushGroup.register("unbind", new BrushUnbindCommand(sessionManager));
+        subCommands.put("brush", brushGroup);
 
         // Root Commands
         subCommands.put("reload", new ReloadCommand(templateManager));

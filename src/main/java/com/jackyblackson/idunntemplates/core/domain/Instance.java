@@ -1,5 +1,7 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
+
 import java.util.UUID;
 
 public class Instance {
@@ -62,6 +64,10 @@ public class Instance {
     
     public boolean isAutoUpdate() { return autoUpdate; }
     public void setAutoUpdate(boolean autoUpdate) { this.autoUpdate = autoUpdate; }
+
+    public Template getTemplate() {
+        return IdunnTemplates.getInstance().getTemplateManager().getTemplate(this.templateId);
+    }
     
     public long getPlacedAt() { return placedAt; }
     public UUID getPlacedBy() { return placedBy; }

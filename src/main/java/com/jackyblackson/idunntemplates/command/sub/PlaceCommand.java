@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.core.domain.Template;
+import com.jackyblackson.idunntemplates.core.util.MessageUtil;
 import com.jackyblackson.idunntemplates.manager.InstanceManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -49,27 +50,8 @@ public class PlaceCommand extends BaseSubCommand {
         try {
             com.jackyblackson.idunntemplates.core.domain.Instance inst = 
                 instanceManager.placeInstanceAndReturn(player, template, player.getLocation(), rot, flipX, flipY, flipZ);
-            
-            // Generate clickable message
-            TextComponent msg = new TextComponent("Placed " + template.getName() + " (" + inst.getId().substring(0,8) + ") ");
-            msg.setColor(net.md_5.bungee.api.ChatColor.GREEN);
-            
-            TextComponent tp = new TextComponent("[TP]");
-            tp.setColor(net.md_5.bungee.api.ChatColor.AQUA);
-            tp.setBold(true);
-            tp.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn template tp " + template.getPath()));
-            tp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Teleport to Master").create()));
-            
-            TextComponent undo = new TextComponent(" [UNDO]");
-            undo.setColor(net.md_5.bungee.api.ChatColor.RED);
-            undo.setBold(true);
-            undo.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn instance undo " + inst.getId()));
-            undo.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Delete instance and undo blocks").create()));
-            
-            msg.addExtra(tp);
-            msg.addExtra(undo);
-            
-            player.spigot().sendMessage(msg);
+
+            MessageUtil.sendMessageAfterPlace(inst, player);
 
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + e.getMessage());

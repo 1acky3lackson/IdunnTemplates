@@ -7,10 +7,7 @@ import com.jackyblackson.idunntemplates.core.store.FileTemplateStorage;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.listener.ChunkListener;
-import com.jackyblackson.idunntemplates.manager.InstanceManager;
-import com.jackyblackson.idunntemplates.manager.SessionManager;
-import com.jackyblackson.idunntemplates.manager.TemplateManager;
-import com.jackyblackson.idunntemplates.manager.TemplateUpdater;
+import com.jackyblackson.idunntemplates.manager.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -130,9 +127,9 @@ public final class IdunnTemplates extends JavaPlugin {
         this.sessionManager.setTemplateManager(templateManager);
         this.sessionManager.setSetManager(setManager);
         
-        this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager, setManager);
+        this.effectManager = new EffectManager(templateManager, instanceRepository, sessionManager, setManager);
         
-        this.effectManager = new com.jackyblackson.idunntemplates.manager.EffectManager(templateManager, instanceRepository, sessionManager, setManager);
+        BrushManager brushManager = new BrushManager(sessionManager, templateManager, instanceManager, setManager);
 
         // 5. Register Commands
         Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager));
@@ -141,6 +138,7 @@ public final class IdunnTemplates extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
         getServer().getPluginManager().registerEvents(sessionManager, this);
         getServer().getPluginManager().registerEvents(effectManager, this);
+        getServer().getPluginManager().registerEvents(brushManager, this);
         
         // 7. Tasks
         // Run particle effects every 10 ticks (0.5s)
