@@ -107,7 +107,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             
             String title = formatBrushBar(ch, settings);
             bars.get(i).setTitle(title);
-            bars.get(i).setColor(BarColor.BLUE);
+            bars.get(i).setColor(BarColor.YELLOW);
             i++;
         }
         
