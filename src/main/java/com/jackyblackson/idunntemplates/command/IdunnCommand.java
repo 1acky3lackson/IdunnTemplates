@@ -4,7 +4,7 @@ import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetLoad
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetSaveCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetUpdateCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.*;
-import com.jackyblackson.idunntemplates.command.sub.internal.UndoInstanceCommand;
+import com.jackyblackson.idunntemplates.command.sub.internal.DeleteInstanceCommand;
 import com.jackyblackson.idunntemplates.command.sub.sets.*;
 import com.jackyblackson.idunntemplates.command.sub.*; // Restore this
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
@@ -36,7 +36,7 @@ public class IdunnCommand implements TabExecutor {
         CommandGroup instanceGroup = new CommandGroup();
         instanceGroup.register("list", new InstancesCommand(templateManager, instanceRepository));
         instanceGroup.register("tp", new TpCommand(instanceRepository));
-        instanceGroup.register("undo", new UndoInstanceCommand(instanceRepository));
+        instanceGroup.register("delete", new DeleteInstanceCommand(instanceRepository, templateManager));
         subCommands.put("instance", instanceGroup);
         
         // Sets Group

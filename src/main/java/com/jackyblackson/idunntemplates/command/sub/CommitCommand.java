@@ -3,6 +3,7 @@ package com.jackyblackson.idunntemplates.command.sub;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.store.PermissionUtil;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -35,6 +36,18 @@ public class CommitCommand extends BaseSubCommand {
         StringBuilder msg = new StringBuilder();
         for (int i = 2; i < args.length; i++) msg.append(args[i]).append(" ");
         String message = msg.toString().trim();
+
+        boolean hasPerm = commitPath.startsWith("users/" + player.getName())
+                && PermissionUtil.hasRecursivePermission(
+                        player,
+                        "idunn.template.commit",
+                        commitPath
+                );
+
+        if (!hasPerm) {
+            player.sendMessage("You don't have permission to commit template in " + commitPath);
+            return;
+        }
 
         // 1. Get Template
         Template template = templateManager.getTemplate(commitPath);

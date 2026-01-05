@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
+import com.jackyblackson.idunntemplates.core.store.PermissionUtil;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -65,6 +66,18 @@ public class SmartCommitCommand extends BaseSubCommand {
         
         if (target == null) {
             player.sendMessage(ChatColor.RED + "You are not inside any template's master region, this smart commit command have to be execute in a template's master region. You can use '/idunn template commit <path> <commit message>' instead to manually specific which template should we commit.");
+            return;
+        }
+
+        boolean hasPerm = target.getPath().startsWith("users/" + player.getName())
+                && PermissionUtil.hasRecursivePermission(
+                player,
+                "idunn.template.commit",
+                target.getPath()
+        );
+
+        if (!hasPerm) {
+            player.sendMessage("You don't have permission to commit template in " + target.getPath());
             return;
         }
         

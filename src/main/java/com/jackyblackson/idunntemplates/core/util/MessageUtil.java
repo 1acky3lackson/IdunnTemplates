@@ -33,10 +33,10 @@ public class MessageUtil {
         tpInstance.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn instance tp " + inst.getId()));
         tpInstance.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Teleport to Instance").create()));
 
-        TextComponent undo = new TextComponent(" [UNDO]");
+        TextComponent undo = new TextComponent(" [DELETE]");
         undo.setColor(net.md_5.bungee.api.ChatColor.RED);
         undo.setBold(true);
-        undo.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn instance undo " + inst.getId()));
+        undo.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn instance delete " + inst.getId()));
         undo.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Delete instance and undo blocks").create()));
 
         TextComponent extraMethods = new TextComponent("");

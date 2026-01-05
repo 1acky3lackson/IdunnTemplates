@@ -168,6 +168,46 @@ public class DiffCalculator {
         return blockMap;
     }
 
+    /**
+     * Calculates which blocks in the world currently belong to the instance (unmodified).
+     *
+     * @param clipboard The instance's template clipboard.
+     * @param transform The transformation applied to the instance.
+     * @param origin    The instance's origin in the world.
+     * @param world     The Bukkit world.
+     * @return A set of world coordinates that are considered "managed" by the instance.
+     */
+    public Set<BlockVector3> calculateManagedBlocks(
+            Clipboard clipboard,
+            AffineTransform transform,
+            BlockVector3 origin,
+            World world
+    ) {
+        Set<BlockVector3> managedBlocks = new HashSet<>();
+        Map<BlockVector3, BlockState> instanceBlocks = getTransformedBlocks(clipboard, transform);
+
+        for (Map.Entry<BlockVector3, BlockState> entry : instanceBlocks.entrySet()) {
+            BlockVector3 relPos = entry.getKey();
+            BlockState expectedState = entry.getValue();
+
+            // Skip ignored (structural void) or idle (air/water/etc in template) blocks
+            // Note: If the template has AIR, we generally don't "manage" it in the sense of needing to remove it,
+            // unless we want to restore what was behind it? But for deletion, we only care about removing placed blocks.
+            if (expectedState == null || comparator.isIgnored(expectedState) || comparator.isIdle(expectedState)) {
+                continue;
+            }
+
+            BlockVector3 worldPos = relPos.add(origin);
+            Block currentBlock = world.getBlockAt(worldPos.x(), worldPos.y(), worldPos.z());
+
+            // If current block matches the expected block from the instance, it is managed.
+            if (comparator.isSimilar(expectedState, currentBlock)) {
+                managedBlocks.add(worldPos);
+            }
+        }
+        return managedBlocks;
+    }
+
 
     private Map<BlockVector3, BlockState> simulatePaste(World world, Clipboard clipboard, AffineTransform transform) {
         if (clipboard == null) {

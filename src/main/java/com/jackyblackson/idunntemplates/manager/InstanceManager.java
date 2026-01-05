@@ -4,6 +4,7 @@ import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
+import com.jackyblackson.idunntemplates.core.store.PermissionUtil;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.core.util.TransformUtil;
 import com.sk89q.worldedit.EditSession;
@@ -63,6 +64,15 @@ public class InstanceManager {
      * Places an instance of a template at the specified location.
      */
     public Instance placeInstanceAndReturn(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
+        // check permission
+        if (!player.hasPermission("idunn.template.place")) {
+            throw new Exception("You have no permission to place idunn templates here.");
+        }
+        if (!template.getPath().startsWith("users/" + player.getName())) {  // 访问非本人目录
+            if (!PermissionUtil.hasRecursivePermission(player, "idunn.template.use", template.getPath())) {
+                throw new Exception("You don't permission to place template '" + template.getPath() + "'.");
+            }
+        }
         TemplateVersion latest = template.getLatestVersion();
         if (latest == null) {
             throw new IllegalArgumentException("Template has no versions.");

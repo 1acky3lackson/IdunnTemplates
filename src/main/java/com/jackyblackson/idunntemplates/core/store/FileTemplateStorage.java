@@ -6,6 +6,7 @@ import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.util.PathUtil;
 import com.jackyblackson.idunntemplates.core.util.TransformUtil;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -44,6 +45,9 @@ public class FileTemplateStorage implements TemplateStorage {
     public Template saveNewTemplate(String path, String name, TemplateMetadata metadata, Clipboard initialClipboard, TemplateVersion initialVersion) throws IOException {
         // Construct the template directory: root + path + _name
         File parentDir = new File(rootDirectory, path);
+        if(!PathUtil.isChild(parentDir.toPath(), rootDirectory.toPath())) {
+            throw new IOException("Creating template outside of Template parent dir is illegal.");
+        }
         File templateDir = new File(parentDir, name);
 
         if (templateDir.exists()) {
@@ -133,6 +137,21 @@ public class FileTemplateStorage implements TemplateStorage {
     @Override
     public void updateMetadata(Template template) throws IOException {
         saveMetadataFile(template.getDirectory(), template.getMetadata());
+    }
+
+    @Override
+    public Clipboard loadSchematic(Template template, TemplateVersion version) throws IOException {
+        File file = new File(template.getDirectory(), version.getVersionId() + ".schem");
+        ClipboardFormat format = ClipboardFormats.findByAlias("schem");
+        if (format == null) throw new IOException("Schematic format 'schem' not found.");
+        
+        if (!file.exists()) {
+            throw new IOException("Schematic file not found: " + file.getPath());
+        }
+
+        try (var reader = format.getReader(new java.io.FileInputStream(file))) {
+            return reader.read();
+        }
     }
 
     @Override

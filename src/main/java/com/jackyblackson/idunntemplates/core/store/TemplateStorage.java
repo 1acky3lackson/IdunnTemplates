@@ -37,6 +37,11 @@ public interface TemplateStorage {
     void updateMetadata(Template template) throws IOException;
     
     /**
+     * Loads the clipboard (schematic) for a specific version.
+     */
+    Clipboard loadSchematic(Template template, TemplateVersion version) throws IOException;
+
+    /**
      * Saves a new schematic version for an existing template.
      */
     void saveTemplateVersion(Template template, TemplateVersion version, Clipboard clipboard) throws IOException;

@@ -11,10 +11,6 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.function.operation.ChangeSetExecutor;
-import com.sk89q.worldedit.history.change.BlockChange;
-import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
-import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.world.block.BlockState;
@@ -23,7 +19,10 @@ import org.bukkit.World;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class TemplateUpdater {
 
@@ -42,29 +41,51 @@ public class TemplateUpdater {
     // Triggered by manual commit or scheduled check
     public void updateInstances(Template template, TemplateVersion newVersion, List<Instance> instances) {
         logger.info("Starting update for template: " + template.getName() + " -> Ver: " + newVersion.getVersionId() + ". Target instances: " + instances.size());
-        int updatedCount = 0;
-        int skippedCount = 0;
-        
-        for (Instance instance : instances) {
-            // Only update if auto-update is on
-            if (!instance.isAutoUpdate()) {
-                skippedCount++;
-                continue;
-            }
-            
-            // Check if version is different
-            if (instance.getCurrentVersionId().equals(newVersion.getVersionId())) {
-                skippedCount++;
-                continue;
-            }
+        AtomicInteger updatedCount = new AtomicInteger();
+        AtomicInteger skippedCount = new AtomicInteger();
 
-            updateSingleInstance(template, instance, newVersion);
-            updatedCount++;
-        }
+        Map<UUID, List<Instance>> result = instances.stream()
+                .collect(Collectors.groupingBy(Instance::getWorldId));
+        result.forEach((worldId, instanceList) -> {
+            World world = Bukkit.getWorld(worldId);
+            if (world == null) {
+                skippedCount.getAndAdd(instanceList.size());
+                logger.warning("Skipped updating " + instanceList.size() + " instances in world with id " + worldId + " because the world no longer exists. The instance ids:");
+                instanceList.forEach(instance -> {
+                    logger.warning(instance.getId());
+                });
+            }
+            try (
+                    EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))
+            ) {
+
+                for (Instance instance : instances) {
+                    // Only update if auto-update is on
+                    if (!instance.isAutoUpdate()) {
+                        skippedCount.getAndIncrement();
+                        continue;
+                    }
+
+                    // Check if version is different
+                    if (instance.getCurrentVersionId().equals(newVersion.getVersionId())) {
+                        skippedCount.getAndIncrement();
+                        continue;
+                    }
+
+                    updateSingleInstance(template, instance, newVersion, session);
+                    updatedCount.getAndIncrement();
+                }
+            } catch (Exception e) {
+                logger.severe("Failed to apply updates to a instance because: " + e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+        });
+
 //        logger.info("Update batch complete. Processed: " + updatedCount + ", Skipped: " + skippedCount);
     }
     
-    private void updateSingleInstance(Template template, Instance instance, TemplateVersion newVersion) {
+    private void updateSingleInstance(Template template, Instance instance, TemplateVersion newVersion, EditSession session) {
         logger.info("Updating Instance [" + instance.getId() + "] (World: " + instance.getWorldId() + ") from " + instance.getCurrentVersionId() + " to " + newVersion.getVersionId());
         
         // Load Variations
@@ -111,9 +132,9 @@ public class TemplateUpdater {
 
 
         // 5. Apply Changes
-        try (
-                EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))
-        ) {
+//        try (
+//                EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))
+//        ) {
 //            try(var changeSet = new BlockOptimizedHistory()){
 //
 //                session.setBlocks(changeSet, ChangeSetExecutor.Type.REDO);
@@ -126,11 +147,11 @@ public class TemplateUpdater {
                 );
             }
             // Session auto-flush on close
-        } catch (Exception e) {
-            logger.severe("Failed to apply updates to instance " + instance.getId() + ": " + e.getMessage());
-            e.printStackTrace();
-            return;
-        }
+//        } catch (Exception e) {
+//            logger.severe("Failed to apply updates to instance " + instance.getId() + ": " + e.getMessage());
+//            e.printStackTrace();
+//            return;
+//        }
 
         // 6. Update Instance Record
         instance.setCurrentVersionId(newVersion.getVersionId());

@@ -121,6 +121,10 @@ public class TemplateManager {
     public Template getTemplate(UUID id) {
         return idCache.get(id);
     }
+    
+    public Clipboard getTemplateClipboard(Template template, TemplateVersion version) throws IOException {
+        return storage.loadSchematic(template, version);
+    }
 
     /**
      * Saves a new template from a player's clipboard.
