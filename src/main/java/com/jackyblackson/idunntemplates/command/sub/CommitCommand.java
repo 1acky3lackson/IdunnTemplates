@@ -38,7 +38,7 @@ public class CommitCommand extends BaseSubCommand {
         String message = msg.toString().trim();
 
         boolean hasPerm = commitPath.startsWith("users/" + player.getName())
-                && PermissionUtil.hasRecursivePermission(
+                || PermissionUtil.hasRecursivePermission(
                         player,
                         "idunn.template.commit",
                         commitPath

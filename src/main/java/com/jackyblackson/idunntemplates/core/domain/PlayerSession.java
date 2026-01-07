@@ -7,10 +7,12 @@ public class PlayerSession {
     private final UUID playerId;
     private PlayerPreference preference;
     private NextPlacement nextPlacement;
+    private long lastInteractTime;
 
     public PlayerSession(UUID playerId, PlayerPreference preference) {
         this.playerId = playerId;
         this.preference = preference;
+        this.lastInteractTime = 0;
     }
 
     public UUID getPlayerId() {
@@ -31,6 +33,14 @@ public class PlayerSession {
     
     public void setNextPlacement(NextPlacement nextPlacement) {
         this.nextPlacement = nextPlacement;
+    }
+
+    public long getLastInteractTime() {
+        return lastInteractTime;
+    }
+
+    public void setLastInteractTime(long lastInteractTime) {
+        this.lastInteractTime = lastInteractTime;
     }
     
     public static class NextPlacement {

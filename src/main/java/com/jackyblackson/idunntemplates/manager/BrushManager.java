@@ -93,6 +93,12 @@ public class BrushManager implements Listener {
 
         if (settings == null) return false;
 
+        long now = System.currentTimeMillis();
+        if (now - session.getLastInteractTime() < 200) {
+            return true;
+        }
+        session.setLastInteractTime(now);
+
         // RayTrace
         RayTraceResult trace = player.rayTraceBlocks(MAX_DISTANCE);
         if (trace == null || trace.getHitBlock() == null) return false;

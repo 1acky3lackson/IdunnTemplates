@@ -70,7 +70,7 @@ public class SmartCommitCommand extends BaseSubCommand {
         }
 
         boolean hasPerm = target.getPath().startsWith("users/" + player.getName())
-                && PermissionUtil.hasRecursivePermission(
+                || PermissionUtil.hasRecursivePermission(
                 player,
                 "idunn.template.commit",
                 target.getPath()
