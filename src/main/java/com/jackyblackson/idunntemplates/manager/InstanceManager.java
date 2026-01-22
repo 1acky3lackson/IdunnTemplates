@@ -4,34 +4,22 @@ import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
-import com.jackyblackson.idunntemplates.core.store.PermissionUtil;
+import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.core.util.TransformUtil;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.extent.MaskingExtent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.mask.BlockTypeMask;
-import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import com.sk89q.worldedit.world.block.BaseBlock;
-import com.sk89q.worldedit.world.block.BlockType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 public class InstanceManager {
@@ -65,11 +53,11 @@ public class InstanceManager {
      */
     public Instance placeInstanceAndReturn(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
         // check permission
-        if (!player.hasPermission("idunn.template.place")) {
+        if (!player.hasPermission(PermissionNames.Templates.place)) {
             throw new Exception("You have no permission to place idunn templates here.");
         }
         if (!template.getPath().startsWith("users/" + player.getName())) {  // 访问非本人目录
-            if (!PermissionUtil.hasRecursivePermission(player, "idunn.template.use", template.getPath())) {
+            if (!PermissionUtil.hasRecursivePermission(player, PermissionNames.Templates.usePath$R, template.getPath())) {
                 throw new Exception("You don't permission to place template '" + template.getPath() + "'.");
             }
         }

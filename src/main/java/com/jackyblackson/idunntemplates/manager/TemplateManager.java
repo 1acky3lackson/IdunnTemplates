@@ -7,6 +7,7 @@ import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
@@ -14,13 +15,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import static com.jackyblackson.idunntemplates.core.util.PermissionUtil.hasRecursivePermission;
 
 public class TemplateManager {
 
@@ -140,15 +141,15 @@ public class TemplateManager {
         // 1. Determine Path and Check Permissions
         String finalPath;
         if (subPath == null || subPath.trim().isEmpty()) {
-            if (!player.hasPermission("idunn.template.save.personal")) {
+            if (!player.hasPermission(PermissionNames.Templates.createPersonal)) {
                 throw new SecurityException("You do not have permission to save personal templates.");
             }
             finalPath = "users/" + player.getName();
         } else {
             // Path permission check: idunn.template.save.dir1.dir2
-            String permNode = "idunn.template.save." + subPath.replace("/", ".");
+            String permNode = PermissionNames.Templates.createInPath + "." + subPath.replace("/", ".");
             if (!player.hasPermission(permNode)) {
-                if (!hasRecursivePermission(player, subPath)) {
+                if (!hasRecursivePermission(player, PermissionNames.Templates.createInPath$R, subPath)) {
                     throw new SecurityException("You do not have permission to save to " + subPath);
                 }
             }
@@ -180,18 +181,6 @@ public class TemplateManager {
         pathCache.put(normalizePath(t.getPath()), t);
         
         return t;
-    }
-
-    private boolean hasRecursivePermission(Player player, String path) {
-        String[] parts = path.split("/");
-        StringBuilder current = new StringBuilder("idunn.template.save");
-        if (player.hasPermission(current.toString())) return true;
-
-        for (String part : parts) {
-            current.append(".").append(part);
-            if (player.hasPermission(current.toString())) return true;
-        }
-        return false;
     }
 
     private String generateVersionId() {

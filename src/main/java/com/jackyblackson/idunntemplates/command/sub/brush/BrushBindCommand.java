@@ -36,13 +36,13 @@ public class BrushBindCommand extends BaseSubCommand {
         // /idunn brush bind <channel> <type> <value> [flags]
         // types: path, set
         if (args.length < 4) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush bind <channel> <path|set> <value> [-r] [-x] [-z]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.usage"));
             return;
         }
 
         String channel = args[1].toLowerCase();
         if (!channel.matches("[a-z0-9_]+")) {
-            player.sendMessage(ChatColor.RED + "Channel name must be alphanumeric (a-z, 0-9, _).");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.invalid_channel"));
             return;
         }
 
@@ -53,7 +53,7 @@ public class BrushBindCommand extends BaseSubCommand {
         String matName = ItemUtil.getBrushKey(item);
         
         if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item to bind a brush.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.no_item"));
             return;
         }
 
@@ -79,7 +79,7 @@ public class BrushBindCommand extends BaseSubCommand {
             // Resolve set
             TemplateSet sourceSet = setManager.getSet(value, player.getName());
             if (sourceSet == null) {
-                player.sendMessage(ChatColor.RED + "Set not found: " + value);
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.set_not_found", value));
                 return;
             }
             // Clone set structure (sources) but maybe not properties? 
@@ -89,7 +89,7 @@ public class BrushBindCommand extends BaseSubCommand {
                 settings.getContent().addSource(src.getPath(), src.getWeight());
             }
         } else {
-            player.sendMessage(ChatColor.RED + "Unknown type: " + type + ". Use 'path' or 'set'.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.unknown_type", type));
             return;
         }
 
@@ -99,7 +99,7 @@ public class BrushBindCommand extends BaseSubCommand {
         brushSession.setSettings(channel, settings);
         sessionManager.saveSession(player.getUniqueId());
 
-        player.sendMessage(ChatColor.GREEN + "Bound " + type + " '" + value + "' to channel '" + channel + "' on " + matName);
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.success", type, value, channel, matName));
     }
 
     @Override

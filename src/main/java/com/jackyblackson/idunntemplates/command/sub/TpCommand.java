@@ -23,7 +23,7 @@ public class TpCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn tp <instanceId>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn tp <instanceId>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.usage"));
             return;
         }
         String instanceId = args[1];
@@ -43,18 +43,18 @@ public class TpCommand extends BaseSubCommand {
         }
 
         if (target == null) {
-            player.sendMessage(ChatColor.RED + "Instance not found: " + instanceId);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.not_found", instanceId));
             return;
         }
 
         org.bukkit.World w = Bukkit.getWorld(target.getWorldId());
         if (w == null) {
-            player.sendMessage(ChatColor.RED + "Instance world is not loaded.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.world_not_loaded"));
             return;
         }
 
         player.teleport(new Location(w, target.getX(), target.getY(), target.getZ()));
-        player.sendMessage(ChatColor.GREEN + "Teleported to instance " + target.getId());
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.success", target.getId()));
     }
 
     @Override

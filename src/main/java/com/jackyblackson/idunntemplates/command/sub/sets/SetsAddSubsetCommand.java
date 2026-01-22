@@ -26,7 +26,7 @@ public class SetsAddSubsetCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set add subset <set_name> [weight]
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set add subset <set_reference> [weight]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add_subset.usage"));
             return;
         }
         
@@ -36,7 +36,7 @@ public class SetsAddSubsetCommand extends BaseSubCommand {
             try {
                 weight = Double.parseDouble(args[2]);
             } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "Invalid weight.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add.invalid_weight"));
                 return;
             }
         }
@@ -47,7 +47,7 @@ public class SetsAddSubsetCommand extends BaseSubCommand {
         
         TemplateSet target = setManager.getSet(subset, player.getName());
         if (target == null) {
-            player.sendMessage(ChatColor.YELLOW + "Warning: Subset '" + subset + "' not found currently. It might be invalid.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add_subset.warn_not_found", subset));
         }
         
         // Add with "set:" prefix to ensure it's treated as a set reference
@@ -58,7 +58,7 @@ public class SetsAddSubsetCommand extends BaseSubCommand {
         sessionManager.saveSession(player.getUniqueId());
         sessionManager.regenerateNextPlacement(player.getUniqueId());
         
-        player.sendMessage(ChatColor.GREEN + "Added subset source: " + subset + " (Weight: " + weight + ")");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add_subset.success", subset, String.valueOf(weight)));
     }
 
     @Override

@@ -28,22 +28,22 @@ public class SetsViewCommand extends BaseSubCommand {
         List<TemplateSetSource> sources = set.getSources();
         
         if (sources.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "Current set is empty.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.view.empty"));
             return;
         }
         
-        player.sendMessage(ChatColor.GOLD + "=== Current Set Content ===");
-        player.sendMessage(ChatColor.GRAY + "Props: Rot=" + set.getRotate() + ", FlipX=" + set.getFlipX() + ", FlipZ=" + set.getFlipZ());
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.view.header"));
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.view.props", set.getRotate().toString(), set.getFlipX().toString(), set.getFlipZ().toString()));
         
         for (TemplateSetSource src : sources) {
             TextComponent msg = new TextComponent("- " + src.getPath() + " (w:" + src.getWeight() + ") ");
             msg.setColor(net.md_5.bungee.api.ChatColor.WHITE);
             
-            TextComponent remove = new TextComponent("[REMOVE]");
+            TextComponent remove = new TextComponent(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.view.remove_label"));
             remove.setColor(net.md_5.bungee.api.ChatColor.RED);
             remove.setBold(true);
             remove.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn set remove " + src.getPath()));
-            remove.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to remove source").create()));
+            remove.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.view.remove_hover")).create()));
             
             msg.addExtra(remove);
             player.spigot().sendMessage(msg);

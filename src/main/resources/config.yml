@@ -1,3 +1,5 @@
+language: "en-us"
+
 update:
   idle-blocks:
     - "minecraft:air"

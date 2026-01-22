@@ -47,7 +47,7 @@ public class DeleteInstanceCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn instance delete <id> [-keep]
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn instance delete <id> [-keep]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.usage"));
             return;
         }
         
@@ -67,30 +67,30 @@ public class DeleteInstanceCommand extends BaseSubCommand {
                 .orElse(null);
                 
         if (target == null) {
-            player.sendMessage(ChatColor.RED + "Instance not found with ID: " + id);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.not_found", id));
             return;
         }
         
         if (!keepBlocks) {
             try {
                 int count = removeInstanceBlocks(target, player);
-                player.sendMessage(ChatColor.GREEN + "Instance blocks removed (" + count + " blocks).");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.removed_blocks", String.valueOf(count)));
             } catch (Exception e) {
-                player.sendMessage(ChatColor.RED + "Error removing blocks: " + e.getMessage());
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.error_blocks", e.getMessage()));
                 e.printStackTrace();
                 return;
             }
             
             // Hard delete record
             instanceRepository.hardDelete(target);
-            player.sendMessage(ChatColor.GREEN + "Instance record deleted (Hard).");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.hard_deleted"));
         } else {
-             player.sendMessage(ChatColor.YELLOW + "Skipping block removal (-keep flag).");
+             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.skip_blocks"));
              
              // Soft delete record
              target.setDeletedTimestamp(System.currentTimeMillis());
              instanceRepository.saveInstance(target);
-             player.sendMessage(ChatColor.GREEN + "Instance record deleted (Soft).");
+             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.soft_deleted"));
         }
     }
 

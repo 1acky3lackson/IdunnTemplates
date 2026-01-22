@@ -34,7 +34,7 @@ public class SetsPlaceCommand extends BaseSubCommand {
         
         TemplateSet set = session.getPreference().getCurrentSet();
         if (set.getSources().isEmpty()) {
-            player.sendMessage(ChatColor.RED + "Current set is empty.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.empty"));
             return;
         }
         
@@ -47,7 +47,7 @@ public class SetsPlaceCommand extends BaseSubCommand {
         }
         
         if (next == null || next.getTemplate() == null) {
-            player.sendMessage(ChatColor.RED + "Could not resolve any templates from current set.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.no_template"));
             return;
         }
         
@@ -57,7 +57,7 @@ public class SetsPlaceCommand extends BaseSubCommand {
         boolean fy = false;
         boolean fz = next.isFlipZ();
 
-        player.sendMessage(ChatColor.YELLOW + "Placing from set: " + t.getName());
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.placing", t.getName()));
         
         try {
             // We need to capture the created instance ID for Undo.
@@ -68,22 +68,22 @@ public class SetsPlaceCommand extends BaseSubCommand {
             sessionManager.regenerateNextPlacement(player.getUniqueId());
             
             // Generate clickable message
-            net.md_5.bungee.api.chat.TextComponent msg = new net.md_5.bungee.api.chat.TextComponent("Placed " + t.getName() + " (" + inst.getId().substring(0,8) + ") ");
+            net.md_5.bungee.api.chat.TextComponent msg = new net.md_5.bungee.api.chat.TextComponent(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.placed", t.getName(), inst.getId().substring(0,8)));
             msg.setColor(net.md_5.bungee.api.ChatColor.GREEN);
             
-            net.md_5.bungee.api.chat.TextComponent tp = new net.md_5.bungee.api.chat.TextComponent("[TP]");
+            net.md_5.bungee.api.chat.TextComponent tp = new net.md_5.bungee.api.chat.TextComponent(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.tp_label"));
             tp.setColor(net.md_5.bungee.api.ChatColor.AQUA);
             tp.setBold(true);
             tp.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/idunn template tp " + t.getPath()));
-            tp.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder("Teleport to Master").create()));
+            tp.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.tp_hover")).create()));
             
-            net.md_5.bungee.api.chat.TextComponent undo = new net.md_5.bungee.api.chat.TextComponent(" [UNDO]");
+            net.md_5.bungee.api.chat.TextComponent undo = new net.md_5.bungee.api.chat.TextComponent(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.undo_label"));
             undo.setColor(net.md_5.bungee.api.ChatColor.RED);
             undo.setBold(true);
             // Undo command: we need a command to delete instance AND revert blocks.
             // I will implement /idunn instance undo <id>
             undo.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, "/idunn instance undo " + inst.getId()));
-            undo.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder("Delete instance and undo blocks").create()));
+            undo.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new net.md_5.bungee.api.chat.ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.undo_hover")).create()));
             
             msg.addExtra(tp);
             msg.addExtra(undo);
@@ -91,7 +91,7 @@ public class SetsPlaceCommand extends BaseSubCommand {
             player.spigot().sendMessage(msg);
 
         } catch (Exception e) {
-            player.sendMessage(ChatColor.RED + "Error placing: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.place.error", e.getMessage()));
             e.printStackTrace();
         }
     }

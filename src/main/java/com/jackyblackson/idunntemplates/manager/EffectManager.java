@@ -9,6 +9,8 @@ import com.jackyblackson.idunntemplates.core.domain.brush.BrushSettings;
 import com.jackyblackson.idunntemplates.core.effect.ParticleUtil;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -105,7 +107,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
                 brushManager.updateNextPlacement(settings, player);
             }
             
-            String title = formatBrushBar(ch, settings);
+            String title = formatBrushBar(ch, settings, player);
             bars.get(i).setTitle(title);
             bars.get(i).setColor(BarColor.YELLOW);
             i++;
@@ -114,7 +116,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
         return true;
     }
     
-    private String formatBrushBar(String channel, BrushSettings settings) {
+    private String formatBrushBar(String channel, BrushSettings settings, Player player) {
         int count = settings.getContent().getSources().size();
         
         String nextPath = "None";
@@ -122,50 +124,31 @@ public class EffectManager extends BukkitRunnable implements Listener {
              nextPath = settings.getNextPlacement().getTemplate().getPath();
         }
         
-        StringBuilder sb = new StringBuilder();
-        sb.append(ChatColor.GOLD).append(channel.toUpperCase())
-          .append(ChatColor.GRAY).append("(total ").append(count).append(") ")
-          .append(ChatColor.DARK_GRAY).append("| ")
-          .append(ChatColor.AQUA).append("next: ").append(ChatColor.WHITE).append(nextPath)
-          .append(ChatColor.DARK_GRAY).append(" | ");
-          
-        sb.append(ChatColor.YELLOW).append("R-");
-        if (settings.getRotation() == BrushSettings.RotationMode.RANDOM) {
-            sb.append("rand");
-        } else {
-             if (settings.getRotation().name().startsWith("FIXED_")) {
-                 sb.append(settings.getRotation().name().substring(6));
-             } else {
-                 sb.append(settings.getRotation().name().toLowerCase());
-             }
-        }
-        sb.append(" ");
-        
-        sb.append(ChatColor.YELLOW).append("F-");
+        String randRot = settings.getRotation() == BrushSettings.RotationMode.RANDOM 
+                ? com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.brush.rand_rot")
+                : (settings.getRotation().name().startsWith("FIXED_") 
+                        ? settings.getRotation().name().substring(6) 
+                        : settings.getRotation().name().toLowerCase());
+
+        String randFlip = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.brush.rand_flip");
         
         ChatColor colX;
         if (settings.getFlipX() == BrushSettings.FlipMode.TRUE) colX = ChatColor.GREEN;
         else if (settings.getFlipX() == BrushSettings.FlipMode.FALSE) colX = ChatColor.RED;
         else colX = ChatColor.GOLD;
-        sb.append(colX).append("X");
+        String flipXStr = colX + (settings.getFlipX() == BrushSettings.FlipMode.RANDOM ? randFlip : "X");
         
         ChatColor colZ;
         if (settings.getFlipZ() == BrushSettings.FlipMode.TRUE) colZ = ChatColor.GREEN;
         else if (settings.getFlipZ() == BrushSettings.FlipMode.FALSE) colZ = ChatColor.RED;
         else colZ = ChatColor.GOLD;
-        sb.append(colZ).append("Z");
+        String flipZStr = colZ + (settings.getFlipZ() == BrushSettings.FlipMode.RANDOM ? randFlip : "Z");
         
-        sb.append(" ");
+        String noAir = settings.isNoAir() ? com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.brush.no_air") : "";
+        String emptyOnly = settings.isEmptyOnly() ? com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.brush.empty_only") : "";
         
-        if (settings.isNoAir()) {
-            sb.append(ChatColor.WHITE).append("noair ");
-        }
-        
-        if (settings.isEmptyOnly()) {
-            sb.append(ChatColor.WHITE).append("emptyOnly ");
-        }
-        
-        return sb.toString();
+        return com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.brush.format", 
+                channel.toUpperCase(), String.valueOf(count), nextPath, randRot, flipXStr, flipZStr, noAir, emptyOnly);
     }
     
     private void handlePlayerSet(Player player) {
@@ -208,7 +191,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             bars.add(b);
         }
         while (bars.size() > needed) {
-            BossBar b = bars.remove(bars.size() - 1);
+            BossBar b = bars.removeLast();
             b.removeAll();
         }
         
@@ -216,12 +199,9 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // Header
         // Resolve total templates including recursive sets
         int totalTemplates = set.resolveTemplates(templateManager, name -> setManager.getSet(name, player.getName()), false).size();
-        String header = String.format(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Sets: " + ChatColor.WHITE + "%d" + ChatColor.GRAY + " templates, " +
-                ChatColor.YELLOW + "rotate: " + ChatColor.WHITE + "%s" + ChatColor.GRAY + ", " +
-                ChatColor.YELLOW + "flipx: " + ChatColor.WHITE + "%s" + ChatColor.GRAY + ", " +
-                ChatColor.YELLOW + "flipz: " + ChatColor.WHITE + "%s",
-                totalTemplates, set.getRotate(), set.getFlipX(), set.getFlipZ());
-        bars.get(0).setTitle(header);
+        String header = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.set.header",
+                String.valueOf(totalTemplates), set.getRotate(), set.getFlipX(), set.getFlipZ());
+        bars.getFirst().setTitle(header);
         
         // Sources
         for (int i = 0; i < sources.size(); i++) {
@@ -232,15 +212,15 @@ public class EffectManager extends BukkitRunnable implements Listener {
             tmp.addSource(src.getPath(), src.getWeight());
             int count = tmp.resolveTemplates(templateManager, name -> setManager.getSet(name, player.getName()), false).size();
             
-            String line = String.format(ChatColor.GRAY + "[" + ChatColor.GREEN + "%.1f" + ChatColor.GRAY + "] " +
-                    ChatColor.GRAY + "(" + ChatColor.WHITE + "%d" + ChatColor.GRAY + ") " +
-                    ChatColor.AQUA + "%s", src.getWeight(), count, src.getPath());
+            String line = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.set.source", 
+                    String.format("%.1f", src.getWeight()), String.valueOf(count), src.getPath());
             bars.get(i+1).setTitle(line);
         }
     }
 
     private void handlePlayer(Player player) {
         // State tracking for BossBar
+        if (!player.hasPermission(PermissionNames.Templates.place)) return;     // 玩家无权使用 idunn
         String bossBarTitle = null;
         BarColor bossBarColor = null;
         
@@ -259,7 +239,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        if (holdingWand && pref != null && pref.isParticleWand()) {
+        if (holdingWand && pref.isParticleWand()) {
             ParticleUtil.spawnMagicParticles(player.getLocation().add(0, 1, 0));
         }
 
@@ -288,7 +268,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             // Check Inside for BossBar
             if (isInAABB(pLoc, min, max)) {
                 if (pref != null && pref.isBossBarTemplate()) {
-                    bossBarTitle = (canCommit ? ChatColor.GREEN : ChatColor.RED) + "" + ChatColor.BOLD + "Template Master: " + ChatColor.WHITE + t.getPath();
+                    bossBarTitle = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.bossbar.template_master", (canCommit ? ChatColor.GREEN : ChatColor.RED).toString(), t.getPath());
                     bossBarColor = canCommit ? BarColor.GREEN : BarColor.RED;
                 }
             }
@@ -328,7 +308,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             if (isInside) {
                 if (bossBarTitle == null) {
                     if (pref != null && pref.isBossBarInstance()) {
-                        bossBarTitle = ChatColor.BLUE + "" + ChatColor.BOLD + "Instance: " + ChatColor.WHITE + t.getPath() + ChatColor.GRAY + " (" + inst.getId().substring(0,8) + ")";
+                        bossBarTitle = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.bossbar.instance", t.getPath(), inst.getId().substring(0,8));
                         bossBarColor = BarColor.BLUE;
                     }
                 }
@@ -343,30 +323,26 @@ public class EffectManager extends BukkitRunnable implements Listener {
     }
     
     private void sendActionBar(Player player, com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref, com.jackyblackson.idunntemplates.core.domain.PlayerSession session) {
-        if (pref == null || !pref.isShowActionBar()) return;
-        
+        if (pref == null || !pref.isShowActionBar()) return;                    // 手动关闭
+        if (!player.hasPermission(PermissionNames.Templates.place)) return;     // 玩家无权使用 idunn
         StringBuilder sb = new StringBuilder();
-        sb.append(ChatColor.GOLD).append("[Idunn] ");
+        sb.append(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.prefix"));
         
         // EmptyOnly Status
-        sb.append(ChatColor.YELLOW).append("EmptyOnly: ");
-        if (pref.isPlaceOnEmptyOnly()) {
-            sb.append(ChatColor.GREEN).append("ON");
-        } else {
-            sb.append(ChatColor.RED).append("OFF");
-        }
+        String status = pref.isPlaceOnEmptyOnly() 
+                ? com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.empty_only_on")
+                : com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.empty_only_off");
+        sb.append(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.empty_only", status));
         
         // Next Template Info
         if (session != null) {
             var next = session.getNextPlacement();
             if (next != null && next.getTemplate() != null) {
-                sb.append(ChatColor.GRAY).append(" | ");
-                sb.append(ChatColor.AQUA).append("Next: ").append(ChatColor.WHITE).append(next.getTemplate().getName());
-                sb.append(ChatColor.GRAY).append(" (");
-                sb.append("Rot:").append(next.getRotation());
-                if (next.isFlipX()) sb.append(", FlipX");
-                if (next.isFlipZ()) sb.append(", FlipZ");
-                sb.append(")");
+                String flipX = next.isFlipX() ? com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.flip_x") : "";
+                String flipZ = next.isFlipZ() ? com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.flip_z") : "";
+                
+                sb.append(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.action_bar.next", 
+                        next.getTemplate().getName(), String.valueOf(next.getRotation()), flipX, flipZ));
             }
         }
         
@@ -500,11 +476,11 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // Logic: Owner always can. 
         // Others need "idunn.template.modify.all" or specific?
         if (p.getUniqueId().equals(t.getMetadata().getCreatorId())) return true;
-        if (p.hasPermission("idunn.template.modify.all")) return true;
+        if (p.hasPermission(PermissionNames.Templates.commitToAll)) return true;
         // Check path permission
         String path = t.getPath().replace("/", ".");
         if (path.startsWith("_")) path = path.substring(1);
-        return p.hasPermission("idunn.template.modify." + path);
+        return p.hasPermission(PermissionNames.Templates.commitToPath + path);
     }
 
     // --- Listener for Entry Denial ---
@@ -522,28 +498,28 @@ public class EffectManager extends BukkitRunnable implements Listener {
         
         // Check Template Origins
         for (Template t : templateManager.getTemplates()) {
-             TemplateMetadata meta = t.getMetadata();
-             if (!meta.getWorldId().equals(to.getWorld().getUID())) continue;
-             
-             // Check permission first? No, only check collision first to save perf.
-             if (to.distanceSquared(new Location(to.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ())) > 10000) continue; // Fast reject
+            TemplateMetadata meta = t.getMetadata();
+            if (!meta.getWorldId().equals(to.getWorld().getUID())) continue;
 
-             Location min = new Location(to.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
-             Location max = min.clone().add(meta.getWidth(), meta.getHeight(), meta.getLength());
-             
-             if (isInAABB(to, min, max)) {
-                 // Player is entering or inside.
-                 if (!hasCommitPermission(player, t)) {
-                     // Deny
-                     event.setCancelled(true);
-                     player.sendMessage(ChatColor.RED + "You do not have permission to enter the master template area: " + t.getName());
-                     
-                     // Push back slightly to prevent sticking
-                     Vector direction = from.toVector().subtract(to.toVector()).normalize().multiply(0.5);
-                     player.setVelocity(direction);
-                     return;
-                 }
-             }
+            // Check permission first? No, only check collision first to save perf.
+            if (to.distanceSquared(new Location(to.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ())) > 10000) continue; // Fast reject
+
+            Location min = new Location(to.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
+            Location max = min.clone().add(meta.getWidth(), meta.getHeight(), meta.getLength());
+
+            if (isInAABB(to, min, max)) {
+             // Player is entering or inside.
+                if (!hasCommitPermission(player, t)) {
+                    // Deny
+                    event.setCancelled(true);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.entry_denied", t.getName()));
+
+                    // Push back slightly to prevent sticking
+                    Vector direction = from.toVector().subtract(to.toVector()).normalize().multiply(0.5);
+                    player.setVelocity(direction);
+                    return;
+                }
+            }
         }
     }
     

@@ -24,7 +24,7 @@ public class BrushUnbindCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn brush unbind <channel>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush unbind <channel>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.unbind.usage"));
             return;
         }
         
@@ -33,7 +33,7 @@ public class BrushUnbindCommand extends BaseSubCommand {
         String matName = ItemUtil.getBrushKey(item);
         
         if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.common.no_item"));
             return;
         }
         
@@ -44,9 +44,9 @@ public class BrushUnbindCommand extends BaseSubCommand {
         if (brushSession != null && brushSession.getSettings(channel) != null) {
             brushSession.removeSettings(channel);
             sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Unbound channel '" + channel + "' from " + matName);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.unbind.success", channel, matName));
         } else {
-            player.sendMessage(ChatColor.YELLOW + "No brush bound to channel '" + channel + "' on " + matName);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.unbind.not_bound", channel, matName));
         }
     }
 

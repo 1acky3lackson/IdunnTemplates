@@ -28,7 +28,7 @@ public class SetsAddCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set add <path> [weight]
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set add <path> [weight]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add.usage"));
             return;
         }
         
@@ -38,7 +38,7 @@ public class SetsAddCommand extends BaseSubCommand {
             try {
                 weight = Double.parseDouble(args[2]);
             } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "Invalid weight.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add.invalid_weight"));
                 return;
             }
         }
@@ -47,7 +47,7 @@ public class SetsAddCommand extends BaseSubCommand {
         set.addSource(path, weight);
         sessionManager.saveSession(player.getUniqueId());
         
-        player.sendMessage(ChatColor.GREEN + "Added source: " + path + " (Weight: " + weight + ")");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.add.success", path, String.valueOf(weight)));
     }
 
     @Override

@@ -37,7 +37,7 @@ public class BrushSourceCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn brush source <channel> <action> ...
         if (args.length < 3) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush source <channel> <add|list|remove> ...");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.usage"));
             return;
         }
 
@@ -48,14 +48,14 @@ public class BrushSourceCommand extends BaseSubCommand {
         String matName = ItemUtil.getBrushKey(item);
 
         if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.common.no_item"));
             return;
         }
 
         var session = sessionManager.getSession(player.getUniqueId());
         BrushSession brushSession = session.getPreference().getBoundBrushes().get(matName);
         if (brushSession == null || brushSession.getSettings(channel) == null) {
-            player.sendMessage(ChatColor.RED + "No brush bound to channel '" + channel + "'.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.no_channel", channel));
             return;
         }
 
@@ -73,7 +73,7 @@ public class BrushSourceCommand extends BaseSubCommand {
                 handleRemove(player, args, content, channel);
                 break;
             default:
-                player.sendMessage(ChatColor.RED + "Unknown action: " + action);
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.unknown_action", action));
         }
         
         sessionManager.saveSession(player.getUniqueId());
@@ -83,7 +83,7 @@ public class BrushSourceCommand extends BaseSubCommand {
         // args: source <channel> add <type> <value> [weight]
         // indicies: 0     1      2    3      4       5
         if (args.length < 5) {
-            player.sendMessage(ChatColor.RED + "Usage: ... add <path|set> <value> [weight]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.add.usage"));
             return;
         }
         
@@ -95,18 +95,18 @@ public class BrushSourceCommand extends BaseSubCommand {
             try {
                 weight = Double.parseDouble(args[5]);
             } catch (NumberFormatException e) {
-                player.sendMessage(ChatColor.RED + "Invalid weight.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.add.invalid_weight"));
                 return;
             }
         }
         
         if (type.equals("path")) {
             content.addSource(value, weight);
-            player.sendMessage(ChatColor.GREEN + "Added path source: " + value);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.add.success_path", value));
         } else if (type.equals("set")) {
              TemplateSet sourceSet = setManager.getSet(value, player.getName());
             if (sourceSet == null) {
-                player.sendMessage(ChatColor.RED + "Set not found: " + value);
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.add.set_not_found", value));
                 return;
             }
             // Add all sources from the set? Or add the set as a meta-source?
@@ -121,14 +121,14 @@ public class BrushSourceCommand extends BaseSubCommand {
                 content.addSource(src.getPath(), src.getWeight() * weight); // Multiply weight? Or just use src weight? 
                 // Usually we might want to scale, but simple add is safer.
             }
-            player.sendMessage(ChatColor.GREEN + "Added contents of set: " + value);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.add.success_set", value));
         } else {
-            player.sendMessage(ChatColor.RED + "Unknown type: " + type);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.add.unknown_type", type));
         }
     }
 
     private void handleList(Player player, TemplateSet content, String channel) {
-        player.sendMessage(ChatColor.GOLD + "Brush Sources:");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.list.header"));
         var sources = content.getSources();
         for (int i = 0; i < sources.size(); i++) {
             var src = sources.get(i);
@@ -138,7 +138,7 @@ public class BrushSourceCommand extends BaseSubCommand {
             method.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                     "/idunn brush source " + channel + " remove " + i
             ));
-            method.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Delete this source").create()));
+            method.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.list.delete_hover")).create()));
             var msg = new TextComponent(ChatColor.YELLOW + "" + i + ". " + ChatColor.WHITE + src.getPath() + ChatColor.GRAY + " (w: " + src.getWeight() + ")");
             method.addExtra(msg);
             player.spigot().sendMessage(method);
@@ -148,21 +148,21 @@ public class BrushSourceCommand extends BaseSubCommand {
     private void handleRemove(Player player, String[] args, TemplateSet content, String channel) {
         // args: source <channel> remove <index>
         if (args.length < 4) {
-            player.sendMessage(ChatColor.RED + "Usage: ... remove <index>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.remove.usage"));
             return;
         }
         
         try {
             int index = Integer.parseInt(args[3]);
             if (index < 0 || index >= content.getSources().size()) {
-                player.sendMessage(ChatColor.RED + "Invalid index.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.remove.invalid_index"));
                 return;
             }
             var removed = content.getSources().remove(index);
-            player.sendMessage(ChatColor.GREEN + "Removed source: " + removed.getPath() + ". Sources now:");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.remove.success", removed.getPath()));
             handleList(player, content, channel);
         } catch (NumberFormatException e) {
-            player.sendMessage(ChatColor.RED + "Invalid index.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.source.remove.invalid_index"));
         }
     }
 

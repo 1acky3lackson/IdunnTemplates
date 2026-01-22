@@ -27,11 +27,16 @@ public final class IdunnTemplates extends JavaPlugin {
     private com.jackyblackson.idunntemplates.manager.EffectManager effectManager;
     private com.jackyblackson.idunntemplates.manager.SetManager setManager;
     private BrushPresetManager brushPresetManager;
+    private LanguageManager languageManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
     public TemplateStorage getTemplateStorage() {
         return templateStorage;
+    }
+    
+    public LanguageManager getLanguageManager() {
+        return languageManager;
     }
     
     public com.jackyblackson.idunntemplates.manager.SetManager getSetManager() {
@@ -88,6 +93,10 @@ public final class IdunnTemplates extends JavaPlugin {
 
         // 1. Setup Config
         saveDefaultConfig();
+        
+        // Setup Language
+        this.languageManager = new LanguageManager(this, getConfig().getString("language", "en-us"));
+        com.jackyblackson.idunntemplates.core.util.MessageUtil.setLanguageManager(languageManager);
         
         // 2. Setup Storage
         File templateDir = new File(getDataFolder(), "templates");

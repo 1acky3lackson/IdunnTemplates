@@ -23,7 +23,7 @@ public class SetsClearCommand extends BaseSubCommand {
         set.clear();
         sessionManager.saveSession(player.getUniqueId());
         sessionManager.regenerateNextPlacement(player.getUniqueId());
-        player.sendMessage(ChatColor.GREEN + "Current set cleared.");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.clear.success"));
     }
 
     @Override

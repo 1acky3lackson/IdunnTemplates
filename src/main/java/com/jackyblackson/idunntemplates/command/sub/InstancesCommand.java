@@ -26,7 +26,7 @@ public class InstancesCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn instances <templatePath> [page]
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn instances <templatePath> [page]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instances.usage"));
             return;
         }
         String instPath = args[1];
@@ -34,7 +34,7 @@ public class InstancesCommand extends BaseSubCommand {
         
         Template template = templateManager.getTemplate(instPath);
         if (template == null) {
-            player.sendMessage(ChatColor.RED + "Template not found: " + instPath);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instances.not_found", instPath));
             return;
         }
 
@@ -43,7 +43,7 @@ public class InstancesCommand extends BaseSubCommand {
                 .collect(Collectors.toList());
 
         if (instances.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "No loaded instances found for template: " + template.getName());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instances.none_found", template.getName()));
             return;
         }
 
@@ -52,7 +52,7 @@ public class InstancesCommand extends BaseSubCommand {
         if (instPage < 1) instPage = 1;
         if (instPage > totalPages) instPage = totalPages;
 
-        player.sendMessage(ChatColor.GOLD + "=== Instances of " + template.getName() + " (Page " + instPage + "/" + totalPages + ") ===");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instances.header", template.getName(), String.valueOf(instPage), String.valueOf(totalPages)));
 
         int start = (instPage - 1) * pageSize;
         int end = Math.min(start + pageSize, instances.size());
@@ -65,8 +65,7 @@ public class InstancesCommand extends BaseSubCommand {
             // Short ID
             String shortId = inst.getId().substring(0, 8);
 
-            player.sendMessage(ChatColor.YELLOW + "- ID:" + ChatColor.WHITE + shortId + "..." +
-                    ChatColor.GRAY + " @ " + wName + " (" + inst.getX() + "," + inst.getY() + "," + inst.getZ() + ")");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instances.entry", shortId, wName, String.valueOf(inst.getX()), String.valueOf(inst.getY()), String.valueOf(inst.getZ())));
         }
     }
 

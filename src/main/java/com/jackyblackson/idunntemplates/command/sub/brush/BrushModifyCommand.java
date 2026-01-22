@@ -26,7 +26,7 @@ public class BrushModifyCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn brush modify <channel> <prop> <value>
         if (args.length < 4) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush modify <channel> <prop> <value>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.modify.usage"));
             return;
         }
 
@@ -38,14 +38,14 @@ public class BrushModifyCommand extends BaseSubCommand {
         String matName = ItemUtil.getBrushKey(item);
 
         if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.common.no_item"));
             return;
         }
 
         var session = sessionManager.getSession(player.getUniqueId());
         BrushSession brushSession = session.getPreference().getBoundBrushes().get(matName);
         if (brushSession == null || brushSession.getSettings(channel) == null) {
-            player.sendMessage(ChatColor.RED + "No brush bound to channel '" + channel + "' on this item.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.modify.no_channel", channel));
             return;
         }
 
@@ -72,13 +72,13 @@ public class BrushModifyCommand extends BaseSubCommand {
                     settings.setEmptyOnly(Boolean.parseBoolean(value));
                     break;
                 default:
-                    player.sendMessage(ChatColor.RED + "Unknown property: " + prop);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.modify.unknown_prop", prop));
                     return;
             }
             sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Updated " + prop + " to " + value + " for channel " + channel);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.modify.success", prop, value, channel));
         } catch (IllegalArgumentException e) {
-            player.sendMessage(ChatColor.RED + "Invalid value for " + prop + ": " + value);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.modify.invalid_value", prop, value));
         }
     }
 

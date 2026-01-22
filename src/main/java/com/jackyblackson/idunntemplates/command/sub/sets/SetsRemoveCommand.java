@@ -21,7 +21,7 @@ public class SetsRemoveCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set remove <path>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set remove <path>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.remove.usage"));
             return;
         }
         
@@ -31,9 +31,9 @@ public class SetsRemoveCommand extends BaseSubCommand {
         if (set.removeSource(path)) {
             sessionManager.saveSession(player.getUniqueId());
             sessionManager.regenerateNextPlacement(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Removed source: " + path);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.remove.success", path));
         } else {
-            player.sendMessage(ChatColor.RED + "Source not found in current set.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.remove.not_found"));
         }
     }
 

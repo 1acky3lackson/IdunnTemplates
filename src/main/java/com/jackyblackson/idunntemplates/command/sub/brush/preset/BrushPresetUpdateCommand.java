@@ -6,6 +6,8 @@ import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import com.jackyblackson.idunntemplates.manager.BrushPresetManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +31,7 @@ public class BrushPresetUpdateCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // args: update [<ns>:]<name>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush preset update [<namespace>:]<name>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.update.usage"));
             return;
         }
 
@@ -39,8 +41,8 @@ public class BrushPresetUpdateCommand extends BaseSubCommand {
 
         // Check permission if not personal
         if (!namespace.equals("player." + player.getName())) {
-            if (!player.hasPermission("idunn.brush.preset.save." + namespace)) { // Reusing save permission for update
-                player.sendMessage(ChatColor.RED + "You do not have permission to update namespace '" + namespace + "'.");
+            if (!player.hasPermission(PermissionNames.Brushes.Presets.saveToNamespace + namespace)) { // Reusing save permission for update
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.no_perm_update", namespace));
                 return;
             }
         }
@@ -48,7 +50,7 @@ public class BrushPresetUpdateCommand extends BaseSubCommand {
         // Check existence
         BrushPreset existing = presetManager.getPreset(namespace, name);
         if (existing == null) {
-            player.sendMessage(ChatColor.RED + "Preset '" + name + "' does not exist in namespace '" + namespace + "'. Use 'save' to create it.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.update.not_exist", name, namespace));
             return;
         }
 
@@ -56,7 +58,7 @@ public class BrushPresetUpdateCommand extends BaseSubCommand {
         ItemStack item = player.getInventory().getItemInMainHand();
         String matName = ItemUtil.getBrushKey(item);
         if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.common.no_item"));
             return;
         }
 
@@ -64,7 +66,7 @@ public class BrushPresetUpdateCommand extends BaseSubCommand {
         BrushSession brushSession = session.getPreference().getBoundBrushes().get(matName);
 
         if (brushSession == null || brushSession.getChannels().isEmpty()) {
-            player.sendMessage(ChatColor.RED + "This item has no bound brushes.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.save.no_brushes"));
             return;
         }
 
@@ -73,7 +75,7 @@ public class BrushPresetUpdateCommand extends BaseSubCommand {
         existing.setCreator(player.getName()); // Update creator? Maybe last modifier.
         presetManager.savePreset(namespace, existing);
         
-        player.sendMessage(ChatColor.GREEN + "Updated brush preset '" + name + "' in namespace '" + namespace + "'.");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.update.success", name, namespace));
     }
 
     @Override

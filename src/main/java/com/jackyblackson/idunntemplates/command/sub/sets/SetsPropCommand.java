@@ -22,7 +22,7 @@ public class SetsPropCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set prop <key> <val>
         if (args.length < 3) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set prop <rotation|flipx|flipz> <val>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.prop.usage"));
             return;
         }
         
@@ -43,12 +43,12 @@ public class SetsPropCommand extends BaseSubCommand {
                 set.setFlipZ(val);
                 break;
             default:
-                player.sendMessage(ChatColor.RED + "Unknown property. Use rotation, flipx, flipz.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.prop.unknown"));
                 return;
         }
         
         sessionManager.saveSession(player.getUniqueId());
-        player.sendMessage(ChatColor.GREEN + "Set property " + key + " to " + val);
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.prop.success", key, val));
     }
 
     @Override

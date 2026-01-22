@@ -24,7 +24,7 @@ public class ListCommand extends BaseSubCommand {
         
         java.util.Collection<Template> templates = templateManager.getTemplates();
         if (templates.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "No templates loaded.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "list.empty"));
             return;
         }
 
@@ -37,7 +37,7 @@ public class ListCommand extends BaseSubCommand {
         if (page < 1) page = 1;
         if (page > totalPages) page = totalPages;
 
-        player.sendMessage(ChatColor.GOLD + "=== Templates (Page " + page + "/" + totalPages + ") ===");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "list.header", String.valueOf(page), String.valueOf(totalPages)));
 
         int start = (page - 1) * pageSize;
         int end = Math.min(start + pageSize, sorted.size());
@@ -47,8 +47,7 @@ public class ListCommand extends BaseSubCommand {
             String displayPath = t.getPath().replace("/_", "/");
             if (displayPath.startsWith("_")) displayPath = displayPath.substring(1);
 
-            player.sendMessage(ChatColor.YELLOW + "- " + ChatColor.WHITE + t.getName() +
-                    ChatColor.GRAY + " (" + displayPath + ") Ver: " + t.getLatestVersion().getVersionId());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "list.entry", t.getName(), displayPath, t.getLatestVersion().getVersionId()));
         }
     }
 

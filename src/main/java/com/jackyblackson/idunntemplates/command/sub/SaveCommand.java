@@ -29,7 +29,7 @@ public class SaveCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn save <name> [path]
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn save <name> [path]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.usage"));
             return;
         }
         String saveName = args[1];
@@ -40,12 +40,12 @@ public class SaveCommand extends BaseSubCommand {
         try {
             region = session.getSelection(BukkitAdapter.adapt(player.getWorld()));
         } catch (IncompleteRegionException e) {
-            player.sendMessage(ChatColor.RED + "Please make a WorldEdit selection first.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.no_selection"));
             return;
         }
 
         if (!(region instanceof CuboidRegion)) {
-            player.sendMessage(ChatColor.RED + "Only cuboid selections are supported for saving templates.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.cuboid_only"));
             return;
         }
 
@@ -58,18 +58,18 @@ public class SaveCommand extends BaseSubCommand {
             );
             Operations.completeLegacy(copy);
         } catch (Exception e) {
-            player.sendMessage(ChatColor.RED + "Failed to capture selection: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.failed_capture", e.getMessage()));
             e.printStackTrace();
             return;
         }
 
         try {
             templateManager.createTemplate(player, saveName, savePath, clipboard);
-            player.sendMessage(ChatColor.GREEN + "Template '" + saveName + "' saved successfully!");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.success", saveName));
         } catch (SecurityException e) {
-            player.sendMessage(ChatColor.RED + "Permission denied: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.perm_denied", e.getMessage()));
         } catch (Exception e) {
-            player.sendMessage(ChatColor.RED + "Error saving template: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.error", e.getMessage()));
             e.printStackTrace();
         }
     }

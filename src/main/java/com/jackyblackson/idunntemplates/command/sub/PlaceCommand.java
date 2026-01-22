@@ -30,7 +30,7 @@ public class PlaceCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn place <path> [rot] [flipX] [flipY] [flipZ]
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn place <templatePath> [rotation] [flipX] [flipY] [flipZ]");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.usage"));
             return;
         }
         String placePath = args[1];
@@ -39,11 +39,11 @@ public class PlaceCommand extends BaseSubCommand {
         boolean flipY = args.length > 4 && Boolean.parseBoolean(args[4]);
         boolean flipZ = args.length > 5 && Boolean.parseBoolean(args[5]);
 
-        player.sendMessage(ChatColor.YELLOW + "Placing template...");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.placing"));
 
         Template template = templateManager.getTemplate(placePath);
         if (template == null) {
-            player.sendMessage(ChatColor.RED + "Template not found: " + placePath);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.not_found", placePath));
             return;
         }
 
@@ -56,7 +56,7 @@ public class PlaceCommand extends BaseSubCommand {
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + e.getMessage());
         } catch (Exception e) {
-            player.sendMessage(ChatColor.RED + "Error placing template: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.error", e.getMessage()));
             e.printStackTrace();
         }
     }

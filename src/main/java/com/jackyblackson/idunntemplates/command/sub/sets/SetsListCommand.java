@@ -33,17 +33,17 @@ public class SetsListCommand extends BaseSubCommand {
         Map<String, TemplateSet> globalSets = setManager.getGlobalNamespace("global");
         
         if (presets.isEmpty() && globalSets.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "No saved presets found.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.list.no_presets"));
             return;
         }
         
         if (!presets.isEmpty()) {
-            player.sendMessage(ChatColor.GOLD + "=== Private Sets ===");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.list.header_private"));
             for (String name : presets.keySet()) {
                 TextComponent msg = new TextComponent("- " + name);
                 msg.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
                 msg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn set load " + name));
-                msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to load").create()));
+                msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.list.click_load")).create()));
                 player.spigot().sendMessage(msg);
             }
         }
@@ -52,12 +52,12 @@ public class SetsListCommand extends BaseSubCommand {
             Map<String, TemplateSet> sets = setManager.getGlobalNamespace(ns);
             if (sets.isEmpty()) continue;
             
-            player.sendMessage(ChatColor.GOLD + "=== Namespace: " + ns + " ===");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.list.header_namespace", ns));
             for (String name : sets.keySet()) {
                 TextComponent msg = new TextComponent("- " + ns + ":" + name);
                 msg.setColor(net.md_5.bungee.api.ChatColor.AQUA);
                 msg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn set load " + ns + ":" + name));
-                msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to load").create()));
+                msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.list.click_load")).create()));
                 player.spigot().sendMessage(msg);
             }
         }

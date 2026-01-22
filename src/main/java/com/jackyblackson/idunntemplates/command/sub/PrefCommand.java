@@ -24,14 +24,14 @@ public class PrefCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn pref <subcmd> ...
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn pref <wand|placeOnEmptyOnly|particles|bossbar|emptyBlocks|actionBar>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.usage"));
             return;
         }
         String prefSub = args[1].toLowerCase();
         
         com.jackyblackson.idunntemplates.core.domain.PlayerSession session = sessionManager.getSession(player.getUniqueId());
         if (session == null) {
-            player.sendMessage(ChatColor.RED + "Session not found. Please rejoin.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.session_missing"));
             return;
         }
         com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref = session.getPreference();
@@ -40,41 +40,41 @@ public class PrefCommand extends BaseSubCommand {
             if (args.length > 2 && args[2].equalsIgnoreCase("bind")) {
                 org.bukkit.Material type = player.getInventory().getItemInMainHand().getType();
                 if (type == org.bukkit.Material.AIR) {
-                    player.sendMessage(ChatColor.RED + "You cannot bind Air as a wand.");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.wand.air"));
                     return;
                 }
                 pref.setWandMaterialName(type.name());
                 sessionManager.saveSession(player.getUniqueId());
-                player.sendMessage(ChatColor.GREEN + "Bound magic wand to: " + type.name());
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.wand.bound", type.name()));
             } else {
-                player.sendMessage(ChatColor.GOLD + "Current Magic Wand: " + ChatColor.WHITE + pref.getWandMaterialName());
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.wand.current", pref.getWandMaterialName()));
             }
         } else if (prefSub.equalsIgnoreCase("placeonemptyonly")) {
             if (args.length < 3) {
-                player.sendMessage(ChatColor.RED + "Usage: /idunn pref placeOnEmptyOnly <true|false>");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.place_on_empty.usage"));
                 return;
             }
             boolean val = Boolean.parseBoolean(args[2]);
             pref.setPlaceOnEmptyOnly(val);
             sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Set placeOnEmptyOnly to: " + val);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.place_on_empty.set", String.valueOf(val)));
         } else if (prefSub.equalsIgnoreCase("actionbar")) {
             if (args.length < 3) {
-                player.sendMessage(ChatColor.RED + "Usage: /idunn pref actionBar <true|false>");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.action_bar.usage"));
                 return;
             }
             boolean val = Boolean.parseBoolean(args[2]);
             pref.setShowActionBar(val);
             sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Set actionBar to: " + val);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.action_bar.set", String.valueOf(val)));
         } else if (prefSub.equalsIgnoreCase("emptyblocks")) {
             if (args.length < 3) {
-                player.sendMessage(ChatColor.RED + "Usage: /idunn pref emptyBlocks <list|add|remove>");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.usage"));
                 return;
             }
             String action = args[2].toLowerCase();
             if (action.equals("list")) {
-                player.sendMessage(ChatColor.GOLD + "=== Empty Blocks List ===");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.header"));
                 for (String block : pref.getEmptyBlocks()) {
                     TextComponent msg = new TextComponent("- " + block + " ");
                     msg.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
@@ -82,46 +82,46 @@ public class PrefCommand extends BaseSubCommand {
                     TextComponent del = new TextComponent("[X]");
                     del.setColor(net.md_5.bungee.api.ChatColor.RED);
                     del.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn pref emptyBlocks remove " + block));
-                    del.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to remove").create()));
+                    del.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.remove_hover")).create()));
                     
                     msg.addExtra(del);
                     player.spigot().sendMessage(msg);
                 }
             } else if (action.equals("add")) {
                 if (args.length < 4) {
-                    player.sendMessage(ChatColor.RED + "Usage: /idunn pref emptyBlocks add <MATERIAL>");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.add_usage"));
                     return;
                 }
                 String mat = args[3].toUpperCase();
                 try {
                     org.bukkit.Material.valueOf(mat); // Validate
                 } catch (IllegalArgumentException e) {
-                    player.sendMessage(ChatColor.RED + "Invalid material: " + mat);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.invalid_mat", mat));
                     return;
                 }
                 if (!pref.getEmptyBlocks().contains(mat)) {
                     pref.getEmptyBlocks().add(mat);
                     sessionManager.saveSession(player.getUniqueId());
-                    player.sendMessage(ChatColor.GREEN + "Added " + mat + " to empty blocks list.");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.added", mat));
                 } else {
-                    player.sendMessage(ChatColor.RED + "Already in list.");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.already_in"));
                 }
             } else if (action.equals("remove")) {
                 if (args.length < 4) {
-                    player.sendMessage(ChatColor.RED + "Usage: /idunn pref emptyBlocks remove <MATERIAL>");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.remove_usage"));
                     return;
                 }
                 String mat = args[3].toUpperCase();
                 if (pref.getEmptyBlocks().remove(mat)) {
                     sessionManager.saveSession(player.getUniqueId());
-                    player.sendMessage(ChatColor.GREEN + "Removed " + mat + " from empty blocks list.");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.removed", mat));
                 } else {
-                    player.sendMessage(ChatColor.RED + "Not in list.");
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.empty_blocks.not_in"));
                 }
             }
         } else if (prefSub.equalsIgnoreCase("particles")) {
             if (args.length < 4) {
-                player.sendMessage(ChatColor.RED + "Usage: /idunn pref particles <template|instance|wand> <true|false>");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.particles.usage"));
                 return;
             }
             String type = args[2].toLowerCase();
@@ -134,14 +134,14 @@ public class PrefCommand extends BaseSubCommand {
                 default -> found = false;
             }
             if (!found) {
-                player.sendMessage(ChatColor.RED + "Unknown particle type. Options: template, instance, wand");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.particles.unknown_type"));
                 return;
             }
             sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Set particle preference '" + type + "' to: " + val);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.particles.set", type, String.valueOf(val)));
         } else if (prefSub.equalsIgnoreCase("bossbar")) {
             if (args.length < 4) {
-                player.sendMessage(ChatColor.RED + "Usage: /idunn pref bossbar <template|instance|set> <true|false>");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.bossbar.usage"));
                 return;
             }
             String type = args[2].toLowerCase();
@@ -154,13 +154,13 @@ public class PrefCommand extends BaseSubCommand {
                 default -> found = false;
             }
             if (!found) {
-                player.sendMessage(ChatColor.RED + "Unknown bossbar type. Options: template, instance, set");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.bossbar.unknown_type"));
                 return;
             }
             sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage(ChatColor.GREEN + "Set bossbar preference '" + type + "' to: " + val);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.bossbar.set", type, String.valueOf(val)));
         } else {
-            player.sendMessage(ChatColor.RED + "Unknown preference option.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "pref.unknown_option"));
         }
     }
 

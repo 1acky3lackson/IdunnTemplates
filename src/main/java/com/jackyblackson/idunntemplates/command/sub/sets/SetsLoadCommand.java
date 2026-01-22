@@ -26,7 +26,7 @@ public class SetsLoadCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set load <name>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set load <name>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.load.usage"));
             return;
         }
         
@@ -37,7 +37,7 @@ public class SetsLoadCommand extends BaseSubCommand {
         TemplateSet saved = setManager.getSet(rawName, player.getName());
         
         if (saved == null) {
-            player.sendMessage(ChatColor.RED + "Preset not found: " + rawName);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.load.not_found", rawName));
             return;
         }
         
@@ -54,7 +54,7 @@ public class SetsLoadCommand extends BaseSubCommand {
         sessionManager.saveSession(player.getUniqueId());
         sessionManager.regenerateNextPlacement(player.getUniqueId());
         
-        player.sendMessage(ChatColor.GREEN + "Loaded preset: " + rawName);
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.load.success", rawName));
     }
 
     @Override

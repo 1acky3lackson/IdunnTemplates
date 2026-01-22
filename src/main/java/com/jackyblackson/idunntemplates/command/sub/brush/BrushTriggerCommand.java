@@ -30,7 +30,7 @@ public class BrushTriggerCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn brush trigger <channel>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush trigger <channel>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.trigger.usage"));
             return;
         }
 
@@ -38,7 +38,7 @@ public class BrushTriggerCommand extends BaseSubCommand {
         boolean success = brushManager.triggerBrush(player, channel);
         
         if (!success) {
-            player.sendMessage(ChatColor.RED + "Failed to trigger brush channel '" + channel + "'. Check if it is bound or if you are looking at a block.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.trigger.failed", channel));
         }
     }
 

@@ -71,7 +71,7 @@ public class SmartTpCommand extends BaseSubCommand {
              }
         }
         
-        player.sendMessage(ChatColor.YELLOW + "You are not inside any Template or Instance area.");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.none"));
     }
 
     private void handleInMaster(Player player, Template template) {
@@ -80,7 +80,7 @@ public class SmartTpCommand extends BaseSubCommand {
                 .collect(Collectors.toList());
         
         if (instances.isEmpty()) {
-            player.sendMessage(ChatColor.RED + "This template has no active loaded instances.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.no_instances"));
             return;
         }
         
@@ -91,13 +91,13 @@ public class SmartTpCommand extends BaseSubCommand {
         }
         
         // Multiple instances
-        player.sendMessage(ChatColor.GOLD + "Found " + instances.size() + " instances. Please select one:");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.select_header", String.valueOf(instances.size())));
         for (Instance inst : instances) {
             String idShort = inst.getId().substring(0, 8);
             TextComponent msg = new TextComponent("- Instance " + idShort + " @ " + inst.getX() + "," + inst.getY() + "," + inst.getZ());
             msg.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
             msg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn instance tp " + inst.getId()));
-            msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to teleport").create()));
+            msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.click_tp")).create()));
             player.spigot().sendMessage(msg);
         }
     }
@@ -107,23 +107,23 @@ public class SmartTpCommand extends BaseSubCommand {
         TemplateMetadata meta = template.getMetadata();
         org.bukkit.World world = Bukkit.getWorld(meta.getWorldId());
         if (world == null) {
-            player.sendMessage(ChatColor.RED + "Master template world is not loaded.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.master_world_not_loaded"));
             return;
         }
         
         Location target = new Location(world, meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
         player.teleport(target);
-        player.sendMessage(ChatColor.GREEN + "Teleported to Master Template: " + template.getName());
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.tp_master", template.getName()));
     }
     
     private void tpToInstance(Player player, Instance target) {
         org.bukkit.World w = Bukkit.getWorld(target.getWorldId());
         if (w == null) {
-            player.sendMessage(ChatColor.RED + "Instance world not loaded.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.world_not_loaded"));
             return;
         }
         player.teleport(new Location(w, target.getX(), target.getY(), target.getZ()));
-        player.sendMessage(ChatColor.GREEN + "Teleported to Instance " + target.getId().substring(0, 8));
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "tp.smart.tp_instance", target.getId().substring(0, 8)));
     }
 
     @Override

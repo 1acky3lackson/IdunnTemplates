@@ -7,6 +7,8 @@ import com.jackyblackson.idunntemplates.core.domain.brush.BrushSettings;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import com.jackyblackson.idunntemplates.manager.BrushPresetManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
+
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -38,7 +40,7 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         // usage: load channel <preset_chan> <query> [target_chan]
         
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn brush preset load <all|channel> ...");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.usage"));
             return;
         }
 
@@ -47,7 +49,7 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         ItemStack item = player.getInventory().getItemInMainHand();
         String matName = ItemUtil.getBrushKey(item);
         if (matName == null) {
-            player.sendMessage(ChatColor.RED + "You must hold an item.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.common.no_item"));
             return;
         }
         
@@ -59,7 +61,7 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         } else if (sub.equals("channel")) {
             handleLoadChannel(player, args, brushSession);
         } else {
-            player.sendMessage(ChatColor.RED + "Unknown sub-command: " + sub);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.unknown_sub", sub));
         }
         
         sessionManager.saveSession(player.getUniqueId());
@@ -68,7 +70,7 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
     private void handleLoadAll(Player player, String[] args, BrushSession brushSession) {
         // load all <query>
         if (args.length < 3) {
-            player.sendMessage(ChatColor.RED + "Usage: ... load all [<namespace>:]<name>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.all.usage"));
             return;
         }
         
@@ -85,16 +87,16 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         }
         
         if (!conflicts.isEmpty()) {
-            player.sendMessage(ChatColor.RED + "Cannot load preset. Conflicting channels found:");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.all.conflict"));
             for (String conflict : conflicts) {
                 TextComponent msg = new TextComponent(ChatColor.RED + "- " + conflict + " ");
                 TextComponent x = new TextComponent(ChatColor.DARK_RED + "[X]");
-                x.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to unbind " + conflict).create()));
+                x.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.all.unbind_hover", conflict)).create()));
                 x.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn brush unbind " + conflict));
                 msg.addExtra(x);
                 player.spigot().sendMessage(msg);
             }
-            player.sendMessage(ChatColor.RED + "Please unbind these channels first.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.all.unbind_hint"));
             return;
         }
         
@@ -102,14 +104,14 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         for (Map.Entry<String, BrushSettings> entry : preset.getChannels().entrySet()) {
             brushSession.getChannels().put(entry.getKey(), entry.getValue().clone());
         }
-        player.sendMessage(ChatColor.GREEN + "Loaded preset '" + preset.getName() + "' (Channels: " + String.join(", ", preset.getChannels().keySet()) + ")");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.all.success", preset.getName(), String.join(", ", preset.getChannels().keySet())));
     }
 
     private void handleLoadChannel(Player player, String[] args, BrushSession brushSession) {
         // load channel <preset_chan> <query> [target_chan]
         // indices: 0     1        2             3        4
         if (args.length < 4) {
-             player.sendMessage(ChatColor.RED + "Usage: ... load channel <preset_channel> [<namespace>:]<name> [target_channel]");
+             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.channel.usage"));
              return;
         }
         
@@ -122,13 +124,14 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         
         BrushSettings settings = preset.getChannels().get(presetChannel);
         if (settings == null) {
-            player.sendMessage(ChatColor.RED + "Channel '" + presetChannel + "' not found in preset '" + preset.getName() + "'.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.channel.not_found", presetChannel, preset.getName()));
             return;
         }
         
         if (brushSession.getChannels().containsKey(targetChannel)) {
-            player.sendMessage(ChatColor.RED + "Channel '" + targetChannel + "' is already bound.");
-            TextComponent msg = new TextComponent(ChatColor.RED + "Click to unbind: ");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.channel.already_bound", targetChannel));
+            TextComponent msg = new TextComponent(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.channel.click_unbind"));
+            msg.setColor(net.md_5.bungee.api.ChatColor.RED);
             TextComponent x = new TextComponent(ChatColor.DARK_RED + "[X]");
             x.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/idunn brush unbind " + targetChannel));
             msg.addExtra(x);
@@ -138,7 +141,7 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         
         brushSession.getChannels().put(targetChannel, settings.clone());
         
-        player.sendMessage(ChatColor.GREEN + "Loaded channel '" + presetChannel + "' from preset to '" + targetChannel + "'.");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.load.channel.success", presetChannel, targetChannel));
     }
 
     private BrushPreset resolveAndCheck(Player player, String query) {
@@ -146,15 +149,15 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         String name = presetManager.resolveName(query);
         
         if (!namespace.equals("player." + player.getName())) {
-             if (!player.hasPermission("idunn.brush.preset.load." + namespace)) {
-                 player.sendMessage(ChatColor.RED + "You do not have permission to load from namespace '" + namespace + "'.");
+             if (!player.hasPermission(PermissionNames.Brushes.Presets.loadNamespace + namespace)) {
+                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.no_perm_load", namespace));
                  return null;
              }
         }
         
         BrushPreset preset = presetManager.getPreset(namespace, name);
         if (preset == null) {
-            player.sendMessage(ChatColor.RED + "Preset not found: " + namespace + ":" + name);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.not_found", namespace + ":" + name));
             return null;
         }
         return preset;

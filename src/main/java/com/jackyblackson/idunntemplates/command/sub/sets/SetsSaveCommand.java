@@ -5,6 +5,8 @@ import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import com.jackyblackson.idunntemplates.core.domain.PlayerPreference;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -25,7 +27,7 @@ public class SetsSaveCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set save <namespace:name>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set save <name> or <namespace:name>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.usage"));
             return;
         }
         
@@ -55,28 +57,28 @@ public class SetsSaveCommand extends BaseSubCommand {
         
         if (namespace == null || namespace.equalsIgnoreCase("player." + player.getName())) {
              if (pref.getSavedSets().containsKey(name)) {
-                 player.sendMessage(ChatColor.RED + "Set already exists: " + name + ". Use 'update' to overwrite.");
+                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.exists_private", name));
                  return;
              }
              pref.getSavedSets().put(name, saved);
              sessionManager.saveSession(player.getUniqueId());
-             player.sendMessage(ChatColor.GREEN + "Saved current set to private: " + name);
+             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.success_private", name));
         } else {
             // Global/Other namespace
             if (namespace.startsWith("player.")) {
-                player.sendMessage(ChatColor.RED + "Cannot save to another player's namespace.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.error_player_ns"));
                 return;
             }
-            if (!player.hasPermission("idunn.set.create." + namespace)) {
-                 player.sendMessage(ChatColor.RED + "No permission to create set in namespace: " + namespace);
+            if (!player.hasPermission(PermissionNames.Sets.saveToNamespace + namespace)) {
+                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.no_perm", namespace));
                  return;
             }
             if (setManager.getSetExact(namespace, name) != null) {
-                player.sendMessage(ChatColor.RED + "Set already exists in " + namespace + ": " + name + ". Use 'update' command.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.exists_global", namespace, name));
                 return;
             }
             setManager.saveGlobalSet(namespace, name, saved);
-            player.sendMessage(ChatColor.GREEN + "Saved current set to " + namespace + ":" + name);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.save.success_global", namespace, name));
         }
     }
 

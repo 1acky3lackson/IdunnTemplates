@@ -18,7 +18,7 @@ public class ReloadCommand extends BaseSubCommand {
     @Override
     public void execute(Player player, String[] args) {
         templateManager.reloadTemplates();
-        player.sendMessage(ChatColor.GREEN + "Templates reloaded from disk.");
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "reload.success"));
     }
 
     @Override

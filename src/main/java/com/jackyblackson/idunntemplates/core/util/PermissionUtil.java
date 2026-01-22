@@ -1,4 +1,4 @@
-package com.jackyblackson.idunntemplates.core.store;
+package com.jackyblackson.idunntemplates.core.util;
 
 import org.bukkit.entity.Player;
 

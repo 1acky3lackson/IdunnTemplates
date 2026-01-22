@@ -3,14 +3,14 @@ package com.jackyblackson.idunntemplates.command.sub;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
-import com.jackyblackson.idunntemplates.core.store.PermissionUtil;
+import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
@@ -29,7 +29,7 @@ public class CommitCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn commit <templatePath> <message>
         if (args.length < 3) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn commit <templatePath> <message>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.usage"));
             return;
         }
         String commitPath = args[1];
@@ -40,19 +40,19 @@ public class CommitCommand extends BaseSubCommand {
         boolean hasPerm = commitPath.startsWith("users/" + player.getName())
                 || PermissionUtil.hasRecursivePermission(
                         player,
-                        "idunn.template.commit",
+                        PermissionNames.Templates.commitToPath$R,
                         commitPath
                 );
 
         if (!hasPerm) {
-            player.sendMessage("You don't have permission to commit template in " + commitPath);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.no_perm", commitPath));
             return;
         }
 
         // 1. Get Template
         Template template = templateManager.getTemplate(commitPath);
         if (template == null) {
-            player.sendMessage(ChatColor.RED + "Template not found: " + commitPath);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.not_found", commitPath));
             return;
         }
 
@@ -60,7 +60,7 @@ public class CommitCommand extends BaseSubCommand {
         TemplateMetadata meta = template.getMetadata();
         org.bukkit.World sourceWorld = Bukkit.getWorld(meta.getWorldId());
         if (sourceWorld == null) {
-            player.sendMessage(ChatColor.RED + "The source world (" + meta.getWorldId() + ") is not loaded.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.world_not_loaded", meta.getWorldId().toString()));
             return;
         }
 
@@ -85,7 +85,7 @@ public class CommitCommand extends BaseSubCommand {
                     }
                 }
             } catch (Exception e) {
-                player.sendMessage(ChatColor.YELLOW + "Warning: Could not read previous version to recover origin offset. Resetting origin to min point.");
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.warning_origin"));
                 e.printStackTrace();
             }
         }
@@ -106,7 +106,7 @@ public class CommitCommand extends BaseSubCommand {
             );
             com.sk89q.worldedit.function.operation.Operations.completeLegacy(copy);
         } catch (Exception e) {
-            player.sendMessage(ChatColor.RED + "Failed to capture template: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.failed_capture", e.getMessage()));
             e.printStackTrace();
             return;
         }
@@ -114,9 +114,9 @@ public class CommitCommand extends BaseSubCommand {
         // 5. Commit
         try {
             templateManager.commitTemplate(player, template, message, clipboard);
-            player.sendMessage(ChatColor.GREEN + "Template version committed from source location!");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.success"));
         } catch (Exception e) {
-            player.sendMessage(ChatColor.RED + "Error committing: " + e.getMessage());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.error", e.getMessage()));
             e.printStackTrace();
         }
     }

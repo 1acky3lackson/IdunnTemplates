@@ -5,6 +5,8 @@ import com.jackyblackson.idunntemplates.core.domain.PlayerPreference;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -25,7 +27,7 @@ public class SetsTransferCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set transferToGlobal <private_set_name> <namespace>:name
         if (args.length < 3) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set transferToGlobal <private_set_name> <namespace>:name");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.usage"));
             return;
         }
 
@@ -36,7 +38,7 @@ public class SetsTransferCommand extends BaseSubCommand {
         TemplateSet privateSet = pref.getSavedSets().get(privateName);
         
         if (privateSet == null) {
-            player.sendMessage(ChatColor.RED + "Private set not found: " + privateName);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.private_not_found", privateName));
             return;
         }
         
@@ -48,22 +50,22 @@ public class SetsTransferCommand extends BaseSubCommand {
             namespace = parts[0];
             name = parts[1];
         } else {
-             player.sendMessage(ChatColor.YELLOW + "No namespace provided, assuming 'global'.");
+             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.assume_global"));
         }
         
         if (namespace.startsWith("player.")) {
-            player.sendMessage(ChatColor.RED + "Cannot transfer to a player namespace.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.cannot_transfer_player"));
             return;
         }
         
-        if (!player.hasPermission("idunn.set.create." + namespace)) {
-            player.sendMessage(ChatColor.RED + "You do not have permission to create sets in namespace: " + namespace);
+        if (!player.hasPermission(PermissionNames.Sets.saveToNamespace + namespace)) {
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.no_permission_create_ns", namespace));
             return;
         }
         
         // Check if exists
         if (setManager.getSetExact(namespace, name) != null) {
-            player.sendMessage(ChatColor.RED + "Set already exists in namespace " + namespace + ": " + name + ". Use 'update' to overwrite.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.set_already_exists", namespace, name));
             return;
         }
         
@@ -77,7 +79,7 @@ public class SetsTransferCommand extends BaseSubCommand {
         }
         
         setManager.saveGlobalSet(namespace, name, newSet);
-        player.sendMessage(ChatColor.GREEN + "Transferred " + privateName + " to " + namespace + ":" + name);
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.success", privateName, namespace, name));
     }
 
     @Override

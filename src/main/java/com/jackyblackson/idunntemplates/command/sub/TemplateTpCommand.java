@@ -24,27 +24,27 @@ public class TemplateTpCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn template tp <templatePath>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn template tp <templatePath>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "template.tp.usage"));
             return;
         }
         String path = args[1];
 
         Template template = templateManager.getTemplate(path);
         if (template == null) {
-            player.sendMessage(ChatColor.RED + "Template not found: " + path);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "template.tp.not_found", path));
             return;
         }
 
         TemplateMetadata meta = template.getMetadata();
         org.bukkit.World world = Bukkit.getWorld(meta.getWorldId());
         if (world == null) {
-            player.sendMessage(ChatColor.RED + "World for this template is not loaded.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "template.tp.world_not_loaded"));
             return;
         }
 
         Location loc = new Location(world, meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
         player.teleport(loc);
-        player.sendMessage(ChatColor.GREEN + "Teleported to template anchor: " + template.getName());
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "template.tp.success", template.getName()));
     }
 
     @Override

@@ -2,15 +2,13 @@ package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
-import com.jackyblackson.idunntemplates.core.store.PermissionUtil;
+import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
-import org.bukkit.ChatColor;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SmartCommitCommand extends BaseSubCommand {
 
@@ -26,7 +24,7 @@ public class SmartCommitCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn commit [path] <message>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn commit [templatePath] <message>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.smart.usage"));
             return;
         }
 
@@ -65,19 +63,19 @@ public class SmartCommitCommand extends BaseSubCommand {
         }
         
         if (target == null) {
-            player.sendMessage(ChatColor.RED + "You are not inside any template's master region, this smart commit command have to be execute in a template's master region. You can use '/idunn template commit <path> <commit message>' instead to manually specific which template should we commit.");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.smart.not_in_region"));
             return;
         }
 
         boolean hasPerm = target.getPath().startsWith("users/" + player.getName())
                 || PermissionUtil.hasRecursivePermission(
                 player,
-                "idunn.template.commit",
+                PermissionNames.Templates.commitToPath$R,
                 target.getPath()
         );
 
         if (!hasPerm) {
-            player.sendMessage("You don't have permission to commit template in " + target.getPath());
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.smart.no_perm", target.getPath()));
             return;
         }
         
@@ -88,7 +86,7 @@ public class SmartCommitCommand extends BaseSubCommand {
         newArgs[1] = target.getPath();
         System.arraycopy(args, 1, newArgs, 2, args.length - 1);
         
-        player.sendMessage(ChatColor.YELLOW + "Smart Commit detected template: " + target.getName());
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.smart.detected", target.getName()));
         commitCommand.execute(player, newArgs);
     }
 

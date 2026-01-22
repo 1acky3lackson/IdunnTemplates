@@ -5,6 +5,8 @@ import com.jackyblackson.idunntemplates.core.domain.PlayerPreference;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -26,7 +28,7 @@ public class SetsUpdateCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn set update (<namespace>:)<name>
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /idunn set update (<namespace>:)<name>");
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.usage"));
             return;
         }
 
@@ -67,23 +69,23 @@ public class SetsUpdateCommand extends BaseSubCommand {
             if (namespace.equalsIgnoreCase("player." + player.getName())) {
                 // Explicit private
                 if (!pref.getSavedSets().containsKey(name)) {
-                    player.sendMessage(ChatColor.RED + "Private set not found: " + name);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.private_not_found", name));
                     return;
                 }
                 pref.getSavedSets().put(name, newSet);
                 updated = true;
             } else if (namespace.startsWith("player.")) {
-                 player.sendMessage(ChatColor.RED + "Cannot update other player's set.");
+                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.error_player"));
                  return;
             } else {
                 // Global Namespace
-                if (!player.hasPermission("idunn.set.update." + namespace)) {
-                    player.sendMessage(ChatColor.RED + "You do not have permission to update sets in namespace: " + namespace);
+                if (!player.hasPermission(PermissionNames.Sets.updateInNamespace + namespace)) {
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.no_perm", namespace));
                     return;
                 }
                 TemplateSet existing = setManager.getSetExact(namespace, name);
                 if (existing == null) {
-                    player.sendMessage(ChatColor.RED + "Set not found in namespace " + namespace + ": " + name);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.not_found_ns", namespace, name));
                     return;
                 }
                 setManager.saveGlobalSet(namespace, name, newSet);
@@ -94,20 +96,20 @@ public class SetsUpdateCommand extends BaseSubCommand {
             if (pref.getSavedSets().containsKey(name)) {
                 pref.getSavedSets().put(name, newSet);
                 updated = true;
-                player.sendMessage(ChatColor.GREEN + "Updated private set: " + name);
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.success_private", name));
             } else {
                 // Try global default
-                if (!player.hasPermission("idunn.set.update.global")) {
-                     player.sendMessage(ChatColor.RED + "Set not found in private storage, and no permission to update global.");
+                if (!player.hasPermission(PermissionNames.Sets.updateGlobal)) {
+                     player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.no_perm_global"));
                      return;
                 }
                 TemplateSet existing = setManager.getSetExact("global", name);
                 if (existing != null) {
                     setManager.saveGlobalSet("global", name, newSet);
                     updated = true;
-                    player.sendMessage(ChatColor.GREEN + "Updated global set: " + name);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.success_global", name));
                 } else {
-                    player.sendMessage(ChatColor.RED + "Set not found: " + name);
+                    player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.not_found", name));
                     return;
                 }
             }
@@ -125,7 +127,7 @@ public class SetsUpdateCommand extends BaseSubCommand {
             
             // Add global sets the player can update
             for (String ns : setManager.getLoadedNamespaces()) {
-                if (player.hasPermission("idunn.set.update." + ns)) {
+                if (player.hasPermission(PermissionNames.Sets.updateInNamespace + ns)) {
                     for (String name : setManager.getGlobalNamespace(ns).keySet()) {
                         list.add(ns + ":" + name);
                     }
