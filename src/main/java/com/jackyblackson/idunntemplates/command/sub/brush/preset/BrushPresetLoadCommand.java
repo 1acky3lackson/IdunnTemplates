@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class BrushPresetLoadCommand extends BaseSubCommand {
 
@@ -149,7 +148,7 @@ public class BrushPresetLoadCommand extends BaseSubCommand {
         String name = presetManager.resolveName(query);
         
         if (!namespace.equals("player." + player.getName())) {
-             if (!player.hasPermission(PermissionNames.Brushes.Presets.loadNamespace + namespace)) {
+             if (!player.hasPermission(PermissionNames.Brushes.Presets.loadNamespace$N + namespace)) {
                  player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.no_perm_load", namespace));
                  return null;
              }

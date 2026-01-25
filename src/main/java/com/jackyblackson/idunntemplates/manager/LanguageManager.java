@@ -32,55 +32,47 @@ public class LanguageManager {
             langFolder.mkdirs();
         }
 
-        // Save/Update defaults
+        languages.clear();
+
+        // Load built-in languages from resources
         String[] defaults = {"en-us.yml", "zh-cn.yml", "zh-tw.yml"};
-        for (String def : defaults) {
-            updateLanguageFile(def);
+        for (String filename : defaults) {
+            try (java.io.InputStream in = plugin.getResource("lang/" + filename)) {
+                if (in != null) {
+                    YamlConfiguration config = YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+                    String langCode = filename.replace(".yml", "").toLowerCase();
+                    languages.put(langCode, config);
+                    plugin.getLogger().info("Loaded built-in language: " + langCode);
+
+                    // Save to disk if not exists (for reference), but do not read from it
+                    File file = new File(langFolder, filename);
+                    if (!file.exists()) {
+                        try {
+                            plugin.saveResource("lang/" + filename, false);
+                        } catch (IllegalArgumentException e) {
+                            // Resource not found
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load built-in language " + filename + ": " + e.getMessage());
+            }
         }
 
-        languages.clear();
+        // Load custom languages from disk
         File[] files = langFolder.listFiles((dir, name) -> name.endsWith(".yml"));
         if (files == null) return;
 
         for (File file : files) {
             String langCode = file.getName().replace(".yml", "").toLowerCase();
+            // Skip if already loaded (built-ins)
+            if (languages.containsKey(langCode)) {
+                continue;
+            }
+
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
             languages.put(langCode, config);
-            plugin.getLogger().info("Loaded language: " + langCode);
-        }
-    }
-
-    private void updateLanguageFile(String filename) {
-        File file = new File(langFolder, filename);
-        if (!file.exists()) {
-            try {
-                plugin.saveResource("lang/" + filename, false);
-            } catch (IllegalArgumentException e) {
-                // Resource not found in jar
-            }
-            return;
-        }
-
-        try (java.io.InputStream in = plugin.getResource("lang/" + filename)) {
-            if (in == null) return;
-
-            YamlConfiguration internalConfig = YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
-            YamlConfiguration diskConfig = YamlConfiguration.loadConfiguration(file);
-
-            boolean modified = false;
-            for (String key : internalConfig.getKeys(true)) {
-                if (!diskConfig.contains(key)) {
-                    diskConfig.set(key, internalConfig.get(key));
-                    modified = true;
-                }
-            }
-
-            if (modified) {
-                diskConfig.save(file);
-                plugin.getLogger().info("Updated language file: " + filename);
-            }
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to update language file " + filename + ": " + e.getMessage());
+            plugin.getLogger().info("Loaded custom language: " + langCode);
         }
     }
 

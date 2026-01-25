@@ -6,9 +6,9 @@ import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 public class BrushSettings implements Cloneable {
     
     private TemplateSet content;
-    private RotationMode rotation = RotationMode.FIXED_0;
-    private FlipMode flipX = FlipMode.FALSE;
-    private FlipMode flipZ = FlipMode.FALSE;
+    private RotationMode rotation = RotationMode.RANDOM;
+    private FlipMode flipX = FlipMode.RANDOM;
+    private FlipMode flipZ = FlipMode.RANDOM;
     private boolean noAir = true;
     private boolean emptyOnly = true;
     

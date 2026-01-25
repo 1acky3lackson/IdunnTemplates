@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.jackyblackson.idunntemplates.command.sub.brush.BrushCommandUtils.getBrushChanelTabCompleteForPlayer;
+
 public class BrushModifyCommand extends BaseSubCommand {
 
     private final SessionManager sessionManager;
@@ -86,16 +88,16 @@ public class BrushModifyCommand extends BaseSubCommand {
     public List<String> tabComplete(Player player, String[] args) {
         if (args.length == 2) {
              // Channel
-             ItemStack item = player.getInventory().getItemInMainHand();
-             String matName = ItemUtil.getBrushKey(item);
-             if (matName != null) {
-                 var session = sessionManager.getSession(player.getUniqueId());
-                 BrushSession bs = session.getPreference().getBoundBrushes().get(matName);
-                 if (bs != null) {
-                     return filter(new java.util.ArrayList<>(bs.getChannels().keySet()), args[1]);
-                 }
-             }
-             return filter(Arrays.asList("left", "right"), args[1]);
+//             ItemStack item = player.getInventory().getItemInMainHand();
+//             String matName = ItemUtil.getBrushKey(item);
+//             if (matName != null) {
+//                 var session = sessionManager.getSession(player.getUniqueId());
+//                 BrushSession bs = session.getPreference().getBoundBrushes().get(matName);
+//                 if (bs != null) {
+//                     return filter(new java.util.ArrayList<>(bs.getChannels().keySet()), args[1]);
+//                 }
+//             }
+            return filter(getBrushChanelTabCompleteForPlayer(sessionManager, player), args[1]);
         }
         if (args.length == 3) {
             return filter(Arrays.asList("rotate", "flipx", "flipz", "noair", "emptyonly"), args[2]);

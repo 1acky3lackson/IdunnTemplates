@@ -1,5 +1,16 @@
 package com.jackyblackson.idunntemplates.permission;
 
+/**
+ * 记录所有的权限节点.
+ *
+ * <p>
+ * 命名规则：
+ * <ol>
+ * <li>涉及 Path 或类似递归检查的权限，在其名称后面添加 $R，其内容后面不含 "."</li>
+ * <li>涉及后面拼接 namespace 的权限，其名称后面添加 $N，其内容后面包含 "."</li>
+ * </ol>
+ * </p>
+ */
 public class PermissionNames {
     public static class Templates {
         public static final String place = "idunn.template.place";
@@ -14,14 +25,14 @@ public class PermissionNames {
 
     }
     public static class Sets {
-        public static final String saveToNamespace = "idunn.set.save.";
-        public static final String updateInNamespace = "idunn.set.update.";
+        public static final String saveToNamespace$N = "idunn.set.save.";
+        public static final String updateInNamespace$N = "idunn.set.update.";
         public static final String updateGlobal = "idunn.set.update.global";
     }
     public static class Brushes {
         public static class Presets {
-            public static final String loadNamespace = "idunn.brush.preset.load.";
-            public static final String saveToNamespace = "idunn.brush.preset.save.";
+            public static final String loadNamespace$N = "idunn.brush.preset.load.";
+            public static final String saveToNamespace$N = "idunn.brush.preset.save.";
         }
     }
 }

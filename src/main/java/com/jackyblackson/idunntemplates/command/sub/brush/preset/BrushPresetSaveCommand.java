@@ -8,7 +8,6 @@ import com.jackyblackson.idunntemplates.manager.BrushPresetManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.permission.PermissionNames;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -42,7 +41,7 @@ public class BrushPresetSaveCommand extends BaseSubCommand {
 
         // Check permission if not personal
         if (!namespace.equals("player." + player.getName())) {
-            if (!player.hasPermission(PermissionNames.Brushes.Presets.saveToNamespace + namespace)) {
+            if (!player.hasPermission(PermissionNames.Brushes.Presets.saveToNamespace$N + namespace)) {
                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.preset.no_perm_save", namespace));
                 return;
             }

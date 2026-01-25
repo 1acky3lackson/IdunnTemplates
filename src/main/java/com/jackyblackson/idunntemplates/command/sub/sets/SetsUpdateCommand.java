@@ -7,7 +7,6 @@ import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.permission.PermissionNames;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -79,7 +78,7 @@ public class SetsUpdateCommand extends BaseSubCommand {
                  return;
             } else {
                 // Global Namespace
-                if (!player.hasPermission(PermissionNames.Sets.updateInNamespace + namespace)) {
+                if (!player.hasPermission(PermissionNames.Sets.updateInNamespace$N + namespace)) {
                     player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.no_perm", namespace));
                     return;
                 }
@@ -127,7 +126,7 @@ public class SetsUpdateCommand extends BaseSubCommand {
             
             // Add global sets the player can update
             for (String ns : setManager.getLoadedNamespaces()) {
-                if (player.hasPermission(PermissionNames.Sets.updateInNamespace + ns)) {
+                if (player.hasPermission(PermissionNames.Sets.updateInNamespace$N + ns)) {
                     for (String name : setManager.getGlobalNamespace(ns).keySet()) {
                         list.add(ns + ":" + name);
                     }

@@ -67,6 +67,7 @@ public class IdunnCommand implements TabExecutor {
         brushGroup.register("modify", new BrushModifyCommand(sessionManager));
         brushGroup.register("source", new BrushSourceCommand(sessionManager, templateManager, setManager));
         brushGroup.register("list", new BrushListCommand(sessionManager));
+        brushGroup.register("change", new BrushChangeCommand(sessionManager, brushManager));
         
         CommandGroup presetGroup = new CommandGroup();
         presetGroup.register("save", new BrushPresetSaveCommand(brushPresetManager, sessionManager));

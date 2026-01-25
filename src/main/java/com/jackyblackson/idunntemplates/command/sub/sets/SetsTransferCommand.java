@@ -7,7 +7,6 @@ import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.permission.PermissionNames;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
@@ -58,7 +57,7 @@ public class SetsTransferCommand extends BaseSubCommand {
             return;
         }
         
-        if (!player.hasPermission(PermissionNames.Sets.saveToNamespace + namespace)) {
+        if (!player.hasPermission(PermissionNames.Sets.saveToNamespace$N + namespace)) {
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.transfer.no_permission_create_ns", namespace));
             return;
         }
