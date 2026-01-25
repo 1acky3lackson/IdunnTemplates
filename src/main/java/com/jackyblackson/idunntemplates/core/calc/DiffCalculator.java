@@ -1,22 +1,10 @@
 package com.jackyblackson.idunntemplates.core.calc;
 
-import com.fastasyncworldedit.core.extent.processor.lighting.RelightMode;
-import com.fastasyncworldedit.core.wrappers.WorldWrapper;
-import com.jackyblackson.idunntemplates.core.util.CapturingExtent;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
-import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.regions.Region;
-import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.block.BlockState;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -206,49 +194,5 @@ public class DiffCalculator {
             }
         }
         return managedBlocks;
-    }
-
-
-    private Map<BlockVector3, BlockState> simulatePaste(World world, Clipboard clipboard, AffineTransform transform) {
-        if (clipboard == null) {
-            logger.warning("SimulatePaste: Clipboard is null!");
-            return new HashMap<>();
-        }
-        logger.info("SimulatePaste: Clipboard Volume: " + clipboard.getRegion().getVolume() + ", Bounds: " + clipboard.getRegion().getMinimumPoint() + " -> " + clipboard.getRegion().getMaximumPoint());
-
-        CapturingExtent capturingExtent = new CapturingExtent(
-                300000,
-                2047,
-                300000
-        );
-
-        // 1. Create a session that targets your capturing extent
-        try (EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
-                .world(BukkitAdapter.adapt(world)) // Force the session to use your extent
-                .fastMode(false)        // Disable fast mode to ensure standard setBlock calls
-                .changeSetNull()        // Optimization: don't track history
-                .relightMode(RelightMode.NONE) // disable light engine
-                .build()) {
-
-            // 2. Setup ClipboardHolder with transform
-            ClipboardHolder holder = new ClipboardHolder(clipboard);
-            holder.setTransform(holder.getTransform().combine(transform));
-
-            // 3. Create Paste Operation targeting the EditSession
-            Operation operation = holder
-                    .createPaste(editSession) // Use the session, not the raw extent
-                    .to(BlockVector3.ZERO)
-                    .ignoreAirBlocks(false)
-                    .build();
-
-            Operations.completeLegacy(operation);
-//            editSession.q
-            editSession.flushQueue(); // Crucial for FAWE to finish processing
-        } catch (WorldEditException e) {
-            System.out.println(e.getRichMessage());
-            e.printStackTrace();
-        }
-
-        return capturingExtent.getCapturedBlocks();
     }
 }
