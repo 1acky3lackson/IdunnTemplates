@@ -144,6 +144,13 @@ brush:
     no_perm_save: "&cYou do not have permission to save to namespace '%1%'."
     no_perm_update: "&cYou do not have permission to update namespace '%1%'."
     not_found: "&cPreset not found: %1%"
+  change:
+    usage: "&cUsage: /idunn brush change <channel>"
+    no_item: "&cYou must be holding a bound item."
+    not_bound: "&cThe item %1% has no brushes bound."
+    channel_not_found: "&cNo brush is bound to channel '%1%' on this item."
+    success: "&aChanged template for channel '%1%' to: %2%"
+    no_template_found: "&cCould not find a new template for channel '%1%'. The set might be empty."
 message:
   placed: "&aPlaced %1% (%2%) "
   tp_template:

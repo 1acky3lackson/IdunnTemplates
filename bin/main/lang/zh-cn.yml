@@ -144,6 +144,13 @@ brush:
     no_perm_save: "&c你没有权限保存到命名空间 '%1%'。"
     no_perm_update: "&c你没有权限更新命名空间 '%1%'。"
     not_found: "&c未找到预设: %1%"
+  change:
+    usage: "&c用法: /idunn brush change <通道>"
+    no_item: "&c你必须手持一个已绑定的物品。"
+    not_bound: "&c物品 %1% 没有绑定任何笔刷。"
+    channel_not_found: "&c此物品的通道 '%1%' 没有绑定笔刷。"
+    success: "&a已将通道 '%1%' 的模板更换为: %2%"
+    no_template_found: "&c未能为通道 '%1%' 找到新的模板。可能因为集合为空。"
 message:
   placed: "&a已放置 %1% (%2%) "
   tp_template:
