@@ -284,3 +284,12 @@ effect:
     flip_x: ", FlipX"
     flip_z: ", FlipZ"
   entry_denied: "&cYou do not have permission to enter the master template area: %1%"
+resize:
+  config_reloaded: "&aConfiguration reloaded successfully."
+  player_not_found: "&cPlayer with name &e%1%&c not found."
+  only_player: "&cOnly players can use this command."
+  invalid_number: "&cInvalid number format. Please enter a valid number."
+  usage: "&cUsage: /resize <scale> [player]"
+  scale_range: "&cScale must be between &e%1%&c and &e%2%&c."
+  cooldown: "&cYou must wait &e%1%&c seconds before using this command again."
+  resized: "&aYour size has been set to &e%1%&a."

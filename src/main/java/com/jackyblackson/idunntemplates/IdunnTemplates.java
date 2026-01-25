@@ -29,6 +29,10 @@ public final class IdunnTemplates extends JavaPlugin {
     private BrushPresetManager brushPresetManager;
     private LanguageManager languageManager;
 
+    // RESIZE
+    private ResizeConfigManager resizeConfigManager;
+    private ResizeManager resizeManager;
+
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
     public TemplateStorage getTemplateStorage() {
@@ -69,6 +73,18 @@ public final class IdunnTemplates extends JavaPlugin {
 
     public TemplateUpdater getTemplateUpdater() {
         return templateUpdater;
+    }
+
+    public EffectManager getEffectManager() {
+        return effectManager;
+    }
+
+    public ResizeConfigManager getResizeConfigManager() {
+        return resizeConfigManager;
+    }
+
+    public ResizeManager getResizeManager() {
+        return resizeManager;
     }
 
     @Override
@@ -119,6 +135,10 @@ public final class IdunnTemplates extends JavaPlugin {
         // 4. Setup Manager
         this.templateManager = new TemplateManager(templateStorage);
         this.templateManager.setUpdater(templateUpdater);
+        // resize
+        this.resizeConfigManager = new ResizeConfigManager(this);
+        this.resizeManager = new ResizeManager(this);
+        this.resizeConfigManager.loadConfig();
         
         java.util.List<String> defaultEmptyBlocks = getConfig().getStringList("emptyBlocks");
 
@@ -147,7 +167,7 @@ public final class IdunnTemplates extends JavaPlugin {
         this.brushPresetManager = new BrushPresetManager(getDataFolder(), getLogger());
 
         // 5. Register Commands
-        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager));
+        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager, resizeManager, resizeConfigManager, languageManager));
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);

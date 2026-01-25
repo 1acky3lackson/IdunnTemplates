@@ -284,3 +284,12 @@ effect:
     flip_x: ", 翻轉X"
     flip_z: ", 翻轉Z"
   entry_denied: "&c你沒有權限進入主模板區域: %1%"
+resize:
+  config_reloaded: "&a設定已成功重新載入。"
+  player_not_found: "&c找不到名為 &e%1%&c 的玩家。"
+  only_player: "&c只有玩家才能執行此指令。"
+  invalid_number: "&c無效的數字格式。請輸入有效的數字。"
+  usage: "&c用法: /resize <比例> [玩家]"
+  scale_range: "&c縮放比例必須介於 &e%1%&c 與 &e%2%&c 之間。"
+  cooldown: "&c你需要等待 &e%1%&c 秒後才能再次使用此指令。"
+  resized: "&a你的身形比例已設置為 &e%1%&a。"

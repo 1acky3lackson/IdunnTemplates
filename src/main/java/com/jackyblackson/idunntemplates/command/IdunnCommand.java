@@ -22,7 +22,7 @@ public class IdunnCommand implements TabExecutor {
 
     private final Map<String, IdunnSubCommand> subCommands = new HashMap<>();
 
-    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager) {
+    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager, ResizeManager resizeManager, ResizeConfigManager resizeConfigManager, LanguageManager languageManager) {
         // Template Group
         CommandGroup templateGroup = new CommandGroup();
         templateGroup.register("list", new ListCommand(templateManager));
@@ -82,6 +82,7 @@ public class IdunnCommand implements TabExecutor {
         subCommands.put("pref", new PrefCommand(sessionManager));
         subCommands.put("tp", new SmartTpCommand(templateManager, instanceRepository));
         subCommands.put("commit", new SmartCommitCommand(templateManager));
+        subCommands.put("resize", new ResizeCommand(resizeManager, resizeConfigManager, languageManager));
     }
 
     @Override

@@ -12,6 +12,11 @@ package com.jackyblackson.idunntemplates.permission;
  * </p>
  */
 public class PermissionNames {
+    public static class Resizes {
+        public static final String reload = "idunn.resize.reload";
+        public static final String resizeOthers = "idunn.resize.others";
+        public static final String extendedResize = "idunn.resize.extended";
+    }
     public static class Templates {
         public static final String place = "idunn.template.place";
         public static final String usePath$R = "idunn.template.use";
