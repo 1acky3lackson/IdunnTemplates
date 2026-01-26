@@ -49,6 +49,10 @@ public class BrushListCommand extends BaseSubCommand {
         for (Map.Entry<String, BrushSession> entry : boundBrushes.entrySet()) {
             String matName = entry.getKey();
             BrushSession brushSession = entry.getValue();
+
+            if (brushSession.getChannels().isEmpty()) {
+                continue;
+            }
             
             TextComponent msg = new TextComponent(ChatColor.GREEN + "- " + matName);
             String channels = String.join(", ", brushSession.getChannels().keySet());

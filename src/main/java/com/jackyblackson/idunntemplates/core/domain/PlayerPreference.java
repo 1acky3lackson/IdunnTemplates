@@ -13,7 +13,7 @@ import java.util.Map;
 public class PlayerPreference {
     
     private String wandMaterialName;
-    private boolean placeOnEmptyOnly;
+    private boolean placeOnEmptyOnly = true;
     private List<String> emptyBlocks;
 
     // Effect Preferences
@@ -38,7 +38,7 @@ public class PlayerPreference {
     public PlayerPreference() {
         // Defaults
         this.wandMaterialName = Material.GOLDEN_HOE.name();
-        this.placeOnEmptyOnly = false;
+        this.placeOnEmptyOnly = true;
         // emptyBlocks initialized lazily or via setter
     }
 
