@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.manager;
 
 import com.jackyblackson.idunntemplates.IdunnTemplates;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -12,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ResizeManager {
     private final IdunnTemplates plugin;
-    private final Map<UUID, Long> lastUsageTime = new ConcurrentHashMap();
+    private final Map<UUID, Long> lastUsageTime = new ConcurrentHashMap<>();
 
     public ResizeManager(IdunnTemplates plugin) {
         this.plugin = plugin;
     }
 
     public boolean hasCooldown(Player player) {
-        if (player.hasPermission("resizeplugin.bypass.cooldown")) {
+        if (player.hasPermission(PermissionNames.Resizes.bypassCooldown)) {
             return false;
         } else {
             long currentTime = System.currentTimeMillis();

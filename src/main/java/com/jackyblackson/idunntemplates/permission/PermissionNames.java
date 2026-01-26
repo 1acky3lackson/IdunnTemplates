@@ -16,6 +16,7 @@ public class PermissionNames {
         public static final String reload = "idunn.resize.reload";
         public static final String resizeOthers = "idunn.resize.others";
         public static final String extendedResize = "idunn.resize.extended";
+        public static final String bypassCooldown = "idunn.resize.bypass.cooldown";
     }
     public static class Templates {
         public static final String place = "idunn.template.place";
