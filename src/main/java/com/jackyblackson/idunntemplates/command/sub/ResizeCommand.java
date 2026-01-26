@@ -31,7 +31,7 @@ public class ResizeCommand extends BaseSubCommand {
         if (args.length >= 2 && args[1].equalsIgnoreCase("reload") && player.hasPermission(PermissionNames.Resizes.reload)) {
             resizeConfigManager.reloadConfig();
             languageManager.loadLanguages();
-            player.sendMessage(MessageUtil.getMessage(player, "resize.reloaded"));
+            player.sendMessage(MessageUtil.getMessage(player, "resize.config_reloaded"));
             return;
         }
 
