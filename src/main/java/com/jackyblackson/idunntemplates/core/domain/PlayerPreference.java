@@ -3,6 +3,7 @@ package com.jackyblackson.idunntemplates.core.domain;
 import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +36,19 @@ public class PlayerPreference {
     // Key: Material Name, Value: BrushSession
     private Map<String, BrushSession> boundBrushes = new HashMap<>();
 
+    private String playerName;
+
     public PlayerPreference() {
         // Defaults
         this.wandMaterialName = Material.GOLDEN_HOE.name();
         this.placeOnEmptyOnly = true;
         // emptyBlocks initialized lazily or via setter
+    }
+
+    public String getPlayerName() { return this.playerName; }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
     }
 
     public boolean isShowActionBar() {

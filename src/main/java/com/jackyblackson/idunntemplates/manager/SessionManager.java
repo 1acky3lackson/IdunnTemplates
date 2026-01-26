@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jackyblackson.idunntemplates.core.domain.PlayerPreference;
 import com.jackyblackson.idunntemplates.core.domain.PlayerSession;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -105,11 +107,16 @@ public class SessionManager implements Listener {
     }
 
     private PlayerPreference loadPreference(UUID playerId) {
+        Player player = Bukkit.getPlayer(playerId);
         PlayerPreference pref = null;
         File file = new File(dataFolder, playerId.toString() + ".json");
         if (file.exists()) {
             try (FileReader reader = new FileReader(file)) {
                 pref = gson.fromJson(reader, PlayerPreference.class);
+                if (player != null) {
+                    pref.setPlayerName(player.getName());
+                    savePreference(playerId, pref);
+                }
             } catch (IOException e) {
                 logger.severe("Failed to load preference for " + playerId + ": " + e.getMessage());
             }
@@ -117,6 +124,9 @@ public class SessionManager implements Listener {
         
         if (pref == null) {
             pref = new PlayerPreference();
+            if (player != null) {
+                pref.setPlayerName(player.getName());
+            }
         }
         
         // Apply defaults if empty (and not just created empty, but if it was missing or new)
