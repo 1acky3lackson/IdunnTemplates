@@ -45,6 +45,13 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private static final double VIEW_DISTANCE = 48.0;
     private static final double GRID_SPACING = 10.0;
     
+    private static final List<org.bukkit.Color> COLOR_PALETTE = Arrays.asList(
+            org.bukkit.Color.WHITE, org.bukkit.Color.SILVER, org.bukkit.Color.GRAY, org.bukkit.Color.ORANGE,
+            org.bukkit.Color.RED, org.bukkit.Color.MAROON, org.bukkit.Color.YELLOW, org.bukkit.Color.OLIVE,
+            org.bukkit.Color.LIME, org.bukkit.Color.GREEN, org.bukkit.Color.AQUA, org.bukkit.Color.TEAL,
+            org.bukkit.Color.BLUE, org.bukkit.Color.NAVY, org.bukkit.Color.FUCHSIA, org.bukkit.Color.PURPLE
+    );
+    
     // ... constructor ...
     public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager) {
         this.templateManager = templateManager;
@@ -52,6 +59,12 @@ public class EffectManager extends BukkitRunnable implements Listener {
         this.sessionManager = sessionManager;
         this.setManager = setManager;
         this.brushManager = brushManager;
+    }
+
+    private Particle.DustOptions getParticleColor(Instance inst) {
+        int hash = Objects.hash(inst.getTemplateId(), inst.getWorldId(), inst.getX(), inst.getY(), inst.getZ());
+        org.bukkit.Color color = COLOR_PALETTE.get(Math.abs(hash) % COLOR_PALETTE.size());
+        return new Particle.DustOptions(color, 1.0f);
     }
 
     @Override
@@ -248,7 +261,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // 2. Template Origins (Master)
         for (Template t : templateManager.getTemplates()) {
             TemplateMetadata meta = t.getMetadata();
-            if (!meta.getWorldId().equals(pLoc.getWorld().getUID())) continue;
+            if (!meta.getWorldId().equals(Objects.requireNonNull(pLoc.getWorld()).getUID())) continue;
             
             Location min = new Location(pLoc.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
             if (min.distance(pLoc) > VIEW_DISTANCE * 2) continue; // optimization
@@ -277,7 +290,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // 3. Instances
         List<Instance> instances = instanceRepository.getAllLoadedInstances();
         for (Instance inst : instances) {
-            if (!inst.getWorldId().equals(pLoc.getWorld().getUID())) continue;
+            if (!inst.getWorldId().equals(Objects.requireNonNull(pLoc.getWorld()).getUID())) continue;
             if (Math.abs(inst.getX() - pLoc.getX()) > VIEW_DISTANCE * 2 || Math.abs(inst.getZ() - pLoc.getZ()) > VIEW_DISTANCE * 2) continue;
 
             Template t = templateManager.getTemplate(inst.getTemplateId());
@@ -298,9 +311,18 @@ public class EffectManager extends BukkitRunnable implements Listener {
                 // Draw Box
                 if (min.distance(pLoc) < VIEW_DISTANCE) {
                     if (pref != null && pref.isParticleInstanceBoundaries()) {
-                        ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.END_ROD);
+                        Particle.DustOptions dustOptions = getParticleColor(inst);
+                        ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.DUST, dustOptions);
                         // Draw Line to Center
-                        ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1);
+                        ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1, null);
+                        
+                        // Draw Masked Box
+                        if (inst.getMaskXNeg() > 0 || inst.getMaskXPos() > 0 || inst.getMaskYNeg() > 0 || inst.getMaskYPos() > 0 || inst.getMaskZNeg() > 0 || inst.getMaskZPos() > 0) {
+                            Location[] masked = calculateMaskedBounds(inst, min, max);
+                            if (masked != null) {
+                                ParticleUtil.drawSurfaceGridAABB(masked[0], masked[1], GRID_SPACING, Particle.FLAME, null);
+                            }
+                        }
                     }
                 }
             }
@@ -320,6 +342,80 @@ public class EffectManager extends BukkitRunnable implements Listener {
         
         // 4. Action Bar
         sendActionBar(player, pref, session);
+    }
+
+    private Location[] calculateMaskedBounds(Instance inst, Location worldMin, Location worldMax) {
+        // 1. Get Local Masks
+        int mxn = inst.getMaskXNeg();
+        int mxp = inst.getMaskXPos();
+        int mzn = inst.getMaskZNeg();
+        int mzp = inst.getMaskZPos();
+        int myn = inst.getMaskYNeg();
+        int myp = inst.getMaskYPos();
+
+        // 2. Apply Flips (Swap opposing masks)
+        if (inst.isFlipX()) {
+            int tmp = mxn; mxn = mxp; mxp = tmp;
+        }
+        if (inst.isFlipZ()) {
+            int tmp = mzn; mzn = mzp; mzp = tmp;
+        }
+        if (inst.isFlipY()) {
+            int tmp = myn; myn = myp; myp = tmp;
+        }
+
+        // 3. Apply Rotation (0, 90, 180, 270 CCW)
+        // Map masks to World Faces:
+        // w_mxn (West/MinX), w_mxp (East/MaxX)
+        // w_mzn (North/MinZ), w_mzp (South/MaxZ)
+        
+        int rot = (inst.getRotationY() % 360 + 360) % 360;
+        
+        int w_mxn = mxn;
+        int w_mxp = mxp;
+        int w_mzn = mzn;
+        int w_mzp = mzp;
+
+        switch (rot) {
+            case 90:
+                // X+ -> Z+, X- -> Z-
+                // Z+ -> X-, Z- -> X+
+                w_mzp = mxp; // World Z+ < Old X+
+                w_mzn = mxn; // World Z- < Old X-
+                w_mxn = mzp; // World X- < Old Z+
+                w_mxp = mzn; // World X+ < Old Z-
+                break;
+            case 180:
+                // X -> -X, Z -> -Z
+                w_mxn = mxp;
+                w_mxp = mxn;
+                w_mzn = mzp;
+                w_mzp = mzn;
+                break;
+            case 270:
+                // X -> -Z, Z -> X
+                w_mzn = mxp; // World Z- < Old X+
+                w_mzp = mxn; // World Z+ < Old X-
+                w_mxp = mzp; // World X+ < Old Z+
+                w_mxn = mzn; // World X- < Old Z-
+                break;
+        }
+
+        // 4. Calculate World Coords
+        double minX = worldMin.getX() + w_mxn;
+        double maxX = worldMax.getX() - w_mxp;
+        double minY = worldMin.getY() + myn; // Y doesn't rotate around Y-axis
+        double maxY = worldMax.getY() - myp;
+        double minZ = worldMin.getZ() + w_mzn;
+        double maxZ = worldMax.getZ() - w_mzp;
+
+        // Check validity
+        if (minX > maxX || minY > maxY || minZ > maxZ) return null;
+
+        return new Location[]{
+                new Location(worldMin.getWorld(), minX, minY, minZ),
+                new Location(worldMin.getWorld(), maxX, maxY, maxZ)
+        };
     }
     
     private void sendActionBar(Player player, com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref, com.jackyblackson.idunntemplates.core.domain.PlayerSession session) {
@@ -499,7 +595,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
         // Check Template Origins
         for (Template t : templateManager.getTemplates()) {
             TemplateMetadata meta = t.getMetadata();
-            if (!meta.getWorldId().equals(to.getWorld().getUID())) continue;
+            if (!meta.getWorldId().equals(Objects.requireNonNull(to.getWorld()).getUID())) continue;
 
             // Check permission first? No, only check collision first to save perf.
             if (to.distanceSquared(new Location(to.getWorld(), meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ())) > 10000) continue; // Fast reject

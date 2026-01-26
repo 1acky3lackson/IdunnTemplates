@@ -201,8 +201,7 @@ public class BrushSourceCommand extends BaseSubCommand {
                 return filter(paths, args[4]);
             }
             if (args[3].equalsIgnoreCase("set")) {
-                List<String> options = new ArrayList<>();
-                options.addAll(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
+                List<String> options = new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
                 for (String ns : setManager.getLoadedNamespaces()) {
                     for (String name : setManager.getGlobalNamespace(ns).keySet()) {
                         options.add(ns + ":" + name);

@@ -20,6 +20,7 @@ import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public class InstanceManager {
@@ -51,14 +52,33 @@ public class InstanceManager {
     /**
      * Places an instance of a template at the specified location.
      */
-    public Instance placeInstanceAndReturn(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
+    public Instance placeInstanceAndReturn(
+            Player player, Template template, Location location,
+            int rot, boolean flipX, boolean flipY, boolean flipZ
+    ) throws Exception {
+        return placeInstanceAndReturn(
+                player, template, location,
+                rot, flipX, flipY, flipZ,
+                0, 0,
+                0, 0,
+                0, 0
+        );
+    }
+
+    public Instance placeInstanceAndReturn(
+            Player player, Template template, Location location,
+            int rot, boolean flipX, boolean flipY, boolean flipZ,
+            int maskXNeg, int maskXPos,
+            int maskYNeg, int maskYPos,
+            int maskZNeg, int maskZPos
+    ) throws Exception {
         // check permission
         if (!player.hasPermission(PermissionNames.Templates.place)) {
             throw new Exception("You have no permission to place idunn templates here.");
         }
         if (!template.getPath().startsWith("users/" + player.getName())) {  // 访问非本人目录
             if (!PermissionUtil.hasRecursivePermission(player, PermissionNames.Templates.usePath$R, template.getPath())) {
-                throw new Exception("You don't permission to place template '" + template.getPath() + "'.");
+                throw new Exception("You don't have permission to place template '" + template.getPath() + "'.");
             }
         }
         TemplateVersion latest = template.getLatestVersion();
@@ -84,14 +104,13 @@ public class InstanceManager {
                 .build()
         ) {
             // Bind to player for undo
-            if (player != null) {
-                com.sk89q.worldedit.LocalSession session = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player));
+            com.sk89q.worldedit.LocalSession session = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player));
 //                editSession = session.createEditSession(BukkitAdapter.adapt(player));
-                session.remember(editSession);
-            }
+            session.remember(editSession);
 
+            com.sk89q.worldedit.function.mask.Mask mask = null;
 
-            if (player != null && sessionManager != null) {
+            if (sessionManager != null) {
                 var pSession = sessionManager.getSession(player.getUniqueId());
                 if (pSession != null && pSession.getPreference().isPlaceOnEmptyOnly()) {
                     // Create mask from emptyBlocks list
@@ -104,11 +123,25 @@ public class InstanceManager {
                             }
                         } catch (Exception ignored) {}
                     }
-                    BlockTypeMask mask = new BlockTypeMask(editSession.getExtent(), blocks);
-                    editSession.setMask(mask);
+                    mask = new BlockTypeMask(editSession.getExtent(), blocks);
                 }
-
             }
+
+            // Apply Instance Mask
+            if (maskXNeg > 0 || maskXPos > 0 || maskYNeg > 0 || maskYPos > 0 || maskZNeg > 0 || maskZPos > 0) {
+                com.sk89q.worldedit.regions.Region validRegion = calculateWorldRegion(clipboard, location, rot, flipX, flipY, flipZ, maskXNeg, maskXPos, maskYNeg, maskYPos, maskZNeg, maskZPos);
+                com.sk89q.worldedit.function.mask.Mask regionMask = new com.sk89q.worldedit.function.mask.RegionMask(validRegion);
+                if (mask != null) {
+                    mask = new com.sk89q.worldedit.function.mask.MaskIntersection(mask, regionMask);
+                } else {
+                    mask = regionMask;
+                }
+            }
+            
+            if (mask != null) {
+                editSession.setMask(mask);
+            }
+
             Operation op = holder.createPaste(editSession)
                     .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
                     .ignoreAirBlocks(true)
@@ -122,16 +155,91 @@ public class InstanceManager {
         Instance instance = new Instance(
                 template.getId(),
                 latest.getVersionId(),
-                location.getWorld().getUID(),
+                Objects.requireNonNull(Objects.requireNonNull(location.getWorld()).getUID()),
                 minPos.x(), minPos.y(), minPos.z(),
                 rot, flipX, flipY, flipZ,
                 player.getUniqueId(),
                 player.getName()
         );
         
+        // Set Masks
+        instance.setMaskXNeg(maskXNeg);
+        instance.setMaskXPos(maskXPos);
+        instance.setMaskYNeg(maskYNeg);
+        instance.setMaskYPos(maskYPos);
+        instance.setMaskZNeg(maskZNeg);
+        instance.setMaskZPos(maskZPos);
+        
         instanceRepository.saveInstance(instance);
         
         return instance;
+    }
+    
+    private com.sk89q.worldedit.regions.Region calculateWorldRegion(Clipboard clipboard, Location target, int rot, boolean flipX, boolean flipY, boolean flipZ,
+                                                                    int mxn, int mxp, int myn, int myp, int mzn, int mzp) {
+        // 1. Local Bounds
+        BlockVector3 min = clipboard.getRegion().getMinimumPoint();
+        BlockVector3 max = clipboard.getRegion().getMaximumPoint();
+        
+        int minX = min.x() + mxn;
+        int maxX = max.x() - mxp;
+        int minY = min.y() + myn;
+        int maxY = max.y() - myp;
+        int minZ = min.z() + mzn;
+        int maxZ = max.z() - mzp;
+        
+        // Ensure bounds are valid (min <= max)
+        if (minX > maxX || minY > maxY || minZ > maxZ) {
+             // Return empty or very small region?
+             // Returning a 0-size region at target?
+             return new com.sk89q.worldedit.regions.CuboidRegion(BlockVector3.at(0,0,0), BlockVector3.at(0,0,0));
+        }
+
+        // 2. Transform Setup
+        com.sk89q.worldedit.math.transform.AffineTransform transform = new com.sk89q.worldedit.math.transform.AffineTransform();
+        transform = transform.rotateY(rot);
+        if (flipX) transform = transform.scale(BlockVector3.at(-1, 1, 1).toVector3());
+        if (flipY) transform = transform.scale(BlockVector3.at(1, -1, 1).toVector3());
+        if (flipZ) transform = transform.scale(BlockVector3.at(1, 1, -1).toVector3());
+
+        BlockVector3 origin = clipboard.getOrigin();
+        
+        // 3. Corners
+        BlockVector3[] corners = new BlockVector3[8];
+        corners[0] = BlockVector3.at(minX, minY, minZ);
+        corners[1] = BlockVector3.at(minX, minY, maxZ);
+        corners[2] = BlockVector3.at(minX, maxY, minZ);
+        corners[3] = BlockVector3.at(minX, maxY, maxZ);
+        corners[4] = BlockVector3.at(maxX, minY, minZ);
+        corners[5] = BlockVector3.at(maxX, minY, maxZ);
+        corners[6] = BlockVector3.at(maxX, maxY, minZ);
+        corners[7] = BlockVector3.at(maxX, maxY, maxZ);
+
+        int wMinX = Integer.MAX_VALUE, wMinY = Integer.MAX_VALUE, wMinZ = Integer.MAX_VALUE;
+        int wMaxX = Integer.MIN_VALUE, wMaxY = Integer.MIN_VALUE, wMaxZ = Integer.MIN_VALUE;
+
+        BlockVector3 targetVec = BlockVector3.at(target.getBlockX(), target.getBlockY(), target.getBlockZ());
+
+        for (BlockVector3 c : corners) {
+            // Rel to Origin
+            com.sk89q.worldedit.math.Vector3 v = c.toVector3().subtract(origin.toVector3());
+            // Transform
+            com.sk89q.worldedit.math.Vector3 t = transform.apply(v);
+            // Add to Target
+            BlockVector3 worldPos = t.toBlockPoint().add(targetVec);
+
+            if (worldPos.x() < wMinX) wMinX = worldPos.x();
+            if (worldPos.y() < wMinY) wMinY = worldPos.y();
+            if (worldPos.z() < wMinZ) wMinZ = worldPos.z();
+            if (worldPos.x() > wMaxX) wMaxX = worldPos.x();
+            if (worldPos.y() > wMaxY) wMaxY = worldPos.y();
+            if (worldPos.z() > wMaxZ) wMaxZ = worldPos.z();
+        }
+        
+        return new com.sk89q.worldedit.regions.CuboidRegion(
+                BlockVector3.at(wMinX, wMinY, wMinZ),
+                BlockVector3.at(wMaxX, wMaxY, wMaxZ)
+        );
     }
     
     public void placeInstance(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {

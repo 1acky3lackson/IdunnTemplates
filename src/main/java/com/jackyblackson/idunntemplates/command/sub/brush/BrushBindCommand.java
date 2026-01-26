@@ -117,8 +117,7 @@ public class BrushBindCommand extends BaseSubCommand {
             }
             if (args[2].equalsIgnoreCase("set")) {
                 // Suggest sets
-                List<String> options = new ArrayList<>();
-                options.addAll(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
+                List<String> options = new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
                 for (String ns : setManager.getLoadedNamespaces()) {
                     for (String name : setManager.getGlobalNamespace(ns).keySet()) {
                         options.add(ns + ":" + name);

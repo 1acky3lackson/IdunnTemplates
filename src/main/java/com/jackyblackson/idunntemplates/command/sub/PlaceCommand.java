@@ -28,16 +28,57 @@ public class PlaceCommand extends BaseSubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        // /idunn place <path> [rot] [flipX] [flipY] [flipZ]
+        // /idunn place <path> [rot] [flipX] [flipY] [flipZ] [flags...]
         if (args.length < 2) {
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.usage"));
             return;
         }
         String placePath = args[1];
-        int rot = args.length > 2 ? parseInt(args[2], 0) : 0;
-        boolean flipX = args.length > 3 && Boolean.parseBoolean(args[3]);
-        boolean flipY = args.length > 4 && Boolean.parseBoolean(args[4]);
-        boolean flipZ = args.length > 5 && Boolean.parseBoolean(args[5]);
+        
+        int rot = 0;
+        boolean flipX = false;
+        boolean flipY = false;
+        boolean flipZ = false;
+        
+        int maskXNeg = 0;
+        int maskXPos = 0;
+        int maskYNeg = 0;
+        int maskYPos = 0;
+        int maskZNeg = 0;
+        int maskZPos = 0;
+        
+        int posIndex = 0;
+        for (int i = 2; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.startsWith("-") && arg.contains(":")) {
+                // Parse flag: -face:val
+                try {
+                    String[] parts = arg.substring(1).split(":");
+                    if (parts.length == 2) {
+                        String face = parts[0].toLowerCase();
+                        int val = Integer.parseInt(parts[1]);
+                        
+                        switch (face) {
+                            case "x+": maskXPos = val; break;
+                            case "x-": maskXNeg = val; break;
+                            case "y+": maskYPos = val; break;
+                            case "y-": maskYNeg = val; break;
+                            case "z+": maskZPos = val; break;
+                            case "z-": maskZNeg = val; break;
+                        }
+                    }
+                } catch (NumberFormatException ignored) {}
+            } else {
+                // Positional arg
+                switch (posIndex) {
+                    case 0: rot = parseInt(arg, 0); break;
+                    case 1: flipX = Boolean.parseBoolean(arg); break;
+                    case 2: flipY = Boolean.parseBoolean(arg); break;
+                    case 3: flipZ = Boolean.parseBoolean(arg); break;
+                }
+                posIndex++;
+            }
+        }
 
         player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.placing"));
 
@@ -49,7 +90,8 @@ public class PlaceCommand extends BaseSubCommand {
 
         try {
             com.jackyblackson.idunntemplates.core.domain.Instance inst = 
-                instanceManager.placeInstanceAndReturn(player, template, player.getLocation(), rot, flipX, flipY, flipZ);
+                instanceManager.placeInstanceAndReturn(player, template, player.getLocation(), rot, flipX, flipY, flipZ,
+                        maskXNeg, maskXPos, maskYNeg, maskYPos, maskZNeg, maskZPos);
 
             MessageUtil.sendMessageAfterPlace(inst, player);
 
@@ -66,16 +108,34 @@ public class PlaceCommand extends BaseSubCommand {
         if (args.length == 2) {
             return filter(getTemplatePaths(), args[1]);
         }
-        if (args.length == 3) {
+        
+        String current = args[args.length - 1];
+        if (current.startsWith("-")) {
+            List<String> flags = new ArrayList<>();
+            flags.add("-x+:"); flags.add("-x-:");
+            flags.add("-y+:"); flags.add("-y-:");
+            flags.add("-z+:"); flags.add("-z-:");
+            return filter(flags, current);
+        }
+        
+        // Count positional args so far (ignoring flags)
+        int posCount = 0;
+        for (int i = 2; i < args.length - 1; i++) {
+            if (!args[i].startsWith("-") || !args[i].contains(":")) {
+                posCount++;
+            }
+        }
+        
+        if (posCount == 0) { // Expecting rot
             List<String> rots = new ArrayList<>();
             rots.add("0"); rots.add("90"); rots.add("180"); rots.add("270");
-            return filter(rots, args[2]);
-        }
-        if (args.length >= 4 && args.length <= 6) {
+            return filter(rots, current);
+        } else if (posCount >= 1 && posCount <= 3) { // Expecting bools
             List<String> bools = new ArrayList<>();
             bools.add("true"); bools.add("false");
-            return filter(bools, args[args.length - 1]);
+            return filter(bools, current);
         }
+        
         return Collections.emptyList();
     }
 

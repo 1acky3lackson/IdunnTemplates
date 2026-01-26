@@ -118,7 +118,7 @@ public class TemplateUpdater {
         }
 
         // 4. Calculate Diff
-        Map<BlockVector3, BlockState> changes = diffCalculator.calculateDiff(oldClip, newClip, transform, origin, world);
+        Map<BlockVector3, BlockState> changes = diffCalculator.calculateDiff(oldClip, newClip, transform, origin, world, instance);
 
         if (changes.isEmpty()) {
             // Just update version if no physical changes

@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SmartCommitCommand extends BaseSubCommand {
 
@@ -43,7 +44,7 @@ public class SmartCommitCommand extends BaseSubCommand {
         Template target = null;
         
         for (Template t : templateManager.getTemplates()) {
-            if (!t.getMetadata().getWorldId().equals(loc.getWorld().getUID())) continue;
+            if (!t.getMetadata().getWorldId().equals(Objects.requireNonNull(loc.getWorld()).getUID())) continue;
             
             TemplateMetadata meta = t.getMetadata();
             // AABB check

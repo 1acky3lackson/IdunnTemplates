@@ -62,8 +62,6 @@ public class SetsUpdateCommand extends BaseSubCommand {
             newSet.addSource(src.getPath(), src.getWeight());
         }
 
-        boolean updated = false;
-        
         if (namespace != null) {
             if (namespace.equalsIgnoreCase("player." + player.getName())) {
                 // Explicit private
@@ -72,7 +70,6 @@ public class SetsUpdateCommand extends BaseSubCommand {
                     return;
                 }
                 pref.getSavedSets().put(name, newSet);
-                updated = true;
             } else if (namespace.startsWith("player.")) {
                  player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.error_player"));
                  return;
@@ -88,13 +85,11 @@ public class SetsUpdateCommand extends BaseSubCommand {
                     return;
                 }
                 setManager.saveGlobalSet(namespace, name, newSet);
-                updated = true;
             }
         } else {
             // No namespace
             if (pref.getSavedSets().containsKey(name)) {
                 pref.getSavedSets().put(name, newSet);
-                updated = true;
                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.success_private", name));
             } else {
                 // Try global default
@@ -105,7 +100,6 @@ public class SetsUpdateCommand extends BaseSubCommand {
                 TemplateSet existing = setManager.getSetExact("global", name);
                 if (existing != null) {
                     setManager.saveGlobalSet("global", name, newSet);
-                    updated = true;
                     player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.success_global", name));
                 } else {
                     player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "sets.update.not_found", name));
@@ -113,10 +107,8 @@ public class SetsUpdateCommand extends BaseSubCommand {
                 }
             }
         }
-        
-        if (updated) {
-            sessionManager.saveSession(player.getUniqueId());
-        }
+
+        sessionManager.saveSession(player.getUniqueId());
     }
 
     @Override

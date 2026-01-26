@@ -37,6 +37,7 @@ public class IdunnCommand implements TabExecutor {
         instanceGroup.register("list", new InstancesCommand(templateManager, instanceRepository));
         instanceGroup.register("tp", new TpCommand(instanceRepository));
         instanceGroup.register("delete", new DeleteInstanceCommand(instanceRepository, templateManager));
+        instanceGroup.register("mask", new InstanceMaskCommand(instanceRepository));
         subCommands.put("instance", instanceGroup);
         
         // Sets Group

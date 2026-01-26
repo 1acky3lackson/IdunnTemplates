@@ -29,6 +29,7 @@ public class DiffCalculator {
      * @param transform The transformation applied to the instance (rotation/flip).
      * @param origin    The 'anchor' location of the instance in the world.
      * @param world     The Bukkit world.
+     * @param instance  The instance containing mask information.
      * @return A map of World Position -> New BlockState to set.
      */
     public Map<BlockVector3, BlockState> calculateDiff(
@@ -36,7 +37,8 @@ public class DiffCalculator {
             Clipboard newClip,
             AffineTransform transform,
             BlockVector3 origin,
-            World world
+            World world,
+            com.jackyblackson.idunntemplates.core.domain.Instance instance
     ) {
 //        logger.info(String.format("Starting Diff Calculation. Origin: %s, World: %s", origin, world.getName()));
         
@@ -44,11 +46,11 @@ public class DiffCalculator {
 
         // 1. "Paste" Old Clipboard to memory to get transformed B_old
 //        logger.info("Simulating paste for Old Clipboard...");
-        Map<BlockVector3, BlockState> oldBlocks = getTransformedBlocks(oldClip, transform);
+        Map<BlockVector3, BlockState> oldBlocks = getTransformedBlocks(oldClip, transform, instance);
 
         // 2. "Paste" New Clipboard to memory to get transformed B_new
 //        logger.info("Simulating paste for New Clipboard...");
-        Map<BlockVector3, BlockState> newBlocks = getTransformedBlocks(newClip, transform);
+        Map<BlockVector3, BlockState> newBlocks = getTransformedBlocks(newClip, transform, instance);
 
         // 3. Determine Union of Bounds (Relative to Origin 0,0,0 of the paste)
         Set<BlockVector3> allPositions = new HashSet<>();
@@ -127,29 +129,47 @@ public class DiffCalculator {
         return changes;
     }
 
-    public Map<BlockVector3, BlockState> getTransformedBlocks(Clipboard clipboard, AffineTransform transform) {
+    public Map<BlockVector3, BlockState> getTransformedBlocks(Clipboard clipboard, AffineTransform transform, com.jackyblackson.idunntemplates.core.domain.Instance instance) {
         Map<BlockVector3, BlockState> blockMap = new HashMap<>();
         Region region = clipboard.getRegion();
         BlockVector3 minPos = region.getMinimumPoint();
+        BlockVector3 maxPos = region.getMaximumPoint();
+        int width = maxPos.x() - minPos.x() + 1;
+        int height = maxPos.y() - minPos.y() + 1;
+        int length = maxPos.z() - minPos.z() + 1;
 //        System.out.println("getMinimumPoint = " + minPos);
 
         // Iterate through all blocks in the clipboard's region
         for (BlockVector3 position : region) {
 
-            // 1. Get the original block at this position
+            // 1. Check Mask (Local Space)
+            int relX = position.x() - minPos.x();
+            int relY = position.y() - minPos.y();
+            int relZ = position.z() - minPos.z();
+
+            if (instance != null) {
+                if (relX < instance.getMaskXNeg()) continue;
+                if (relX >= width - instance.getMaskXPos()) continue;
+                if (relY < instance.getMaskYNeg()) continue;
+                if (relY >= height - instance.getMaskYPos()) continue;
+                if (relZ < instance.getMaskZNeg()) continue;
+                if (relZ >= length - instance.getMaskZPos()) continue;
+            }
+
+            // 2. Get the original block at this position
             BlockState block = clipboard.getBlock(position);
 
             // 1.5 make the pos to relative val to the MIN point of the region
             BlockVector3 relPos = position.subtract(minPos);
 
-            // 2. Apply the transform to the position
+            // 3. Apply the transform to the position
             // Note: Transforms usually operate on Vector3 (doubles)
             Vector3 transformedVector = transform.apply(relPos.toVector3());
 
-            // 3. Convert back to BlockVector3 (integer coordinates)
+            // 4. Convert back to BlockVector3 (integer coordinates)
             BlockVector3 newPos = transformedVector.toBlockPoint();
 //            System.out.printf("      -=-> at %s = r%s => %s, block = %s\n", position, relPos, newPos, block);
-            // 4. Store in your map
+            // 5. Store in your map
             blockMap.put(newPos, block);
         }
 
@@ -163,16 +183,18 @@ public class DiffCalculator {
      * @param transform The transformation applied to the instance.
      * @param origin    The instance's origin in the world.
      * @param world     The Bukkit world.
+     * @param instance  The instance.
      * @return A set of world coordinates that are considered "managed" by the instance.
      */
     public Set<BlockVector3> calculateManagedBlocks(
             Clipboard clipboard,
             AffineTransform transform,
             BlockVector3 origin,
-            World world
+            World world,
+            com.jackyblackson.idunntemplates.core.domain.Instance instance
     ) {
         Set<BlockVector3> managedBlocks = new HashSet<>();
-        Map<BlockVector3, BlockState> instanceBlocks = getTransformedBlocks(clipboard, transform);
+        Map<BlockVector3, BlockState> instanceBlocks = getTransformedBlocks(clipboard, transform, instance);
 
         for (Map.Entry<BlockVector3, BlockState> entry : instanceBlocks.entrySet()) {
             BlockVector3 relPos = entry.getKey();

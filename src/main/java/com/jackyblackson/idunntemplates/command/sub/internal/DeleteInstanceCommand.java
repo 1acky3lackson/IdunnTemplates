@@ -137,7 +137,7 @@ public class DeleteInstanceCommand extends BaseSubCommand {
         BlockVector3 origin = BlockVector3.at(instance.getX(), instance.getY(), instance.getZ());
         
         // 3. Get managed blocks using DiffCalculator
-        Set<BlockVector3> managedBlocks = diffCalculator.calculateManagedBlocks(clipboard, transform, origin, world);
+        Set<BlockVector3> managedBlocks = diffCalculator.calculateManagedBlocks(clipboard, transform, origin, world, instance);
         
         if (managedBlocks.isEmpty()) {
             return 0;

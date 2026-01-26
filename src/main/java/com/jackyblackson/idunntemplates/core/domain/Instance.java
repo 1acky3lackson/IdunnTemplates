@@ -29,6 +29,14 @@ public class Instance {
     
     private Long deletedTimestamp; // Soft delete
 
+    // Mask / Indentation (Default 0)
+    private int maskXNeg = 0;
+    private int maskXPos = 0;
+    private int maskYNeg = 0;
+    private int maskYPos = 0;
+    private int maskZNeg = 0;
+    private int maskZPos = 0;
+
     public Instance(UUID templateId, String currentVersionId, UUID worldId, int x, int y, int z, int rotationY, boolean flipX, boolean flipY, boolean flipZ, UUID placedBy, String placedByName) {
         this.id = UUID.randomUUID().toString();
         this.templateId = templateId;
@@ -74,4 +82,22 @@ public class Instance {
     
     public boolean isDeleted() { return deletedTimestamp != null; }
     public void setDeletedTimestamp(Long deletedTimestamp) { this.deletedTimestamp = deletedTimestamp; }
+
+    public int getMaskXNeg() { return maskXNeg; }
+    public void setMaskXNeg(int maskXNeg) { this.maskXNeg = maskXNeg; }
+
+    public int getMaskXPos() { return maskXPos; }
+    public void setMaskXPos(int maskXPos) { this.maskXPos = maskXPos; }
+
+    public int getMaskYNeg() { return maskYNeg; }
+    public void setMaskYNeg(int maskYNeg) { this.maskYNeg = maskYNeg; }
+
+    public int getMaskYPos() { return maskYPos; }
+    public void setMaskYPos(int maskYPos) { this.maskYPos = maskYPos; }
+
+    public int getMaskZNeg() { return maskZNeg; }
+    public void setMaskZNeg(int maskZNeg) { this.maskZNeg = maskZNeg; }
+
+    public int getMaskZPos() { return maskZPos; }
+    public void setMaskZPos(int maskZPos) { this.maskZPos = maskZPos; }
 }

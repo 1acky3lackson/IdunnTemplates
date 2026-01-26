@@ -64,9 +64,8 @@ public class SetsAddSubsetCommand extends BaseSubCommand {
     @Override
     public List<String> tabComplete(Player player, String[] args) {
         if (args.length == 2) {
-            List<String> options = new ArrayList<>();
             // Private
-            options.addAll(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
+            List<String> options = new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
             // Global Namespaces
             for (String ns : setManager.getLoadedNamespaces()) {
                 for (String name : setManager.getGlobalNamespace(ns).keySet()) {
