@@ -4,14 +4,13 @@ import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.PlayerSession;
 import com.jackyblackson.idunntemplates.core.history.ChangeSetFingerprintCalculator;
 import com.jackyblackson.idunntemplates.core.history.IdunnHistoryWrapper;
-import com.jackyblackson.idunntemplates.core.util.BukkitPromise;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitPlayer;
-import com.sk89q.worldedit.extent.inventory.BlockBag;
 import com.sk89q.worldedit.history.changeset.ChangeSet;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,29 +20,18 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class HistoryManager implements Listener {
 
     private final SessionManager sessionManager;
-    private final WorldEdit worldEdit = WorldEdit.getInstance();
 
     public HistoryManager(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
     }
 
-    /**
-     * 检查给定的 FAWE 历史索引是否对应一个 Idunn 的历史记录包装器。
-     */
-    private boolean isWrapperExist(Player player, int index) {
-        if (player == null) return false;
-        PlayerSession session = sessionManager.getSession(player.getUniqueId());
-        if (session == null) return false;
-        Map<Integer, IdunnHistoryWrapper> map = session.getPreference().getHistoryMap();
-        return map.containsKey(index);
-    }
-
     // =================================================================================
-    // API: REMEMBER (核心同步逻辑 + 指纹计算)
+    // API: REMEMBER (保持不变)
     // =================================================================================
 
     public void remember(Player player, EditSession editSession, IdunnHistoryWrapper wrapper) {
@@ -53,20 +41,14 @@ public class HistoryManager implements Listener {
 
         if (faweSession == null || mySession == null) return;
 
-        // 1. 获取操作前的状态
         int preSize = getFaweHistorySize(faweSession);
-        // player.sendMessage("HistoryManager.remember: preSize = " + preSize);
 
-        // 2. 执行 FAWE 记录
+        // 执行 FAWE 记录
         faweSession.remember(editSession);
 
-        // 3. 获取操作后的状态
-        int currentSize = getFaweHistorySize(faweSession);
-
-        // 4. --- 关键：获取刚生成的 ChangeSet 并计算指纹 ---
+        // 获取刚生成的 ChangeSet 并计算指纹
         List<?> history = faweSession.getHistory();
         if (history != null && !history.isEmpty()) {
-            // 新操作位于列表末尾
             Object lastObj = history.get(history.size() - 1);
             if (lastObj instanceof ChangeSet) {
                 String fingerprint = ChangeSetFingerprintCalculator.calculateFingerprint((ChangeSet) lastObj);
@@ -74,181 +56,208 @@ public class HistoryManager implements Listener {
             }
         }
 
-        // 5. 同步我们的 Map
-        syncMapAfterRemember(mySession.getPreference().getHistoryMap(), preSize, currentSize, wrapper);
-
-        // 可选：触发保存
+        // 同步 Map (Index)
+        syncMapAfterRemember(mySession.getPreference().getHistoryMap(), preSize, getFaweHistorySize(faweSession), wrapper);
         sessionManager.saveSession(player.getUniqueId());
     }
 
     // =================================================================================
-    // API: UNDO / REDO (包含惰性验证逻辑)
-    // =================================================================================
-
-    public boolean undo(Player player) {
-        BukkitPlayer adaptedPlayer = BukkitAdapter.adapt(player);
-        LocalSession faweSession = WorldEdit.getInstance().getSessionManager().get(adaptedPlayer);
-        if (faweSession == null) return false;
-
-        // 1. 预判 Index
-        int targetIndex = getNextUndoIndex(faweSession);
-        if (targetIndex == -1) return false;
-
-        // 2. 获取并验证 Wrapper
-        IdunnHistoryWrapper wrapper = getValidatedWrapper(player, faweSession, targetIndex);
-        if (wrapper != null) {
-            wrapper.makeUndo();
-            return true;
-        }
-
-        // 3. 执行 FAWE 撤回
-//        BlockBag blockBag = adaptedPlayer instanceof Player ? faweSession.getBlockBag(adaptedPlayer) : null;
-//        EditSession result = faweSession.undo(blockBag, BukkitAdapter.adapt(player));
-//
-//        if (result != null) {
-//            worldEdit.flushBlockBag(adaptedPlayer, result);
-//
-//            // 4. 只有当 Wrapper 通过验证且存在时，才执行 Idunn 撤回
-//
-//            return true;
-//        }
-        return false;
-    }
-
-    public boolean redo(Player player) {
-        BukkitPlayer adaptedPlayer = BukkitAdapter.adapt(player);
-        LocalSession faweSession = WorldEdit.getInstance().getSessionManager().get(adaptedPlayer);
-        if (faweSession == null) return false;
-
-        // 1. 预判 Index
-        int targetIndex = getNextRedoIndex(faweSession);
-        if (targetIndex == -1) return false;
-
-        // 2. 获取并验证 Wrapper
-        IdunnHistoryWrapper wrapper = getValidatedWrapper(player, faweSession, targetIndex);
-        if (wrapper != null) {
-            wrapper.makeRedo();
-            return true;
-        }
-
-        // 3. 执行 FAWE 重做
-//        BlockBag blockBag = adaptedPlayer instanceof Player ? faweSession.getBlockBag(adaptedPlayer) : null;
-//        EditSession result = faweSession.redo(blockBag, BukkitAdapter.adapt(player));
-//
-//        if (result != null) {
-//            worldEdit.flushBlockBag(adaptedPlayer, result);
-//
-//            // 4. 只有当 Wrapper 通过验证且存在时，才执行 Idunn 重做
-//
-//            return true;
-//        }
-        return false;
-    }
-
-    // =================================================================================
-    // 核心：惰性验证与清理 (LAZY VALIDATION)
+    // 逻辑核心: 预处理 UNDO / REDO
     // =================================================================================
 
     /**
-     * 获取指定 Index 的 Wrapper，并执行指纹验证。
-     * 如果指纹不匹配（说明发生了截断或覆盖），则自动从 Map 中清理掉该 Wrapper 并返回 null。
+     * 预处理撤回操作。
+     * 模拟 FAWE 的撤回循环，找到涉及的 Idunn 记录并处理，但不阻止 FAWE 执行。
      */
-    private IdunnHistoryWrapper getValidatedWrapper(Player player, LocalSession faweSession, int index) {
-        PlayerSession mySession = sessionManager.getSession(player.getUniqueId());
-        if (mySession == null) return null;
+    private void preProcessUndo(Player targetPlayer, int amount) {
+        LocalSession session = getSession(targetPlayer);
+        if (session == null) return;
 
-        Map<Integer, IdunnHistoryWrapper> map = mySession.getPreference().getHistoryMap();
-        IdunnHistoryWrapper wrapper = map.get(index);
+        List<?> history = session.getHistory();
+        if (history == null || history.isEmpty()) return;
 
-        if (wrapper == null) return null;
+        // 获取当前状态
+        // FAWE 逻辑：Undo 从 historyIndex 开始，向后(index减小)执行
+        int currentIndex = session.getHistoryIndex(); // 当前指向"最后一次操作"
+        int negIndex = session.getHistoryNegativeIndex(); // 当前倒数位置
 
-        // 开始验证
-        List<?> history = faweSession.getHistory();
+        // 模拟循环
+        for (int i = 0; i < amount; i++) {
+            // 检查是否到底
+            // 注意：当 negIndex == size 时，说明已经全部撤回到起点了
+            if (negIndex + i >= history.size()) {
+                break;
+            }
 
-        // 1. 越界检查 (Index 超出当前历史范围，说明发生了截断)
-        if (index < 0 || index >= history.size()) {
-            map.remove(index);
-            sessionManager.saveSession(player.getUniqueId());
-            player.sendMessage("§8[Idunn] Auto-cleaned truncated history at index " + index);
-            return null;
+            // 计算这一步 Undo 将要撤销的 Index
+            // 当前 Index 是 currentIndex，撤销它之后，指针会变成 currentIndex - 1
+            // 循环中每一步，指针都会相对前一步 -1
+            int targetIndex = currentIndex - i;
+
+            if (targetIndex >= 0) {
+                processIdunnLogic(targetPlayer, session, targetIndex, true);
+            }
         }
+    }
 
-        // 2. 指纹检查
+    /**
+     * 预处理重做操作。
+     */
+    private void preProcessRedo(Player targetPlayer, int amount) {
+        LocalSession session = getSession(targetPlayer);
+        if (session == null) return;
+
+        List<?> history = session.getHistory();
+        if (history == null || history.isEmpty()) return;
+
+        // 获取当前状态
+        // FAWE 逻辑：Redo 意味着 historyNegativeIndex 减小，指针 index 增加
+        int currentIndex = session.getHistoryIndex();
+        int negIndex = session.getHistoryNegativeIndex();
+
+        // 模拟循环
+        for (int i = 0; i < amount; i++) {
+            // 检查是否到顶
+            // 如果 negIndex == 0，说明已经在最新状态，无法 Redo
+            if (negIndex - i <= 0) {
+                break;
+            }
+
+            // 计算这一步 Redo 将要恢复的 Index
+            // Redo 是将"未来"的操作重新生效。
+            // 按照 FAWE 源码：negIndex--; ChangeSet = get(getHistoryIndex());
+            // 意味着 Redo 的目标是 (currentIndex + 1 + i) ?
+            // 让我们回看 FAWE 源码：
+            // redo() -> historyNegativeIndex--; ChangeSet c = history.get(getHistoryIndex());
+            // getHistoryIndex() 是基于 size 和 negativeIndex 计算的： size - 1 - negIndex
+            // 所以，Redo 时，先减少 negIndex (意味着 Index 增加 1)，然后获取那个新的位置。
+            // 所以目标 Index = currentIndex + 1 + i
+
+            int targetIndex = currentIndex + 1 + i;
+
+            if (targetIndex < history.size()) {
+                processIdunnLogic(targetPlayer, session, targetIndex, false);
+            }
+        }
+    }
+
+    /**
+     * 处理单个历史节点的 Idunn 逻辑 (验证指纹 -> 执行/清理)
+     */
+    private void processIdunnLogic(Player player, LocalSession session, int index, boolean isUndo) {
+        // 1. 获取玩家数据
+        PlayerSession playerSession = sessionManager.getSession(player.getUniqueId());
+        if (playerSession == null) return;
+        Map<Integer, IdunnHistoryWrapper> map = playerSession.getPreference().getHistoryMap();
+
+        // 2. 检查是否有记录
+        IdunnHistoryWrapper wrapper = map.get(index);
+        if (wrapper == null) return;
+
+        // 3. 惰性验证 (指纹检查)
+        List<?> history = session.getHistory();
         Object faweObj = history.get(index);
+
+        // 如果对象是 ChangeSet，计算指纹并比对
         if (faweObj instanceof ChangeSet) {
             String currentFp = ChangeSetFingerprintCalculator.calculateFingerprint((ChangeSet) faweObj);
-
             if (!wrapper.validateFingerprint(currentFp)) {
-                // 指纹不匹配，说明该位置被覆盖了 (Overwrite)
+                // 指纹不匹配：说明发生了覆盖/错位，删除脏数据
                 map.remove(index);
                 sessionManager.saveSession(player.getUniqueId());
-                player.sendMessage("§8[Idunn] Auto-cleaned stale history at index " + index);
-                return null;
+                // player.sendMessage("§8[Idunn] Auto-cleaned stale history at index " + index);
+                return;
             }
         } else {
-            // 如果取出的不是 ChangeSet，说明类型不对，也要清理
-            map.remove(index);
-            player.sendMessage("§8[Idunn] Auto-cleaned wrong typed history at index " + index);
+            map.remove(index); // 类型不对，清理
             sessionManager.saveSession(player.getUniqueId());
-            return null;
+            return;
         }
 
-        // 验证通过
-        return wrapper;
+        // 4. 验证通过，执行业务逻辑
+        if (isUndo) {
+            wrapper.makeUndo();
+        } else {
+            wrapper.makeRedo();
+        }
     }
 
     // =================================================================================
-    // 监听器: 智能拦截指令
+    // 监听器: 拦截与解析
     // =================================================================================
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onCommand(PlayerCommandPreprocessEvent event) {
-        String msg = event.getMessage().toLowerCase().trim();
-        boolean isUndo = msg.equals("//undo") || msg.equals("/undo") || msg.equals("/fawe:undo");
-        boolean isRedo = msg.equals("//redo") || msg.equals("/redo") || msg.equals("/fawe:redo");
+        String message = event.getMessage();
+        String[] split = message.split(" ");
+        if (split.length == 0) return;
 
+        String command = split[0].toLowerCase();
+        // 兼容 /undo, //undo, /fawe:undo
+        boolean isUndo = command.endsWith("undo");
+        boolean isRedo = command.endsWith("redo");
+
+        // 快速过滤非 WE 指令
         if (!isUndo && !isRedo) return;
-
-        Player player = event.getPlayer();
-        if (!player.hasPermission("worldedit.history.undo")) return;
-
-        // 1. 获取 FAWE Session
-        BukkitPlayer adaptedPlayer = BukkitAdapter.adapt(player);
-        LocalSession faweSession = WorldEdit.getInstance().getSessionManager().get(adaptedPlayer);
-        if (faweSession == null) return;
-
-        // 2. [Peek] 预读：看一眼即将被操作的 Index 是多少
-        int targetIndex = -1;
-        if (isUndo) {
-            targetIndex = getNextUndoIndex(faweSession);
-        } else {
-            targetIndex = getNextRedoIndex(faweSession);
+        // 简单的判定，防止拦截了其他插件的同名指令(虽然 undo/redo 极其罕见)
+        if (!command.equals("/undo") && !command.equals("//undo") && !command.equals("/redo") && !command.equals("//redo")) {
+            if (!command.contains("worldedit") && !command.contains("fawe")) return;
         }
 
-        if (targetIndex == -1) return;
+        Player sender = event.getPlayer();
+        if (!sender.hasPermission("worldedit.history.undo")) return;
 
-        // 3. [Check] 检查这个 Index 是否属于 Idunn 的历史记录
-        // 注意：这里仅仅检查是否存在 key。
-        // 如果该 key 已经失效（指纹不匹配），会在随后的 undo()/redo() 调用中被 getValidatedWrapper 自动清理
-        boolean isIdunnRecord = isWrapperExist(player, targetIndex);
+        // --- 解析参数 ---
+        // 格式: /undo [amount] [player] 或 /undo [player] [amount]
+        // 默认值
+        int amount = 1;
+        Player targetPlayer = sender;
 
-        if (isIdunnRecord) {
-            // A. 是我们的记录 -> 自定义逻辑
+        if (split.length > 1) {
+            String arg1 = split[1];
+            String arg2 = (split.length > 2) ? split[2] : null;
 
-            if (isUndo) {
-                undo(player);
+            // 尝试解析 Arg1
+            Integer arg1Int = tryParseInt(arg1);
+
+            if (arg1Int != null) {
+                // Arg1 是数字 -> amount
+                amount = arg1Int;
+                // 此时 Arg2 可能是玩家
+                if (arg2 != null) {
+                    Player p = Bukkit.getPlayer(arg2);
+                    if (p != null) targetPlayer = p;
+                }
             } else {
-                redo(player);
+                // Arg1 不是数字 -> 可能是玩家
+                Player p = Bukkit.getPlayer(arg1);
+                if (p != null) targetPlayer = p;
+
+                // 此时 Arg2 可能是数字
+                if (arg2 != null) {
+                    Integer arg2Int = tryParseInt(arg2);
+                    if (arg2Int != null) amount = arg2Int;
+                }
             }
         }
-        // B. 不是我们的记录 -> 放行
 
-        // Debug After
-        /*
-        BukkitPromise.resolve(IdunnTemplates.getInstance(), null).then(voidResult -> {
-             // ... debugging logic ...
-        });
-        */
+        // 权限检查: 如果操作的是他人
+        if (!targetPlayer.getUniqueId().equals(sender.getUniqueId())) {
+            if (!sender.hasPermission(isUndo ? "worldedit.history.undo.other" : "worldedit.history.redo.other")) {
+                return; // 让 FAWE 自己去拒绝权限，我们不插手
+            }
+        }
+
+        // --- 执行预处理 ---
+        // 我们只负责处理数据，处理完后 event.setCancelled(false) 让 FAWE 处理方块
+        if (isUndo) {
+            preProcessUndo(targetPlayer, amount);
+        } else {
+            preProcessRedo(targetPlayer, amount);
+        }
+
+        // 显式放行 (虽然默认就是 false，但表明意图)
+        event.setCancelled(false);
     }
 
     // =================================================================================
@@ -257,31 +266,32 @@ public class HistoryManager implements Listener {
 
     private void syncMapAfterRemember(Map<Integer, IdunnHistoryWrapper> map, int preSize, int currentSize, IdunnHistoryWrapper newWrapper) {
         int newIndex = currentSize - 1;
-
-        // 1. [截断处理] 清除旧的"未来"
+        // 截断处理
         map.keySet().removeIf(key -> key >= newIndex);
-
-        // 2. [溢出处理] 列表满时的左移
+        // 溢出处理
         if (preSize > 0 && preSize == currentSize) {
             map.remove(0);
             Map<Integer, IdunnHistoryWrapper> shiftedMap = new HashMap<>();
             for (Map.Entry<Integer, IdunnHistoryWrapper> entry : map.entrySet()) {
                 int oldKey = entry.getKey();
-                if (oldKey > 0) {
-                    shiftedMap.put(oldKey - 1, entry.getValue());
-                }
+                if (oldKey > 0) shiftedMap.put(oldKey - 1, entry.getValue());
             }
             map.clear();
             map.putAll(shiftedMap);
         }
-
-        // 3. [添加]
         map.put(newIndex, newWrapper);
     }
 
     // =================================================================================
-    // 内部逻辑: 辅助工具
+    // 辅助工具
     // =================================================================================
+
+    private LocalSession getSession(Player player) {
+        try {
+            BukkitPlayer adapted = BukkitAdapter.adapt(player);
+            return WorldEdit.getInstance().getSessionManager().get(adapted);
+        } catch (Exception e) { return null; }
+    }
 
     private int getFaweHistorySize(LocalSession session) {
         try {
@@ -290,25 +300,11 @@ public class HistoryManager implements Listener {
         } catch (Exception e) { return 0; }
     }
 
-    private int getNextUndoIndex(LocalSession session) {
+    private Integer tryParseInt(String s) {
         try {
-            int pointer = session.getHistoryIndex();
-            // Undo 对应当前指针位置 (FAWE 逻辑: 指针指向下一个空位或当前栈顶?
-            // 通常 undo 是操作 history[index-1] 然后 index--，或者 history[index] 取决于实现细节。
-            // 根据你的调试反馈，这里似乎直接用 historyIndex 即可)
-            return pointer;
-        } catch (Exception e) { return -1; }
-    }
-
-    private int getNextRedoIndex(LocalSession session) {
-        try {
-            int pointer = session.getHistoryIndex();
-            int negPointer = session.getHistoryNegativeIndex();
-            // Redo 意味着向未来走
-            if (negPointer > 0) {
-                return pointer + 1;
-            }
-        } catch (Exception e) { return -1; }
-        return -1;
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
