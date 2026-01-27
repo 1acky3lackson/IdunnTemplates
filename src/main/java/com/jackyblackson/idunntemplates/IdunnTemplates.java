@@ -2,7 +2,6 @@ package com.jackyblackson.idunntemplates;
 
 import com.jackyblackson.idunntemplates.command.IdunnCommand;
 import com.jackyblackson.idunntemplates.core.calc.BlockComparator;
-import com.jackyblackson.idunntemplates.core.history.IdunnUndoRedoListener;
 import com.jackyblackson.idunntemplates.core.store.FileInstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.FileTemplateStorage;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
@@ -186,7 +185,7 @@ public final class IdunnTemplates extends JavaPlugin {
         
         // 7. Tasks
         // Run particle effects every 10 ticks (0.5s)
-        effectManager.runTaskTimer(this, 20L, 10L);
+        effectManager.runTaskTimer(this, 20L, 5L);
 
         // 8. Load Sessions for Online Players (Handle Reloads)
         for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {

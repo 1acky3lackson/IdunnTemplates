@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage;
+
 public class HistoryManager implements Listener {
 
     private final SessionManager sessionManager;
@@ -165,12 +167,13 @@ public class HistoryManager implements Listener {
                 // 指纹不匹配：说明发生了覆盖/错位，删除脏数据
                 map.remove(index);
                 sessionManager.saveSession(player.getUniqueId());
-                // player.sendMessage("§8[Idunn] Auto-cleaned stale history at index " + index);
+                player.sendMessage(getMessage(player, "history.manager.remove.stale", String.valueOf(index)));
                 return;
             }
         } else {
             map.remove(index); // 类型不对，清理
             sessionManager.saveSession(player.getUniqueId());
+            player.sendMessage(getMessage(player, "history.manager.remove.wrong_type", String.valueOf(index), faweObj.getClass().getName()));
             return;
         }
 

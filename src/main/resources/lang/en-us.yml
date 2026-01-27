@@ -293,3 +293,12 @@ resize:
   scale_range: "&cScale must be between &e%1%&c and &e%2%&c."
   cooldown: "&cYou must wait &e%1%&c seconds before using this command again."
   resized: "&aYour size has been set to &e%1%&a."
+history:
+  undo:
+    success: "    [IDUNN] Instance %1% data removed successfully (Undo), Template: %2%"
+  redo:
+    success: "    [IDUNN] Instance %1% data restored successfully (Redo), Template: %2%"
+  manager:
+    remove:
+      stale: "    §8[Idunn] Automatically cleaned up stale history record at index %1%"
+      wrong_type: "    §8[Idunn] Automatically cleaned up unknown history record type at index %1%, type: %2%; please report this to the server administrator!"

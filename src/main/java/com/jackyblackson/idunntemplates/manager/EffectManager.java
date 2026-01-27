@@ -310,7 +310,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             if (holdingWand || isInside) {
                 // Draw Box
                 if (min.distance(pLoc) < VIEW_DISTANCE) {
-                    if (pref != null && pref.isParticleInstanceBoundaries()) {
+                    if (pref != null && (pref.isParticleInstanceBoundaries() || holdingWand)) {
                         Particle.DustOptions dustOptions = getParticleColor(inst);
                         ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.DUST, dustOptions);
                         // Draw Line to Center

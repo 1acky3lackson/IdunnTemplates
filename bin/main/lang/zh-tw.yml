@@ -293,3 +293,12 @@ resize:
   scale_range: "&c縮放比例必須介於 &e%1%&c 與 &e%2%&c 之間。"
   cooldown: "&c你需要等待 &e%1%&c 秒後才能再次使用此指令。"
   resized: "&a你的身形比例已設置為 &e%1%&a。"
+history:
+  undo:
+    success: "    [IDUNN] 實例 %1% 資料已成功移除（撤銷），模板：%2%"
+  redo:
+    success: "    [IDUNN] 實例 %1% 資料已成功復原（重做），模板：%2%"
+  manager:
+    remove:
+      stale: "    §8[Idunn] 已自動清理過期的歷史紀錄，位於索引 %1%"
+      wrong_type: "    §8[Idunn] 已自動清理未知類型的歷史紀錄，位於索引 %1%，類型：%2%；請將此訊息回報給伺服器管理員！"

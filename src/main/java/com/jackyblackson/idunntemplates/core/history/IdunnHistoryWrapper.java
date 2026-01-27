@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage;
+
 public class IdunnHistoryWrapper implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -72,6 +74,8 @@ public class IdunnHistoryWrapper implements Serializable {
     public void makeUndo() {
         if (historyType == HistoryType.INSTANCE_PLACE) {
             String instanceId = (String) data.get("instanceId");
+            Instance instanceSnapshot = (Instance) data.get("instanceSnapshot");
+
             if (instanceId == null) return;
 
             InstanceRepository repo = getInstanceRepository();
@@ -86,9 +90,11 @@ public class IdunnHistoryWrapper implements Serializable {
             // 如果找到了，执行硬删除
             if (target != null) {
                 repo.hardDelete(target);
-                Player p = Bukkit.getPlayer(playerUUID);
-                if (p != null) p.sendMessage(ChatColor.YELLOW + "[Idunn] Instance data removed (Undo).");
+            } else {
+                repo.hardDelete(instanceSnapshot);
             }
+            Player p = Bukkit.getPlayer(playerUUID);
+            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.undo.success", instanceId.substring(0, 8), instanceSnapshot.getTemplate().getPath()));
         }
     }
 
@@ -112,7 +118,7 @@ public class IdunnHistoryWrapper implements Serializable {
             repo.saveInstance(instanceSnapshot);
 
             Player p = Bukkit.getPlayer(playerUUID);
-            if (p != null) p.sendMessage(ChatColor.YELLOW + "[Idunn] Instance data restored (Redo).");
+            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.redo.success", instanceSnapshot.getId().substring(0, 8), instanceSnapshot.getTemplate().getPath()));
         }
     }
 
