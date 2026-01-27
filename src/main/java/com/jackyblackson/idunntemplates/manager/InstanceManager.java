@@ -1,8 +1,10 @@
 package com.jackyblackson.idunntemplates.manager;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.history.IdunnHistoryWrapper;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
@@ -104,9 +106,9 @@ public class InstanceManager {
                 .build()
         ) {
             // Bind to player for undo
-            com.sk89q.worldedit.LocalSession session = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player));
+//            com.sk89q.worldedit.LocalSession session = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player));
 //                editSession = session.createEditSession(BukkitAdapter.adapt(player));
-            session.remember(editSession);
+//            session.remember(editSession);
 
             com.sk89q.worldedit.function.mask.Mask mask = null;
 
@@ -147,32 +149,37 @@ public class InstanceManager {
                     .ignoreAirBlocks(true)
                     .build();
             Operations.completeLegacy(op);
+
+
+
+
+            var minPos = TransformUtil.getInstanceMinPos(location, clipboard);
+
+            // Create Record
+            Instance instance = new Instance(
+                    template.getId(),
+                    latest.getVersionId(),
+                    Objects.requireNonNull(Objects.requireNonNull(location.getWorld()).getUID()),
+                    minPos.x(), minPos.y(), minPos.z(),
+                    rot, flipX, flipY, flipZ,
+                    player.getUniqueId(),
+                    player.getName()
+            );
+
+            // Set Masks
+            instance.setMaskXNeg(maskXNeg);
+            instance.setMaskXPos(maskXPos);
+            instance.setMaskYNeg(maskYNeg);
+            instance.setMaskYPos(maskYPos);
+            instance.setMaskZNeg(maskZNeg);
+            instance.setMaskZPos(maskZPos);
+
+            instanceRepository.saveInstance(instance);
+
+            IdunnTemplates.getInstance().getHistoryManager().remember(player, editSession, IdunnHistoryWrapper.placeInstanceHistory(player, instance));
+            IdunnTemplates.getInstance().getSessionManager().saveSession(player.getUniqueId());
+            return instance;
         }
-
-        var minPos = TransformUtil.getInstanceMinPos(location, clipboard);
-
-        // Create Record
-        Instance instance = new Instance(
-                template.getId(),
-                latest.getVersionId(),
-                Objects.requireNonNull(Objects.requireNonNull(location.getWorld()).getUID()),
-                minPos.x(), minPos.y(), minPos.z(),
-                rot, flipX, flipY, flipZ,
-                player.getUniqueId(),
-                player.getName()
-        );
-        
-        // Set Masks
-        instance.setMaskXNeg(maskXNeg);
-        instance.setMaskXPos(maskXPos);
-        instance.setMaskYNeg(maskYNeg);
-        instance.setMaskYPos(maskYPos);
-        instance.setMaskZNeg(maskZNeg);
-        instance.setMaskZPos(maskZPos);
-        
-        instanceRepository.saveInstance(instance);
-        
-        return instance;
     }
     
     private com.sk89q.worldedit.regions.Region calculateWorldRegion(Clipboard clipboard, Location target, int rot, boolean flipX, boolean flipY, boolean flipZ,

@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates;
 
 import com.jackyblackson.idunntemplates.command.IdunnCommand;
 import com.jackyblackson.idunntemplates.core.calc.BlockComparator;
+import com.jackyblackson.idunntemplates.core.history.IdunnUndoRedoListener;
 import com.jackyblackson.idunntemplates.core.store.FileInstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.FileTemplateStorage;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
@@ -28,6 +29,7 @@ public final class IdunnTemplates extends JavaPlugin {
     private com.jackyblackson.idunntemplates.manager.SetManager setManager;
     private BrushPresetManager brushPresetManager;
     private LanguageManager languageManager;
+    private HistoryManager historyManager;
 
     // RESIZE
     private ResizeConfigManager resizeConfigManager;
@@ -85,6 +87,10 @@ public final class IdunnTemplates extends JavaPlugin {
 
     public ResizeManager getResizeManager() {
         return resizeManager;
+    }
+
+    public HistoryManager getHistoryManager() {
+        return historyManager;
     }
 
     @Override
@@ -145,6 +151,8 @@ public final class IdunnTemplates extends JavaPlugin {
         this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger(), defaultEmptyBlocks);
         this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager);
 
+        this.historyManager = new HistoryManager(sessionManager);
+
         // Inject sessionManager into instanceManager via setter or reflection if constructor not updated here?
         // Wait, I updated InstanceManager constructor in previous turn but I need to update the call here.
         // I updated InstanceManager constructor in Turn 5, but I updated the call in IdunnTemplates in Turn 5 too?
@@ -174,6 +182,7 @@ public final class IdunnTemplates extends JavaPlugin {
         getServer().getPluginManager().registerEvents(sessionManager, this);
         getServer().getPluginManager().registerEvents(effectManager, this);
         getServer().getPluginManager().registerEvents(brushManager, this);
+        getServer().getPluginManager().registerEvents(historyManager, this);
         
         // 7. Tasks
         // Run particle effects every 10 ticks (0.5s)

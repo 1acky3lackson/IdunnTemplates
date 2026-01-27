@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.command.sub;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.util.MessageUtil;
 import com.jackyblackson.idunntemplates.manager.InstanceManager;

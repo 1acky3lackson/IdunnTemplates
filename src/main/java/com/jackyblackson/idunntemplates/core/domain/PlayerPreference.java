@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
 import com.jackyblackson.idunntemplates.core.domain.brush.BrushSession;
+import com.jackyblackson.idunntemplates.core.history.IdunnHistoryWrapper;
 import com.jackyblackson.idunntemplates.core.set.TemplateSet;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -35,6 +36,10 @@ public class PlayerPreference {
     
     // Key: Material Name, Value: BrushSession
     private Map<String, BrushSession> boundBrushes = new HashMap<>();
+
+    // 新增：历史记录映射 (Key: FAWE History Index, Value: Wrapper)
+    // 注意：IdunnHistoryWrapper 需要支持序列化，或者在 SessionManager 保存时进行特殊处理
+    private Map<Integer, IdunnHistoryWrapper> historyMap = new HashMap<>();
 
     private String playerName;
 
@@ -152,5 +157,16 @@ public class PlayerPreference {
     
     public void setBoundBrushes(Map<String, BrushSession> boundBrushes) {
         this.boundBrushes = boundBrushes;
+    }
+
+    public Map<Integer, IdunnHistoryWrapper> getHistoryMap() {
+        if (historyMap == null) {
+            historyMap = new HashMap<>();
+        }
+        return historyMap;
+    }
+
+    public void setHistoryMap(Map<Integer, IdunnHistoryWrapper> historyMap) {
+        this.historyMap = historyMap;
     }
 }
