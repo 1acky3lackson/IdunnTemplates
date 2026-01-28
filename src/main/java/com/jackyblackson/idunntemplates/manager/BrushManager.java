@@ -117,6 +117,9 @@ public class BrushManager implements Listener {
 
         try {
             var instance = instanceManager.placeInstanceAndReturn(player, next.getTemplate(), targetLoc, next.getRotation(), next.isFlipX(), false, next.isFlipZ());
+            if (instance == null) {
+                return;
+            }
             MessageUtil.sendMessageAfterPlace(instance, player);
             // Update for next time
             updateNextPlacement(settings, player);

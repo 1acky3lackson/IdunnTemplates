@@ -63,7 +63,10 @@ public class SetsPlaceCommand extends BaseSubCommand {
             // We need to capture the created instance ID for Undo.
             com.jackyblackson.idunntemplates.core.domain.Instance inst = 
                 instanceManager.placeInstanceAndReturn(player, t, player.getLocation(), rot, fx, fy, fz);
-                
+
+            if (inst == null) {
+                return;
+            }
             // Regenerate next
             sessionManager.regenerateNextPlacement(player.getUniqueId());
             

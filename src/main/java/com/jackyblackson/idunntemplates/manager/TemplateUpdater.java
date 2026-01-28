@@ -30,12 +30,21 @@ public class TemplateUpdater {
     private final InstanceRepository instanceRepository;
     private final DiffCalculator diffCalculator;
     private final Logger logger;
+    private CascadingUpdateManager cascadingUpdateManager;
 
     public TemplateUpdater(TemplateStorage templateStorage, InstanceRepository instanceRepository, BlockComparator comparator, Logger logger) {
         this.templateStorage = templateStorage;
         this.instanceRepository = instanceRepository;
         this.diffCalculator = new DiffCalculator(comparator, logger);
         this.logger = logger;
+    }
+
+    public void setCascadingUpdateManager(CascadingUpdateManager cascadingUpdateManager) {
+        this.cascadingUpdateManager = cascadingUpdateManager;
+    }
+    
+    public CascadingUpdateManager getCascadingUpdateManager() {
+        return cascadingUpdateManager;
     }
     
     // Triggered by manual commit or scheduled check
@@ -157,6 +166,14 @@ public class TemplateUpdater {
         instance.setCurrentVersionId(newVersion.getVersionId());
         instanceRepository.saveInstance(instance);
 //        logger.info("Successfully updated instance " + instance.getId() + " to version " + newVersion.getVersionId());
+
+        // 7. Trigger Cascading Update (Phase 4)
+        if (cascadingUpdateManager != null && !instance.isWild()) {
+            UUID parentId = instance.getEmbeddedInTemplateId();
+            if (parentId != null) {
+                cascadingUpdateManager.scheduleUpdate(parentId);
+            }
+        }
     }
 
     private Clipboard loadTransformedClipboard(Template template, String versionId, int rot, boolean flipX, boolean flipY, boolean flipZ) {

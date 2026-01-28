@@ -37,6 +37,14 @@ public class Instance {
     private int maskZNeg = 0;
     private int maskZPos = 0;
 
+    // parent Template
+    /**
+     * 如果此实例是放置在某个模板（父模板）的 Master Region 内，
+     * 则此字段存储该父模板的 UUID。
+     * 如果是放置在野外（Wild），则为 null。
+     */
+    private UUID embeddedInTemplateId;
+
     public Instance(UUID templateId, String currentVersionId, UUID worldId, int x, int y, int z, int rotationY, boolean flipX, boolean flipY, boolean flipZ, UUID placedBy, String placedByName) {
         this.id = UUID.randomUUID().toString();
         this.templateId = templateId;
@@ -100,4 +108,16 @@ public class Instance {
 
     public int getMaskZPos() { return maskZPos; }
     public void setMaskZPos(int maskZPos) { this.maskZPos = maskZPos; }
+
+    public UUID getEmbeddedInTemplateId() { return embeddedInTemplateId; }
+
+    public void setEmbeddedInTemplateId(UUID embeddedInTemplateId) { this.embeddedInTemplateId = embeddedInTemplateId; }
+
+    public boolean isWild() {
+        return this.embeddedInTemplateId == null;
+    }
+
+    public void setParentTemplate(Template t) {
+        this.embeddedInTemplateId = t.getId();
+    }
 }

@@ -29,7 +29,7 @@ public class PlaceCommand extends BaseSubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        // /idunn place <path> [rot] [flipX] [flipY] [flipZ] [flags...]
+        // /idunn place <path> [rot] [flipX] [flipY] [flipZ] [flags...] [-confirm]
         if (args.length < 2) {
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.usage"));
             return;
@@ -40,6 +40,8 @@ public class PlaceCommand extends BaseSubCommand {
         boolean flipX = false;
         boolean flipY = false;
         boolean flipZ = false;
+        // boolean confirm = false; // confirm is now implicit if parentId is provided
+        java.util.UUID parentId = null;
         
         int maskXNeg = 0;
         int maskXPos = 0;
@@ -51,7 +53,12 @@ public class PlaceCommand extends BaseSubCommand {
         int posIndex = 0;
         for (int i = 2; i < args.length; i++) {
             String arg = args[i];
-            if (arg.startsWith("-") && arg.contains(":")) {
+            // if (arg.equalsIgnoreCase("-confirm")) { confirm = true; } // deprecated
+            if (arg.startsWith("-parent:")) {
+                try {
+                    parentId = java.util.UUID.fromString(arg.substring(8));
+                } catch (IllegalArgumentException ignored) {}
+            } else if (arg.startsWith("-") && arg.contains(":")) {
                 // Parse flag: -face:val
                 try {
                     String[] parts = arg.substring(1).split(":");
@@ -92,9 +99,11 @@ public class PlaceCommand extends BaseSubCommand {
         try {
             com.jackyblackson.idunntemplates.core.domain.Instance inst = 
                 instanceManager.placeInstanceAndReturn(player, template, player.getLocation(), rot, flipX, flipY, flipZ,
-                        maskXNeg, maskXPos, maskYNeg, maskYPos, maskZNeg, maskZPos);
+                        maskXNeg, maskXPos, maskYNeg, maskYPos, maskZNeg, maskZPos, parentId); // Pass specific parent ID
 
-            MessageUtil.sendMessageAfterPlace(inst, player);
+            if (inst != null) {
+                MessageUtil.sendMessageAfterPlace(inst, player);
+            }
 
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + e.getMessage());

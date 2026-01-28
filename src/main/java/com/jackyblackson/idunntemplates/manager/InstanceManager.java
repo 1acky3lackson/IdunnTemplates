@@ -3,6 +3,7 @@ package com.jackyblackson.idunntemplates.manager;
 import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
+import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.history.IdunnHistoryWrapper;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
@@ -19,10 +20,17 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class InstanceManager {
@@ -30,30 +38,26 @@ public class InstanceManager {
     private final TemplateStorage templateStorage;
     private final InstanceRepository instanceRepository;
     private final Logger logger;
-    private final com.jackyblackson.idunntemplates.manager.SessionManager sessionManager; // Added field
+    private final com.jackyblackson.idunntemplates.manager.SessionManager sessionManager;
+    private final TemplateManager templateManager; // Added field
 
-    // Updated Constructor
-    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger) {
-        this.templateStorage = templateStorage;
-        this.instanceRepository = instanceRepository;
-        this.logger = logger;
-        this.sessionManager = null; // Should be injected via setters or updated constructor.
-        // Wait, I should update the constructor signature but that breaks IdunnTemplates.java
-        // I will use a setter or overload constructor?
-        // Better to update constructor and IdunnTemplates.java.
-    }
-    
-    // Proper Constructor
-    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager) {
+    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager, TemplateManager templateManager) {
         this.templateStorage = templateStorage;
         this.instanceRepository = instanceRepository;
         this.logger = logger;
         this.sessionManager = sessionManager;
+        this.templateManager = templateManager;
+    }
+    
+    // Kept for compatibility but should be updated in IdunnTemplates.java
+    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager) {
+        this(templateStorage, instanceRepository, logger, sessionManager, null);
     }
 
     /**
      * Places an instance of a template at the specified location.
      */
+    @Nullable
     public Instance placeInstanceAndReturn(
             Player player, Template template, Location location,
             int rot, boolean flipX, boolean flipY, boolean flipZ
@@ -63,16 +67,37 @@ public class InstanceManager {
                 rot, flipX, flipY, flipZ,
                 0, 0,
                 0, 0,
-                0, 0
+                0, 0,
+                null // default confirm
         );
     }
 
+    @Nullable
     public Instance placeInstanceAndReturn(
             Player player, Template template, Location location,
             int rot, boolean flipX, boolean flipY, boolean flipZ,
             int maskXNeg, int maskXPos,
             int maskYNeg, int maskYPos,
             int maskZNeg, int maskZPos
+    ) throws Exception {
+        return placeInstanceAndReturn(
+                player, template, location,
+                rot, flipX, flipY, flipZ,
+                maskXNeg, maskXPos,
+                maskYNeg, maskYPos,
+                maskZNeg, maskZPos,
+                null
+        );
+    }
+
+    @Nullable
+    public Instance placeInstanceAndReturn(
+            Player player, Template template, Location location,
+            int rot, boolean flipX, boolean flipY, boolean flipZ,
+            int maskXNeg, int maskXPos,
+            int maskYNeg, int maskYPos,
+            int maskZNeg, int maskZPos,
+            java.util.UUID confirmedParentId // Changed from boolean
     ) throws Exception {
         // check permission
         if (!player.hasPermission(PermissionNames.Templates.place)) {
@@ -95,6 +120,68 @@ public class InstanceManager {
                 flipY,
                 flipZ
         );
+
+        // --- Recursive Detection Logic ---
+        // Calculate the effective world region of the instance to be placed
+        com.sk89q.worldedit.regions.Region targetRegion = calculateWorldRegion(clipboard, location, rot, flipX, flipY, flipZ, maskXNeg, maskXPos, maskYNeg, maskYPos, maskZNeg, maskZPos);
+        Template parentTemplate = null;
+        
+        if (templateManager != null) {
+            BlockVector3 min = targetRegion.getMinimumPoint();
+            BlockVector3 max = targetRegion.getMaximumPoint();
+            java.util.List<Template> intersecting = templateManager.getIntersectingTemplates(
+                    location.getWorld().getUID(),
+                    min.x(), min.y(), min.z(),
+                    max.x(), max.y(), max.z()
+            );
+            
+            if (!intersecting.isEmpty()) {
+                if (confirmedParentId == null) {
+                    sendRecursiveConfirmation(player, template, intersecting, rot, flipX, flipY, flipZ, maskXNeg, maskXPos, maskYNeg, maskYPos, maskZNeg, maskZPos);
+                    return null;
+                } else {
+                    // Logic to handle confirmed recursive placement (Phase 3 & 4)
+                    // Find the confirmed parent in the intersecting list
+                    parentTemplate = intersecting.stream()
+                            .filter(t -> t.getId().equals(confirmedParentId))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("The specified parent template '" + confirmedParentId + "' does not overlap with the instance placement area."));
+                    
+                    // 1. Calculate Cuts in World Space
+                    TemplateMetadata pMeta = parentTemplate.getMetadata();
+                    int pMinX = pMeta.getAnchorX();
+                    int pMinY = pMeta.getAnchorY();
+                    int pMinZ = pMeta.getAnchorZ();
+                    int pMaxX = pMinX + pMeta.getWidth() - 1;
+                    int pMaxY = pMinY + pMeta.getHeight() - 1;
+                    int pMaxZ = pMinZ + pMeta.getLength() - 1;
+                    
+                    int cMinX = min.x(); int cMaxX = max.x();
+                    int cMinY = min.y(); int cMaxY = max.y();
+                    int cMinZ = min.z(); int cMaxZ = max.z();
+                    
+                    int cutWMinX = Math.max(0, pMinX - cMinX);
+                    int cutWMaxX = Math.max(0, cMaxX - pMaxX);
+                    int cutWMinY = Math.max(0, pMinY - cMinY);
+                    int cutWMaxY = Math.max(0, cMaxY - pMaxY);
+                    int cutWMinZ = Math.max(0, pMinZ - cMinZ);
+                    int cutWMaxZ = Math.max(0, cMaxZ - pMaxZ);
+                    
+                    // 2. Map World Cuts to Local Masks
+                    int[] localMasks = mapWorldCutsToLocal(rot, flipX, flipZ, cutWMinX, cutWMaxX, cutWMinZ, cutWMaxZ);
+                    
+                    // Combine with existing masks
+                    maskXNeg += localMasks[0];
+                    maskXPos += localMasks[1];
+                    maskZNeg += localMasks[2];
+                    maskZPos += localMasks[3];
+                    
+                    maskYNeg += cutWMinY;
+                    maskYPos += cutWMaxY;
+                }
+            }
+        }
+        // -------------------------------
 
         // Prepare Holder
         ClipboardHolder holder = new ClipboardHolder(clipboard);
@@ -174,12 +261,151 @@ public class InstanceManager {
             instance.setMaskZNeg(maskZNeg);
             instance.setMaskZPos(maskZPos);
 
+            // Phase 3: Data Binding
+            if (parentTemplate != null) {
+                instance.setEmbeddedInTemplateId(parentTemplate.getId());
+                
+                // Update Parent Metadata
+                java.util.Map<UUID, java.util.List<Instance>> childMap = parentTemplate.getMetadata().getChildTemplateInstances();
+                childMap.computeIfAbsent(template.getId(), k -> new java.util.ArrayList<>()).add(instance);
+                
+                // Update Child Metadata (Self)
+                java.util.Map<UUID, java.util.List<Instance>> parentMap = template.getMetadata().getParentTemplateInstances();
+                parentMap.computeIfAbsent(parentTemplate.getId(), k -> new java.util.ArrayList<>()).add(instance);
+                
+                // Save
+                templateManager.saveTemplateMetadata(parentTemplate);
+                templateManager.saveTemplateMetadata(template);
+                
+                logger.info("Recursive link created: Child " + template.getName() + " embedded in Parent " + parentTemplate.getName());
+                
+                // Trigger Cascading Update for the Parent immediately
+                // The parent template now contains a new "foreign" element (the child instance).
+                if (IdunnTemplates.getInstance().getTemplateUpdater().getCascadingUpdateManager() != null) {
+                    IdunnTemplates.getInstance().getTemplateUpdater().getCascadingUpdateManager().scheduleUpdate(parentTemplate.getId());
+                }
+            }
+
             instanceRepository.saveInstance(instance);
 
             IdunnTemplates.getInstance().getHistoryManager().remember(player, editSession, IdunnHistoryWrapper.placeInstanceHistory(player, instance));
             IdunnTemplates.getInstance().getSessionManager().saveSession(player.getUniqueId());
             return instance;
         }
+    }
+    
+    private void sendRecursiveConfirmation(Player player, Template template, java.util.List<Template> parents,
+                                       int rot, boolean flipX, boolean flipY, boolean flipZ,
+                                       int maskXNeg, int maskXPos, int maskYNeg, int maskYPos, int maskZNeg, int maskZPos) {
+        player.sendMessage("");
+        player.sendMessage(ChatColor.YELLOW + "⚠ " + ChatColor.GOLD + "Nested Placement Detected!");
+        player.sendMessage(ChatColor.GRAY + "You are placing " + ChatColor.WHITE + template.getName() + 
+                ChatColor.GRAY + " inside the master region of " + parents.size() + " templates.");
+        player.sendMessage(ChatColor.GRAY + "Please confirm which parent template to attach to:");
+        
+        String placePath = normalizePath(template.getPath());
+
+        // Reconstruct base command string
+        StringBuilder cmdBase = new StringBuilder("/idunn template place " + placePath + " " + rot + " " + flipX + " " + flipY + " " + flipZ);
+        if (maskXPos > 0) cmdBase.append(" -x+:").append(maskXPos);
+        if (maskXNeg > 0) cmdBase.append(" -x-:").append(maskXNeg);
+        if (maskYPos > 0) cmdBase.append(" -y+:").append(maskYPos);
+        if (maskYNeg > 0) cmdBase.append(" -y-:").append(maskYNeg);
+        if (maskZPos > 0) cmdBase.append(" -z+:").append(maskZPos);
+        if (maskZNeg > 0) cmdBase.append(" -z-:").append(maskZNeg);
+        
+        // List all parents with buttons
+        for (Template parent : parents) {
+            TextComponent btn = new TextComponent(" ➤ [Confirm in " + parent.getName() + "]");
+            btn.setColor(net.md_5.bungee.api.ChatColor.GREEN);
+            btn.setBold(true);
+            
+            String fullCmd = cmdBase.toString() + " -parent:" + parent.getId().toString();
+            
+            btn.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, fullCmd));
+            btn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to place inside " + parent.getName()).create()));
+            
+            player.spigot().sendMessage(btn);
+        }
+        player.sendMessage("");
+    }
+    
+    private String normalizePath(String rawPath) {
+        int lastSlash = rawPath.lastIndexOf('/');
+        if (lastSlash >= 0) {
+            String parent = rawPath.substring(0, lastSlash);
+            String name = rawPath.substring(lastSlash + 1);
+            if (name.startsWith("_")) name = name.substring(1);
+            return parent + "/" + name;
+        } else {
+            if (rawPath.startsWith("_")) return rawPath.substring(1);
+            return rawPath;
+        }
+    }
+    
+    /**
+     * Maps world-space cuts (MinX, MaxX, MinZ, MaxZ) to local-space masks (XNeg, XPos, ZNeg, ZPos).
+     * @return int[] { maskXNeg, maskXPos, maskZNeg, maskZPos }
+     */
+    private int[] mapWorldCutsToLocal(int rot, boolean flipX, boolean flipZ, int wCutMinX, int wCutMaxX, int wCutMinZ, int wCutMaxZ) {
+        int lMinX, lMaxX, lMinZ, lMaxZ;
+
+        // 1. Rotation (Y-axis clockwise)
+        // Standard WorldEdit Rotation:
+        // 0:   X+ -> X+, Z+ -> Z+  (Normal)
+        // 90:  X+ -> Z+, Z+ -> X-
+        // 180: X+ -> X-, Z+ -> Z-
+        // 270: X+ -> Z-, Z+ -> X+
+        
+        // However, we are mapping "Cuts" which correspond to Faces.
+        // We want to know: Which Local Face is pointing at World West (MinX)?
+        // If Rot=0: Local XNeg points to World MinX. So lMinX = wCutMinX.
+        
+        switch (rot) {
+            case 90:
+                // Local X+ points to World South (MaxZ). lMaxX = wCutMaxZ
+                // Local Z+ points to World West (MinX).  lMaxZ = wCutMinX
+                // Local X- points to World North (MinZ). lMinX = wCutMinZ
+                // Local Z- points to World East (MaxX).  lMinZ = wCutMaxX
+                lMinX = wCutMinZ;
+                lMaxX = wCutMaxZ; // Wait, X+ -> Z+ (South/MaxZ). Yes.
+                lMinZ = wCutMaxX;
+                lMaxZ = wCutMinX;
+                break;
+            case 180:
+                // Local X+ points to World West (MinX). lMaxX = wCutMinX
+                // Local Z+ points to World North (MinZ). lMaxZ = wCutMinZ
+                lMinX = wCutMaxX;
+                lMaxX = wCutMinX;
+                lMinZ = wCutMaxZ;
+                lMaxZ = wCutMinZ;
+                break;
+            case 270:
+                // Local X+ points to World North (MinZ). lMaxX = wCutMinZ
+                // Local Z+ points to World East (MaxX).  lMaxZ = wCutMaxX
+                lMinX = wCutMaxZ;
+                lMaxX = wCutMinZ;
+                lMinZ = wCutMinX;
+                lMaxZ = wCutMaxX;
+                break;
+            case 0:
+            default:
+                lMinX = wCutMinX;
+                lMaxX = wCutMaxX;
+                lMinZ = wCutMinZ;
+                lMaxZ = wCutMaxZ;
+                break;
+        }
+        
+        // 2. Flip (FlipX usually swaps Left/Right, i.e., XNeg/XPos)
+        if (flipX) {
+            int tmp = lMinX; lMinX = lMaxX; lMaxX = tmp;
+        }
+        if (flipZ) {
+            int tmp = lMinZ; lMinZ = lMaxZ; lMaxZ = tmp;
+        }
+        
+        return new int[] { lMinX, lMaxX, lMinZ, lMaxZ };
     }
     
     private com.sk89q.worldedit.regions.Region calculateWorldRegion(Clipboard clipboard, Location target, int rot, boolean flipX, boolean flipY, boolean flipZ,
@@ -197,9 +423,9 @@ public class InstanceManager {
         
         // Ensure bounds are valid (min <= max)
         if (minX > maxX || minY > maxY || minZ > maxZ) {
-             // Return empty or very small region?
-             // Returning a 0-size region at target?
-             return new com.sk89q.worldedit.regions.CuboidRegion(BlockVector3.at(0,0,0), BlockVector3.at(0,0,0));
+            // Return empty or very small region?
+            // Returning a 0-size region at target?
+            return new com.sk89q.worldedit.regions.CuboidRegion(BlockVector3.at(0,0,0), BlockVector3.at(0,0,0));
         }
 
         // 2. Transform Setup
@@ -248,7 +474,7 @@ public class InstanceManager {
                 BlockVector3.at(wMaxX, wMaxY, wMaxZ)
         );
     }
-    
+
     public void placeInstance(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
         placeInstanceAndReturn(player, template, location, rot, flipX, flipY, flipZ);
     }

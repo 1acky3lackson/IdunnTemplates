@@ -144,11 +144,16 @@ public final class IdunnTemplates extends JavaPlugin {
         this.resizeConfigManager = new ResizeConfigManager(this);
         this.resizeManager = new ResizeManager(this);
         this.resizeConfigManager.loadConfig();
+
+        // Setup Cascading Update Manager
+        CascadingUpdateManager cascadingUpdateManager = new CascadingUpdateManager(templateManager, getLogger());
+        this.templateUpdater.setCascadingUpdateManager(cascadingUpdateManager);
+        cascadingUpdateManager.startTask();
         
         java.util.List<String> defaultEmptyBlocks = getConfig().getStringList("emptyBlocks");
 
         this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger(), defaultEmptyBlocks);
-        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager);
+        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager, templateManager);
 
         this.historyManager = new HistoryManager(sessionManager);
 
@@ -160,7 +165,7 @@ public final class IdunnTemplates extends JavaPlugin {
         // So the line is: this.instanceManager = new InstanceManager(..., sessionManager);
         
         // I need to update it again to match.
-        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager);
+        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager, templateManager);
         
         this.setManager = new com.jackyblackson.idunntemplates.manager.SetManager(setsDir, sessionManager, getLogger());
         
@@ -204,9 +209,9 @@ public final class IdunnTemplates extends JavaPlugin {
         
         if (sessionManager != null) {
             // Save all sessions
-             for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
-                 sessionManager.saveSession(p.getUniqueId());
-             }
+            for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
+                sessionManager.saveSession(p.getUniqueId());
+            }
         }
     }
 }
