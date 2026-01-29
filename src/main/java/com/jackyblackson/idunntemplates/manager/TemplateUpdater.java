@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.manager;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.calc.BlockComparator;
 import com.jackyblackson.idunntemplates.core.calc.DiffCalculator;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
@@ -19,6 +20,7 @@ import org.bukkit.World;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -81,6 +83,12 @@ public class TemplateUpdater {
                         continue;
                     }
 
+                    if (!instance.canUpdate()) {
+                        skippedCount.getAndIncrement();
+                        logger.info("Skip updating for instance because its parent is locked. Instance: " + instance.getId());
+                        continue;
+                    }
+
                     updateSingleInstance(template, instance, newVersion, session);
                     updatedCount.getAndIncrement();
                 }
@@ -94,7 +102,7 @@ public class TemplateUpdater {
 //        logger.info("Update batch complete. Processed: " + updatedCount + ", Skipped: " + skippedCount);
     }
     
-    private void updateSingleInstance(Template template, Instance instance, TemplateVersion newVersion, EditSession session) {
+    public void updateSingleInstance(Template template, Instance instance, TemplateVersion newVersion, EditSession session) {
         logger.info("Updating Instance [" + instance.getId() + "] (World: " + instance.getWorldId() + ") from " + instance.getCurrentVersionId() + " to " + newVersion.getVersionId());
         
         // Load Variations
@@ -165,15 +173,71 @@ public class TemplateUpdater {
         // 6. Update Instance Record
         instance.setCurrentVersionId(newVersion.getVersionId());
         instanceRepository.saveInstance(instance);
-//        logger.info("Successfully updated instance " + instance.getId() + " to version " + newVersion.getVersionId());
+        
+        // V2 FIX: Sync version to Child Template Metadata (parentTemplateInstances)
+        // This ensures that the child template knows its instance in the parent has been updated.
+        TemplateManager tm = getTemplateManager();
+        if (tm != null && instance.getEmbeddedInTemplateId() != null) {
+            // "template" here is the template of the instance (Child Template)
+            // But 'template' passed to this method IS the child template.
+            
+            // We need to update the list in childTemplate -> parentTemplateInstances -> get(parentId)
+            com.jackyblackson.idunntemplates.core.domain.TemplateMetadata meta = template.getMetadata();
+            java.util.List<Instance> instancesInParent = meta.getParentTemplateInstances().get(instance.getEmbeddedInTemplateId());
+            
+            if (instancesInParent != null) {
+                boolean modified = false;
+                for (Instance storedInst : instancesInParent) {
+                    if (storedInst.getId().equals(instance.getId())) {
+                        storedInst.setCurrentVersionId(newVersion.getVersionId());
+                        modified = true;
+                    }
+                }
+                if (modified) {
+                    tm.saveTemplateMetadata(template);
+                }
+            }
+        }
+        
+        // V2 FIX: Also Sync with Parent Template Metadata (childTemplateInstances)
+        // This ensures the parent template knows its child instance has been updated.
+        if (tm != null && instance.getEmbeddedInTemplateId() != null) {
+            Template parentTemplate = tm.getTemplate(instance.getEmbeddedInTemplateId());
+            if (parentTemplate != null) {
+                com.jackyblackson.idunntemplates.core.domain.TemplateMetadata pMeta = parentTemplate.getMetadata();
+                java.util.List<Instance> instancesInChildMap = pMeta.getChildTemplateInstances().get(template.getId());
+                
+                if (instancesInChildMap != null) {
+                    boolean modified = false;
+                    for (Instance storedInst : instancesInChildMap) {
+                        if (storedInst.getId().equals(instance.getId())) {
+                            storedInst.setCurrentVersionId(newVersion.getVersionId());
+                            modified = true;
+                        }
+                    }
+                    if (modified) {
+                        tm.saveTemplateMetadata(parentTemplate);
+                    }
+                }
+            }
+        }
+        
+        logger.info("Successfully updated instance " + instance.getId() + " to version " + newVersion.getVersionId());
 
         // 7. Trigger Cascading Update (Phase 4)
         if (cascadingUpdateManager != null && !instance.isWild()) {
-            UUID parentId = instance.getEmbeddedInTemplateId();
-            if (parentId != null) {
-                cascadingUpdateManager.scheduleUpdate(parentId);
+            TemplateManager tm2 = getTemplateManager();
+            if (tm2 != null) {
+                Template parent = tm2.getTemplate(instance.getEmbeddedInTemplateId());
+                if (parent != null && !parent.getMetadata().isLocked()) {
+                    cascadingUpdateManager.scheduleUpdate(parent.getId());
+                }
             }
         }
+    }
+
+    private TemplateManager getTemplateManager() {
+        return IdunnTemplates.getInstance().getTemplateManager();
     }
 
     private Clipboard loadTransformedClipboard(Template template, String versionId, int rot, boolean flipX, boolean flipY, boolean flipZ) {

@@ -96,6 +96,17 @@ public class PlaceCommand extends BaseSubCommand {
             return;
         }
 
+        // V2 UX: Warn if the template itself is locked (preventing updates from propagating if we place it elsewhere)
+        // Note: This check refers to the template being placed (Child), not the Parent it is placed into.
+        if (template.getMetadata().isLocked()) {
+             player.sendMessage("");
+             player.sendMessage(ChatColor.RED + "⚠ " + ChatColor.GOLD + "Template Locked!");
+             player.sendMessage(ChatColor.GRAY + "The template " + ChatColor.WHITE + template.getName() + ChatColor.GRAY + " is currently locked for editing.");
+             player.sendMessage(ChatColor.GRAY + "Updates to it will NOT be visible until the owner commits changes.");
+             player.sendMessage(ChatColor.GRAY + "Please contact the owner to finish editing.");
+             player.sendMessage("");
+        }
+
         try {
             com.jackyblackson.idunntemplates.core.domain.Instance inst = 
                 instanceManager.placeInstanceAndReturn(player, template, player.getLocation(), rot, flipX, flipY, flipZ,

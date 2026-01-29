@@ -27,7 +27,7 @@ public class CascadingUpdateManager {
     // This is an infinite loop. We need a way to stop it.
     // We can use a "Cool-down" map: Allow a template to be auto-updated only once every X seconds.
     private final Map<UUID, Long> lastAutoUpdateTimestamp = new ConcurrentHashMap<>();
-    private static final long COOLDOWN_MS = 2000; // 2 seconds cooldown
+    private static final long COOLDOWN_MS = 0; // 2 seconds cooldown
 
     public CascadingUpdateManager(TemplateManager templateManager, Logger logger) {
         this.templateManager = templateManager;
@@ -69,6 +69,10 @@ public class CascadingUpdateManager {
         try {
             Template parent = templateManager.getTemplate(parentId);
             if (parent == null) return;
+            if (parent.isLocked()) {
+                logger.info("Skipped cascading auto-commit for Parent Template: " + parent.getName() + ", because it is locked");
+                return;
+            }
 
             // Mark timestamp
             lastAutoUpdateTimestamp.put(parentId, System.currentTimeMillis());

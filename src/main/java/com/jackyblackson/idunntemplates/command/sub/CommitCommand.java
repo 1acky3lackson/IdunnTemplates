@@ -64,56 +64,11 @@ public class CommitCommand extends BaseSubCommand {
             return;
         }
 
-        // 3. Calculate Region and Origin
-        BlockVector3 min = BlockVector3.at(meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
-        BlockVector3 max = min.add(meta.getWidth() - 1, meta.getHeight() - 1, meta.getLength() - 1);
 
-        // Recover origin offset from previous version
-        BlockVector3 originOffset = BlockVector3.ZERO;
-        TemplateVersion latest = template.getLatestVersion();
-        if (latest != null) {
-            try {
-                java.io.File schemFile = new java.io.File(template.getDirectory(), latest.getVersionId() + ".schem");
-                if (schemFile.exists()) {
-                    com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByFile(schemFile);
-                    if (format == null) format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByAlias("sponge");
-                    if (format != null) {
-                        try (com.sk89q.worldedit.extent.clipboard.io.ClipboardReader reader = format.getReader(new java.io.FileInputStream(schemFile))) {
-                            Clipboard oldClip = reader.read();
-                            originOffset = oldClip.getOrigin().subtract(oldClip.getRegion().getMinimumPoint());
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.warning_origin"));
-                e.printStackTrace();
-            }
-        }
-
-        BlockVector3 newOrigin = min.add(originOffset);
-
-        // 4. Capture
-        com.sk89q.worldedit.regions.CuboidRegion region = new com.sk89q.worldedit.regions.CuboidRegion(
-                BukkitAdapter.adapt(sourceWorld), min, max
-        );
-
-        com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard clipboard = new com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard(region);
-        clipboard.setOrigin(newOrigin);
-
-        try (com.sk89q.worldedit.EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(sourceWorld))) {
-            com.sk89q.worldedit.function.operation.ForwardExtentCopy copy = new com.sk89q.worldedit.function.operation.ForwardExtentCopy(
-                    editSession, region, clipboard, region.getMinimumPoint()
-            );
-            com.sk89q.worldedit.function.operation.Operations.completeLegacy(copy);
-        } catch (Exception e) {
-            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.failed_capture", e.getMessage()));
-            e.printStackTrace();
-            return;
-        }
 
         // 5. Commit
         try {
-            templateManager.commitTemplate(player, template, message, clipboard);
+            templateManager.commitTemplate(player, template, message);
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.success"));
         } catch (Exception e) {
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.error", e.getMessage()));

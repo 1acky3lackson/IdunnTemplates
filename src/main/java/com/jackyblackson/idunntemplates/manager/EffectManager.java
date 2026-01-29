@@ -270,7 +270,11 @@ public class EffectManager extends BukkitRunnable implements Listener {
             
             boolean canCommit = hasCommitPermission(player, t);
             Particle particle = canCommit ? Particle.HAPPY_VILLAGER : Particle.ANGRY_VILLAGER;
-            
+
+            boolean locked = t.isLocked();
+            if (locked) {
+                particle = Particle.GLOW_SQUID_INK;
+            }
             // Draw Grid Box
             if (min.distance(pLoc) < VIEW_DISTANCE) {
                 if (pref != null && pref.isParticleTemplateBoundaries()) {
@@ -281,7 +285,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
             // Check Inside for BossBar
             if (isInAABB(pLoc, min, max)) {
                 if (pref != null && pref.isBossBarTemplate()) {
-                    bossBarTitle = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.bossbar.template_master", (canCommit ? ChatColor.GREEN : ChatColor.RED).toString(), t.getPath());
+                    bossBarTitle = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.bossbar.template_master", (canCommit ? ChatColor.GREEN : ChatColor.RED).toString(), t.getPath()) + (locked ? " LOCKED" : "");
                     bossBarColor = canCommit ? BarColor.GREEN : BarColor.RED;
                 }
             }

@@ -22,12 +22,17 @@ public class TemplateMetadata {
 
     private Long deletedTimestamp; // null if active
     
+    // V2: Recursive Templates Locking & Staging
+    private boolean locked = false;
+    private StagedChanges stagedChanges;
+    
     private final List<TemplateVersion> versions = new ArrayList<>();
 
     /**
      * 记录位于此模板 Master Region 内的其他模板（子模板）的完整实例信息。
      * <p>
      * Key: Child Template UUID (子模板的 ID)
+     * <p>
      * Value: List of Instance (该子模板在当前模板内的所有实例列表)
      * <p>
      * 用途：当我们需要渲染或更新当前模板（作为父模板）时，
@@ -40,6 +45,7 @@ public class TemplateMetadata {
      * 记录此模板作为子模板，放置在哪些父模板中，以及对应的实例信息。
      * <p>
      * Key: Parent Template UUID (父模板的 ID)
+     * <p>
      * Value: List of Instance (当前模板在父模板内的所有实例列表)
      * <p>
      * 用途：当 当前模板（作为子模板）发生变化时，
@@ -49,6 +55,15 @@ public class TemplateMetadata {
     private Map<UUID, List<Instance>> parentTemplateInstances = new HashMap<>();
 
     // Getters
+    public boolean isLocked() { return locked; }
+    public void setLocked(boolean locked) { this.locked = locked; }
+
+    public StagedChanges getStagedChanges() {
+        if (stagedChanges == null) stagedChanges = new StagedChanges();
+        return stagedChanges;
+    }
+    public void setStagedChanges(StagedChanges stagedChanges) { this.stagedChanges = stagedChanges; }
+
     public Map<UUID, List<Instance>> getChildTemplateInstances() {
         if (childTemplateInstances == null) {
             childTemplateInstances = new HashMap<>();

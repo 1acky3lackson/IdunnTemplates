@@ -120,4 +120,15 @@ public class Instance {
     public void setParentTemplate(Template t) {
         this.embeddedInTemplateId = t.getId();
     }
+
+    public Template getEmbeddedTemplate() {
+        if (isWild()) {
+            return null;
+        }
+        return IdunnTemplates.getInstance().getTemplateManager().getTemplate(this.embeddedInTemplateId);
+    }
+
+    public boolean canUpdate() {
+        return (this.isWild()) || ((this.embeddedInTemplateId != null) && (!this.getEmbeddedTemplate().isLocked()));
+    }
 }

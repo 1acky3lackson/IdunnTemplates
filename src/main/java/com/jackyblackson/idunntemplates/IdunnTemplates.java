@@ -183,6 +183,7 @@ public final class IdunnTemplates extends JavaPlugin {
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
+        getServer().getPluginManager().registerEvents(new com.jackyblackson.idunntemplates.listener.PlayerMoveListener(templateManager), this);
         getServer().getPluginManager().registerEvents(sessionManager, this);
         getServer().getPluginManager().registerEvents(effectManager, this);
         getServer().getPluginManager().registerEvents(brushManager, this);

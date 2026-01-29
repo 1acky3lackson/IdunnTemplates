@@ -147,6 +147,13 @@ public class InstanceManager {
                             .findFirst()
                             .orElseThrow(() -> new IllegalArgumentException("The specified parent template '" + confirmedParentId + "' does not overlap with the instance placement area."));
                     
+                    // Cycle Check (V2 addition)
+                    if (checkCycle(template.getId(), parentTemplate.getId())) {
+                        player.sendMessage(ChatColor.RED + "⚠ Cyclic dependency detected!");
+                        player.sendMessage(ChatColor.RED + "Cannot place '" + template.getName() + "' inside '" + parentTemplate.getName() + "' because '" + parentTemplate.getName() + "' is already a child (directly or indirectly) of '" + template.getName() + "'.");
+                        return null; // Abort placement
+                    }
+
                     // 1. Calculate Cuts in World Space
                     TemplateMetadata pMeta = parentTemplate.getMetadata();
                     int pMinX = pMeta.getAnchorX();
@@ -265,30 +272,50 @@ public class InstanceManager {
             if (parentTemplate != null) {
                 instance.setEmbeddedInTemplateId(parentTemplate.getId());
                 
-                // Update Parent Metadata
-                java.util.Map<UUID, java.util.List<Instance>> childMap = parentTemplate.getMetadata().getChildTemplateInstances();
-                childMap.computeIfAbsent(template.getId(), k -> new java.util.ArrayList<>()).add(instance);
+                // V2: Locking & Staging Logic
+                com.jackyblackson.idunntemplates.core.domain.TemplateMetadata pMeta = parentTemplate.getMetadata();
                 
-                // Update Child Metadata (Self)
+                // 1. Auto-Lock if not locked
+                if (!pMeta.isLocked()) {
+                    pMeta.setLocked(true);
+                    // UX Notification is handled in Phase 4 (PlaceCommand/Listener)
+                    // But we can send a basic message here as per V2 design
+                    player.sendTitle(ChatColor.GOLD + "Template Locked", ChatColor.YELLOW + "Changes staged for " + parentTemplate.getName(), 10, 70, 20);
+                }
+
+                // 2. Add to Staging Area
+                pMeta.getStagedChanges().getAddedInstances().add(instance);
+                
+                // 3. Save Parent Metadata (with lock & staging info)
+                templateManager.saveTemplateMetadata(parentTemplate);
+                
+                // 4. Save Child Metadata (Self - still need to record that I am embedded, 
+                //    but parent might not acknowledge me yet officially.
+                //    However, for the child to know its parent, we set it.
+                //    But strictly, if the parent reverts, this child relationship is invalid.
+                //    V2 says "staged instances... saved to disk". 
+                //    Let's keep the child knowing its parent, but the parent only knows the child via Staging.)
                 java.util.Map<UUID, java.util.List<Instance>> parentMap = template.getMetadata().getParentTemplateInstances();
                 parentMap.computeIfAbsent(parentTemplate.getId(), k -> new java.util.ArrayList<>()).add(instance);
-                
-                // Save
-                templateManager.saveTemplateMetadata(parentTemplate);
                 templateManager.saveTemplateMetadata(template);
                 
-                logger.info("Recursive link created: Child " + template.getName() + " embedded in Parent " + parentTemplate.getName());
+                logger.info("Recursive placement staged: Child " + template.getName() + " -> Parent " + parentTemplate.getName() + " (Locked)");
                 
-                // Trigger Cascading Update for the Parent immediately
-                // The parent template now contains a new "foreign" element (the child instance).
-                if (IdunnTemplates.getInstance().getTemplateUpdater().getCascadingUpdateManager() != null) {
-                    IdunnTemplates.getInstance().getTemplateUpdater().getCascadingUpdateManager().scheduleUpdate(parentTemplate.getId());
-                }
+                // 5. NO Cascading Update
+                // "The template is locked, so no cascading update is triggered."
+                
+                // 6. Record Staged History
+                IdunnTemplates.getInstance().getHistoryManager().remember(player, editSession, IdunnHistoryWrapper.stagedPlaceHistory(player, instance, parentTemplate.getId()));
+
+            } else {
+                // Normal Placement
+                instanceRepository.saveInstance(instance);
+                IdunnTemplates.getInstance().getHistoryManager().remember(player, editSession, IdunnHistoryWrapper.placeInstanceHistory(player, instance));
             }
+            
+            // Always save instance record (it exists in the world)
+            if (parentTemplate != null) instanceRepository.saveInstance(instance);
 
-            instanceRepository.saveInstance(instance);
-
-            IdunnTemplates.getInstance().getHistoryManager().remember(player, editSession, IdunnHistoryWrapper.placeInstanceHistory(player, instance));
             IdunnTemplates.getInstance().getSessionManager().saveSession(player.getUniqueId());
             return instance;
         }
@@ -477,5 +504,51 @@ public class InstanceManager {
 
     public void placeInstance(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {
         placeInstanceAndReturn(player, template, location, rot, flipX, flipY, flipZ);
+    }
+
+    /**
+     * Checks if placing child into parent would create a cycle.
+     * @param childId The ID of the template being placed as a child
+     * @param parentId The ID of the template becoming the parent
+     * @return true if a cycle is detected (i.e., parent is already a descendant of child)
+     */
+    private boolean checkCycle(UUID childId, UUID parentId) {
+        // BFS to check if 'childId' is reachable from 'parentId' by traversing UPWARDS (parent -> parent's parent)
+        // No, wait. A cycle means: Child -> Parent -> ... -> Child
+        // So we need to check if 'Child' is already an ancestor of 'Parent'.
+        // i.e., Can we reach 'Child' by climbing up from 'Parent'?
+        
+        java.util.Set<UUID> visited = new java.util.HashSet<>();
+        java.util.Queue<UUID> queue = new java.util.LinkedList<>();
+        
+        queue.add(parentId);
+        visited.add(parentId);
+        
+        while (!queue.isEmpty()) {
+            UUID current = queue.poll();
+            if (current.equals(childId)) {
+                return true; // Found the child in the ancestry chain!
+            }
+            
+            Template t = templateManager.getTemplate(current);
+            if (t != null) {
+                // Get parents of current template
+                // Note: We need to check both established parents AND staged parents (if we want strict check)
+                // Staged parents are stored in StagedChanges of parents... wait.
+                // Staged relationship: Parent StagedChanges has "addedInstances".
+                // Child doesn't easily know its staged parents unless we traverse all templates.
+                // For performance, let's stick to established relationships (parentTemplateInstances).
+                // If a cycle is formed via staging, it will be caught at Commit time or we accept it as temporary.
+                // But let's check established ones.
+                
+                java.util.Map<UUID, java.util.List<Instance>> parents = t.getMetadata().getParentTemplateInstances();
+                for (UUID pId : parents.keySet()) {
+                    if (visited.add(pId)) {
+                        queue.add(pId);
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

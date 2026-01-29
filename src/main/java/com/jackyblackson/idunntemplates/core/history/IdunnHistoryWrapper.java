@@ -19,7 +19,8 @@ public class IdunnHistoryWrapper implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum HistoryType {
-        INSTANCE_PLACE;
+        INSTANCE_PLACE,
+        STAGED_PLACE; // V2: New history type for staged recursive placement
     }
 
     private final HistoryType historyType;
@@ -95,6 +96,42 @@ public class IdunnHistoryWrapper implements Serializable {
             }
             Player p = Bukkit.getPlayer(playerUUID);
             if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.undo.success", instanceId.substring(0, 8), instanceSnapshot.getTemplate().getPath()));
+        
+        } else if (historyType == HistoryType.STAGED_PLACE) {
+            // V2: Undo Staged Place
+            String instanceId = (String) data.get("instanceId");
+            Instance instanceSnapshot = (Instance) data.get("instanceSnapshot");
+            UUID parentTemplateId = (UUID) data.get("parentTemplateId");
+            
+            if (instanceId == null || parentTemplateId == null) return;
+            
+            InstanceRepository repo = getInstanceRepository();
+            com.jackyblackson.idunntemplates.manager.TemplateManager tm = getTemplateManager();
+            if (repo == null || tm == null) return;
+            
+            // 1. Hard Delete Instance Record (Same as INSTANCE_PLACE)
+            Instance target = repo.getAllLoadedInstances().stream()
+                    .filter(i -> i.getId().equals(instanceId))
+                    .findFirst()
+                    .orElse(null);
+            if (target != null) {
+                repo.hardDelete(target);
+            } else {
+                repo.hardDelete(instanceSnapshot);
+            }
+            
+            // 2. Remove from Parent's Staging Area
+            com.jackyblackson.idunntemplates.core.domain.Template parent = tm.getTemplate(parentTemplateId);
+            if (parent != null) {
+                com.jackyblackson.idunntemplates.core.domain.StagedChanges staged = parent.getMetadata().getStagedChanges();
+                // Find and remove the instance from addedInstances
+                staged.getAddedInstances().removeIf(i -> i.getId().equals(instanceId));
+                // Save metadata
+                tm.saveTemplateMetadata(parent);
+            }
+            
+            Player p = Bukkit.getPlayer(playerUUID);
+            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.undo.staged_success", instanceSnapshot.getTemplate().getName(), parent != null ? parent.getName() : "Unknown"));
         }
     }
 
@@ -119,6 +156,31 @@ public class IdunnHistoryWrapper implements Serializable {
 
             Player p = Bukkit.getPlayer(playerUUID);
             if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.redo.success", instanceSnapshot.getId().substring(0, 8), instanceSnapshot.getTemplate().getPath()));
+        
+        } else if (historyType == HistoryType.STAGED_PLACE) {
+            // V2: Redo Staged Place
+            Instance instanceSnapshot = (Instance) data.get("instanceSnapshot");
+            UUID parentTemplateId = (UUID) data.get("parentTemplateId");
+
+            if (instanceSnapshot == null || parentTemplateId == null) return;
+
+            InstanceRepository repo = getInstanceRepository();
+            com.jackyblackson.idunntemplates.manager.TemplateManager tm = getTemplateManager();
+            if (repo == null || tm == null) return;
+
+            // 1. Restore Instance Record
+            repo.saveInstance(instanceSnapshot);
+            
+            // 2. Add back to Parent's Staging Area
+            com.jackyblackson.idunntemplates.core.domain.Template parent = tm.getTemplate(parentTemplateId);
+            if (parent != null) {
+                com.jackyblackson.idunntemplates.core.domain.StagedChanges staged = parent.getMetadata().getStagedChanges();
+                staged.getAddedInstances().add(instanceSnapshot);
+                tm.saveTemplateMetadata(parent);
+            }
+
+            Player p = Bukkit.getPlayer(playerUUID);
+            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.redo.staged_success", instanceSnapshot.getTemplate().getName(), parent != null ? parent.getName() : "Unknown"));
         }
     }
 
@@ -134,6 +196,16 @@ public class IdunnHistoryWrapper implements Serializable {
 
         return wrapper;
     }
+    
+    public static IdunnHistoryWrapper stagedPlaceHistory(Player p, Instance instance, UUID parentTemplateId) {
+        IdunnHistoryWrapper wrapper = new IdunnHistoryWrapper(HistoryType.STAGED_PLACE, p.getUniqueId());
+
+        wrapper.data.put("instanceId", instance.getId());
+        wrapper.data.put("instanceSnapshot", instance);
+        wrapper.data.put("parentTemplateId", parentTemplateId);
+
+        return wrapper;
+    }
 
     // =================================
     // HELPER METHODS
@@ -142,6 +214,13 @@ public class IdunnHistoryWrapper implements Serializable {
     private InstanceRepository getInstanceRepository() {
         if (IdunnTemplates.getInstance() != null) {
             return IdunnTemplates.getInstance().getInstanceRepository();
+        }
+        return null;
+    }
+    
+    private com.jackyblackson.idunntemplates.manager.TemplateManager getTemplateManager() {
+        if (IdunnTemplates.getInstance() != null) {
+            return IdunnTemplates.getInstance().getTemplateManager();
         }
         return null;
     }

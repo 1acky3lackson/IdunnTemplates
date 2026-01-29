@@ -8,9 +8,12 @@ import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -123,15 +126,129 @@ public class TemplateManager {
     /**
      * Commits a new version to an existing template.
      */
-    public void commitTemplate(Player player, Template template, String message, Clipboard clipboard) throws Exception {
+    public void commitTemplate(Player player, Template template, String message) throws Exception {
         InstanceRepository instanceRepository = IdunnTemplates.getInstance().getInstanceRepository();
         TemplateUpdater templateUpdater = IdunnTemplates.getInstance().getTemplateUpdater();
-        
-         // 1. Create Version
+
+        TemplateMetadata meta = template.getMetadata();
+        org.bukkit.World sourceWorld = Bukkit.getWorld(meta.getWorldId());
+
+        // 6. Create Version (Standard Flow)
         String versionId = generateVersionId();
         TemplateVersion version = new TemplateVersion(versionId, player.getUniqueId(), message);
 
-         // 2. Save Version
+        // V2: Handle Staged Changes & Locking
+        if (meta.getStagedChanges() != null && !meta.getStagedChanges().isEmpty()) {
+            player.sendMessage(ChatColor.YELLOW + "Processing staged changes...");
+            
+            // 1. Merge Staged Data
+            java.util.List<Instance> added = meta.getStagedChanges().getAddedInstances();
+            for (Instance inst : added) {
+                // Add to childTemplateInstances
+                meta.getChildTemplateInstances()
+                    .computeIfAbsent(inst.getTemplateId(), k -> new java.util.ArrayList<>())
+                    .add(inst);
+                
+                // Ensure the child instance knows it's embedded (redundant if set during place, but safe)
+                inst.setEmbeddedInTemplateId(template.getId());
+                // Note: We don't save instance here, it was saved during place.
+            }
+            
+            // 2. Clear Staging
+            meta.getStagedChanges().clear();
+            
+            // 3. Force Update Child Instances
+            // Iterate ALL child instances (newly merged + existing) and update them in the world if needed
+            // This ensures the captured schematic contains the latest version of children.
+            player.sendMessage(ChatColor.YELLOW + "Verifying child instance versions...");
+            int updatedCount = 0;
+            org.bukkit.World world = org.bukkit.Bukkit.getWorld(meta.getWorldId());
+            if (world != null) {
+                try (com.sk89q.worldedit.EditSession session = com.sk89q.worldedit.WorldEdit.getInstance().newEditSession(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world))) {
+                    for (java.util.List<Instance> childList : meta.getChildTemplateInstances().values()) {
+                        for (Instance childInst : childList) {
+                                Template childTemplate = getTemplate(childInst.getTemplateId());
+                                if (childTemplate != null) {
+                                    TemplateVersion latestChildVer = childTemplate.getLatestVersion();
+                                    if (latestChildVer != null && !childInst.getCurrentVersionId().equals(latestChildVer.getVersionId())) {
+                                        // Force update this child instance in the world
+                                        IdunnTemplates.getInstance().getLogger().info("[TemplateManager] [commitTemplate] updating instance " + childInst.getId() + " of template " + childTemplate.getPath() + " due to template " + template.getPath() + " committed by " + player.getName() + " with commit message " + message);
+                                        templateUpdater.updateSingleInstance(childTemplate, childInst, latestChildVer, session);
+                                        updatedCount++;
+                                    }
+                                }
+                        }
+                    }
+                }
+            }
+            if (updatedCount > 0) {
+                player.sendMessage(ChatColor.GREEN + "Forced update of " + updatedCount + " child instances.");
+            }
+            
+            // 4. Unlock
+            meta.setLocked(false);
+
+
+            
+            // 5. Save Metadata (Merged & Unlocked)
+            saveTemplateMetadata(template);
+        } else {
+            // Even if no staged changes, we should unlock if it was locked for some reason
+            if (meta.isLocked()) {
+                meta.setLocked(false);
+                saveTemplateMetadata(template);
+            }
+        }
+
+        // capture
+        // 3. Calculate Region and Origin
+        BlockVector3 min = BlockVector3.at(meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
+        BlockVector3 max = min.add(meta.getWidth() - 1, meta.getHeight() - 1, meta.getLength() - 1);
+
+        // Recover origin offset from previous version
+        BlockVector3 originOffset = BlockVector3.ZERO;
+        TemplateVersion latest = template.getLatestVersion();
+        if (latest != null) {
+            try {
+                java.io.File schemFile = new java.io.File(template.getDirectory(), latest.getVersionId() + ".schem");
+                if (schemFile.exists()) {
+                    com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByFile(schemFile);
+                    if (format == null) format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByAlias("sponge");
+                    if (format != null) {
+                        try (com.sk89q.worldedit.extent.clipboard.io.ClipboardReader reader = format.getReader(new java.io.FileInputStream(schemFile))) {
+                            Clipboard oldClip = reader.read();
+                            originOffset = oldClip.getOrigin().subtract(oldClip.getRegion().getMinimumPoint());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.warning_origin"));
+                e.printStackTrace();
+            }
+        }
+
+        BlockVector3 newOrigin = min.add(originOffset);
+
+        // 4. Capture
+        com.sk89q.worldedit.regions.CuboidRegion region = new com.sk89q.worldedit.regions.CuboidRegion(
+                BukkitAdapter.adapt(sourceWorld), min, max
+        );
+
+        com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard clipboard = new com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard(region);
+        clipboard.setOrigin(newOrigin);
+
+        try (com.sk89q.worldedit.EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(sourceWorld))) {
+            com.sk89q.worldedit.function.operation.ForwardExtentCopy copy = new com.sk89q.worldedit.function.operation.ForwardExtentCopy(
+                    editSession, region, clipboard, region.getMinimumPoint()
+            );
+            com.sk89q.worldedit.function.operation.Operations.completeLegacy(copy);
+        } catch (Exception e) {
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "commit.failed_capture", e.getMessage()));
+            e.printStackTrace();
+            return;
+        }
+
+         // 7. Save Version
         storage.saveTemplateVersion(template, version, clipboard);
         
         // Update cache (ensure metadata/versions are up to date in cache objects)
@@ -139,13 +256,17 @@ public class TemplateManager {
         // But if storage returned a new object or we want to be safe:
         // (TemplateStorage.saveTemplateVersion updates the passed template object in memory too? Yes, see code)
         
-         // 3. Trigger Update
+         // 8. Trigger Update
         TemplateVersion newVer = template.getLatestVersion();
         List<Instance> allLoaded = instanceRepository.getAllLoadedInstances();
 
         // Filter by template ID
         List<Instance> targets = allLoaded.stream()
                 .filter(i -> i.getTemplateId().equals(template.getId()))
+                .filter(i ->
+                        i.isWild()
+                        || ((i.getEmbeddedTemplate() != null) && !(i.getEmbeddedTemplate().isLocked()))
+                )
                 .collect(Collectors.toList());
 
         player.sendMessage(ChatColor.YELLOW + "Found " + targets.size() + " active instances. Updating...");
@@ -153,6 +274,23 @@ public class TemplateManager {
         templateUpdater.updateInstances(template, newVer, targets);
 
         player.sendMessage(ChatColor.GREEN + "Update process finished.");
+        
+        // 9. Trigger Cascading Update (V2: Delayed Trigger)
+        // Now that we've committed (and unlocked), we can notify parents.
+        if (updater != null && updater.getCascadingUpdateManager() != null) {
+//            updater.getCascadingUpdateManager().scheduleUpdate(template.getId()); // Wait, this schedules update for THIS template?
+            // No, scheduleUpdate(parentId) schedules update for PARENT.
+            // But here, WE are the child (potentially) of someone else.
+            // So we need to notify OUR parents.
+            
+            Map<UUID, List<Instance>> parents = meta.getParentTemplateInstances();
+            if (!parents.isEmpty()) {
+                player.sendMessage(ChatColor.AQUA + "Triggering cascading updates for " + parents.size() + " parent templates...");
+                for (UUID parentId : parents.keySet()) {
+                    updater.getCascadingUpdateManager().scheduleUpdate(parentId);
+                }
+            }
+        }
     }
 
     /**

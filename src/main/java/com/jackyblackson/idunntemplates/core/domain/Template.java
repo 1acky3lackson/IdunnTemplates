@@ -28,6 +28,8 @@ public class Template {
     // Cache for particle effects
     private org.bukkit.util.Vector cachedOriginOffset = null;
 
+    public boolean isLocked() { return this.getMetadata().isLocked(); }
+
     public org.bukkit.util.Vector getOriginOffset() {
         if (cachedOriginOffset != null) return cachedOriginOffset;
         
