@@ -296,9 +296,26 @@ resize:
 history:
   undo:
     success: "    [IDUNN] Instance %1% data removed successfully (Undo), Template: %2%"
+    staged_success: "    [IDUNN] Instance %1% data staged successfully (Undo), Child Template: %2%, Parent Template: %3%"
   redo:
     success: "    [IDUNN] Instance %1% data restored successfully (Redo), Template: %2%"
+    staged_success: "    [IDUNN] Instance %1% data staged successfully (Redo), Child Template: %2%, Parent Template: %3%"
   manager:
     remove:
       stale: "    §8[Idunn] Automatically cleaned up stale history record at index %1%"
       wrong_type: "    §8[Idunn] Automatically cleaned up unknown history record type at index %1%, type: %2%; please report this to the server administrator!"
+recursive:
+  locked:
+    header: "&c⚠ &6Template Locked!"
+    status: "&7The template &f%1% &7is currently locked for editing."
+    updates_not_visible: "&7Updates to it will NOT be visible until the owner commits changes."
+    contact_owner: "&7Please contact the owner [%1%] to finish editing."
+  detected:
+    header: "&e⚠ &6Nested Placement Detected!"
+    status: "&7You are placing &f%1% &7inside the master region of &f%2% &7templates."
+    confirm: "&7Please confirm which parent template to attach to:"
+    button: " ➤ [Confirm in %1%]"
+    hover: "Click to place inside %1%"
+  toggled:
+    title: "&6Template Locked"
+    subtitle: "&eChanges staged for &f%1%"

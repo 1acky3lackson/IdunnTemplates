@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import static com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage;
+
 public class InstanceManager {
 
     private final TemplateStorage templateStorage;
@@ -280,7 +282,10 @@ public class InstanceManager {
                     pMeta.setLocked(true);
                     // UX Notification is handled in Phase 4 (PlaceCommand/Listener)
                     // But we can send a basic message here as per V2 design
-                    player.sendTitle(ChatColor.GOLD + "Template Locked", ChatColor.YELLOW + "Changes staged for " + parentTemplate.getName(), 10, 70, 20);
+                    player.sendTitle(
+                            getMessage(player, "recursive.toggled.title"),
+                            getMessage(player, "recursive.toggled.subtitle", parentTemplate.getPath()),
+                            10, 70, 20);
                 }
 
                 // 2. Add to Staging Area
@@ -325,11 +330,10 @@ public class InstanceManager {
                                        int rot, boolean flipX, boolean flipY, boolean flipZ,
                                        int maskXNeg, int maskXPos, int maskYNeg, int maskYPos, int maskZNeg, int maskZPos) {
         player.sendMessage("");
-        player.sendMessage(ChatColor.YELLOW + "⚠ " + ChatColor.GOLD + "Nested Placement Detected!");
-        player.sendMessage(ChatColor.GRAY + "You are placing " + ChatColor.WHITE + template.getName() + 
-                ChatColor.GRAY + " inside the master region of " + parents.size() + " templates.");
-        player.sendMessage(ChatColor.GRAY + "Please confirm which parent template to attach to:");
-        
+        player.sendMessage(getMessage(player, "recursive.detected.header"));
+        player.sendMessage(getMessage(player, "recursive.detected.status", template.getName(), String.valueOf(parents.size())));
+        player.sendMessage(getMessage(player, "recursive.detected.confirm"));
+
         String placePath = normalizePath(template.getPath());
 
         // Reconstruct base command string
@@ -343,14 +347,14 @@ public class InstanceManager {
         
         // List all parents with buttons
         for (Template parent : parents) {
-            TextComponent btn = new TextComponent(" ➤ [Confirm in " + parent.getName() + "]");
+            TextComponent btn = new TextComponent(getMessage(player, "recursive.detected.button", parent.getName()));
             btn.setColor(net.md_5.bungee.api.ChatColor.GREEN);
             btn.setBold(true);
-            
+
             String fullCmd = cmdBase.toString() + " -parent:" + parent.getId().toString();
             
             btn.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, fullCmd));
-            btn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to place inside " + parent.getName()).create()));
+            btn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(getMessage(player, "recursive.detected.hover", parent.getPath())).create()));
             
             player.spigot().sendMessage(btn);
         }

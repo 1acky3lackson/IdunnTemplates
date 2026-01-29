@@ -131,7 +131,12 @@ public class IdunnHistoryWrapper implements Serializable {
             }
             
             Player p = Bukkit.getPlayer(playerUUID);
-            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.undo.staged_success", instanceSnapshot.getTemplate().getName(), parent != null ? parent.getName() : "Unknown"));
+            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(
+                    p, "history.undo.staged_success",
+                    instanceId.substring(0, 8),
+                    instanceSnapshot.getTemplate().getName(),
+                    parent != null ? parent.getName() : "Unknown")
+            );
         }
     }
 
@@ -180,7 +185,12 @@ public class IdunnHistoryWrapper implements Serializable {
             }
 
             Player p = Bukkit.getPlayer(playerUUID);
-            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(p, "history.redo.staged_success", instanceSnapshot.getTemplate().getName(), parent != null ? parent.getName() : "Unknown"));
+            if (p != null) p.sendMessage(ChatColor.YELLOW + getMessage(
+                    p, "history.redo.staged_success",
+                    instanceSnapshot.getId().substring(0, 8),
+                    instanceSnapshot.getTemplate().getName(),
+                    parent != null ? parent.getName() : "Unknown"
+            ));
         }
     }
 

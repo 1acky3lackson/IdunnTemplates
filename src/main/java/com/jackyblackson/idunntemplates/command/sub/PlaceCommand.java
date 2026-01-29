@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage;
+
 public class PlaceCommand extends BaseSubCommand {
 
     private final TemplateManager templateManager;
@@ -31,7 +33,7 @@ public class PlaceCommand extends BaseSubCommand {
     public void execute(Player player, String[] args) {
         // /idunn place <path> [rot] [flipX] [flipY] [flipZ] [flags...] [-confirm]
         if (args.length < 2) {
-            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.usage"));
+            player.sendMessage(getMessage(player, "place.usage"));
             return;
         }
         String placePath = args[1];
@@ -88,23 +90,23 @@ public class PlaceCommand extends BaseSubCommand {
             }
         }
 
-        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.placing"));
+        player.sendMessage(getMessage(player, "place.placing"));
 
         Template template = templateManager.getTemplate(placePath);
         if (template == null) {
-            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.not_found", placePath));
+            player.sendMessage(getMessage(player, "place.not_found", placePath));
             return;
         }
 
         // V2 UX: Warn if the template itself is locked (preventing updates from propagating if we place it elsewhere)
         // Note: This check refers to the template being placed (Child), not the Parent it is placed into.
         if (template.getMetadata().isLocked()) {
-             player.sendMessage("");
-             player.sendMessage(ChatColor.RED + "⚠ " + ChatColor.GOLD + "Template Locked!");
-             player.sendMessage(ChatColor.GRAY + "The template " + ChatColor.WHITE + template.getName() + ChatColor.GRAY + " is currently locked for editing.");
-             player.sendMessage(ChatColor.GRAY + "Updates to it will NOT be visible until the owner commits changes.");
-             player.sendMessage(ChatColor.GRAY + "Please contact the owner to finish editing.");
-             player.sendMessage("");
+            player.sendMessage("");
+            player.sendMessage(getMessage(player, "recursive.locked.header"));
+            player.sendMessage(getMessage(player, "recursive.locked.status", template.getPath()));
+            player.sendMessage(getMessage(player, "recursive.locked.updates_not_visible"));
+            player.sendMessage(getMessage(player, "recursive.locked.contact_owner"));
+            player.sendMessage("");
         }
 
         try {
@@ -119,7 +121,7 @@ public class PlaceCommand extends BaseSubCommand {
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + e.getMessage());
         } catch (Exception e) {
-            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "place.error", e.getMessage()));
+            player.sendMessage(getMessage(player, "place.error", e.getMessage()));
             e.printStackTrace();
         }
     }
