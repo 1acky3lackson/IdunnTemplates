@@ -295,15 +295,32 @@ resize:
   resized: "&a你的身形比例已設置為 &e%1%&a。"
 history:
   undo:
-    success: "    [IDUNN] 實例 %1% 資料已成功移除（撤銷），模板：%2%"
-    staged_success: "    [IDUNN] 實例 %1% 資料已成功暫存（撤銷），子模板：%2%，父模板：%3%"
+    success: "    [IDUNN] 實例 %1% 數據成功移除（復原），模板：%2%"
+    staged_success: "    [IDUNN] 實例 %1% 數據成功暫存（復原），子模板：%2%，父模板：%3%"
+    delete_success: "    [IDUNN] 實例 %1% 已成功刪除，模板：%2%"
+    staged_delete_success: "    [IDUNN] 實例 %1% 已成功取消刪除（復原），子模板：%2%，父模板：%3%"
   redo:
-    success: "    [IDUNN] 實例 %1% 資料已成功復原（重做），模板：%2%"
-    staged_success: "    [IDUNN] 實例 %1% 資料已成功暫存（重做），子模板：%2%，父模板：%3%"
+    success: "    [IDUNN] 實例 %1% 數據成功恢復（重做），模板：%2%"
+    staged_success: "    [IDUNN] 實例 %1% 數據成功暫存（重做），子模板：%2%，父模板：%3%"
+    delete_success: "    [IDUNN] 實例 %1% 已成功恢復，模板：%2%"
+    staged_delete_success: "    [IDUNN] 實例 %1% 已成功取消刪除（重做），子模板：%2%，父模板：%3%"
+  staged:
+    error:
+      wrong_data: "    [IDUNN] 實例 %1% 數據暫存失敗，數據類型錯誤"
+      template_not_found: "&c未找到模板"
+      already_been_committed: "&c此實例的數據已被提交，無法進行復原或重做"
   manager:
     remove:
-      stale: "    §8[Idunn] 已自動清理過期的歷史紀錄，位於索引 %1%"
-      wrong_type: "    §8[Idunn] 已自動清理未知類型的歷史紀錄，位於索引 %1%，類型：%2%；請將此訊息回報給伺服器管理員！"
+      stale: "    §8[Idunn] 自動清理了過期的歷史記錄，位於索引 %1%"
+      wrong_type: "    §8[Idunn] 自動清理了未知類型的歷史記錄，位於索引 %1%，類型：%2%；請將此資訊反饋給伺服器管理員！"
+      outdated: "    §8[Idunn] 自動清理了過期的歷史記錄"
+    refused:
+      undo:
+        invalid: "    §8[Idunn] 拒絕了實例 %1% 的復原請求，原因：無效的歷史記錄索引 %2%"
+        no_history: "    §8[Idunn] 拒絕了實例 %1% 的復原請求，原因：沒有可用的歷史記錄"
+      redo:
+        invalid: "    §8[Idunn] 拒絕了實例 %1% 的重做請求，原因：無效的歷史記錄索引 %2%"
+        no_history: "    §8[Idunn] 拒絕了實例 %1% 的重做請求，原因：沒有可用的歷史記錄"
 recursive:
   locked:
     header: "&c⚠ &6範本已鎖定！"

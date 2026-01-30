@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.manager;
 
 import com.jackyblackson.idunntemplates.IdunnTemplates;
+import com.jackyblackson.idunntemplates.core.calc.DiffCalculator;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
@@ -19,7 +20,9 @@ import com.sk89q.worldedit.function.mask.BlockTypeMask;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.world.block.BlockTypes;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -27,10 +30,13 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -44,17 +50,15 @@ public class InstanceManager {
     private final com.jackyblackson.idunntemplates.manager.SessionManager sessionManager;
     private final TemplateManager templateManager; // Added field
 
-    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager, TemplateManager templateManager) {
+    private final DiffCalculator diffCalculator;
+
+    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager, TemplateManager templateManager, DiffCalculator diffCalculator) {
         this.templateStorage = templateStorage;
         this.instanceRepository = instanceRepository;
         this.logger = logger;
         this.sessionManager = sessionManager;
         this.templateManager = templateManager;
-    }
-    
-    // Kept for compatibility but should be updated in IdunnTemplates.java
-    public InstanceManager(TemplateStorage templateStorage, InstanceRepository instanceRepository, Logger logger, com.jackyblackson.idunntemplates.manager.SessionManager sessionManager) {
-        this(templateStorage, instanceRepository, logger, sessionManager, null);
+        this.diffCalculator = diffCalculator;
     }
 
     /**
@@ -296,10 +300,7 @@ public class InstanceManager {
                     pMeta.setLocked(true);
                     // UX Notification is handled in Phase 4 (PlaceCommand/Listener)
                     // But we can send a basic message here as per V2 design
-                    player.sendTitle(
-                            getMessage(player, "recursive.toggled.title"),
-                            getMessage(player, "recursive.toggled.subtitle", parentTemplate.getPath()),
-                            10, 70, 20);
+                    sendLockedTitle(player, parentTemplate);
                 }
 
                 // 2. Add to Staging Area
@@ -348,7 +349,14 @@ public class InstanceManager {
             return instance;
         }
     }
-    
+
+    private static void sendLockedTitle(Player player, Template parentTemplate) {
+        player.sendTitle(
+                getMessage(player, "recursive.toggled.title"),
+                getMessage(player, "recursive.toggled.subtitle", parentTemplate.getPath()),
+                10, 70, 20);
+    }
+
     private void sendRecursiveConfirmation(Player player, Template template, java.util.List<Template> parents,
                                        int rot, boolean flipX, boolean flipY, boolean flipZ,
                                        int maskXNeg, int maskXPos, int maskYNeg, int maskYPos, int maskZNeg, int maskZPos) {
@@ -382,6 +390,101 @@ public class InstanceManager {
             player.spigot().sendMessage(btn);
         }
         player.sendMessage("");
+    }
+
+    public int removeInstanceBlocks(Instance instance, Player player) throws IOException {
+        Template template = templateManager.getTemplate(instance.getTemplateId());
+        if (template == null) {
+            throw new IOException("Template not found for this instance.");
+        }
+
+        TemplateVersion version = template.getMetadata().getVersions().stream()
+                .filter(v -> v.getVersionId().equals(instance.getCurrentVersionId()))
+                .findFirst()
+                .orElse(null);
+
+        if (version == null) {
+            throw new IOException("Version info missing for this instance.");
+        }
+
+        // Load Variations
+        int rot = instance.getRotationY();
+        boolean flipX = instance.isFlipX();
+        boolean flipY = instance.isFlipY();
+        boolean flipZ = instance.isFlipZ();
+        Clipboard clipboard = template.getClipboard(version.getVersionId(), rot, flipX, flipY, flipZ);
+        if (clipboard == null) {
+            throw new IOException("Failed to load clipboard.");
+        }
+
+        World world = Bukkit.getWorld(instance.getWorldId());
+        if (world == null) {
+            throw new IOException("World not loaded.");
+        }
+
+
+
+        // 1. Construct Transform
+        AffineTransform transform = new AffineTransform();
+//        transform = transform.rotateY(instance.getRotationY());
+//        if (instance.isFlipX()) transform = transform.scale(BlockVector3.at(-1, 1, 1).toVector3());
+//        if (instance.isFlipY()) transform = transform.scale(BlockVector3.at(1, -1, 1).toVector3());
+//        if (instance.isFlipZ()) transform = transform.scale(BlockVector3.at(1, 1, -1).toVector3());
+
+        // 2. Origin
+        BlockVector3 origin = BlockVector3.at(instance.getX(), instance.getY(), instance.getZ());
+
+        // 3. Get managed blocks using DiffCalculator
+        Set<BlockVector3> managedBlocks = diffCalculator.calculateManagedBlocks(clipboard, transform, origin, world, instance);
+
+        if (managedBlocks.isEmpty()) {
+            return 0;
+        }
+
+        // 4. Remove blocks using WorldEdit
+        try (EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
+                .world(BukkitAdapter.adapt(world))
+                .actor(BukkitAdapter.adapt(player))
+                .build()
+        ) {
+
+            for (BlockVector3 pos : managedBlocks) {
+                assert BlockTypes.AIR != null;
+                editSession.setBlock(pos, BlockTypes.AIR.getDefaultState());
+            }
+            editSession.close();
+
+            // DATA BINDING
+            if (instance.isWild()) {
+                IdunnTemplates.getInstance().getHistoryManager().remember(
+                        player, editSession,
+                        IdunnHistoryWrapper.deleteInstanceHistory(
+                                player, instance
+                        )
+                );
+//                player.sendMessage("history of deleting this instance is remembered");
+            } else {
+                var parentTemplate = templateManager.getTemplate(instance.getEmbeddedInTemplateId());
+                if (parentTemplate == null) {
+                    return -1;
+                }
+                parentTemplate.getMetadata().setLocked(true);
+                sendLockedTitle(player, parentTemplate);
+                IdunnTemplates.getInstance().getHistoryManager().remember(
+                        player, editSession,
+                        IdunnHistoryWrapper.stagedDeleteHistory(
+                                player, instance, instance.getEmbeddedInTemplateId(), parentTemplate.getMetadata().getLockedTimestamp()
+                        )
+                );
+//                player.sendMessage("history of deleting this instance is remembered and staged");
+            }
+
+            IdunnTemplates.getInstance().getSessionManager().saveSession(player.getUniqueId());
+        } catch (Exception e) {
+            throw new IOException("WorldEdit error: " + e.getMessage(), e);
+        }
+
+        return managedBlocks.size();
     }
     
     private String normalizePath(String rawPath) {

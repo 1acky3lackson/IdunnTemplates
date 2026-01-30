@@ -19,10 +19,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -126,6 +123,51 @@ public class TemplateManager {
     }
 
     /**
+     * 从 childInstanceMap 中移除指定 IDs 的实例
+     * @param childInstanceMap 存储子模板 UUID 到 实例列表的映射
+     * @param deleteIds 准备删除的 Instance ID 集合
+     */
+    public void removeInstancesFromMap(Map<UUID, List<Instance>> childInstanceMap, List<String> deleteIds) {
+        if (childInstanceMap == null || deleteIds == null || deleteIds.isEmpty()) {
+            return;
+        }
+
+        // 1. 将 List 转为 Set 提高查询效率 (尤其是 deleteIds 较大时)
+        Set<String> idSet = new HashSet<>(deleteIds);
+
+        // 2. 遍历 Map 的 entrySet
+        // 使用 Iterator 可以安全地在遍历时移除空的 List
+        Iterator<Map.Entry<UUID, List<Instance>>> iterator = childInstanceMap.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, List<Instance>> entry = iterator.next();
+            List<Instance> instances = entry.getValue();
+
+            if (instances != null) {
+                // 使用 removeIf 移除 id 在待删集合中的实例
+                instances.removeIf(instance -> {
+                    var removed = idSet.contains(instance.getId());
+                    if (removed) {
+                        var childTemplate = instance.getTemplate();
+                        var parentTemplateMap = childTemplate.getMetadata().getParentTemplateInstances();
+                        if (parentTemplateMap.containsKey(instance.getEmbeddedInTemplateId())) {
+                            var parentTemplateInstanceList = parentTemplateMap.get(instance.getEmbeddedInTemplateId());
+                            parentTemplateInstanceList.removeIf(i -> i.getId().equals(instance.getId()));
+                        }
+                        this.saveTemplateMetadata(childTemplate);
+                    }
+                    return removed;
+                });
+
+                // 3. 如果该子模板下的所有实例都被删除了，移除该 Key
+                if (instances.isEmpty()) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    /**
      * Commits a new version to an existing template.
      */
     public void commitTemplate(Player player, Template template, String message) throws Exception {
@@ -154,6 +196,12 @@ public class TemplateManager {
                 // Ensure the child instance knows it's embedded (redundant if set during place, but safe)
                 inst.setEmbeddedInTemplateId(template.getId());
                 // Note: We don't save instance here, it was saved during place.
+            }
+            var deleteIds = meta.getStagedChanges().getRemovedInstanceIds();
+            for (String id : deleteIds) {
+                var childInstanceMap = template.getMetadata().getChildTemplateInstances();
+                this.removeInstancesFromMap(childInstanceMap, deleteIds);
+                this.saveTemplateMetadata(template);
             }
             
             // 2. Clear Staging

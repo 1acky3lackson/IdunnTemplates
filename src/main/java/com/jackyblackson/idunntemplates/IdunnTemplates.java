@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates;
 
 import com.jackyblackson.idunntemplates.command.IdunnCommand;
 import com.jackyblackson.idunntemplates.core.calc.BlockComparator;
+import com.jackyblackson.idunntemplates.core.calc.DiffCalculator;
 import com.jackyblackson.idunntemplates.core.store.FileInstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.FileTemplateStorage;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
@@ -153,7 +154,7 @@ public final class IdunnTemplates extends JavaPlugin {
         java.util.List<String> defaultEmptyBlocks = getConfig().getStringList("emptyBlocks");
 
         this.sessionManager = new com.jackyblackson.idunntemplates.manager.SessionManager(playerDir, getLogger(), defaultEmptyBlocks);
-        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager, templateManager);
+//        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager, templateManager);
 
         this.historyManager = new HistoryManager(sessionManager);
 
@@ -165,7 +166,7 @@ public final class IdunnTemplates extends JavaPlugin {
         // So the line is: this.instanceManager = new InstanceManager(..., sessionManager);
         
         // I need to update it again to match.
-        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager, templateManager);
+        this.instanceManager = new InstanceManager(templateStorage, instanceRepository, getLogger(), sessionManager, templateManager, new DiffCalculator(new BlockComparator(getConfig()), getLogger()) );
         
         this.setManager = new com.jackyblackson.idunntemplates.manager.SetManager(setsDir, sessionManager, getLogger());
         

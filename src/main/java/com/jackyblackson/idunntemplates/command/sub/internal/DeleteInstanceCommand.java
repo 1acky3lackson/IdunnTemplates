@@ -73,7 +73,7 @@ public class DeleteInstanceCommand extends BaseSubCommand {
         
         if (!keepBlocks) {
             try {
-                int count = removeInstanceBlocks(target, player);
+                int count = IdunnTemplates.getInstance().getInstanceManager().removeInstanceBlocks(target, player);
                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.removed_blocks", String.valueOf(count)));
             } catch (Exception e) {
                 player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.error_blocks", e.getMessage()));
@@ -85,87 +85,87 @@ public class DeleteInstanceCommand extends BaseSubCommand {
             instanceRepository.hardDelete(target);
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.hard_deleted"));
         } else {
-             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.skip_blocks"));
-             
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.skip_blocks"));
+
              // Soft delete record
-             target.setDeletedTimestamp(System.currentTimeMillis());
-             instanceRepository.saveInstance(target);
-             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.soft_deleted"));
+            target.setDeletedTimestamp(System.currentTimeMillis());
+            instanceRepository.saveInstance(target);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.soft_deleted"));
         }
     }
 
-    private int removeInstanceBlocks(Instance instance, Player player) throws IOException {
-        Template template = templateManager.getTemplate(instance.getTemplateId());
-        if (template == null) {
-            throw new IOException("Template not found for this instance.");
-        }
-        
-        TemplateVersion version = template.getMetadata().getVersions().stream()
-                .filter(v -> v.getVersionId().equals(instance.getCurrentVersionId()))
-                .findFirst()
-                .orElse(null);
-
-        if (version == null) {
-            throw new IOException("Version info missing for this instance.");
-        }
-
-        // Load Variations
-        int rot = instance.getRotationY();
-        boolean flipX = instance.isFlipX();
-        boolean flipY = instance.isFlipY();
-        boolean flipZ = instance.isFlipZ();
-        Clipboard clipboard = template.getClipboard(version.getVersionId(), rot, flipX, flipY, flipZ);
-        if (clipboard == null) {
-            throw new IOException("Failed to load clipboard.");
-        }
-        
-        World world = Bukkit.getWorld(instance.getWorldId());
-        if (world == null) {
-            throw new IOException("World not loaded.");
-        }
-
-
-
-        // 1. Construct Transform
-        AffineTransform transform = new AffineTransform();
-//        transform = transform.rotateY(instance.getRotationY());
-//        if (instance.isFlipX()) transform = transform.scale(BlockVector3.at(-1, 1, 1).toVector3());
-//        if (instance.isFlipY()) transform = transform.scale(BlockVector3.at(1, -1, 1).toVector3());
-//        if (instance.isFlipZ()) transform = transform.scale(BlockVector3.at(1, 1, -1).toVector3());
-        
-        // 2. Origin
-        BlockVector3 origin = BlockVector3.at(instance.getX(), instance.getY(), instance.getZ());
-        
-        // 3. Get managed blocks using DiffCalculator
-        Set<BlockVector3> managedBlocks = diffCalculator.calculateManagedBlocks(clipboard, transform, origin, world, instance);
-        
-        if (managedBlocks.isEmpty()) {
-            return 0;
-        }
-
-        // 4. Remove blocks using WorldEdit
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))) {
-            for (BlockVector3 pos : managedBlocks) {
-                editSession.setBlock(pos, BlockTypes.AIR.getDefaultState());
-            }
-            editSession.flushSession();
-        } catch (Exception e) {
-            throw new IOException("WorldEdit error: " + e.getMessage(), e);
-        }
-        
-        return managedBlocks.size();
-    }
+//    private int removeInstanceBlocks(Instance instance, Player player) throws IOException {
+//        Template template = templateManager.getTemplate(instance.getTemplateId());
+//        if (template == null) {
+//            throw new IOException("Template not found for this instance.");
+//        }
+//
+//        TemplateVersion version = template.getMetadata().getVersions().stream()
+//                .filter(v -> v.getVersionId().equals(instance.getCurrentVersionId()))
+//                .findFirst()
+//                .orElse(null);
+//
+//        if (version == null) {
+//            throw new IOException("Version info missing for this instance.");
+//        }
+//
+//        // Load Variations
+//        int rot = instance.getRotationY();
+//        boolean flipX = instance.isFlipX();
+//        boolean flipY = instance.isFlipY();
+//        boolean flipZ = instance.isFlipZ();
+//        Clipboard clipboard = template.getClipboard(version.getVersionId(), rot, flipX, flipY, flipZ);
+//        if (clipboard == null) {
+//            throw new IOException("Failed to load clipboard.");
+//        }
+//
+//        World world = Bukkit.getWorld(instance.getWorldId());
+//        if (world == null) {
+//            throw new IOException("World not loaded.");
+//        }
+//
+//
+//
+//        // 1. Construct Transform
+//        AffineTransform transform = new AffineTransform();
+////        transform = transform.rotateY(instance.getRotationY());
+////        if (instance.isFlipX()) transform = transform.scale(BlockVector3.at(-1, 1, 1).toVector3());
+////        if (instance.isFlipY()) transform = transform.scale(BlockVector3.at(1, -1, 1).toVector3());
+////        if (instance.isFlipZ()) transform = transform.scale(BlockVector3.at(1, 1, -1).toVector3());
+//
+//        // 2. Origin
+//        BlockVector3 origin = BlockVector3.at(instance.getX(), instance.getY(), instance.getZ());
+//
+//        // 3. Get managed blocks using DiffCalculator
+//        Set<BlockVector3> managedBlocks = diffCalculator.calculateManagedBlocks(clipboard, transform, origin, world, instance);
+//
+//        if (managedBlocks.isEmpty()) {
+//            return 0;
+//        }
+//
+//        // 4. Remove blocks using WorldEdit
+//        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))) {
+//
+//            for (BlockVector3 pos : managedBlocks) {
+//                editSession.setBlock(pos, BlockTypes.AIR.getDefaultState());
+//            }
+//            editSession.flushSession();
+//        } catch (Exception e) {
+//            throw new IOException("WorldEdit error: " + e.getMessage(), e);
+//        }
+//
+//        return managedBlocks.size();
+//    }
 
     @Override
     public List<String> tabComplete(Player player, String[] args) {
-         if (args.length == 2) {
-             return instanceRepository.getAllLoadedInstances().stream()
-                     .map(Instance::getId)
-                     .collect(java.util.stream.Collectors.toList());
-         }
-         if (args.length == 3) {
-             return Collections.singletonList("-keep");
-         }
+        if (args.length == 2) {
+            return instanceRepository.getAllLoadedInstances().stream()
+                    .map(Instance::getId)
+                    .collect(java.util.stream.Collectors.toList());         }
+        if (args.length == 3) {
+            return Collections.singletonList("-keep");
+        }
         return Collections.emptyList();
     }
 }

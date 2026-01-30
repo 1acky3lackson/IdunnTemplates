@@ -257,7 +257,7 @@ instance:
   delete:
     usage: "&cUsage: /idunn instance delete <id> [-keep]"
     not_found: "&cInstance not found with ID: %1%"
-    removed_blocks: "&aInstance blocks removed (%1% blocks)."
+    removed_blocks: "&aInstance blocks removed (%1% blocks). you may use //undo to recover."
     error_blocks: "&cError removing blocks: %1%"
     hard_deleted: "&aInstance record deleted (Hard)."
     skip_blocks: "&eSkipping block removal (-keep flag)."
@@ -295,15 +295,32 @@ resize:
   resized: "&aYour size has been set to &e%1%&a."
 history:
   undo:
-    success: "    [IDUNN] Instance %1% data removed successfully (Undo), Template: %2%"
-    staged_success: "    [IDUNN] Instance %1% data staged successfully (Undo), Child Template: %2%, Parent Template: %3%"
+    success: "    [IDUNN] Instance %1% data successfully removed (Undo), Template: %2%"
+    staged_success: "    [IDUNN] Instance %1% data successfully staged (Undo), Sub-template: %2%, Parent template: %3%"
+    delete_success: "    [IDUNN] Instance %1% successfully deleted, Template: %2%"
+    staged_delete_success: "    [IDUNN] Instance %1% successfully undeleted (Undo), Sub-template: %2%, Parent template: %3%"
   redo:
-    success: "    [IDUNN] Instance %1% data restored successfully (Redo), Template: %2%"
-    staged_success: "    [IDUNN] Instance %1% data staged successfully (Redo), Child Template: %2%, Parent Template: %3%"
+    success: "    [IDUNN] Instance %1% data successfully restored (Redo), Template: %2%"
+    staged_success: "    [IDUNN] Instance %1% data successfully staged (Redo), Sub-template: %2%, Parent template: %3%"
+    delete_success: "    [IDUNN] Instance %1% successfully restored, Template: %2%"
+    staged_delete_success: "    [IDUNN] Instance %1% successfully undeleted (Redo), Sub-template: %2%, Parent template: %3%"
+  staged:
+    error:
+      wrong_data: "    [IDUNN] Instance %1% data staging failed, invalid data type"
+      template_not_found: "&cTemplate not found"
+      already_been_committed: "&cData for this instance has already been committed; cannot undo or redo"
   manager:
     remove:
       stale: "    §8[Idunn] Automatically cleaned up stale history record at index %1%"
-      wrong_type: "    §8[Idunn] Automatically cleaned up unknown history record type at index %1%, type: %2%; please report this to the server administrator!"
+      wrong_type: "    §8[Idunn] Automatically cleaned up unknown history type at index %1%, Type: %2%; please report this to the server administrator!"
+      outdated: "    §8[Idunn] Automatically cleaned up outdated history records"
+    refused:
+      undo:
+        invalid: "    §8[Idunn] Rejected undo request for instance %1%, Reason: Invalid history index %2%"
+        no_history: "    §8[Idunn] Rejected undo request for instance %1%, Reason: No history available"
+      redo:
+        invalid: "    §8[Idunn] Rejected redo request for instance %1%, Reason: Invalid history index %2%"
+        no_history: "    §8[Idunn] Rejected redo request for instance %1%, Reason: No history available"
 recursive:
   locked:
     header: "&c⚠ &6Template Locked!"

@@ -257,7 +257,7 @@ instance:
   delete:
     usage: "&c用法: /idunn instance delete <ID> [-keep]"
     not_found: "&c未找到 ID 为 %1% 的实例"
-    removed_blocks: "&a实例方块已移除 (%1% 个方块)。"
+    removed_blocks: "&a实例方块已移除 (%1% 个方块)。你可以通过 //undo 来撤回删除。"
     error_blocks: "&c移除方块时出错: %1%"
     hard_deleted: "&a实例记录已删除 (硬删除)。"
     skip_blocks: "&e跳过方块移除 (-keep 标志)。"
@@ -297,9 +297,13 @@ history:
   undo:
     success: "    [IDUNN] 实例 %1% 数据成功移除（撤销），模板：%2%"
     staged_success: "    [IDUNN] 实例 %1% 数据成功暂存（撤销），子模板：%2%，父模板：%3%"
+    delete_success: "    [IDUNN] 实例 %1% 已成功删除，模板：%2%"
+    staged_delete_success: "    [IDUNN] 实例 %1% 已成功取消删除（撤销），子模板：%2%，父模板：%3%"
   redo:
     success: "    [IDUNN] 实例 %1% 数据成功恢复（重做），模板：%2%"
     staged_success: "    [IDUNN] 实例 %1% 数据成功暂存（重做），子模板：%2%，父模板：%3%"
+    delete_success: "    [IDUNN] 实例 %1% 已成功恢复，模板：%2%"
+    staged_delete_success: "    [IDUNN] 实例 %1% 已成功取消删除（重做），子模板：%2%，父模板：%3%"
   staged:
     error:
       wrong_data: "    [IDUNN] 实例 %1% 数据暂存失败，数据类型错误"
