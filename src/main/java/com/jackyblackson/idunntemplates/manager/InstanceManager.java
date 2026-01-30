@@ -324,7 +324,16 @@ public class InstanceManager {
                 // "The template is locked, so no cascading update is triggered."
                 
                 // 6. Record Staged History
-                IdunnTemplates.getInstance().getHistoryManager().remember(player, editSession, IdunnHistoryWrapper.stagedPlaceHistory(player, instance, parentTemplate.getId()));
+                IdunnTemplates.getInstance().getHistoryManager().remember(
+                        player,
+                        editSession,
+                        IdunnHistoryWrapper.stagedPlaceHistory(
+                                player,
+                                instance,
+                                parentTemplate.getId(),
+                                parentTemplate.getMetadata().getLockedTimestamp()
+                        )
+                );
 
             } else {
                 // Normal Placement

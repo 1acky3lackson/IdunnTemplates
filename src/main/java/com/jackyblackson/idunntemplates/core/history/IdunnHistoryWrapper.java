@@ -2,14 +2,17 @@ package com.jackyblackson.idunntemplates.core.history;
 
 import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
+import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage;
@@ -207,12 +210,13 @@ public class IdunnHistoryWrapper implements Serializable {
         return wrapper;
     }
     
-    public static IdunnHistoryWrapper stagedPlaceHistory(Player p, Instance instance, UUID parentTemplateId) {
+    public static IdunnHistoryWrapper stagedPlaceHistory(Player p, Instance instance, UUID parentTemplateId, Long lockTimestamp) {
         IdunnHistoryWrapper wrapper = new IdunnHistoryWrapper(HistoryType.STAGED_PLACE, p.getUniqueId());
 
         wrapper.data.put("instanceId", instance.getId());
         wrapper.data.put("instanceSnapshot", instance);
         wrapper.data.put("parentTemplateId", parentTemplateId);
+        wrapper.data.put("lockTimestamp", lockTimestamp);
 
         return wrapper;
     }
@@ -220,6 +224,35 @@ public class IdunnHistoryWrapper implements Serializable {
     // =================================
     // HELPER METHODS
     // =================================
+
+    /**
+     * 这个历史记录是否有效。.
+     * 有效则返回 null，无效则返回提示信息地翻译键名
+     * @return
+     */
+    @Nullable
+    private String isEffective() {
+        if (this.historyType == HistoryType.INSTANCE_PLACE) {
+            return null;
+        }
+        if (this.historyType == HistoryType.STAGED_PLACE) {
+            UUID templateUUID = (UUID) this.data.get("parentTemplateId");
+            Long lockTimestamp = (Long) this.data.get("lockTimestamp");
+            if(templateUUID == null || lockTimestamp == null) {
+                return "history.staged_place.error.wrong_data";
+            }
+            Template t = IdunnTemplates.getInstance().getTemplateManager().getTemplate(templateUUID);
+            if(t == null) {
+                return "history.staged_place.error.template_not_found";
+            }
+            if (t.isLocked() && Objects.equals(t.getMetadata().getLockedTimestamp(), lockTimestamp)) {
+                return null;
+            } else {
+                return "history.staged_place.error.outdated";
+            }
+        }
+        return "history.error.unknown_type";
+    }
 
     private InstanceRepository getInstanceRepository() {
         if (IdunnTemplates.getInstance() != null) {

@@ -24,6 +24,7 @@ public class TemplateMetadata {
     
     // V2: Recursive Templates Locking & Staging
     private boolean locked = false;
+    private Long lockedTimestamp = null;
     private StagedChanges stagedChanges;
     
     private final List<TemplateVersion> versions = new ArrayList<>();
@@ -56,7 +57,17 @@ public class TemplateMetadata {
 
     // Getters
     public boolean isLocked() { return locked; }
-    public void setLocked(boolean locked) { this.locked = locked; }
+
+    public void setLocked(boolean locked) {
+        if (!this.locked && locked) {   // from unlock to lock
+            this.lockedTimestamp = System.currentTimeMillis();
+        }
+        this.locked = locked;
+    }
+
+    public Long getLockedTimestamp() {
+        return lockedTimestamp;
+    }
 
     public StagedChanges getStagedChanges() {
         if (stagedChanges == null) stagedChanges = new StagedChanges();
