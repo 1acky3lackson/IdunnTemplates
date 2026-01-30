@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -76,6 +77,11 @@ public class SaveCommand extends BaseSubCommand {
 
     @Override
     public List<String> tabComplete(Player player, String[] args) {
+        if (args.length == 2) {
+            return List.of("<name>");
+        } else if (args.length == 3) {
+            return templateManager.getNextPathsWithPerm(player, args[2], PermissionNames.Templates.createInPath$R);
+        }
         return Collections.emptyList();
     }
 }

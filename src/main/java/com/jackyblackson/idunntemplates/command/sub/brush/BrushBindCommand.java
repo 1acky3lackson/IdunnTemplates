@@ -9,6 +9,7 @@ import com.jackyblackson.idunntemplates.core.util.brush.BrushFlagParser;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -113,7 +114,7 @@ public class BrushBindCommand extends BaseSubCommand {
         if (args.length == 4) {
             if (args[2].equalsIgnoreCase("path")) {
                 // Suggest paths
-                return filter(getAllTemplatePaths(), args[3]);
+                return templateManager.getNextPathsWithPerm(player, args[3], PermissionNames.Templates.usePath$R);
             }
             if (args[2].equalsIgnoreCase("set")) {
                 // Suggest sets

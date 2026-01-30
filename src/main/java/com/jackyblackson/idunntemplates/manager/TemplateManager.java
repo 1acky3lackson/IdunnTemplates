@@ -7,6 +7,7 @@ import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
+import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -18,6 +19,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -425,5 +427,48 @@ public class TemplateManager {
     private String generateVersionId() {
         long now = System.currentTimeMillis();
         return Long.toString(now);
+    }
+
+    public List<String> getNextPathsFor(String input) {
+        if (input == null) return new ArrayList<>();
+
+        return this.getTemplates().stream()
+                .map(t -> {
+                    String p = t.getPath();
+                    return p.startsWith("_") ? p.substring(1) : p;
+                })
+                // 核心逻辑 1：根据 input 是否以 / 结尾来决定匹配策略
+                .filter(p -> {
+                    if (input.endsWith("/")) {
+                        // 严格目录匹配：必须以 a/ 开头
+                        return p.startsWith(input);
+                    } else {
+                        // 前缀匹配：a 可以匹配 ab/c，但通常需要确保它是一个完整的路径部分或者前缀
+                        return p.startsWith(input);
+                    }
+                })
+                .map(p -> {
+                    // 核心逻辑 2：找到 input 之后的第一个层级分隔符
+                    // 我们从 input 的长度位置开始往后找第一个 "/"
+                    int nextSlashIndex = p.indexOf("/", input.length());
+
+                    if (nextSlashIndex != -1) {
+                        // 找到了下一级文件夹，截取到该文件夹层级（包含斜杠）
+                        return p.substring(0, nextSlashIndex + 1);
+                    }
+                    // 没有下一级了，说明当前路径就是 input 本身所在的层级或文件
+                    return p;
+                })
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getNextPathsWithPerm(Player p, String input, String basePerm$R) {
+        return getNextPathsFor(input).stream().filter(path -> PermissionUtil.hasRecursivePermission(
+                p,
+                basePerm$R,
+                path
+        )).toList();
     }
 }

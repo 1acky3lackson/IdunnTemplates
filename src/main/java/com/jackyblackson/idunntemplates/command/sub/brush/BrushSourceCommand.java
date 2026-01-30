@@ -8,6 +8,7 @@ import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
+import com.jackyblackson.idunntemplates.permission.PermissionNames;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -192,13 +193,7 @@ public class BrushSourceCommand extends BaseSubCommand {
         }
         if (args.length == 5 && args[2].equalsIgnoreCase("add")) {
             if (args[3].equalsIgnoreCase("path")) {
-                List<String> paths = new ArrayList<>();
-                templateManager.getTemplates().forEach(t -> {
-                    String p = t.getPath();
-                    if (p.startsWith("_")) p = p.substring(1);
-                    paths.add(p);
-                });
-                return filter(paths, args[4]);
+                return templateManager.getNextPathsWithPerm(player, args[4], PermissionNames.Templates.usePath$R);
             }
             if (args[3].equalsIgnoreCase("set")) {
                 List<String> options = new ArrayList<>(sessionManager.getSession(player.getUniqueId()).getPreference().getSavedSets().keySet());
