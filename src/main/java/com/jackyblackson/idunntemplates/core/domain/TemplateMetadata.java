@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -61,6 +62,10 @@ public class TemplateMetadata {
     public void setLocked(boolean locked) {
         if (!this.locked && locked) {   // from unlock to lock
             this.lockedTimestamp = System.currentTimeMillis();
+            IdunnTemplates.getInstance().getLogger().info("Template " + templateId + " has been locked at timestamp " + this.lockedTimestamp);
+        } else if (this.locked && !locked) { // from lock to unlock
+            this.lockedTimestamp = -1L;
+            IdunnTemplates.getInstance().getLogger().info("Template " + templateId + " has been unlocked, its lockedTimestamp will be -1");
         }
         this.locked = locked;
     }

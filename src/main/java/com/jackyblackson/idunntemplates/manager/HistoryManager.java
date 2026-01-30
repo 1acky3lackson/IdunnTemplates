@@ -1,6 +1,5 @@
 package com.jackyblackson.idunntemplates.manager;
 
-import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.PlayerSession;
 import com.jackyblackson.idunntemplates.core.history.ChangeSetFingerprintCalculator;
 import com.jackyblackson.idunntemplates.core.history.IdunnHistoryWrapper;
@@ -16,11 +15,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage;
 
@@ -70,13 +69,15 @@ public class HistoryManager implements Listener {
     /**
      * 预处理撤回操作。
      * 模拟 FAWE 的撤回循环，找到涉及的 Idunn 记录并处理，但不阻止 FAWE 执行。
+     *
+     * @return 成功则返回 null，不成功则返回信息地翻译键名
      */
-    private void preProcessUndo(Player targetPlayer, int amount) {
+    private String preProcessUndo(Player targetPlayer, int amount) {
         LocalSession session = getSession(targetPlayer);
-        if (session == null) return;
+        if (session == null) return null;
 
         List<?> history = session.getHistory();
-        if (history == null || history.isEmpty()) return;
+        if (history == null || history.isEmpty()) return null;
 
         // 获取当前状态
         // FAWE 逻辑：Undo 从 historyIndex 开始，向后(index减小)执行
@@ -97,20 +98,37 @@ public class HistoryManager implements Listener {
             int targetIndex = currentIndex - i;
 
             if (targetIndex >= 0) {
+                String msg = checkActionValidity(targetPlayer, targetIndex);
+                if (msg != null) return msg;
                 processIdunnLogic(targetPlayer, session, targetIndex, true);
             }
         }
+        return null;
+    }
+
+    @Nullable
+    private String checkActionValidity(Player targetPlayer, int targetIndex) {
+        var playerSession = sessionManager.getSession(targetPlayer.getUniqueId());
+        if (playerSession.getPreference().getHistoryMap().containsKey(targetIndex)) {
+            var wrapper = playerSession.getPreference().getHistoryMap().get(targetIndex);
+            String msg = wrapper.isEffective();
+            if (msg != null) {
+                return msg;
+            }
+        }
+        return null;
     }
 
     /**
      * 预处理重做操作。
+     * @return 成功则返回 null，不成功则返回信息地翻译键名
      */
-    private void preProcessRedo(Player targetPlayer, int amount) {
+    private String preProcessRedo(Player targetPlayer, int amount) {
         LocalSession session = getSession(targetPlayer);
-        if (session == null) return;
+        if (session == null) return "history.manager.error.no_localsession";
 
         List<?> history = session.getHistory();
-        if (history == null || history.isEmpty()) return;
+        if (history == null || history.isEmpty()) return "history.manager.refused.redo.no_history";
 
         // 获取当前状态
         // FAWE 逻辑：Redo 意味着 historyNegativeIndex 减小，指针 index 增加
@@ -138,9 +156,12 @@ public class HistoryManager implements Listener {
             int targetIndex = currentIndex + 1 + i;
 
             if (targetIndex < history.size()) {
+                String msg = checkActionValidity(targetPlayer, targetIndex);
+                if (msg != null) return msg;
                 processIdunnLogic(targetPlayer, session, targetIndex, false);
             }
         }
+        return null;
     }
 
     /**
@@ -254,9 +275,19 @@ public class HistoryManager implements Listener {
         // --- 执行预处理 ---
         // 我们只负责处理数据，处理完后 event.setCancelled(false) 让 FAWE 处理方块
         if (isUndo) {
-            preProcessUndo(targetPlayer, amount);
+            String msg = preProcessUndo(targetPlayer, amount);
+            if (msg != null) {
+                targetPlayer.sendMessage(getMessage(targetPlayer, msg));
+                event.setCancelled(true);
+                return;
+            }
         } else {
-            preProcessRedo(targetPlayer, amount);
+            String msg = preProcessRedo(targetPlayer, amount);
+            if (msg != null) {
+                targetPlayer.sendMessage(getMessage(targetPlayer, msg));
+                event.setCancelled(true);
+                return;
+            }
         }
 
         // 显式放行 (虽然默认就是 false，但表明意图)

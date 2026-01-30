@@ -31,6 +31,7 @@ public class IdunnHistoryWrapper implements Serializable {
 
     // --- 新增：ChangeSet 指纹 ---
     private String changeSetFingerprint;
+    private boolean valid = true;
 
     // 用于存储恢复所需的数据 (例如 Instance 的 JSON 或序列化对象)
     private final Map<String, Object> data = new HashMap<>();
@@ -39,6 +40,14 @@ public class IdunnHistoryWrapper implements Serializable {
     private IdunnHistoryWrapper(HistoryType historyType, UUID playerUUID) {
         this.historyType = historyType;
         this.playerUUID = playerUUID;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     // =================================
@@ -226,12 +235,11 @@ public class IdunnHistoryWrapper implements Serializable {
     // =================================
 
     /**
-     * 这个历史记录是否有效。.
-     * 有效则返回 null，无效则返回提示信息地翻译键名
-     * @return
+     * 这个历史记录是否有效。
+     * @return 有效则返回 null，无效则返回提示信息地翻译键名
      */
     @Nullable
-    private String isEffective() {
+    public String isEffective() {
         if (this.historyType == HistoryType.INSTANCE_PLACE) {
             return null;
         }
@@ -239,16 +247,16 @@ public class IdunnHistoryWrapper implements Serializable {
             UUID templateUUID = (UUID) this.data.get("parentTemplateId");
             Long lockTimestamp = (Long) this.data.get("lockTimestamp");
             if(templateUUID == null || lockTimestamp == null) {
-                return "history.staged_place.error.wrong_data";
+                return "history.staged.error.wrong_data";
             }
             Template t = IdunnTemplates.getInstance().getTemplateManager().getTemplate(templateUUID);
             if(t == null) {
-                return "history.staged_place.error.template_not_found";
+                return "history.staged.error.template_not_found";
             }
             if (t.isLocked() && Objects.equals(t.getMetadata().getLockedTimestamp(), lockTimestamp)) {
                 return null;
             } else {
-                return "history.staged_place.error.outdated";
+                return "history.staged.error.already_been_committed";
             }
         }
         return "history.error.unknown_type";
