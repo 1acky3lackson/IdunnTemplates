@@ -24,6 +24,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -191,6 +192,19 @@ public class InstanceManager {
             }
         }
         // -------------------------------
+
+        // V2 UX: Warn if the template itself is locked (preventing updates from propagating if we place it elsewhere)
+        // Note: This check refers to the template being placed (Child), not the Parent it is placed into.
+        if (template.getMetadata().isLocked()) {
+            player.sendMessage("");
+            player.sendMessage(getMessage(player, "recursive.locked.header"));
+            player.sendMessage(getMessage(player, "recursive.locked.status", template.getPath()));
+            player.sendMessage(getMessage(player, "recursive.locked.updates_not_visible"));
+            player.sendMessage(getMessage(player, "recursive.locked.contact_owner",
+                    Bukkit.getPlayer(template.getMetadata().getCreatorId()) == null ? template.getMetadata().getCreatorId().toString() : Objects.requireNonNull(Bukkit.getPlayer(template.getMetadata().getCreatorId())).getName()
+            ));
+            player.sendMessage("");
+        }
 
         // Prepare Holder
         ClipboardHolder holder = new ClipboardHolder(clipboard);
