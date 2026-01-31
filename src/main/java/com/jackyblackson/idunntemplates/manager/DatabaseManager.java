@@ -100,7 +100,13 @@ public class DatabaseManager {
     }
 
     private void configureSQLite(HikariConfig config) {
+        String storageRootDirStr = plugin.getConfig().getString("storage.store_root_dir", "");
         File dbFile = new File(plugin.getDataFolder(), "data.db");
+        if (!storageRootDirStr.isEmpty()) {
+            File storageRootDir = new File(storageRootDirStr);
+            if (!storageRootDir.exists()) storageRootDir.mkdirs();
+            dbFile = new File(storageRootDir, "data.db");
+        }
         // 自动创建父目录
         if (!dbFile.getParentFile().exists()) {
             dbFile.getParentFile().mkdirs();

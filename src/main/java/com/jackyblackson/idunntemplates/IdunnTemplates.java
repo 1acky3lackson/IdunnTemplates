@@ -125,7 +125,13 @@ public final class IdunnTemplates extends JavaPlugin {
         com.jackyblackson.idunntemplates.core.util.MessageUtil.setLanguageManager(languageManager);
         
         // 2. Setup Storage
-        File templateDir = new File(getDataFolder(), "templates");
+        File templateDir = new File(getStorageRootFolder(), "templates");
+//        String storageRootDirStr = getConfig().getString("storage.store_root_dir", "");
+//        if (!storageRootDirStr.isEmpty()) {
+//            File storageRootDir = new File(storageRootDirStr);
+//            if (!storageRootDir.exists()) storageRootDir.mkdirs();
+//            templateDir = new File(storageRootDir, "templates");
+//        }
         File instancesDir = new File(getDataFolder(), "instances");
         File playerDir = new File(getDataFolder(), "player_data");
         File setsDir = new File(getDataFolder(), "sets");
@@ -211,6 +217,14 @@ public final class IdunnTemplates extends JavaPlugin {
         }
 
         getLogger().info("IdunnTemplates has been enabled!");
+    }
+
+    public File getStorageRootFolder() {
+        String storageRootDirStr = getConfig().getString("storage.store_root_dir", "");
+        if (storageRootDirStr.isEmpty()) {
+            return getDataFolder();
+        }
+        return new File(storageRootDirStr);
     }
 
     @Override

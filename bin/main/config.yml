@@ -4,6 +4,11 @@ language: "en-us"
 # 数据库存储配置 (Database Configuration)
 # =============================================================
 storage:
+  # 储存的根路径，留空则在 /plugins/IdunnTemplates/ 下
+  # 否则填写绝对路径
+  # 注意：数据存储在数据库，但模板的各版本的 schem 文件将以文件形式保存
+  store_root_dir: ""
+
   # 存储类型 / Storage Type
   # 可选值:
   # - sqlite     (默认，无需额外配置，数据存储在 plugins/IdunnTemplates/data.db)
@@ -62,6 +67,8 @@ storage:
   # database: idunn_prod
   # username: postgres
   # password: mysecretpassword
+
+
 
 update:
   idle-blocks:

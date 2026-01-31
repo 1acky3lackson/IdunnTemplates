@@ -57,7 +57,7 @@ public class Template {
     // --- Business Logic ---
 
     public File getDirectory() {
-        File templatesRoot = new File(IdunnTemplates.getInstance().getDataFolder(), "templates");
+        File templatesRoot = new File(IdunnTemplates.getInstance().getStorageRootFolder(), "templates");
         return new File(templatesRoot, path);
     }
 
