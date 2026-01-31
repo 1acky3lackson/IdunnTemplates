@@ -1,109 +1,80 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.jackyblackson.idunntemplates.IdunnTemplates;
-import org.bukkit.util.Vector;
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
+@DatabaseTable(tableName = "idunn_template_metadata")
 public class TemplateMetadata {
-    private UUID templateId;
-    private UUID creatorId;
-    private long creationTime;
-    private UUID worldId;
-    
-    // Anchor Point (minX, minY, minZ) of the original selection
-    private int anchorX;
-    private int anchorY;
-    private int anchorZ;
 
-    // Dimensions
+    // 使用 templateId 作为主键
+    @DatabaseField(id = true, columnName = "template_id")
+    private UUID templateId;
+
+    @DatabaseField(columnName = "creator_id")
+    private UUID creatorId;
+
+    @DatabaseField(columnName = "creation_time")
+    private long creationTime;
+
+    @DatabaseField(columnName = "world_id")
+    private UUID worldId;
+
+    // Anchor & Dimensions
+    @DatabaseField
+    private int anchorX;
+    @DatabaseField
+    private int anchorY;
+    @DatabaseField
+    private int anchorZ;
+    @DatabaseField
     private int width;
+    @DatabaseField
     private int height;
+    @DatabaseField
     private int length;
 
-    private Long deletedTimestamp; // null if active
-    
-    // V2: Recursive Templates Locking & Staging
+    // Status
+    @DatabaseField(columnName = "deleted_timestamp")
+    private Long deletedTimestamp;
+
+    @DatabaseField
     private boolean locked = false;
+
+    @DatabaseField(columnName = "locked_timestamp")
     private Long lockedTimestamp = null;
-    private StagedChanges stagedChanges;
-    
-    private final List<TemplateVersion> versions = new ArrayList<>();
 
-    /**
-     * 记录位于此模板 Master Region 内的其他模板（子模板）的完整实例信息。
-     * <p>
-     * Key: Child Template UUID (子模板的 ID)
-     * <p>
-     * Value: List of Instance (该子模板在当前模板内的所有实例列表)
-     * <p>
-     * 用途：当我们需要渲染或更新当前模板（作为父模板）时，
-     * 可以直接读取此列表知道有哪些子模板实例在里面，
-     * 而不需要去全局 InstanceRepository 搜索。
-     */
-    private Map<UUID, List<Instance>> childTemplateInstances = new HashMap<>();
+    // --- Complex Types (JSON Storage) ---
+    // 我们将 List<TemplateVersion> 和 StagedChanges 序列化存储
+    // 因为它们属于 Template 的私有数据，不需要被外部 SQL 关联查询
 
-    /**
-     * 记录此模板作为子模板，放置在哪些父模板中，以及对应的实例信息。
-     * <p>
-     * Key: Parent Template UUID (父模板的 ID)
-     * <p>
-     * Value: List of Instance (当前模板在父模板内的所有实例列表)
-     * <p>
-     * 用途：当 当前模板（作为子模板）发生变化时，
-     * 遍历此 Map 的 Key (Parent UUIDs)，触发父模板的自动更新。
-     * Value 中的 Instance 信息是冗余存储，用于快速校验或恢复。
-     */
-    private Map<UUID, List<Instance>> parentTemplateInstances = new HashMap<>();
+//    @DatabaseField(columnName = "versions_json", dataType = DataType.LONG_STRING)
+//    private String versionsJson;
 
-    // Getters
-    public boolean isLocked() { return locked; }
+    // [变更] 这个列表现在不直接存 Metadata 表，而是从 idunn_template_versions 表查出来
+    private final transient List<TemplateVersion> versions = new ArrayList<>();
 
-    public void setLocked(boolean locked) {
-        if (!this.locked && locked) {   // from unlock to lock
-            this.lockedTimestamp = System.currentTimeMillis();
-            IdunnTemplates.getInstance().getLogger().info("Template " + templateId + " has been locked at timestamp " + this.lockedTimestamp);
-        } else if (this.locked && !locked) { // from lock to unlock
-            this.lockedTimestamp = -1L;
-            IdunnTemplates.getInstance().getLogger().info("Template " + templateId + " has been unlocked, its lockedTimestamp will be -1");
-        }
-        this.locked = locked;
-    }
+    @DatabaseField(columnName = "staged_changes_json", dataType = DataType.LONG_STRING)
+    private String stagedChangesJson;
 
-    public Long getLockedTimestamp() {
-        return lockedTimestamp;
-    }
+    // --- Transient Fields (Not in this table) ---
 
-    public StagedChanges getStagedChanges() {
-        if (stagedChanges == null) stagedChanges = new StagedChanges();
-        return stagedChanges;
-    }
-    public void setStagedChanges(StagedChanges stagedChanges) { this.stagedChanges = stagedChanges; }
+//    private final transient List<TemplateVersion> versions = new ArrayList<>();
+    private transient StagedChanges stagedChanges;
 
-    public Map<UUID, List<Instance>> getChildTemplateInstances() {
-        if (childTemplateInstances == null) {
-            childTemplateInstances = new HashMap<>();
-        }
-        return childTemplateInstances;
-    }
+    // 这些 Map 不存储在 Metadata 表中，而是通过 DAO 查询 Instance 表来动态填充
+    private transient Map<UUID, List<Instance>> childTemplateInstances = new HashMap<>();
+    private transient Map<UUID, List<Instance>> parentTemplateInstances = new HashMap<>();
 
-    public Map<UUID, List<Instance>> getParentTemplateInstances() {
-        if (parentTemplateInstances == null) {
-            parentTemplateInstances = new HashMap<>();
-        }
-        return parentTemplateInstances;
-    }
+    private static final Gson gson = new Gson();
 
-    // Setters
-    public void setChildTemplateInstances(Map<UUID, List<Instance>> childTemplateInstances) {
-        this.childTemplateInstances = childTemplateInstances;
-    }
-
-    public void setParentTemplateInstances(Map<UUID, List<Instance>> parentTemplateInstances) {
-        this.parentTemplateInstances = parentTemplateInstances;
-    }
-
-    // No-args constructor for serialization
+    // ORM Constructor
     public TemplateMetadata() {}
 
     public TemplateMetadata(UUID templateId, UUID creatorId, long creationTime, UUID worldId, int anchorX, int anchorY, int anchorZ, int width, int height, int length) {
@@ -119,24 +90,114 @@ public class TemplateMetadata {
         this.length = length;
     }
 
+    // --- Logic for JSON Conversion (ORMLite Hooks) ---
+    // 每次保存前，将对象同步到 JSON 字符串
+    public void prePersist() {
+//        this.versionsJson = gson.toJson(this.versions);
+        if (this.stagedChanges != null) {
+            this.stagedChangesJson = gson.toJson(this.stagedChanges);
+        }
+    }
+
+    // 每次加载后，将 JSON 字符串解析为对象
+    public void postLoad() {
+//        if (versionsJson != null) {
+//            Type type = new TypeToken<ArrayList<TemplateVersion>>(){}.getType();
+//            List<TemplateVersion> loaded = gson.fromJson(versionsJson, type);
+//            if (loaded != null) {
+//                this.versions.clear();
+//                this.versions.addAll(loaded);
+//            }
+//        }
+        if (stagedChangesJson != null) {
+            this.stagedChanges = gson.fromJson(stagedChangesJson, StagedChanges.class);
+        }
+    }
+
+    // --- Getters & Setters ---
+
+    // [新增] 供 DAO 调用，注入版本列表
+    public void hydrateVersions(List<TemplateVersion> loadedVersions) {
+        this.versions.clear();
+        this.versions.addAll(loadedVersions);
+    }
+
+    // [变更] addVersion 现在只操作内存，需要调用 DAO saveTemplateVersion 来持久化
     public void addVersion(TemplateVersion version) {
         this.versions.add(version);
     }
 
+    // Getters 保持不变
     public List<TemplateVersion> getVersions() {
         return versions;
     }
 
-    public boolean isDeleted() {
-        return deletedTimestamp != null;
+    public StagedChanges getStagedChanges() {
+        if (stagedChanges == null) {
+            if (stagedChangesJson != null) {
+                postLoad();
+            } else {
+                stagedChanges = new StagedChanges();
+            }
+        }
+        return stagedChanges;
     }
 
-    public void setDeletedTimestamp(Long deletedTimestamp) {
-        this.deletedTimestamp = deletedTimestamp;
+    public void setStagedChanges(StagedChanges stagedChanges) {
+        this.stagedChanges = stagedChanges;
+        prePersist();
     }
-    
-    // Getters
+
+    // --- The Complex Maps (Hydrated by DAO) ---
+
+    public Map<UUID, List<Instance>> getChildTemplateInstances() {
+        if (childTemplateInstances == null) childTemplateInstances = new HashMap<>();
+        return childTemplateInstances;
+    }
+
+    public Map<UUID, List<Instance>> getParentTemplateInstances() {
+        if (parentTemplateInstances == null) parentTemplateInstances = new HashMap<>();
+        return parentTemplateInstances;
+    }
+
+    // 允许 DAO 注入这些数据
+    public void hydrateChildInstances(List<Instance> instances) {
+        this.childTemplateInstances = new HashMap<>();
+        for (Instance i : instances) {
+            // Key is the ID of the template of the instance
+            this.childTemplateInstances.computeIfAbsent(i.getTemplateId(), k -> new ArrayList<>()).add(i);
+        }
+    }
+
+    // 注入此模板作为子代时的父级关系
+    public void hydrateParentInstances(List<Instance> instances) {
+        this.parentTemplateInstances = new HashMap<>();
+        for (Instance i : instances) {
+            if (i.getEmbeddedInTemplateId() != null) {
+                this.parentTemplateInstances.computeIfAbsent(i.getEmbeddedInTemplateId(), k -> new ArrayList<>()).add(i);
+            }
+        }
+    }
+
+    // Standard Getters/Setters
+    public void setLocked(boolean locked) {
+        if (!this.locked && locked) {
+            this.lockedTimestamp = System.currentTimeMillis();
+            if (IdunnTemplates.getInstance() != null)
+                IdunnTemplates.getInstance().getLogger().info("Template " + templateId + " locked.");
+        } else if (this.locked && !locked) {
+            this.lockedTimestamp = null; // Use null for DB compatibility
+            if (IdunnTemplates.getInstance() != null)
+                IdunnTemplates.getInstance().getLogger().info("Template " + templateId + " unlocked.");
+        }
+        this.locked = locked;
+    }
+
+    public boolean isLocked() { return locked; }
     public UUID getTemplateId() { return templateId; }
+    public Long getLockedTimestamp() { return lockedTimestamp; }
+    public boolean isDeleted() { return deletedTimestamp != null; }
+    public void setDeletedTimestamp(Long deletedTimestamp) { this.deletedTimestamp = deletedTimestamp; }
     public UUID getCreatorId() { return creatorId; }
     public long getCreationTime() { return creationTime; }
     public UUID getWorldId() { return worldId; }

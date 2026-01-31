@@ -392,6 +392,28 @@ public class InstanceManager {
         player.sendMessage("");
     }
 
+    public void hardDelete(Instance target, Player player) {
+        try {
+            int count = IdunnTemplates.getInstance().getInstanceManager().removeInstanceBlocks(target, player);
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.removed_blocks", String.valueOf(count)));
+        } catch (Exception e) {
+            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.error_blocks", e.getMessage()));
+            e.printStackTrace();
+            return;
+        }
+
+        // Hard delete record
+        instanceRepository.hardDelete(target);
+    }
+
+    public void softDelete(Instance target, Player player) {
+        player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.skip_blocks"));
+
+        // Soft delete record
+        target.setDeletedTimestamp(System.currentTimeMillis());
+        instanceRepository.saveInstance(target);
+    }
+
     public int removeInstanceBlocks(Instance instance, Player player) throws IOException {
         Template template = templateManager.getTemplate(instance.getTemplateId());
         if (template == null) {

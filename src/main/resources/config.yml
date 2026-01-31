@@ -1,5 +1,68 @@
 language: "en-us"
 
+# =============================================================
+# 数据库存储配置 (Database Configuration)
+# =============================================================
+storage:
+  # 存储类型 / Storage Type
+  # 可选值:
+  # - sqlite     (默认，无需额外配置，数据存储在 plugins/IdunnTemplates/data.db)
+  # - mysql      (高性能，推荐用于多服同步)
+  # - postgresql (高性能，推荐用于大规模数据)
+  type: sqlite
+
+  # -------------------------------------------------------------
+  # 连接设置 (仅当 type 为 mysql 或 postgresql 时生效)
+  # -------------------------------------------------------------
+
+  # 数据库地址
+  host: localhost
+
+  # 数据库端口
+  # MySQL 默认: 3306
+  # PostgreSQL 默认: 5432
+  port: 3306
+
+  # 数据库名称 (请确保数据库已提前创建)
+  database: idunn_templates
+
+  # 账号与密码
+  username: root
+  password: "password123"
+
+  # -------------------------------------------------------------
+  # 高级设置 (Advanced Settings)
+  # -------------------------------------------------------------
+
+  # 是否启用 SSL 连接 (主要用于 MySQL)
+  # 如果你的数据库没有配置 SSL 证书，请保持 false，否则连接会失败
+  use-ssl: false
+
+  # 连接池大小 (Connection Pool Size)
+  # 指定插件与数据库保持的最大并发连接数。
+  # 对于大多数 Minecraft 服务器，10 已经足够。
+  pool-size: 10
+
+  # -------------------------------------------------------------
+  # 配置示例 (Examples)
+  # -------------------------------------------------------------
+  #
+  # [MySQL 配置示例]
+  # type: mysql
+  # host: 127.0.0.1
+  # port: 3306
+  # database: minecraft_creative
+  # username: admin
+  # password: secure_password
+  #
+  # [PostgreSQL 配置示例]
+  # type: postgresql
+  # host: 192.168.1.50
+  # port: 5432
+  # database: idunn_prod
+  # username: postgres
+  # password: mysecretpassword
+
 update:
   idle-blocks:
     - "minecraft:air"

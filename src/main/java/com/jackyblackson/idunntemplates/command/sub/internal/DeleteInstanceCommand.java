@@ -17,6 +17,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockTypes;
+import com.sun.source.tree.IdentifierTree;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -31,16 +32,16 @@ public class DeleteInstanceCommand extends BaseSubCommand {
 
     private final InstanceRepository instanceRepository;
     private final TemplateManager templateManager;
-    private final DiffCalculator diffCalculator;
-    private final BlockComparator blockComparator;
+//    private final DiffCalculator diffCalculator;
+//    private final BlockComparator blockComparator;
 
     public DeleteInstanceCommand(InstanceRepository instanceRepository, TemplateManager templateManager) {
         this.instanceRepository = instanceRepository;
         this.templateManager = templateManager;
         
         // Initialize helpers
-        this.blockComparator = new BlockComparator(IdunnTemplates.getInstance().getConfig());
-        this.diffCalculator = new DiffCalculator(blockComparator, IdunnTemplates.getInstance().getLogger());
+//        this.blockComparator = new BlockComparator(IdunnTemplates.getInstance().getConfig());
+//        this.diffCalculator = new DiffCalculator(blockComparator, IdunnTemplates.getInstance().getLogger());
     }
 
     @Override
@@ -72,24 +73,10 @@ public class DeleteInstanceCommand extends BaseSubCommand {
         }
         
         if (!keepBlocks) {
-            try {
-                int count = IdunnTemplates.getInstance().getInstanceManager().removeInstanceBlocks(target, player);
-                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.removed_blocks", String.valueOf(count)));
-            } catch (Exception e) {
-                player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.error_blocks", e.getMessage()));
-                e.printStackTrace();
-                return;
-            }
-            
-            // Hard delete record
-            instanceRepository.hardDelete(target);
+            IdunnTemplates.getInstance().getInstanceManager().hardDelete(target, player);
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.hard_deleted"));
         } else {
-            player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.skip_blocks"));
-
-             // Soft delete record
-            target.setDeletedTimestamp(System.currentTimeMillis());
-            instanceRepository.saveInstance(target);
+            IdunnTemplates.getInstance().getInstanceManager().softDelete(target, player);
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "instance.delete.soft_deleted"));
         }
     }

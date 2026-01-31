@@ -3,15 +3,13 @@ package com.jackyblackson.idunntemplates;
 import com.jackyblackson.idunntemplates.command.IdunnCommand;
 import com.jackyblackson.idunntemplates.core.calc.BlockComparator;
 import com.jackyblackson.idunntemplates.core.calc.DiffCalculator;
-import com.jackyblackson.idunntemplates.core.store.FileInstanceRepository;
-import com.jackyblackson.idunntemplates.core.store.FileTemplateStorage;
-import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
-import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
+import com.jackyblackson.idunntemplates.core.store.*;
 import com.jackyblackson.idunntemplates.listener.ChunkListener;
 import com.jackyblackson.idunntemplates.manager.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Objects;
 
 public final class IdunnTemplates extends JavaPlugin {
@@ -34,6 +32,8 @@ public final class IdunnTemplates extends JavaPlugin {
     // RESIZE
     private ResizeConfigManager resizeConfigManager;
     private ResizeManager resizeManager;
+
+    private DatabaseManager databaseManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
@@ -130,9 +130,16 @@ public final class IdunnTemplates extends JavaPlugin {
         if (!instancesDir.exists()) instancesDir.mkdirs();
         if (!playerDir.exists()) playerDir.mkdirs();
         if (!setsDir.exists()) setsDir.mkdirs();
-        
-        this.templateStorage = new FileTemplateStorage(templateDir);
-        this.instanceRepository = new FileInstanceRepository(instancesDir, getLogger());
+
+        this.databaseManager = new DatabaseManager(this);
+        try {
+            this.databaseManager.init();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        this.templateStorage = new DatabaseTemplateStorage(databaseManager, templateDir, getLogger());
+        this.instanceRepository = new DatabaseInstanceRepository(databaseManager, getLogger());
         
         // 3. Setup Core Logic
         this.blockComparator = new BlockComparator(getConfig());

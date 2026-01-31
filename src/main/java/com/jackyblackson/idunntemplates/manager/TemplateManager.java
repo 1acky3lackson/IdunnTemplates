@@ -38,16 +38,17 @@ public class TemplateManager {
         reloadTemplates();
         IdunnTemplates.getInstance().getLogger().info("Finished, get " + idCache.size() + " unique templates.");
     }
-    
+
     public void reloadTemplates() {
         idCache.clear();
         pathCache.clear();
         try {
+            // Storage 现在返回的是已经填充好(Hydrated)的 Entity 对象
             java.util.List<Template> loaded = storage.loadAllTemplates();
             for (Template t : loaded) {
                 // Cache by ID
                 idCache.put(t.getId(), t);
-                
+
                 // Cache by Normalized Path (User Friendly)
                 String normalized = normalizePath(t.getPath());
                 pathCache.put(normalized, t);
@@ -56,7 +57,7 @@ public class TemplateManager {
             e.printStackTrace();
         }
     }
-    
+
     private String normalizePath(String rawPath) {
         // rawPath: users/jacky/_mytmpl
         // wanted: users/jacky/mytmpl
@@ -71,25 +72,19 @@ public class TemplateManager {
             return rawPath;
         }
     }
-    
+
     public java.util.Collection<Template> getTemplates() {
         return java.util.Collections.unmodifiableCollection(idCache.values());
     }
 
     /**
      * Finds templates whose master region intersects with the given world bounds.
-     * @param worldId The world UUID
-     * @param minX Min X of the query box
-     * @param minY Min Y of the query box
-     * @param minZ Min Z of the query box
-     * @param maxX Max X of the query box
-     * @param maxY Max Y of the query box
-     * @param maxZ Max Z of the query box
-     * @return List of overlapping templates
      */
     public List<Template> getIntersectingTemplates(UUID worldId, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         List<Template> intersecting = new java.util.ArrayList<>();
 
+        // 这里依然在内存中遍历，如果 Template 数量巨大（如 >1万），建议改为数据库的空间查询
+        // 但考虑到 Template 通常是手工创建的，数量不会太多，内存遍历尚可接受。
         for (Template template : idCache.values()) {
             TemplateMetadata meta = template.getMetadata();
 
@@ -117,26 +112,22 @@ public class TemplateManager {
         }
         return intersecting;
     }
-    
+
     public void setUpdater(TemplateUpdater updater) {
         this.updater = updater;
     }
 
     /**
-     * 从 childInstanceMap 中移除指定 IDs 的实例
-     * @param childInstanceMap 存储子模板 UUID 到 实例列表的映射
-     * @param deleteIds 准备删除的 Instance ID 集合
+     * [DB Compatible] 从 childInstanceMap 中移除指定 IDs 的实例，并在数据库中执行软删除
      */
     public void removeInstancesFromMap(Map<UUID, List<Instance>> childInstanceMap, List<String> deleteIds) {
         if (childInstanceMap == null || deleteIds == null || deleteIds.isEmpty()) {
             return;
         }
 
-        // 1. 将 List 转为 Set 提高查询效率 (尤其是 deleteIds 较大时)
+        InstanceRepository instanceRepository = IdunnTemplates.getInstance().getInstanceRepository();
         Set<String> idSet = new HashSet<>(deleteIds);
 
-        // 2. 遍历 Map 的 entrySet
-        // 使用 Iterator 可以安全地在遍历时移除空的 List
         Iterator<Map.Entry<UUID, List<Instance>>> iterator = childInstanceMap.entrySet().iterator();
 
         while (iterator.hasNext()) {
@@ -144,22 +135,37 @@ public class TemplateManager {
             List<Instance> instances = entry.getValue();
 
             if (instances != null) {
-                // 使用 removeIf 移除 id 在待删集合中的实例
                 instances.removeIf(instance -> {
-                    var removed = idSet.contains(instance.getId());
+                    boolean removed = idSet.contains(instance.getId());
                     if (removed) {
-                        var childTemplate = instance.getTemplate();
-                        var parentTemplateMap = childTemplate.getMetadata().getParentTemplateInstances();
-                        if (parentTemplateMap.containsKey(instance.getEmbeddedInTemplateId())) {
-                            var parentTemplateInstanceList = parentTemplateMap.get(instance.getEmbeddedInTemplateId());
-                            parentTemplateInstanceList.removeIf(i -> i.getId().equals(instance.getId()));
+                        // 1. 内存中移除 (当前操作)
+
+                        // 2. [新增] 数据库持久化：标记为删除
+                        // 在新架构中，childTemplateInstances 是通过 SQL 查询动态生成的
+                        // 如果不更新数据库，下次加载时它们又会回来。
+                        instance.setDeletedTimestamp(System.currentTimeMillis());
+                        // 异步保存，不阻塞主线程
+                        instanceRepository.saveInstance(instance);
+
+                        // 3. 处理父级模板中的反向引用 (保持内存一致性)
+                        // 注意：这部分逻辑可能需要根据实际情况优化，因为数据库外键会自动处理引用完整性，
+                        // 但为了当前的内存缓存一致性，我们手动清理。
+                        Template childTemplate = getTemplate(instance.getTemplateId()); // 这里获取的是 Instance 对应的那个 Template 定义
+                        if (childTemplate != null) {
+                            var parentTemplateMap = childTemplate.getMetadata().getParentTemplateInstances();
+                            if (parentTemplateMap.containsKey(instance.getEmbeddedInTemplateId())) {
+                                var parentTemplateInstanceList = parentTemplateMap.get(instance.getEmbeddedInTemplateId());
+                                if (parentTemplateInstanceList != null) {
+                                    parentTemplateInstanceList.removeIf(i -> i.getId().equals(instance.getId()));
+                                }
+                            }
+                            // Metadata save is less critical for the instances list now, but good for other fields
+                            this.saveTemplateMetadata(childTemplate);
                         }
-                        this.saveTemplateMetadata(childTemplate);
                     }
                     return removed;
                 });
 
-                // 3. 如果该子模板下的所有实例都被删除了，移除该 Key
                 if (instances.isEmpty()) {
                     iterator.remove();
                 }
@@ -179,54 +185,60 @@ public class TemplateManager {
 
         // 6. Create Version (Standard Flow)
         String versionId = generateVersionId();
-        TemplateVersion version = new TemplateVersion(versionId, player.getUniqueId(), message);
+        // [DB Compatible] 使用带 Template 参数的构造函数 (传入 null 或 this，Storage 层会修正)
+        // 或者使用新的构造函数：TemplateVersion(Template template, String versionId, UUID submitterId, String message)
+        TemplateVersion version = new TemplateVersion(template, versionId, player.getUniqueId(), message);
 
         // V2: Handle Staged Changes & Locking
         if (meta.getStagedChanges() != null && !meta.getStagedChanges().isEmpty()) {
             player.sendMessage(ChatColor.YELLOW + "Processing staged changes...");
-            
-            // 1. Merge Staged Data
+
+            // 1. Merge Staged Data (Additions)
             java.util.List<Instance> added = meta.getStagedChanges().getAddedInstances();
             for (Instance inst : added) {
-                // Add to childTemplateInstances
+                // Add to transient map
                 meta.getChildTemplateInstances()
-                    .computeIfAbsent(inst.getTemplateId(), k -> new java.util.ArrayList<>())
-                    .add(inst);
-                
-                // Ensure the child instance knows it's embedded (redundant if set during place, but safe)
+                        .computeIfAbsent(inst.getTemplateId(), k -> new java.util.ArrayList<>())
+                        .add(inst);
+
+                // Ensure link
                 inst.setEmbeddedInTemplateId(template.getId());
-                // Note: We don't save instance here, it was saved during place.
+
+                // [DB Compatible] Ensure active status in DB
+                // 虽然 placeInstance 时已经保存，但这里确认一下状态是个好习惯
+                instanceRepository.saveInstance(inst);
             }
+
+            // 2. Merge Staged Data (Removals)
             var deleteIds = meta.getStagedChanges().getRemovedInstanceIds();
-            for (String id : deleteIds) {
+            if (!deleteIds.isEmpty()) {
                 var childInstanceMap = template.getMetadata().getChildTemplateInstances();
+                // 这里的 removeInstancesFromMap 已经更新为会操作数据库了
                 this.removeInstancesFromMap(childInstanceMap, deleteIds);
-                this.saveTemplateMetadata(template);
+                // Metadata update happens below
             }
-            
-            // 2. Clear Staging
+
+            // 3. Clear Staging
             meta.getStagedChanges().clear();
-            
-            // 3. Force Update Child Instances
-            // Iterate ALL child instances (newly merged + existing) and update them in the world if needed
-            // This ensures the captured schematic contains the latest version of children.
+
+            // 4. Force Update Child Instances
             player.sendMessage(ChatColor.YELLOW + "Verifying child instance versions...");
             int updatedCount = 0;
             org.bukkit.World world = org.bukkit.Bukkit.getWorld(meta.getWorldId());
             if (world != null) {
+                // ... (Original logic for updating children visuals) ...
                 try (com.sk89q.worldedit.EditSession session = com.sk89q.worldedit.WorldEdit.getInstance().newEditSession(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world))) {
                     for (java.util.List<Instance> childList : meta.getChildTemplateInstances().values()) {
                         for (Instance childInst : childList) {
-                                Template childTemplate = getTemplate(childInst.getTemplateId());
-                                if (childTemplate != null) {
-                                    TemplateVersion latestChildVer = childTemplate.getLatestVersion();
-                                    if (latestChildVer != null && !childInst.getCurrentVersionId().equals(latestChildVer.getVersionId())) {
-                                        // Force update this child instance in the world
-                                        IdunnTemplates.getInstance().getLogger().info("[TemplateManager] [commitTemplate] updating instance " + childInst.getId() + " of template " + childTemplate.getPath() + " due to template " + template.getPath() + " committed by " + player.getName() + " with commit message " + message);
-                                        templateUpdater.updateSingleInstance(childTemplate, childInst, latestChildVer, session);
-                                        updatedCount++;
-                                    }
+                            Template childTemplate = getTemplate(childInst.getTemplateId());
+                            if (childTemplate != null) {
+                                TemplateVersion latestChildVer = childTemplate.getLatestVersion();
+                                if (latestChildVer != null && !childInst.getCurrentVersionId().equals(latestChildVer.getVersionId())) {
+                                    IdunnTemplates.getInstance().getLogger().info("[TemplateManager] Updating child instance " + childInst.getId());
+                                    templateUpdater.updateSingleInstance(childTemplate, childInst, latestChildVer, session);
+                                    updatedCount++;
                                 }
+                            }
                         }
                     }
                 }
@@ -234,34 +246,32 @@ public class TemplateManager {
             if (updatedCount > 0) {
                 player.sendMessage(ChatColor.GREEN + "Forced update of " + updatedCount + " child instances.");
             }
-            
-            // 4. Unlock
+
+            // 5. Unlock
             meta.setLocked(false);
 
-
-            
-            // 5. Save Metadata (Merged & Unlocked)
+            // 6. Save Metadata (Merged & Unlocked)
+            // Storage.updateMetadata 会处理 stagedChangesJson 的清空
             saveTemplateMetadata(template);
         } else {
-            // Even if no staged changes, we should unlock if it was locked for some reason
             if (meta.isLocked()) {
                 meta.setLocked(false);
                 saveTemplateMetadata(template);
             }
         }
 
-        // capture
-        // 3. Calculate Region and Origin
+        // [Capture Logic - No changes needed, using WE API]
         BlockVector3 min = BlockVector3.at(meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
         BlockVector3 max = min.add(meta.getWidth() - 1, meta.getHeight() - 1, meta.getLength() - 1);
 
-        // Recover origin offset from previous version
         BlockVector3 originOffset = BlockVector3.ZERO;
         TemplateVersion latest = template.getLatestVersion();
         if (latest != null) {
             try {
+                // 注意：这里 template.getDirectory() 已经适配了新的文件路径逻辑
                 java.io.File schemFile = new java.io.File(template.getDirectory(), latest.getVersionId() + ".schem");
                 if (schemFile.exists()) {
+                    // ... (Recover origin logic) ...
                     com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByFile(schemFile);
                     if (format == null) format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByAlias("sponge");
                     if (format != null) {
@@ -279,7 +289,6 @@ public class TemplateManager {
 
         BlockVector3 newOrigin = min.add(originOffset);
 
-        // 4. Capture
         com.sk89q.worldedit.regions.CuboidRegion region = new com.sk89q.worldedit.regions.CuboidRegion(
                 BukkitAdapter.adapt(sourceWorld), min, max
         );
@@ -298,41 +307,27 @@ public class TemplateManager {
             return;
         }
 
-         // 7. Save Version
+        // 7. Save Version to DB & Disk
         storage.saveTemplateVersion(template, version, clipboard);
-        
-        // Update cache (ensure metadata/versions are up to date in cache objects)
-        // Since 'template' reference is what we modify, and it's in cache, we might be fine.
-        // But if storage returned a new object or we want to be safe:
-        // (TemplateStorage.saveTemplateVersion updates the passed template object in memory too? Yes, see code)
-        
-         // 8. Trigger Update
+
+        // 8. Trigger Update
         TemplateVersion newVer = template.getLatestVersion();
         List<Instance> allLoaded = instanceRepository.getAllLoadedInstances();
 
-        // Filter by template ID
         List<Instance> targets = allLoaded.stream()
                 .filter(i -> i.getTemplateId().equals(template.getId()))
                 .filter(i ->
                         i.isWild()
-                        || ((i.getEmbeddedTemplate() != null) && !(i.getEmbeddedTemplate().isLocked()))
+                                || ((i.getEmbeddedTemplate() != null) && !(i.getEmbeddedTemplate().isLocked()))
                 )
                 .collect(Collectors.toList());
 
         player.sendMessage(ChatColor.YELLOW + "Found " + targets.size() + " active instances. Updating...");
-
         templateUpdater.updateInstances(template, newVer, targets);
-
         player.sendMessage(ChatColor.GREEN + "Update process finished.");
-        
-        // 9. Trigger Cascading Update (V2: Delayed Trigger)
-        // Now that we've committed (and unlocked), we can notify parents.
+
+        // 9. Trigger Cascading Update
         if (updater != null && updater.getCascadingUpdateManager() != null) {
-//            updater.getCascadingUpdateManager().scheduleUpdate(template.getId()); // Wait, this schedules update for THIS template?
-            // No, scheduleUpdate(parentId) schedules update for PARENT.
-            // But here, WE are the child (potentially) of someone else.
-            // So we need to notify OUR parents.
-            
             Map<UUID, List<Instance>> parents = meta.getParentTemplateInstances();
             if (!parents.isEmpty()) {
                 player.sendMessage(ChatColor.AQUA + "Triggering cascading updates for " + parents.size() + " parent templates...");
@@ -343,26 +338,17 @@ public class TemplateManager {
         }
     }
 
-    /**
-     * Automated commit by the system (e.g., Cascading Update).
-     */
     public void commitTemplateSystem(Template template, String message) throws Exception {
+        // ... (System commit logic, similar update for TemplateVersion constructor) ...
         InstanceRepository instanceRepository = IdunnTemplates.getInstance().getInstanceRepository();
         TemplateUpdater templateUpdater = IdunnTemplates.getInstance().getTemplateUpdater();
-
-        // 0. Capture current state from World (Master Region)
-        // We need to create a Clipboard from the Master Region in the world.
         TemplateMetadata meta = template.getMetadata();
         org.bukkit.World world = org.bukkit.Bukkit.getWorld(meta.getWorldId());
-        if (world == null) {
-            IdunnTemplates.getInstance().getLogger().warning("Cannot auto-commit template " + template.getName() + ": World not loaded.");
-            return;
-        }
-        
+
+        // ... Capture Logic ...
         BlockVector3 min = BlockVector3.at(meta.getAnchorX(), meta.getAnchorY(), meta.getAnchorZ());
         BlockVector3 max = min.add(meta.getWidth() - 1, meta.getHeight() - 1, meta.getLength() - 1);
         com.sk89q.worldedit.regions.CuboidRegion region = new com.sk89q.worldedit.regions.CuboidRegion(min, max);
-        
         Clipboard clipboard;
         try (com.sk89q.worldedit.EditSession session = com.sk89q.worldedit.WorldEdit.getInstance().newEditSession(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world))) {
             clipboard = new com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard(region);
@@ -372,16 +358,13 @@ public class TemplateManager {
             com.sk89q.worldedit.function.operation.Operations.completeLegacy(copy);
         }
 
-        // 1. Create Version
         String versionId = generateVersionId();
-        // Use a System UUID (all zeros) or similar to indicate system
-        UUID systemUUID = new UUID(0, 0); 
-        TemplateVersion version = new TemplateVersion(versionId, systemUUID, message);
+        UUID systemUUID = new UUID(0, 0);
+        // [DB Compatible]
+        TemplateVersion version = new TemplateVersion(template, versionId, systemUUID, message);
 
-        // 2. Save Version
         storage.saveTemplateVersion(template, version, clipboard);
 
-        // 3. Trigger Update for its instances
         TemplateVersion newVer = template.getLatestVersion();
         List<Instance> allLoaded = instanceRepository.getAllLoadedInstances();
         List<Instance> targets = allLoaded.stream()
@@ -389,37 +372,25 @@ public class TemplateManager {
                 .collect(Collectors.toList());
 
         if (!targets.isEmpty()) {
-            IdunnTemplates.getInstance().getLogger().info("Auto-commit triggering update for " + targets.size() + " instances of " + template.getName());
             templateUpdater.updateInstances(template, newVer, targets);
         }
     }
-    
+
+    // Getters
     public Template getTemplate(String path) {
-        // path is user input: users/jacky/mytmpl
-        // We check pathCache
         return pathCache.get(path);
     }
-    
+
     public Template getTemplate(UUID id) {
         return idCache.get(id);
     }
-    
+
     public Clipboard getTemplateClipboard(Template template, TemplateVersion version) throws IOException {
         return storage.loadSchematic(template, version);
     }
 
-    /**
-     * Saves a new template from a player's clipboard.
-     * @param player The player creating the template.
-     * @param name The name of the template (final folder will be _name).
-     * @param subPath Optional subpath. If null/empty, defaults to "users/<playername>".
-     * @param clipboard The WorldEdit clipboard.
-     * @return The created Template.
-     * @throws IllegalArgumentException If permissions are missing or name is invalid.
-     * @throws Exception If IO fails.
-     */
     public Template createTemplate(Player player, String name, String subPath, Clipboard clipboard) throws Exception {
-        // 1. Determine Path and Check Permissions
+        // 1. Determine Path
         String finalPath;
         if (subPath == null || subPath.trim().isEmpty()) {
             if (!player.hasPermission(PermissionNames.Templates.createPersonal)) {
@@ -427,7 +398,6 @@ public class TemplateManager {
             }
             finalPath = "users/" + player.getName();
         } else {
-            // Path permission check: idunn.template.save.dir1.dir2
             String permNode = PermissionNames.Templates.createInPath + "." + subPath.replace("/", ".");
             if (!player.hasPermission(permNode)) {
                 if (!hasRecursivePermission(player, PermissionNames.Templates.createInPath$R, subPath)) {
@@ -452,9 +422,11 @@ public class TemplateManager {
 
         // 3. Prepare Version
         String versionId = generateVersionId();
-        TemplateVersion version = new TemplateVersion(versionId, player.getUniqueId(), "Initial creation");
+        // [DB Compatible] Template is null initially, Storage will set it
+        TemplateVersion version = new TemplateVersion(null, versionId, player.getUniqueId(), "Initial creation");
 
         // 4. Save
+        // storage.saveNewTemplate will handle transaction and foreign keys
         Template t = storage.saveNewTemplate(finalPath, name, metadata, clipboard, version);
 
         // 5. Update Cache
@@ -473,38 +445,29 @@ public class TemplateManager {
     }
 
     private String generateVersionId() {
-        long now = System.currentTimeMillis();
-        return Long.toString(now);
+        return Long.toString(System.currentTimeMillis());
     }
 
+    // ... (getNextPathsFor and getNextPathsWithPerm remain unchanged) ...
     public List<String> getNextPathsFor(String input) {
         if (input == null) return new ArrayList<>();
-
         return this.getTemplates().stream()
                 .map(t -> {
                     String p = t.getPath();
                     return p.startsWith("_") ? p.substring(1) : p;
                 })
-                // 核心逻辑 1：根据 input 是否以 / 结尾来决定匹配策略
                 .filter(p -> {
                     if (input.endsWith("/")) {
-                        // 严格目录匹配：必须以 a/ 开头
                         return p.startsWith(input);
                     } else {
-                        // 前缀匹配：a 可以匹配 ab/c，但通常需要确保它是一个完整的路径部分或者前缀
                         return p.startsWith(input);
                     }
                 })
                 .map(p -> {
-                    // 核心逻辑 2：找到 input 之后的第一个层级分隔符
-                    // 我们从 input 的长度位置开始往后找第一个 "/"
                     int nextSlashIndex = p.indexOf("/", input.length());
-
                     if (nextSlashIndex != -1) {
-                        // 找到了下一级文件夹，截取到该文件夹层级（包含斜杠）
                         return p.substring(0, nextSlashIndex + 1);
                     }
-                    // 没有下一级了，说明当前路径就是 input 本身所在的层级或文件
                     return p;
                 })
                 .distinct()
