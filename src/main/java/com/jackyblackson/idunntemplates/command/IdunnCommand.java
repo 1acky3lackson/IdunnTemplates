@@ -84,6 +84,7 @@ public class IdunnCommand implements TabExecutor {
         subCommands.put("tp", new SmartTpCommand(templateManager, instanceRepository));
         subCommands.put("commit", new SmartCommitCommand(templateManager));
         subCommands.put("resize", new ResizeCommand(resizeManager, resizeConfigManager, languageManager));
+        subCommands.put("migrate", new com.jackyblackson.idunntemplates.command.sub.internal.MigrateCommand());
     }
 
     @Override
