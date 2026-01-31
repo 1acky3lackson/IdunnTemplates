@@ -93,6 +93,10 @@ public final class IdunnTemplates extends JavaPlugin {
         return historyManager;
     }
 
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
     @Override
     public void onEnable() {
         getLogger().info("""
