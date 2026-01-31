@@ -38,10 +38,17 @@ public class DatabaseManager {
     }
 
     public void init() throws SQLException {
+        com.j256.ormlite.logger.Logger.setGlobalLogLevel(com.j256.ormlite.logger.Level.ERROR);
         FileConfiguration config = plugin.getConfig();
 
         // 读取配置类型: sqlite, mysql, postgresql
         String storageType = config.getString("storage.type", "sqlite").toLowerCase();
+
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setPoolName("IdunnTemplates-Pool");
@@ -84,19 +91,73 @@ public class DatabaseManager {
         // --- [关键修复] 自动建表 ---
         // 必须显式为每一个 Entity 类调用 createTableIfNotExists
 
-        // 1. 基础表 (Metadata 被 Template 引用，理论上应该先建，虽然 ORMLite 会处理延迟)
-        TableUtils.createTableIfNotExists(connectionSource, TemplateMetadata.class);
+        plugin.getLogger().info("Checking and creating tables if necessary...");
 
-        // 2. 核心表
-        TableUtils.createTableIfNotExists(connectionSource, Template.class);
+        // 1. 基础表 (Metadata)
+        createTableSafely(TemplateMetadata.class, "idunn_template_metadata");
 
-        // 3. 关联表
-        TableUtils.createTableIfNotExists(connectionSource, TemplateVersion.class);
-        TableUtils.createTableIfNotExists(connectionSource, Instance.class);
+        // 2. 核心表 (Template)
+        createTableSafely(Template.class, "idunn_templates");
+
+        // 3. 关联表 (Version, Instance)
+        createTableSafely(TemplateVersion.class, "idunn_template_versions");
+        createTableSafely(Instance.class, "idunn_instances");
+
+        plugin.getLogger().info("Database initialized successfully.");
 
 //        plugin.getLogger().info("Database initialized successfully.");
 
         plugin.getLogger().info("Database initialized successfully.");
+    }
+
+    /**
+     * 安全地创建表。
+     * 手动检查 JDBC 元数据，如果表不存在则创建。
+     * 这种方法比 ORMLite 的 createTableIfNotExists 对 Postgres 更友好。
+     */
+    private <T> void createTableSafely(Class<T> clazz, String tableName) throws SQLException {
+        // [修复] 使用 DatabaseTableConfig 获取表名，替代不存在的 TableUtils.getTableName
+//        String tableName = com.j256.ormlite.table.DatabaseTableConfig.fromClass(connectionSource, clazz).getTableName();
+
+        boolean tableExists = false;
+
+        // 2. 使用原生 JDBC 检查表是否存在
+        try (java.sql.Connection conn = dataSource.getConnection()) {
+            java.sql.DatabaseMetaData meta = conn.getMetaData();
+
+            // 尝试检查表是否存在 (先查原始名)
+            try (java.sql.ResultSet rs = meta.getTables(null, null, tableName, null)) {
+                if (rs.next()) {
+                    tableExists = true;
+                }
+            }
+
+            // 如果没查到，再试一次小写 (Postgres 默认行为)
+            if (!tableExists) {
+                try (java.sql.ResultSet rs = meta.getTables(null, null, tableName.toLowerCase(), null)) {
+                    if (rs.next()) {
+                        tableExists = true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error checking table existence for " + tableName + ": " + e.getMessage());
+        }
+
+        // 3. 根据检查结果决定是否创建
+        if (!tableExists) {
+            try {
+                TableUtils.createTable(connectionSource, clazz);
+                plugin.getLogger().info("Created table: " + tableName);
+            } catch (SQLException e) {
+                // 忽略 "Table already exists" 错误
+                if (e.getMessage().toLowerCase().contains("exist") || e.getMessage().toLowerCase().contains("already")) {
+                    plugin.getLogger().warning("Table " + tableName + " seemed to exist during creation, skipping.");
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     private void configureSQLite(HikariConfig config) {
