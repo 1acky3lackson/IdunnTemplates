@@ -5,6 +5,7 @@ api-version: '1.21'
 prefix: IdunnTemplates
 load: STARTUP
 depend: [WorldEdit]
+softdepend: [LuckPerms]
 authors: [ Jacky Blackson ]
 commands:
   idunn:

@@ -39,6 +39,9 @@ dependencies {
     // [新增] PostgreSQL 驱动
     // 42.7.x 是目前稳定且兼容性较好的版本
     implementation 'org.postgresql:postgresql:42.7.2'
+
+    // LuckPerms API
+    compileOnly("net.luckperms:api:5.4")
 }
 
 tasks {
