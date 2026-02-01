@@ -44,12 +44,6 @@ public class DatabaseManager {
         // 读取配置类型: sqlite, mysql, postgresql
         String storageType = config.getString("storage.type", "sqlite").toLowerCase();
 
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setPoolName("IdunnTemplates-Pool");
 
@@ -206,6 +200,12 @@ public class DatabaseManager {
     }
 
     private void configurePostgres(HikariConfig config, FileConfiguration fileConfig) {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Failed to load PostgreSQL driver", e);
+        }
+
         String host = fileConfig.getString("storage.host", "localhost");
         String port = fileConfig.getString("storage.port", "5432");
         String database = fileConfig.getString("storage.database", "minecraft");
