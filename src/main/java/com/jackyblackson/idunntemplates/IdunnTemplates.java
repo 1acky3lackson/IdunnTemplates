@@ -34,6 +34,7 @@ public final class IdunnTemplates extends JavaPlugin {
     private ResizeManager resizeManager;
 
     private DatabaseManager databaseManager;
+    private PermissionServerManager permissionServerManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
@@ -216,6 +217,10 @@ public final class IdunnTemplates extends JavaPlugin {
             sessionManager.onPlayerJoin(new org.bukkit.event.player.PlayerJoinEvent(p, null));
         }
 
+        // 9. Start Permission Server
+        this.permissionServerManager = new PermissionServerManager(this);
+        this.permissionServerManager.start();
+
         getLogger().info("IdunnTemplates has been enabled!");
     }
 
@@ -239,6 +244,10 @@ public final class IdunnTemplates extends JavaPlugin {
             for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
                 sessionManager.saveSession(p.getUniqueId());
             }
+        }
+
+        if (permissionServerManager != null) {
+            permissionServerManager.stop();
         }
     }
 }

@@ -70,6 +70,9 @@ storage:
 
 
 
+server:
+  port: 8085
+
 update:
   idle-blocks:
     - "minecraft:air"
