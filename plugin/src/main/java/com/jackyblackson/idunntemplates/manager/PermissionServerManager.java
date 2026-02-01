@@ -63,6 +63,7 @@ public class PermissionServerManager {
 
             String uuidStr = params.get("uuid");
             String permission = params.get("permission");
+            String userName = params.get("username");
 
             if (uuidStr == null || permission == null) {
                 Map<String, Object> error = new HashMap<>();
@@ -91,6 +92,7 @@ public class PermissionServerManager {
                     res.put("result", hasPerm);
                     res.put("source", "online_player");
                     res.put("name", player.getName());
+                    res.put("uuid", player.getUniqueId());
                     onlineCheckFuture.complete(res);
                 } else {
                     onlineCheckFuture.complete(null);
@@ -116,9 +118,25 @@ public class PermissionServerManager {
                         User user = LuckPermsProvider.get().getUserManager().loadUser(uuid).join();
                         if (user != null) {
                             boolean hasPerm = user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
-                            result.put("result", hasPerm);
-                            result.put("source", "luckperms");
-                            result.put("name", user.getUsername());
+                            if (hasPerm) {
+                                result.put("result", hasPerm);
+                                result.put("source", "luckperms");
+                                result.put("name", user.getUsername());
+                                result.put("uuid", user.getUniqueId());
+                            } else if (userName != null && !userName.isEmpty()) {
+                                UUID userNameUUID = LuckPermsProvider.get().getUserManager().lookupUniqueId(userName).join();
+                                if (userNameUUID != null) {
+                                    User userNameUser = LuckPermsProvider.get().getUserManager().loadUser(userNameUUID).join();
+                                    hasPerm = userNameUser.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+                                    result.put("result", hasPerm);
+                                    result.put("source", "luckperms");
+                                    result.put("name", userNameUser.getUsername());
+                                    result.put("uuid", userNameUser.getUniqueId());
+                                }
+                            } else {
+                                result.put("error", "User not found in LuckPerms, neither by uuid nor by username.");
+                                result.put("source", "luckperms_error");
+                            }
                         } else {
                             result.put("error", "User not found in LuckPerms");
                             result.put("source", "luckperms_error");
