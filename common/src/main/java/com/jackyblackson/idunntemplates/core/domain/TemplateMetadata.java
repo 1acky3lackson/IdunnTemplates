@@ -5,6 +5,8 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.*;
 
@@ -16,10 +18,12 @@ public class TemplateMetadata {
     // 使用 templateId 作为主键
     @Id
     @Column(name = "template_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(id = true, columnName = "template_id")
     private UUID templateId;
 
     @Column(name = "creator_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "creator_id")
     private UUID creatorId;
 
@@ -28,6 +32,7 @@ public class TemplateMetadata {
     private long creationTime;
 
     @Column(name = "world_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "world_id")
     private UUID worldId;
 

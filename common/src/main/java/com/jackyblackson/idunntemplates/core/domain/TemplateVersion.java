@@ -3,6 +3,8 @@ package com.jackyblackson.idunntemplates.core.domain;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -31,6 +33,7 @@ public class TemplateVersion {
     private String versionId;
 
     @Column(name = "submitter_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "submitter_id")
     private UUID submitterId;
 

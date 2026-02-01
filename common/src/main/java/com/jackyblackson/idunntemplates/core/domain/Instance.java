@@ -4,6 +4,8 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.jackyblackson.idunntemplates.core.store.dao.InstanceDao;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -19,6 +21,7 @@ public class Instance {
     private String id;
 
     @Column(name = "template_id", nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "template_id", canBeNull = false)
     private UUID templateId;
 
@@ -28,6 +31,7 @@ public class Instance {
 
     // --- Anchor position ---
     @Column(name = "world_id", nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "world_id", canBeNull = false)
     private UUID worldId;
 
@@ -64,6 +68,7 @@ public class Instance {
     private long placedAt;
 
     @Column(name = "placed_by")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "placed_by")
     private UUID placedBy;
 
@@ -103,6 +108,7 @@ public class Instance {
      * 保持简单，避免级联加载的复杂性。
      */
     @Column(name = "embedded_in_template_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "embedded_in_template_id", index = true)
     private UUID embeddedInTemplateId;
 

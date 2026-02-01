@@ -4,6 +4,8 @@ import com.jackyblackson.idunntemplates.core.store.dao.TemplateDao;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.io.File;
 import java.util.UUID;
@@ -14,6 +16,7 @@ import java.util.UUID;
 public class Template {
 
     @Id
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(id = true)
     private UUID id;
 
@@ -29,7 +32,7 @@ public class Template {
     // foreignAutoRefresh = true 会自动加载 metadata 数据
     // foreignAutoCreate = true 会在保存 template 时自动保存 metadata
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "metadata_id")
+    @JoinColumn(name = "metadata_id", referencedColumnName = "template_id")
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "metadata_id")
     private TemplateMetadata metadata;
 
@@ -60,6 +63,6 @@ public class Template {
 
     public TemplateVersion getLatestVersion() {
         if (metadata.getVersions().isEmpty()) return null;
-        return metadata.getVersions().get(metadata.getVersions().size() - 1);
+        return metadata.getVersions().getLast();
     }
 }
