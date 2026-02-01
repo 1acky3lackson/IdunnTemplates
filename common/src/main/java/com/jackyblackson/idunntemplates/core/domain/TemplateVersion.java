@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import jakarta.persistence.*;
@@ -24,6 +25,7 @@ public class TemplateVersion {
     // columnName = "template_id": 数据库中的列名
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
+    @JsonIgnore
     @DatabaseField(foreign = true, columnName = "template_id", canBeNull = false)
     private Template template;
 

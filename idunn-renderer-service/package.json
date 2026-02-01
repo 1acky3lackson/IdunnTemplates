@@ -1,0 +1,27 @@
+{
+  "name": "idunn-renderer-service",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "start": "node server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js",
+    "dev": "cross-env NODE_ENV=development node server.js"
+  },
+  "dependencies": {
+    "@enginehub/schematicwebviewer": "^5.0.1",
+    "buffer": "^6.0.3",
+    "cross-env": "^7.0.3",
+    "express": "^4.18.2",
+    "puppeteer": "^21.0.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "schematic-renderer": "^1.1.23",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.1.0",
+    "@types/three": "^0.182.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.0.0"
+  }
+}

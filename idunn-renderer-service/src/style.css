@@ -1,0 +1,67 @@
+body { margin: 0; overflow: hidden; background: #333; font-family: sans-serif; }
+canvas { display: block; width: 100vw; height: 100vh; }
+
+/* 确保 html 和 body 都没有默认背景色 */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* 关键：强制背景透明 */
+    background-color: transparent !important;
+    /* 或者使用 rgba(0,0,0,0) */
+}
+
+/* 确保包裹 Canvas 的容器（如果有的话）也是透明的 */
+#controls {
+    /* ...之前的样式保持不变... */
+    /* 确保 UI 控件容器不会挡住透明背景（如果在截图时不隐藏 UI 的话） */
+    background-color: rgba(0, 0, 0, 0.5); 
+}
+
+/* 确保 canvas 本身是透明的 */
+#canvas {
+    display: block;
+    /* 关键：强制背景透明 */
+    background-color: transparent !important;
+    /* 移除可能存在的边框或轮廓 */
+    outline: none;
+    border: none;
+}
+
+#controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+input {
+    padding: 8px;
+    width: 300px;
+    border: 1px solid #666;
+    background: #222;
+    color: white;
+    border-radius: 4px;
+}
+
+button {
+    padding: 8px 15px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+button:hover { background: #45a049; }
+#status { margin-top: 10px; font-size: 0.9em; color: #aaa; }
+.error { color: #ff5555 !important; }
+.success { color: #55ff55 !important; }

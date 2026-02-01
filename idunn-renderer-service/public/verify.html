@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Schematic Renderer Verification</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #333; font-family: sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        /* 新增：简单的悬浮控制 UI */
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #666;
+            background: #222;
+            color: white;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        button:hover { background: #45a049; }
+        #status { margin-top: 10px; font-size: 0.9em; color: #aaa; }
+        .error { color: #ff5555 !important; }
+        .success { color: #55ff55 !important; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>封面图渲染验证</h3>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="urlInput" placeholder="输入 .schem 下载链接 (需支持 CORS)" value="/test.schem" />
+            <button onclick="startRender()">渲染</button>
+        </div>
+        <div id="status">准备就绪，请输入 URL 并点击渲染...</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="/lib/schematic-renderer.umd.js"></script>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const statusDiv = document.getElementById("status");
+        let renderer = null;
+
+        // 初始化渲染器 (保持原有配置不变)
+        function initRenderer(width, height) {
+            if (renderer) return; // 防止重复初始化
+
+            console.log("Initializing renderer...");
+            
+            renderer = new SchematicRenderer.SchematicRenderer(
+                canvas,
+                {}, // 不预加载
+                {}, 
+                {
+                    // 外观设置：透明背景，不显示网格
+                    backgroundColor: 0x00000000, 
+                    showGrid: false, 
+                    showAxes: false,
+                    
+                    // 性能设置
+                    meshBuildingMode: 'batched',
+
+                    // 渲染设置：启用高质量效果
+                    postProcessingOptions: {
+                        enabled: true,
+                        enableSSAO: true, // 开启环境光遮蔽
+                        enableSMAA: true, // 抗锯齿
+                        ssaoPresets: {
+                            isometric: {
+                                aoRadius: 0.3,
+                                distanceFalloff: 0.1,
+                                intensity: 0.8
+                            }
+                        }
+                    },
+                    
+                    // 回调函数
+                    callbacks: {
+                        onSchematicRendered: (id) => {
+                            console.log('Render complete for:', id);
+                            updateStatus("渲染完成 (Meshes Built)，正在调整相机...", "success");
+                            finalizeRender();
+                        },
+                        onLoadingProgress: (file, progress) => {
+                            updateStatus(`加载中: ${Math.round(progress * 100)}%`);
+                        },
+                        onRendererInitialized: () => {
+                            console.log("Renderer Engine Ready");
+                        }
+                    }
+                }
+            );
+            
+            // 强制设置为等轴测视图 (2.5D 效果)
+            renderer.cameraManager.switchCameraPreset("isometric");
+            renderer.setIsometricAngles(35.264, 45); // 标准等轴测角度
+        }
+
+        // 按钮点击事件
+        async function startRender() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) {
+                alert("请输入 URL");
+                return;
+            }
+
+            // 使用当前窗口大小
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            canvas.width = width;
+            canvas.height = height;
+
+            updateStatus("正在初始化...", "");
+
+            try {
+                // 确保渲染器已初始化
+                initRenderer(width, height);
+
+                // 如果之前有加载过，可能需要重置（视库的具体实现而定，这里直接加载新的）
+                updateStatus("正在下载并解析 Schematic...", "");
+                
+                // 加载文件
+                await renderer.schematicManager.loadSchematicFromURL(url, "preview_" + Date.now());
+                
+            } catch (e) {
+                console.error(e);
+                updateStatus("错误: " + e.message, "error");
+                alert("加载失败，请检查控制台 CORS 错误或路径是否正确。");
+            }
+        }
+
+        function finalizeRender() {
+            // 1. 自动聚焦到物体中心
+            renderer.cameraManager.focusOnSchematics();
+
+            // 2. 等待稳定
+            updateStatus("正在应用光影 (SSAO)...", "success");
+            
+            setTimeout(() => {
+                document.body.setAttribute('data-status', 'ready');
+                updateStatus("渲染完毕！(NodeJS端此时会截图)", "success");
+            }, 500);
+        }
+
+        function updateStatus(text, className) {
+            statusDiv.innerText = text;
+            statusDiv.className = className || "";
+        }
+
+        // 窗口大小改变时调整画布
+        window.addEventListener('resize', () => {
+            if (renderer) {
+                // 简单的重置大小逻辑，具体取决于库是否支持自动 resize
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                // renderer.setSize(window.innerWidth, window.innerHeight); // 如果库暴露了这个方法
+            }
+        });
+    </script>
+</body>
+</html>

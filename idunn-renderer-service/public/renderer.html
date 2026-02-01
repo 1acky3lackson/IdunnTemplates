@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; overflow: hidden; background: transparent; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="/lib/schematic-renderer.umd.js"></script>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        let renderer = null;
+
+        // 初始化渲染器
+        function initRenderer(width, height) {
+            // 调整画布大小
+            renderer = new SchematicRenderer.SchematicRenderer(
+                canvas,
+                {}, // 不预加载
+                {}, 
+                {
+                    // 外观设置：透明背景，不显示网格
+                    backgroundColor: 0x00000000, // Alpha channel handled by Three.js if configured
+                    showGrid: false, 
+                    showAxes: false,
+                    
+                    // 性能设置
+                    meshBuildingMode: 'batched',
+
+                    // 渲染设置：启用高质量效果
+                    postProcessingOptions: {
+                        enabled: true,
+                        enableSSAO: true, // 开启环境光遮蔽，增加立体感
+                        enableSMAA: true, // 抗锯齿
+                        ssaoPresets: {
+                            isometric: {
+                                aoRadius: 0.3,
+                                distanceFalloff: 0.1,
+                                intensity: 0.8
+                            }
+                        }
+                    },
+                    
+                    // 回调函数
+                    callbacks: {
+                        onSchematicRendered: (id) => {
+                            console.log('Render complete for:', id);
+                            // 渲染完成后，调整相机并通知 Puppeteer
+                            finalizeRender();
+                        }
+                    }
+                }
+            );
+            
+            // 强制设置为等轴测视图 (2.5D 效果)
+            renderer.cameraManager.switchCameraPreset("isometric");
+            renderer.setIsometricAngles(35.264, 45); // 标准等轴测角度
+        }
+
+        // 加载逻辑 (由 Puppeteer 调用)
+        window.renderSchematic = async (url, width, height) => {
+            try {
+                // 调整窗口大小 (虽然 Puppeteer 会设置 viewport，但这里同步一下 canvas)
+                canvas.width = width;
+                canvas.height = height;
+                
+                initRenderer(width, height);
+
+                // 加载文件
+                await renderer.schematicManager.loadSchematicFromURL(url, "template_preview");
+                
+                // 注意：加载完成后会自动触发 onSchematicRendered 回调
+            } catch (e) {
+                console.error(e);
+                document.body.setAttribute('data-error', e.message);
+            }
+        };
+
+        function finalizeRender() {
+            // 1. 自动聚焦到物体中心，确保填满画面
+            renderer.cameraManager.focusOnSchematics();
+
+            // 2. 等待一小会儿让 SSAO 和后期处理稳定 (可选)
+            setTimeout(() => {
+                // 3. 在 body 上添加标记，告诉 Puppeteer 可以截图了
+                document.body.setAttribute('data-status', 'ready');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
