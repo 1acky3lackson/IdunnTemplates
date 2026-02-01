@@ -4,63 +4,85 @@ import com.google.gson.Gson;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import jakarta.persistence.*;
 
 import java.util.*;
 
+@Entity
+@Table(name = "idunn_template_metadata")
 @DatabaseTable(tableName = "idunn_template_metadata")
 public class TemplateMetadata {
 
     // 使用 templateId 作为主键
+    @Id
+    @Column(name = "template_id")
     @DatabaseField(id = true, columnName = "template_id")
     private UUID templateId;
 
+    @Column(name = "creator_id")
     @DatabaseField(columnName = "creator_id")
     private UUID creatorId;
 
+    @Column(name = "creation_time")
     @DatabaseField(columnName = "creation_time")
     private long creationTime;
 
+    @Column(name = "world_id")
     @DatabaseField(columnName = "world_id")
     private UUID worldId;
 
     // Anchor & Dimensions
+    @Column
     @DatabaseField
     private int anchorX;
+    @Column
     @DatabaseField
     private int anchorY;
+    @Column
     @DatabaseField
     private int anchorZ;
+    @Column
     @DatabaseField
     private int width;
+    @Column
     @DatabaseField
     private int height;
+    @Column
     @DatabaseField
     private int length;
 
     // Status
+    @Column(name = "deleted_timestamp")
     @DatabaseField(columnName = "deleted_timestamp")
     private Long deletedTimestamp;
 
+    @Column
     @DatabaseField
     private boolean locked = false;
 
+    @Column(name = "locked_timestamp")
     @DatabaseField(columnName = "locked_timestamp")
     private Long lockedTimestamp = null;
 
     // --- Complex Types (JSON Storage) ---
 
     // [变更] 这个列表现在不直接存 Metadata 表，而是从 idunn_template_versions 表查出来
+    @Transient
     private final transient List<TemplateVersion> versions = new ArrayList<>();
 
+    @Column(name = "staged_changes_json", length = 65535)
     @DatabaseField(columnName = "staged_changes_json", dataType = DataType.LONG_STRING)
     private String stagedChangesJson;
 
     // --- Transient Fields (Not in this table) ---
 
+    @Transient
     private transient StagedChanges stagedChanges;
 
     // 这些 Map 不存储在 Metadata 表中，而是通过 DAO 查询 Instance 表来动态填充
+    @Transient
     private transient Map<UUID, List<Instance>> childTemplateInstances = new HashMap<>();
+    @Transient
     private transient Map<UUID, List<Instance>> parentTemplateInstances = new HashMap<>();
 
     private static final Gson gson = new Gson();

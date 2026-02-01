@@ -15,6 +15,10 @@ dependencies {
 
     // Default to H2 for easy startup, can be changed to MySQL/Postgres
     runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.xerial:sqlite-jdbc:3.45.1.0'
+    runtimeOnly 'org.postgresql:postgresql'
+    // Spring Boot 3+ Hibernate compatibility for SQLite needs this dialect or careful config
+    implementation 'org.hibernate.orm:hibernate-community-dialects:6.4.4.Final'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
