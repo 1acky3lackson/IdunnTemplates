@@ -48,14 +48,14 @@ tasks {
     runServer {
         minecraftVersion("1.21")
         // 建议：如果你是手动指定的路径，使用这种更稳健的写法
-        def agentFile = file("D:/dev/IdunnTemplates/plugin/run/authlib-injector-1.2.7.jar")
-
-        if (!agentFile.exists()) {
-            throw new GradleException("找不到 authlib-injector: " + agentFile.absolutePath)
-        }
+//        def agentFile = file("D:/dev/IdunnTemplates/plugin/run/authlib-injector-1.2.7.jar")
+//
+//        if (!agentFile.exists()) {
+//            throw new GradleException("找不到 authlib-injector: " + agentFile.absolutePath)
+//        }
 
         // 使用绝对路径，并确保没有多余的符号
-        jvmArgs("-javaagent:${agentFile.absolutePath}=https://skin.taixue.cc/api/yggdrasil")
+        jvmArgs("-javaagent:D:/dev/IdunnTemplates/plugin/run/authlib-injector-1.2.7.jar=https://skin.taixue.cc/api/yggdrasil")
 
         // 可选：增加此参数以获得详细的注入日志，方便排查
         jvmArgs("-Dauthlibinjector.debug")
