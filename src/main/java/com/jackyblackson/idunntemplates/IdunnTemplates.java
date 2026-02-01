@@ -218,8 +218,10 @@ public final class IdunnTemplates extends JavaPlugin {
         }
 
         // 9. Start Permission Server
-        this.permissionServerManager = new PermissionServerManager(this);
-        this.permissionServerManager.start();
+        if (getConfig().getBoolean("server.enabled", false)) {
+            this.permissionServerManager = new PermissionServerManager(this);
+            this.permissionServerManager.start();
+        }
 
         getLogger().info("IdunnTemplates has been enabled!");
     }

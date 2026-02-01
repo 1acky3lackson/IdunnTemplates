@@ -71,6 +71,8 @@ storage:
 
 
 server:
+  # Whether to enable the HTTP permission server
+  enabled: false
   port: 8085
 
 update:
