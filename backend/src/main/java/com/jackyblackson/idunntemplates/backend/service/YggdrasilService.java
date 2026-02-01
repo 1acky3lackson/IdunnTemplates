@@ -45,6 +45,7 @@ public class YggdrasilService {
             ResponseEntity<Map> response = restTemplate.postForEntity(yggdrasilUrl, request, Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 Map<String, Object> body = response.getBody();
+                System.out.println(body.toString());
                 Map<String, Object> selectedProfile = (Map<String, Object>) body.get("selectedProfile");
 
                 if (selectedProfile != null) {
