@@ -1,0 +1,321 @@
+sets:
+  add:
+    usage: "&c用法: /idunn set add <路徑> [權重]"
+    invalid_weight: "&c無效的權重。"
+    success: "&a已新增來源: %1% (權重: %2%)"
+  add_path:
+    usage: "&c用法: /idunn set add path <路徑> [權重]"
+    success: "&a已新增路徑來源: %1% (權重: %2%)"
+  add_subset:
+    usage: "&c用法: /idunn set add subset <集合引用> [權重]"
+    warn_not_found: "&e警告: 子集 '%1%' 目前未找到，可能無效。"
+    success: "&a已新增子集來源: %1% (權重: %2%)"
+  clear:
+    success: "&a目前集合已清空。"
+  list:
+    no_presets: "&e未找到已儲存的預設。"
+    header_private: "&6=== 私有集合 ==="
+    header_namespace: "&6=== 命名空間: %1% ==="
+    click_load: "點擊載入"
+  load:
+    usage: "&c用法: /idunn set load <名稱>"
+    not_found: "&c預設未找到: %1%"
+    success: "&a已載入預設: %1%"
+  place:
+    empty: "&c目前集合為空。"
+    no_template: "&c無法從目前集合解析任何模板。"
+    placing: "&e正在放置集合內容: %1%"
+    placed: "&a已放置 %1% (%2%) "
+    tp_label: "[傳送]"
+    tp_hover: "傳送到模板主控點"
+    undo_label: " [撤銷]"
+    undo_hover: "刪除實例並撤銷方塊"
+    error: "&c放置時出錯: %1%"
+  prop:
+    usage: "&c用法: /idunn set prop <rotation|flipx|flipz> <值>"
+    unknown: "&c未知屬性。請使用 rotation, flipx, flipz。"
+    success: "&a已設定屬性 %1% 為 %2%"
+  remove:
+    usage: "&c用法: /idunn set remove <路徑>"
+    success: "&a已移除來源: %1%"
+    not_found: "&c目前集合中未找到該來源。"
+  save:
+    usage: "&c用法: /idunn set save <名稱> 或 <命名空間:名稱>"
+    exists_private: "&c集合已存在: %1%。請使用 'update' 覆蓋。"
+    success_private: "&a已儲存目前集合到私有儲存: %1%"
+    error_player_ns: "&c無法儲存到其他玩家'的命名空間。"
+    no_perm: "&c沒有權限在命名空間 %1% 中建立集合"
+    exists_global: "&c集合已存在於 %1%: %2%。請使用 'update' 指令。"
+    success_global: "&a已儲存目前集合到 %1%:%2%"
+  transfer:
+    usage: "&c用法: /idunn set transferToGlobal <私有集合名> <命名空間>:名稱"
+    private_not_found: "&c私有集合未找到: %1%"
+    assume_global: "&e未提供命名空間，默認為 'global'。"
+    success: "&a已將 %1% 轉移至 %2%:%3%"
+  update:
+    usage: "&c用法: /idunn set update (<命名空間>:)<名稱>"
+    private_not_found: "&c私有集合未找到: %1%"
+    error_player: "&c無法更新其他玩家的集合。"
+    no_perm: "&c你沒有權限更新命名空間 %1% 中的集合"
+    not_found_ns: "&c在命名空間 %1% 中未找到集合: %2%"
+    success_private: "&a已更新私有集合: %1%"
+    success_global: "&a已更新全域集合: %1%"
+    no_perm_global: "&c私有儲存中未找到集合，且沒有權限更新全域集合。"
+    not_found: "&c集合未找到: %1%"
+  view:
+    empty: "&e目前集合為空。"
+    header: "&6=== 目前集合內容 ==="
+    props: "&7屬性: 旋轉=%1%, X翻轉=%2%, Z翻轉=%3%"
+    remove_label: "[移除]"
+    remove_hover: "點擊移除來源"
+brush:
+  common:
+    no_item: "&c你必須手持一個物品。"
+  bind:
+    usage: "&c用法: /idunn brush bind <通道> <path|set> <值> [-r] [-x] [-z]"
+    invalid_channel: "&c通道名稱必須由字母數字組成 (a-z, 0-9, _)。"
+    no_item: "&c你必須手持一個物品以綁定筆刷。"
+    set_not_found: "&c未找到集合: %1%"
+    unknown_type: "&c未知類型: %1%。請使用 'path' 或 'set'。"
+    success: "&a已將 %1% '%2%' 綁定到 %4% 的 '%3%' 通道"
+  list:
+    empty: "&e你沒有綁定任何筆刷。"
+    header: "&6已綁定的筆刷 (點擊獲取):"
+    tooltip: "點擊獲取 %1%"
+    invalid_mat: "&c無效的材質: %1%"
+    not_bound: "&c%1% 沒有綁定筆刷"
+    equipped: "&a已裝備筆刷: %1%"
+  modify:
+    usage: "&c用法: /idunn brush modify <通道> <屬性> <值>"
+    no_channel: "&c此物品的 '%1%' 通道沒有綁定筆刷。"
+    unknown_prop: "&c未知屬性: %1%"
+    success: "&a已將通道 %3% 的 %1% 更新為 %2%"
+    invalid_value: "&c%1% 的值無效: %2%"
+  source:
+    usage: "&c用法: /idunn brush source <通道> <add|list|remove> ..."
+    no_channel: "&c通道 '%1%' 沒有綁定筆刷。"
+    unknown_action: "&c未知操作: %1%"
+    add:
+      usage: "&c用法: ... add <path|set> <值> [權重]"
+      invalid_weight: "&c無效的權重。"
+      success_path: "&a已新增路徑來源: %1%"
+      set_not_found: "&c未找到集合: %1%"
+      success_set: "&a已新增集合內容: %1%"
+      unknown_type: "&c未知類型: %1%"
+    list:
+      header: "&6筆刷來源:"
+      delete_hover: "刪除此來源"
+    remove:
+      usage: "&c用法: ... remove <索引>"
+      invalid_index: "&c無效的索引。"
+      success: "&a已移除來源: %1%。目前來源:"
+  trigger:
+    usage: "&c用法: /idunn brush trigger <通道>"
+    failed: "&c觸發筆刷通道 '%1%' 失敗。請檢查是否已綁定或是否指向方塊。"
+  unbind:
+    usage: "&c用法: /idunn brush unbind <通道>"
+    success: "&a已解除 %2% 上通道 '%1%' 的綁定"
+    not_bound: "&e%2% 上的通道 '%1%' 未綁定筆刷"
+  preset:
+    load:
+      usage: "&c用法: /idunn brush preset load <all|channel> ..."
+      unknown_sub: "&c未知子命令: %1%"
+      all:
+        usage: "&c用法: ... load all [<命名空間>:]<名稱>"
+        conflict: "&c無法載入預設。發現通道衝突:"
+        unbind_hint: "&c請先解除這些通道的綁定。"
+        unbind_hover: "點擊解除 %1% 的綁定"
+        success: "&a已載入預設 '%1%' (通道: %2%)"
+      channel:
+        usage: "&c用法: ... load channel <預設通道> [<命名空間>:]<名稱> [目標通道]"
+        not_found: "&c預設 '%2%' 中未找到通道 '%1%'。"
+        already_bound: "&c通道 '%1%' 已被綁定。"
+        click_unbind: "&c點擊解除綁定: "
+        success: "&a已將通道 '%1%' 從預設載入到 '%2%'。"
+    save:
+      usage: "&c用法: /idunn brush preset save [<命名空間>:]<名稱> <描述>"
+      no_brushes: "&c此物品沒有綁定筆刷。"
+      success: "&a已將筆刷預設 '%1%' 儲存到命名空間 '%2%'。"
+    update:
+      usage: "&c用法: /idunn brush preset update [<命名空間>:]<名稱>"
+      not_exist: "&c命名空間 '%2%' 中不存在預設 '%1%'。請使用 'save' 建立。"
+      success: "&a已更新命名空間 '%2%' 中的筆刷預設 '%1%'。"
+    no_perm_load: "&c你沒有權限從命名空間 '%1%' 載入。"
+    no_perm_save: "&c你沒有權限儲存到命名空間 '%1%'。"
+    no_perm_update: "&c你沒有權限更新命名空間 '%1%'。"
+    not_found: "&c未找到預設: %1%"
+  change:
+    usage: "&c用法: /idunn brush change <通道>"
+    no_item: "&c你必須手持一個已綁定的物品。"
+    not_bound: "&c物品 %1% 沒有綁定任何筆刷。"
+    channel_not_found: "&c此物品的通道 '%1%' 沒有綁定筆刷。"
+    success: "&a已將通道 '%1%' 的範本更換為: %2%"
+    no_template_found: "&c未能為通道 '%1%' 找到新的範本。可能因為集合為空。"
+message:
+  placed: "&a已放置 %1% (%2%) "
+  tp_template:
+    label: "&b&l    [->模板]"
+    hover: "傳送至模板主控點"
+  tp_instance:
+    label: "&b&l [->實例]"
+    hover: "傳送至實例位置"
+  delete:
+    label: "&c&l [刪除]"
+    hover: "刪除實例並撤銷方塊"
+commit:
+  usage: "&c用法: /idunn commit <模板路徑> <訊息>"
+  no_perm: "&c你沒有權限提交模板 %1%"
+  not_found: "&c未找到模板: %1%"
+  world_not_loaded: "&c來源世界 (%1%) 未載入。"
+  warning_origin: "&e警告: 無法讀取先前版本以恢復原點偏移。重置原點至最小點。"
+  failed_capture: "&c捕獲模板失敗: %1%"
+  success: "&a已從來源位置提交模板版本！"
+  error: "&c提交時出錯: %1%"
+  smart:
+    usage: "&c用法: /idunn commit [模板路徑] <訊息>"
+    not_in_region: "&c你不在任何模板的主區域內，此智慧提交指令必須在模板的主區域內執行。你可以使用 '/idunn template commit <路徑> <提交訊息>' 手動指定要提交的模板。"
+    no_perm: "&c你沒有權限提交模板 %1%"
+    detected: "&e智慧提交檢測到模板: %1%"
+instances:
+  usage: "&c用法: /idunn instances <模板路徑> [頁碼]"
+  not_found: "&c未找到模板: %1%"
+  none_found: "&e未找到模板 %1% 的載入實例"
+  header: "&6=== %1% 的實例 (第 %2%/%3% 頁) ==="
+  entry: "&e- ID:&f%1%...&7 @ %2% (%3%,%4%,%5%)"
+list:
+  empty: "&e未載入任何模板。"
+  header: "&6=== 模板 (第 %1%/%2% 頁) ==="
+  entry: "&e- &f%1%&7 (%2%) 版本: %3%"
+place:
+  usage: "&c用法: /idunn place <模板路徑> [旋轉] [flipX] [flipY] [flipZ]"
+  placing: "&e正在放置模板..."
+  not_found: "&c未找到模板: %1%"
+  error: "&c放置模板時出錯: %1%"
+pref:
+  usage: "&c用法: /idunn pref <wand|placeOnEmptyOnly|particles|bossbar|emptyBlocks|actionBar>"
+  session_missing: "&c工作階段未找到。請重新加入。"
+  unknown_option: "&c未知選項。"
+  wand:
+    air: "&c不能綁定空氣作為法杖。"
+    bound: "&a已綁定法杖為: %1%"
+    current: "&6目前法杖: &f%1%"
+  place_on_empty:
+    usage: "&c用法: /idunn pref placeOnEmptyOnly <true|false>"
+    set: "&a已設定 placeOnEmptyOnly 為: %1%"
+  action_bar:
+    usage: "&c用法: /idunn pref actionBar <true|false>"
+    set: "&a已設定 actionBar 為: %1%"
+  empty_blocks:
+    usage: "&c用法: /idunn pref emptyBlocks <list|add|remove>"
+    header: "&6=== 空方塊列表 ==="
+    add_usage: "&c用法: /idunn pref emptyBlocks add <材質>"
+    remove_usage: "&c用法: /idunn pref emptyBlocks remove <材質>"
+    invalid_mat: "&c無效材質: %1%"
+    added: "&a已新增 %1% 到空方塊列表。"
+    already_in: "&c已在列表中。"
+    removed: "&a已從空方塊列表中移除 %1%。"
+    not_in: "&c不在列表中。"
+    remove_hover: "點擊移除"
+  particles:
+    usage: "&c用法: /idunn pref particles <template|instance|wand> <true|false>"
+    unknown_type: "&c未知粒子類型。選項: template, instance, wand"
+    set: "&a已設定粒子偏好設定 '%1%' 為: %2%"
+  bossbar:
+    usage: "&c用法: /idunn pref bossbar <template|instance|set> <true|false>"
+    unknown_type: "&c未知 bossbar 類型。選項: template, instance, set"
+    set: "&a已設定 bossbar 偏好設定 '%1%' 為: %2%"
+reload:
+  success: "&a模板已從磁碟重新載入。"
+save:
+  usage: "&c用法: /idunn save <名稱> [路徑]"
+  no_selection: "&c請先進行 WorldEdit 選擇。"
+  cuboid_only: "&c僅支援長方體區域保存模板。"
+  failed_capture: "&c捕獲選區失敗: %1%"
+  success: "&a模板 '%1%' 保存成功！"
+  perm_denied: "&c權限拒絕: %1%"
+  error: "&c保存模板時出錯: %1%"
+tp:
+  usage: "&c用法: /idunn instance tp <實例ID>"
+  not_found: "&c未找到實例: %1%"
+  world_not_loaded: "&c實例所在世界未載入。"
+  success: "&a已傳送至實例 %1%"
+  smart:
+    none: "&e你不在任何模板或實例區域內。"
+    no_instances: "&c此模板沒有活動的載入實例。"
+    select_header: "&6找到 %1% 個實例。請選擇一個:"
+    click_tp: "點擊傳送"
+    master_world_not_loaded: "&c主模板世界未載入。"
+    tp_master: "&a已傳送至主模板: %1%"
+    tp_instance: "&a已傳送至實例 %1%"
+template:
+  tp:
+    usage: "&c用法: /idunn template tp <模板路徑>"
+    not_found: "&c未找到模板: %1%"
+    world_not_loaded: "&c此模板的世界未載入。"
+    success: "&a已傳送至模板錨點: %1%"
+instance:
+  delete:
+    usage: "&c用法: /idunn instance delete <ID> [-keep]"
+    not_found: "&c未找到 ID 為 %1% 的實例"
+    removed_blocks: "&a實例方塊已移除 (%1% 個方塊)。"
+    error_blocks: "&c移除方塊時出錯: %1%"
+    hard_deleted: "&a實例記錄已刪除 (硬刪除)。"
+    skip_blocks: "&e跳過方塊移除 (-keep 標誌)。"
+    soft_deleted: "&a實例記錄已刪除 (軟刪除)。"
+effect:
+  brush:
+    format: "&6%1%&7(共 %2%) &8| &b下一個: &f%3%&8 | &eR-%4% &eF-%5%%6% %7%%8%"
+    rand_rot: "隨機"
+    rand_flip: "隨機"
+    no_air: "&f無空氣 "
+    empty_only: "&f僅空位 "
+  set:
+    header: "&d&l集合: &f%1%&7 模板, &e旋轉: &f%2%&7, &e翻轉X: &f%3%&7, &e翻轉Z: &f%4%"
+    source: "&7[&a%1%&7] (&f%2%&7) &b%3%"
+  bossbar:
+    template_master: "%1%&l模板主區域: &f%2%"
+    instance: "&9&l實例: &f%1%&7 (%2%)"
+  action_bar:
+    prefix: "&6[Idunn] "
+    empty_only: "&e僅空位: %1%"
+    empty_only_on: "&a開啟"
+    empty_only_off: "&c關閉"
+    next: "&7 | &b下一個: &f%1%&7 (Rot:%2%%3%%4%)"
+    flip_x: ", 翻轉X"
+    flip_z: ", 翻轉Z"
+  entry_denied: "&c你沒有權限進入主模板區域: %1%"
+resize:
+  config_reloaded: "&a設定已成功重新載入。"
+  player_not_found: "&c找不到名為 &e%1%&c 的玩家。"
+  only_player: "&c只有玩家才能執行此指令。"
+  invalid_number: "&c無效的數字格式。請輸入有效的數字。"
+  usage: "&c用法: /resize <比例> [玩家]"
+  scale_range: "&c縮放比例必須介於 &e%1%&c 與 &e%2%&c 之間。"
+  cooldown: "&c你需要等待 &e%1%&c 秒後才能再次使用此指令。"
+  resized: "&a你的身形比例已設置為 &e%1%&a。"
+history:
+  undo:
+    success: "    [IDUNN] 實例 %1% 資料已成功移除（撤銷），模板：%2%"
+    staged_success: "    [IDUNN] 實例 %1% 資料已成功暫存（撤銷），子模板：%2%，父模板：%3%"
+  redo:
+    success: "    [IDUNN] 實例 %1% 資料已成功復原（重做），模板：%2%"
+    staged_success: "    [IDUNN] 實例 %1% 資料已成功暫存（重做），子模板：%2%，父模板：%3%"
+  manager:
+    remove:
+      stale: "    §8[Idunn] 已自動清理過期的歷史紀錄，位於索引 %1%"
+      wrong_type: "    §8[Idunn] 已自動清理未知類型的歷史紀錄，位於索引 %1%，類型：%2%；請將此訊息回報給伺服器管理員！"
+recursive:
+  locked:
+    header: "&c⚠ &6範本已鎖定！"
+    status: "&7範本 &f%1% &7目前處於鎖定編輯狀態。"
+    updates_not_visible: "&7在擁有者提交變更之前，任何更新都將不可見。"
+    contact_owner: "&7請聯繫擁有者【%1%】以完成編輯。"
+  detected:
+    header: "&e⚠ &6偵測到巢狀放置！"
+    status: "&7你正在將 &f%1% &7放置在 &f%2% &7個範本的主區域內。"
+    confirm: "&7請確認要附加到哪個父範本："
+    button: " ➤ [在 %1% 中確認]"
+    hover: "點擊以放置在 %1%"
+  toggled:
+    title: "&6範本已鎖定"
+    subtitle: "&e已暫存對 &f%1% &e的更改"

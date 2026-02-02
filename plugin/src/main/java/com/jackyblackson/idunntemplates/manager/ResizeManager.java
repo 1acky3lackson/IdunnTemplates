@@ -1,7 +1,7 @@
 package com.jackyblackson.idunntemplates.manager;
 
 import com.jackyblackson.idunntemplates.IdunnTemplates;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;

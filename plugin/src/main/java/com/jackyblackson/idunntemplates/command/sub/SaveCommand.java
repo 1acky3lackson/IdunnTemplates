@@ -1,18 +1,16 @@
 package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;

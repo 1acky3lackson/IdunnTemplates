@@ -1,4 +1,4 @@
-package com.jackyblackson.idunntemplates.permission;
+package com.jackyblackson.idunntemplates.core.permission;
 
 /**
  * 记录所有的权限节点.

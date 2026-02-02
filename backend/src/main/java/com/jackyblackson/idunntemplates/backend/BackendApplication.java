@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@EntityScan("com.jackyblackson.idunntemplates.core.domain")
+@EntityScan({"com.jackyblackson.idunntemplates.core.domain", "com.jackyblackson.idunntemplates.backend.domain"})
 public class BackendApplication {
 
     public static void main(String[] args) {

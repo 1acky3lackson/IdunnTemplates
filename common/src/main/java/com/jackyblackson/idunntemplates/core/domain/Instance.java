@@ -3,71 +3,101 @@ package com.jackyblackson.idunntemplates.core.domain;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.jackyblackson.idunntemplates.core.store.dao.InstanceDao;
+import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
 // 指定表名为 idunn_instances
+@Entity
+@Table(name = "idunn_instances")
 @DatabaseTable(tableName = "idunn_instances", daoClass = InstanceDao.class)
 public class Instance {
 
     // 主键
+    @Id
     @DatabaseField(id = true, canBeNull = false)
     private String id;
 
+    @Column(name = "template_id", nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "template_id", canBeNull = false)
     private UUID templateId;
 
+    @Column(name = "current_version_id")
     @DatabaseField(columnName = "current_version_id")
     private String currentVersionId;
 
     // --- Anchor position ---
+    @Column(name = "world_id", nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "world_id", canBeNull = false)
     private UUID worldId;
 
+    @Column
     @DatabaseField(index = true) // 加上索引，因为空间查询经常用到坐标
     private int x;
+    @Column
     @DatabaseField
     private int y;
+    @Column
     @DatabaseField(index = true)
     private int z;
 
     // --- Transformation ---
+    @Column(name = "rotation_y")
     @DatabaseField(columnName = "rotation_y")
     private int rotationY;
+    @Column(name = "flip_x")
     @DatabaseField(columnName = "flip_x")
     private boolean flipX;
+    @Column(name = "flip_y")
     @DatabaseField(columnName = "flip_y")
     private boolean flipY;
+    @Column(name = "flip_z")
     @DatabaseField(columnName = "flip_z")
     private boolean flipZ;
 
+    @Column(name = "auto_update")
     @DatabaseField(columnName = "auto_update")
     private boolean autoUpdate = true;
 
+    @Column(name = "placed_at")
     @DatabaseField(columnName = "placed_at")
     private long placedAt;
 
+    @Column(name = "placed_by")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "placed_by")
     private UUID placedBy;
 
+    @Column(name = "placed_by_name")
     @DatabaseField(columnName = "placed_by_name")
     private String placedByName;
 
     // Soft delete (null means active)
+    @Column(name = "deleted_timestamp")
     @DatabaseField(columnName = "deleted_timestamp")
     private Long deletedTimestamp;
 
     // --- Mask / Indentation ---
+    @Column
     @DatabaseField
     private int maskXNeg = 0;
+    @Column
     @DatabaseField
     private int maskXPos = 0;
+    @Column
     @DatabaseField
     private int maskYNeg = 0;
+    @Column
     @DatabaseField
     private int maskYPos = 0;
+    @Column
     @DatabaseField
     private int maskZNeg = 0;
+    @Column
     @DatabaseField
     private int maskZPos = 0;
 
@@ -77,6 +107,8 @@ public class Instance {
      * 注意：这里我们存的是 UUID，没有直接用 @ForeignCollection，
      * 保持简单，避免级联加载的复杂性。
      */
+    @Column(name = "embedded_in_template_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @DatabaseField(columnName = "embedded_in_template_id", index = true)
     private UUID embeddedInTemplateId;
 

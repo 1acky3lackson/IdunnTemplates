@@ -7,7 +7,7 @@ import com.jackyblackson.idunntemplates.core.domain.brush.BrushSettings;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import com.jackyblackson.idunntemplates.manager.BrushPresetManager;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;

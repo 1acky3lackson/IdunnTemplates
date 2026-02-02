@@ -9,9 +9,7 @@ import com.jackyblackson.idunntemplates.core.util.brush.BrushFlagParser;
 import com.jackyblackson.idunntemplates.manager.SessionManager;
 import com.jackyblackson.idunntemplates.manager.SetManager;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 

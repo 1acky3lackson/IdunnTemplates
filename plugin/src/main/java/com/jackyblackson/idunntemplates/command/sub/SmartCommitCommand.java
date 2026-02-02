@@ -4,7 +4,7 @@ import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
