@@ -4,6 +4,7 @@ import { Outlet } from "react-router";
 import type { Route } from "./+types/root-layout";
 import { Locales } from "intlayer";
 import { ThemeProvider } from "~/components/theme/theme-provider";
+import { AuthProvider } from "~/common/auth/auth-provider";
 
 export default function RootLayout({ params }: Route.ComponentProps) {
     let { lang } = params;
@@ -28,7 +29,9 @@ export default function RootLayout({ params }: Route.ComponentProps) {
     return (
         <IntlayerProvider locale={lang ? lang : Locales.CHINESE}>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-                <Outlet />
+                <AuthProvider>
+                    <Outlet />
+                </AuthProvider>
             </ThemeProvider>
         </IntlayerProvider>
     );

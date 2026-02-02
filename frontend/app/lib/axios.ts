@@ -8,6 +8,8 @@ const apiClient: AxiosInstance = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
+    // 核心改动：允许跨域携带 Cookie，并允许浏览器自动处理 Set-Cookie
+    withCredentials: true,
 });
 
 // 请求拦截器
@@ -35,7 +37,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => {
         // 如果后端返回的是 { data: ..., status: 200 }，直接返回 data 部分
-        return response.data;
+        return response;
     },
     (error: AxiosError) => {
         // 统一处理错误

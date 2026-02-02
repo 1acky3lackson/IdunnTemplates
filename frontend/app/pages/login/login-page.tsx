@@ -1,0 +1,166 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Loader2, Lock, User } from "lucide-react";
+import { useIntlayer } from "react-intlayer";
+
+import { Button } from "@/components/ui/button";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "~/common/auth/auth-provider";
+
+export default function LoginPage() {
+    const { login } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
+
+    // 获取国际化文本
+    const {
+        title,
+        description,
+        usernameLabel,
+        passwordLabel,
+        usernamePlaceholder,
+        passwordPlaceholder,
+        usernameErrorMsg,
+        passwordErrorMsg,
+        loginBtn,
+        loginBtnLoading,
+        footerText,
+    } = useIntlayer("login-page");
+
+    // 1. 定义表单验证 Schema (移入组件内部以支持动态国际化)
+    const formSchema = z.object({
+        username: z.string().min(2, {
+            message: usernameErrorMsg.value, // 使用 .value 获取字符串
+        }),
+        password: z.string().min(4, {
+            message: passwordErrorMsg.value,
+        }),
+    });
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            username: "",
+            password: "",
+        },
+    });
+
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsLoading(true);
+        try {
+            await login(values);
+        } catch (error) {
+            // 错误已在 AuthProvider 中通过 Toast 处理
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    return (
+        <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
+            {/* 装饰背景：淡紫色光晕 */}
+            <div className="absolute -top-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-primary/10 blur-[100px]" />
+            <div className="absolute top-[40%] -right-[10%] h-[400px] w-[400px] rounded-full bg-secondary/20 blur-[100px]" />
+
+            <Card className="z-10 w-full max-w-md border-muted/40 shadow-xl backdrop-blur-sm sm:w-[400px]">
+                <CardHeader className="space-y-1 text-center">
+                    <div className="flex justify-center mb-4">
+                        {/* Logo */}
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <Lock className="h-6 w-6" />
+                        </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold tracking-tight">
+                        {title}
+                    </CardTitle>
+                    <CardDescription>
+                        {description}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="username"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{usernameLabel}</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input
+                                                    placeholder={usernamePlaceholder.value}
+                                                    className="pl-9 bg-background/50"
+                                                    {...field}
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{passwordLabel}</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input
+                                                    type="password"
+                                                    placeholder={passwordPlaceholder.value}
+                                                    className="pl-9 bg-background/50"
+                                                    {...field}
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button
+                                type="submit"
+                                className="w-full font-bold transition-all hover:scale-[1.02]"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        {loginBtnLoading}
+                                    </>
+                                ) : (
+                                    loginBtn
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </CardContent>
+                <CardFooter className="flex justify-center">
+                    <p className="text-xs text-muted-foreground">
+                        {footerText}
+                    </p>
+                </CardFooter>
+            </Card>
+        </div>
+    );
+}
