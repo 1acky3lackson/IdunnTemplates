@@ -17,9 +17,12 @@ public class TemplateColorService {
     private final TemplateColorSchemeRepository repository;
     private final TemplateColorGenerator colorGenerator;
 
-    public TemplateColorService(TemplateColorSchemeRepository repository, TemplateColorGenerator colorGenerator) {
+    private final TemplateVersionService templateVersionService;
+
+    public TemplateColorService(TemplateColorSchemeRepository repository, TemplateColorGenerator colorGenerator, TemplateVersionService templateVersionService) {
         this.repository = repository;
         this.colorGenerator = colorGenerator;
+        this.templateVersionService = templateVersionService;
     }
 
     /**
@@ -50,8 +53,8 @@ public class TemplateColorService {
                         Template t = templateMap.get(id);
                         TemplateColorScheme scheme = schemeMap.get(id);
 
-                        TemplateVersion latest = t.getLatestVersion();
-                        String currentVersion = latest != null ? latest.getVersionId() : "unknown";
+                        var latestOptional = templateVersionService.getLatestVersion(t.getId());
+                        String currentVersion = latestOptional.isPresent() ? latestOptional.get().getVersionId() : "unknown";
 
                         if (scheme != null && currentVersion.equals(scheme.getVersion())) {
                             batchResult.put(id, Arrays.asList(scheme.getColors().split(",")));

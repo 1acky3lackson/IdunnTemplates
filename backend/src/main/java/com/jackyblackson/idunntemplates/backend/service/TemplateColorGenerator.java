@@ -95,6 +95,9 @@ public class TemplateColorGenerator {
 
             // 4. Save
             TemplateVersion latest = template.getLatestVersion();
+            if (latest == null) {
+                latest = versionService.getLatestVersion(template.getId()).orElse(null);
+            }
             String versionId = latest != null ? latest.getVersionId() : "unknown";
             String colorsStr = String.join(",", colors);
 
