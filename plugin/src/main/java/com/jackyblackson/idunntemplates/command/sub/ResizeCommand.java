@@ -4,7 +4,7 @@ import com.jackyblackson.idunntemplates.core.util.MessageUtil;
 import com.jackyblackson.idunntemplates.manager.LanguageManager;
 import com.jackyblackson.idunntemplates.manager.ResizeConfigManager;
 import com.jackyblackson.idunntemplates.manager.ResizeManager;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

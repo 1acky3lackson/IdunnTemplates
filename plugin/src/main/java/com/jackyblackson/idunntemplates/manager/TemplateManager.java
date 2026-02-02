@@ -8,7 +8,7 @@ import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import com.jackyblackson.idunntemplates.util.EntityHelper;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -29,12 +29,15 @@ import static com.jackyblackson.idunntemplates.core.util.PermissionUtil.hasRecur
 public class TemplateManager {
 
     private final TemplateStorage storage;
+    private final PluginSnapshotManager snapshotManager;
     private TemplateUpdater updater;
     private final Map<UUID, Template> idCache = new ConcurrentHashMap<>();
     private final Map<String, Template> pathCache = new ConcurrentHashMap<>();
 
     public TemplateManager(TemplateStorage storage) {
         this.storage = storage;
+        // [新增] 初始化 SnapshotManager
+        this.snapshotManager = new PluginSnapshotManager(IdunnTemplates.getInstance());
         IdunnTemplates.getInstance().getLogger().info("Scanning for all templates...");
         reloadTemplates();
         IdunnTemplates.getInstance().getLogger().info("Finished, get " + idCache.size() + " unique templates.");
@@ -44,13 +47,23 @@ public class TemplateManager {
         idCache.clear();
         pathCache.clear();
         try {
-            // Storage 现在返回的是已经填充好(Hydrated)的 Entity 对象
             java.util.List<Template> loaded = storage.loadAllTemplates();
-            for (Template t : loaded) {
-                // Cache by ID
-                idCache.put(t.getId(), t);
 
-                // Cache by Normalized Path (User Friendly)
+            // [新增] 异步批量检查所有模版的缩略图
+            // 避免在服务器启动时阻塞主线程，等待所有请求完成
+            Bukkit.getScheduler().runTaskAsynchronously(IdunnTemplates.getInstance(), () -> {
+                int checkedCount = 0;
+                for (Template t : loaded) {
+                    // checkAndGenerateThumbnails 内部本身也是异步安全的，
+                    // 但这里我们在一个大的异步任务里循环，减少调度开销
+                    snapshotManager.checkAndGenerateThumbnails(t, false);
+                    checkedCount++;
+                }
+                IdunnTemplates.getInstance().getLogger().info("Thumbnail check scheduled for " + checkedCount + " templates.");
+            });
+
+            for (Template t : loaded) {
+                idCache.put(t.getId(), t);
                 String normalized = normalizePath(t.getPath());
                 pathCache.put(normalized, t);
             }
@@ -337,6 +350,10 @@ public class TemplateManager {
                 }
             }
         }
+
+        // 10. Generate Thumbnail
+        snapshotManager.checkAndGenerateThumbnails(template, true);
+        player.sendMessage(ChatColor.GREEN + "Thumbnail generation queued.");
     }
 
     public void commitTemplateSystem(Template template, String message) throws Exception {
@@ -375,6 +392,8 @@ public class TemplateManager {
         if (!targets.isEmpty()) {
             templateUpdater.updateInstances(template, newVer, targets);
         }
+
+        snapshotManager.checkAndGenerateThumbnails(template, true);
     }
 
     // Getters
@@ -433,6 +452,8 @@ public class TemplateManager {
         // 5. Update Cache
         idCache.put(t.getId(), t);
         pathCache.put(normalizePath(t.getPath()), t);
+
+        snapshotManager.checkAndGenerateThumbnails(t, true);
 
         return t;
     }

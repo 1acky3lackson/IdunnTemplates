@@ -2,14 +2,9 @@ package com.jackyblackson.idunntemplates.command.sub;
 
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
-import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.math.BlockVector3;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

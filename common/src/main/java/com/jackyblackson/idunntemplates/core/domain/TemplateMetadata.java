@@ -95,7 +95,18 @@ public class TemplateMetadata {
     // ORM Constructor
     public TemplateMetadata() {}
 
-    public TemplateMetadata(UUID templateId, UUID creatorId, long creationTime, UUID worldId, int anchorX, int anchorY, int anchorZ, int width, int height, int length) {
+    public TemplateMetadata(
+            UUID templateId,
+            UUID creatorId,
+            long creationTime,
+            UUID worldId,
+            int anchorX,
+            int anchorY,
+            int anchorZ,
+            int width,
+            int height,
+            int length
+    ) {
         this.templateId = templateId;
         this.creatorId = creatorId;
         this.creationTime = creationTime;

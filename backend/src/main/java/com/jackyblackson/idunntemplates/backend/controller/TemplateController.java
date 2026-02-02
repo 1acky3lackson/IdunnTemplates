@@ -1,6 +1,8 @@
 package com.jackyblackson.idunntemplates.backend.controller;
 
+import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
+import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.TemplateService;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,17 +40,19 @@ public class TemplateController {
      * 示例 URL: GET /api/v1/templates?pathPrefix=users/&minWidth=10&locked=true&page=0&size=10&sort=metadata.creationTime,desc
      */
     @GetMapping
+    @AuthRequired
     public ResponseEntity<Page<Template>> searchTemplates(
             // 自动绑定 url 参数到 criteria 对象
             @ModelAttribute TemplateSearchCriteria criteria,
-
+            UserContext userContext,
             // 自动处理分页和排序参数 (默认每页 20 条，按路径升序)
             @PageableDefault(size = 20, sort = "path", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(templateService.searchTemplates(criteria, pageable));
+        return ResponseEntity.ok(templateService.searchTemplates(criteria, pageable, userContext));
     }
 
     @GetMapping("/{id}")
+    @AuthRequired
     public ResponseEntity<Template> getTemplate(@PathVariable UUID id) {
         return templateService.getTemplateById(id)
                 .map(ResponseEntity::ok)
@@ -94,35 +98,38 @@ public class TemplateController {
     }
 
     /**
-     * [新增] 获取模板缩略图接口
-     * URL: <img src="/api/v1/templates/{id}/thumbnail" />
+     * [修改后] 获取模板缩略图接口
+     * URL: GET /api/v1/templates/{id}/thumbnail
+     * * 逻辑变更：只读模式。如果图片不存在，直接返回 404，不触发后端生成。
+     * 图片的生成现在完全由插件侧 (PluginSnapshotManager) 在提交时负责。
      */
     @GetMapping("/{id}/thumbnail")
     public ResponseEntity<Resource> getThumbnail(
             @PathVariable UUID id,
-            @RequestParam(required = false, defaultValue = "false") Boolean refresh,
             @RequestParam(required = false, defaultValue = "0") Integer angle
     ) {
         try {
-            // 1. 调用 Service 获取文件 (内部包含版本检查、清理旧图、自动生成的逻辑)
-            File thumbnailFile = templateService.getOrGenerateThumbnail(id, refresh != null && refresh, angle);
+            // 1. 调用 Service 查找文件
+            File thumbnailFile = templateService.getThumbnailFile(id, angle);
 
             // 2. 包装为 Resource
             Resource resource = new FileSystemResource(thumbnailFile);
 
+            // 3. 返回图片流
             return ResponseEntity.ok()
-                    // 3. 设置 Content-Type 为 image/png，这样浏览器才能直接渲染
                     .contentType(MediaType.IMAGE_PNG)
-                    // 4. 设置浏览器缓存
-                    // 由于文件名包含版本号(thumbnail_123456.png)，我们可以设置较长的缓存时间
-                    // 当版本更新时，版本号变了，生成的文件名变了，自然会失效
+                    // 设置缓存：因为文件名带版本号，内容是不可变的，可以设置较长的缓存时间
+                    // 客户端检测到 404 后可以显示默认占位图
                     .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
                     .body(resource);
 
         } catch (FileNotFoundException e) {
-            // 404: 模板不存在或生成失败
+            // 预期内的异常：图片还没生成好，或者生成失败了
+            // 返回 404 Not Found，前端应该展示“暂无预览”或“加载中”的占位图
             return ResponseEntity.notFound().build();
+
         } catch (Exception e) {
+            // 预期外的异常 (数据库连接失败、IO错误等)
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

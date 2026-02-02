@@ -7,6 +7,8 @@ import com.jackyblackson.idunntemplates.backend.service.YggdrasilService;
 import com.jackyblackson.idunntemplates.backend.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,10 @@ public class AuthController {
     private final YggdrasilService yggdrasilService;
     private final JwtUtil jwtUtil;
 
+    @Value("${jwt.expiration:86400000}")
+    private long jwtExpiration;
+
+    @Autowired
     public AuthController(YggdrasilService yggdrasilService, JwtUtil jwtUtil) {
         this.yggdrasilService = yggdrasilService;
         this.jwtUtil = jwtUtil;

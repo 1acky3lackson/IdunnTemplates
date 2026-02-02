@@ -1,6 +1,5 @@
 package com.jackyblackson.idunntemplates.manager;
 
-import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
@@ -9,7 +8,7 @@ import com.jackyblackson.idunntemplates.core.domain.brush.BrushSettings;
 import com.jackyblackson.idunntemplates.core.effect.ParticleUtil;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
-import com.jackyblackson.idunntemplates.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

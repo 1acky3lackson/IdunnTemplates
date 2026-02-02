@@ -60,9 +60,6 @@ public class DatabaseTemplateStorage implements TemplateStorage {
             // 保存 .schem 文件
             saveSchematicFile(templateDir, initialVersion.getVersionId(), initialClipboard);
 
-            // [新增] 生成初始预览图
-            takeSnapshot(templateDir, initialClipboard);
-
             Template template = new Template(name, fullPath, metadata);
 
             com.j256.ormlite.misc.TransactionManager.callInTransaction(templateDao.getConnectionSource(), () -> {
@@ -93,9 +90,6 @@ public class DatabaseTemplateStorage implements TemplateStorage {
     public List<Template> loadAllTemplates() throws IOException {
         try {
             List<Template> templates = templateDao.queryAllWithRelations();
-
-            // [新增] 检查并补全缩略图
-            checkAndGenerateMissingThumbnails(templates);
 
             return templates;
         } catch (SQLException e) {
@@ -135,9 +129,6 @@ public class DatabaseTemplateStorage implements TemplateStorage {
             // 1. 保存 .schem 到磁盘
             saveSchematicFile(templateDir, version.getVersionId(), clipboard);
 
-            // [新增] 更新预览图 (使用最新版本的 Clipboard)
-            takeSnapshot(templateDir, clipboard);
-
             // 2. 数据库事务
             com.j256.ormlite.misc.TransactionManager.callInTransaction(templateDao.getConnectionSource(), () -> {
                 version.setTemplate(template);
@@ -166,71 +157,6 @@ public class DatabaseTemplateStorage implements TemplateStorage {
 
         try (ClipboardWriter writer = format.getWriter(new FileOutputStream(file))) {
             writer.write(clipboard);
-        }
-    }
-
-    /**
-     * [新增] 生成预览图
-     * 使用 FAWE 或其他渲染逻辑生成 thumbnail.png
-     */
-    private void takeSnapshot(File templateDir, Clipboard clipboard) {
-        File snapshotFile = new File(templateDir, "thumbnail.png");
-
-        // 如果文件已存在，先删除旧的，保证是最新的预览图
-        if (snapshotFile.exists()) {
-            snapshotFile.delete();
-        }
-
-        try {
-            // 这里调用具体的渲染逻辑，为了不让这个类太臃肿，建议抽离出去
-            // 如果你要在这里写 FAWE 逻辑，需要依赖 FAWE-Bukkit 或 FAWE-Core
-            SnapshotGenerator.generate(clipboard, snapshotFile);
-            logger.info("Generated thumbnail for " + templateDir.getName());
-        } catch (Exception e) {
-            // 生成图片失败不应该打断主流程，记录错误即可
-            logger.log(Level.WARNING, "Failed to generate thumbnail for " + templateDir.getName(), e);
-        }
-    }
-
-    /**
-     * [新增] 批量检查缺失的缩略图
-     * 这是一个可能耗时的操作，建议在异步线程中运行，或者只检查前 N 个
-     */
-    private void checkAndGenerateMissingThumbnails(List<Template> templates) {
-        // 为了不卡死主线程/启动流程，建议放到后台线程执行
-        new Thread(() -> {
-            for (Template template : templates) {
-                File dir = EntityHelper.getDirectory(template);
-                File snapshotFile = new File(dir, "thumbnail.png");
-
-                if (!snapshotFile.exists()) {
-                    try {
-                        // 如果没有图片，尝试加载最新版本的 schematic 并渲染
-                        TemplateVersion latestVersion = template.getLatestVersion();
-                        if (latestVersion != null) {
-                            Clipboard clipboard = loadSchematic(template, latestVersion);
-                            takeSnapshot(dir, clipboard);
-                        }
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "Auto-generation of missing thumbnail failed for " + template.getName(), e);
-                    }
-                }
-            }
-        }).start();
-    }
-
-    // 内部类或外部工具类：封装 FAWE 渲染逻辑
-    // 注意：FAWE 的渲染 API 可能会随版本变动
-    private static class SnapshotGenerator {
-        public static void generate(Clipboard clipboard, File outputFile) throws Exception {
-//            if (!outputFile.exists()) outputFile.mkdirs();
-
-            ClipboardFormat format = ClipboardFormats.findByAlias("png");
-            if (format == null) throw new IOException("Schematic format 'png' not found.");
-
-            try (ClipboardWriter writer = format.getWriter(new FileOutputStream(outputFile))) {
-                writer.write(clipboard);
-            }
         }
     }
 }

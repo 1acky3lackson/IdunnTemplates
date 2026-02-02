@@ -1,8 +1,10 @@
 package com.jackyblackson.idunntemplates.core.domain;
 
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import com.jackyblackson.idunntemplates.core.store.dao.TemplateDao;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.jackyblackson.idunntemplates.core.utils.NullGettable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -64,5 +66,9 @@ public class Template {
     public TemplateVersion getLatestVersion() {
         if (metadata.getVersions().isEmpty()) return null;
         return metadata.getVersions().getLast();
+    }
+
+    public String getUsePermissionNode() {
+        return PermissionNames.Templates.usePath$R + "." + this.path.replace("/", ".");
     }
 }
