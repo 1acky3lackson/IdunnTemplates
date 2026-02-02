@@ -2,7 +2,9 @@ package com.jackyblackson.idunntemplates.backend.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
+import com.jackyblackson.idunntemplates.backend.dto.TemplateWithColorsDto;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.TemplateColorService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateService;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +16,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -29,10 +34,12 @@ import java.util.concurrent.TimeUnit;
 public class TemplateController {
 
     private final TemplateService templateService;
+    private final TemplateColorService templateColorService;
 
     @Autowired
-    public TemplateController(TemplateService templateService) {
+    public TemplateController(TemplateService templateService, TemplateColorService templateColorService) {
         this.templateService = templateService;
+        this.templateColorService = templateColorService;
     }
 
     /**
@@ -41,20 +48,35 @@ public class TemplateController {
      */
     @GetMapping
     @AuthRequired
-    public ResponseEntity<Page<Template>> searchTemplates(
+    public ResponseEntity<Page<TemplateWithColorsDto>> searchTemplates(
             // 自动绑定 url 参数到 criteria 对象
             @ModelAttribute TemplateSearchCriteria criteria,
             UserContext userContext,
             // 自动处理分页和排序参数 (默认每页 20 条，按路径升序)
             @PageableDefault(size = 20, sort = "path", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(templateService.searchTemplates(criteria, pageable, userContext));
+        Page<Template> page = templateService.searchTemplates(criteria, pageable, userContext);
+        Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(page.getContent());
+
+        List<TemplateWithColorsDto> dtos = page.getContent().stream()
+                .map(t -> new TemplateWithColorsDto(t, colors.getOrDefault(t.getId(), Collections.emptyList())))
+                .toList();
+
+        return ResponseEntity.ok(new PageImpl<>(
+                dtos,
+                page.getPageable(),
+                page.getTotalElements()
+        ));
     }
 
     @GetMapping("/{id}")
     @AuthRequired
-    public ResponseEntity<Template> getTemplate(@PathVariable UUID id) {
+    public ResponseEntity<TemplateWithColorsDto> getTemplate(@PathVariable UUID id) {
         return templateService.getTemplateById(id)
+                .map(t -> {
+                    Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(Collections.singletonList(t));
+                    return new TemplateWithColorsDto(t, colors.getOrDefault(t.getId(), Collections.emptyList()));
+                })
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

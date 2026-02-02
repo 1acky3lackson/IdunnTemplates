@@ -3,6 +3,7 @@ package com.jackyblackson.idunntemplates.backend.service;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.store.repository.TemplateRepository;
+import com.jackyblackson.idunntemplates.backend.domain.TemplateColorScheme;
 import com.jackyblackson.idunntemplates.backend.store.spec.TemplateSpecifications;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
@@ -16,9 +17,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TemplateService {
@@ -26,6 +26,7 @@ public class TemplateService {
     private final TemplateRepository templateRepository;
     private final TemplateVersionService templateVersionService;
     private final SnapshotService snapshotService;
+    private final TemplateColorService templateColorService;
 
     private final LuckyPermAuthService luckyPermAuthService;
 
@@ -46,12 +47,14 @@ public class TemplateService {
     public TemplateService(TemplateRepository templateRepository,
                            TemplateVersionService templateVersionService,
                            SnapshotService snapshotService,
-                           LuckyPermAuthService luckyPermAuthService
+                           LuckyPermAuthService luckyPermAuthService,
+                           TemplateColorService templateColorService
     ) {
         this.templateRepository = templateRepository;
         this.templateVersionService = templateVersionService;
         this.snapshotService = snapshotService;
         this.luckyPermAuthService = luckyPermAuthService;
+        this.templateColorService = templateColorService;
     }
 
     @Deprecated
@@ -74,7 +77,7 @@ public class TemplateService {
 
         // 如果数据库里都没查到，直接返回空 Page，省去鉴权开销
         if (dbResult.isEmpty()) {
-            return dbResult;
+            return Page.empty(pageable);
         }
 
         // 2. 内存鉴权过滤 (Post-Filtering)
@@ -170,4 +173,5 @@ public class TemplateService {
         // 4. 不存在直接抛出异常，交给 Controller 处理
         throw new FileNotFoundException("Thumbnail image not found on disk: " + targetFilename);
     }
+
 }
