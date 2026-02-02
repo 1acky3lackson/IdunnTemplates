@@ -6,6 +6,7 @@ import com.jackyblackson.idunntemplates.backend.dto.TemplateWithColorsDto;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.TemplateColorService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateService;
+import com.jackyblackson.idunntemplates.backend.util.CollectionUtils;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -58,9 +59,16 @@ public class TemplateController {
         Page<Template> page = templateService.searchTemplates(criteria, pageable, userContext);
         Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(page.getContent());
 
-        List<TemplateWithColorsDto> dtos = page.getContent().stream()
-                .map(t -> new TemplateWithColorsDto(t, colors.getOrDefault(t.getId(), Collections.emptyList())))
-                .toList();
+        // 假设 colors 是之前 resolveColorsForTemplates 得到的结果 Map
+        List<String> defaultColorList = Collections.emptyList();
+
+        List<TemplateWithColorsDto> dtos = CollectionUtils.mapToList(
+                page.getContent(),
+                Template::getId,
+                colors,
+                TemplateWithColorsDto::new, // 构造函数引用：(template, colorList) -> new Dto
+                defaultColorList
+        );
 
         return ResponseEntity.ok(new PageImpl<>(
                 dtos,
