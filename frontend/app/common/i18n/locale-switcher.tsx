@@ -32,9 +32,16 @@ export const LocaleSwitcher: FC = () => {
                     const isActive = localeItem === locale;
 
                     return (
-                        <DropdownMenuItem key={localeItem} asChild>
-                            <Link
-                                to={getLocalizedUrl(pathWithoutLocale, localeItem)}
+                        <DropdownMenuItem
+                            key={localeItem}
+                            asChild
+                            onClick={() => {
+                                localStorage.setItem("i18nextLng", localeItem);
+                                // re render page
+                                window.location.reload();
+                            }}
+                        >
+                            <div
                                 className="flex items-center justify-between w-full cursor-pointer"
                             >
                                 <div className="flex flex-col">
@@ -48,7 +55,7 @@ export const LocaleSwitcher: FC = () => {
                                     </span>
                                 </div>
                                 {isActive && <Check className="h-4 w-4 ml-2 opacity-70" />}
-                            </Link>
+                            </div>
                         </DropdownMenuItem>
                     );
                 })}

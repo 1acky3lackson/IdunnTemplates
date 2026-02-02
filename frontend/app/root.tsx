@@ -1,10 +1,12 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -13,6 +15,7 @@ import { ThemeProvider } from "./components/theme/theme-provider";
 import TopBar from "@/common/topbar/topbar";
 import { IntlayerProvider } from "react-intlayer";
 import { useI18nHTMLAttributes } from "./hooks/i18n/useI18nHTMLAttributes";
+import { getLocaleFromPath } from "intlayer";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -27,17 +30,32 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export async function loader({ request }: Route.LoaderArgs) {
+  const locale = getLocaleFromPath(request.url);
+
+  if (!locale) {
+    throw data("Language not supported", { status: 404 });
+  }
+
+  return { locale };
+}
+
+export function Layout({
+  children,
+}: { children: React.ReactNode } & Route.ComponentProps) {
+  const data = useLoaderData<typeof loader>();
+  const { locale } = data ?? {};
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
         <Meta />
         <Links />
       </head>
       <body>
-        {children}
+        <IntlayerProvider locale={locale}>{children}</IntlayerProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -48,12 +66,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   useI18nHTMLAttributes();
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <IntlayerProvider>
-        <TopBar />
-        <Outlet />
-      </IntlayerProvider>
-    </ThemeProvider>
+          <Outlet />
   );
 }
 
