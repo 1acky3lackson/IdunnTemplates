@@ -8,13 +8,24 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+/* 1. 调整根字号，使全站比例同步放大 */
+html {
+  font-size: 18px; /* 默认 16px -> 18px */
+  
+  /* 确保在不同设备上字体渲染清晰 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 2. 合并 html 和 body 的背景与颜色配置 */
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  /* 使用主题变量代替硬编码颜色 */
+  background-color: var(--background);
+  color: var(--foreground);
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+  /* 适配系统颜色方案 */
+  color-scheme: light;
 }
 
 @theme inline {

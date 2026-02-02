@@ -6,7 +6,7 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export function loader({ params }: Route.LoaderArgs) {
+export function clientLoader({ params }: Route.ClientLoaderArgs) {
   return { uuid: params.uuid };
 }
 
