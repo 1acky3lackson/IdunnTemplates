@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates.backend.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.dto.LoginRequest;
+import com.jackyblackson.idunntemplates.backend.dto.LoginResponseDto;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.YggdrasilService;
 import com.jackyblackson.idunntemplates.backend.util.JwtUtil;
@@ -20,7 +21,7 @@ public class AuthController {
     private final YggdrasilService yggdrasilService;
     private final JwtUtil jwtUtil;
 
-    @Value("${jwt.expiration:86400000}")
+    @Value("${jwt.expiration}")
     private long jwtExpiration;
 
     @Autowired
@@ -38,9 +39,13 @@ public class AuthController {
             cookie.setHttpOnly(true);
             cookie.setPath("/");
             // cookie.setSecure(true); // Enable in production with HTTPS
-            cookie.setMaxAge(24 * 60 * 60); // 1 day
+            cookie.setMaxAge((int) jwtExpiration);
             response.addCookie(cookie);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(LoginResponseDto.fromUserContext(
+                    user,
+                    token,
+                    jwtExpiration
+            ));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials or authentication failed");
         }
