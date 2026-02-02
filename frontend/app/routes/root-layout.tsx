@@ -7,7 +7,7 @@ import { ThemeProvider } from "~/components/theme/theme-provider";
 
 export default function RootLayout({ params }: Route.ComponentProps) {
     let { lang } = params;
-    const localstorageLang = localStorage.getItem("i18nextLng");
+    let localstorageLang = localStorage.getItem("i18nextLng");
     if (lang && localstorageLang !== lang) {
         localStorage.setItem("i18nextLng", lang);
     }
@@ -15,6 +15,15 @@ export default function RootLayout({ params }: Route.ComponentProps) {
         lang = localstorageLang;
     }
     console.log(lang);
+
+    if (lang === undefined) {
+        lang = Locales.CHINESE;
+        console.log("no lang found, set to default:", lang);
+    }
+
+    // 修改 html 的 lang 属性
+    document.documentElement.setAttribute("i18n-lang", lang);
+
 
     return (
         <IntlayerProvider locale={lang ? lang : Locales.CHINESE}>

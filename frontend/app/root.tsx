@@ -13,7 +13,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { ThemeProvider } from "./components/theme/theme-provider";
 import TopBar from "@/common/topbar/topbar";
-import { IntlayerProvider } from "react-intlayer";
+import { IntlayerProvider, useLocale } from "react-intlayer";
 import { useI18nHTMLAttributes } from "./hooks/i18n/useI18nHTMLAttributes";
 import { getLocaleFromPath } from "intlayer";
 
@@ -44,10 +44,9 @@ export function Layout({
   children,
 }: { children: React.ReactNode } & Route.ComponentProps) {
   const data = useLoaderData<typeof loader>();
-  const { locale } = data ?? {};
 
   return (
-    <html lang={locale}>
+    <html>
       <head>
         <meta charSet="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
@@ -55,7 +54,7 @@ export function Layout({
         <Links />
       </head>
       <body>
-        <IntlayerProvider locale={locale}>{children}</IntlayerProvider>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>
