@@ -190,7 +190,7 @@ public class PluginSnapshotManager {
             conn.setRequestProperty("Accept", "image/png");
             conn.setDoOutput(true);
             conn.setConnectTimeout(5000);
-            conn.setReadTimeout(60000); // 增加超时时间，渲染可能很慢
+            conn.setReadTimeout(6000000); // 增加超时时间，渲染可能很慢
 
             Map<String, Object> data = new HashMap<>();
             data.put("schematicUrl", schematicUrl);

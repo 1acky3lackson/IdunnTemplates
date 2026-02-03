@@ -3,6 +3,7 @@ package com.jackyblackson.idunntemplates.manager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jackyblackson.idunntemplates.IdunnTemplates;
+import com.jackyblackson.idunntemplates.core.permission.PermissionCheckInterceptor;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class PermissionServerManager {
 
@@ -36,6 +38,7 @@ public class PermissionServerManager {
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
             server.createContext("/", new PermissionHandler());
+            server.createContext("/userinfo", new BulkUserInfoHandler());
             server.setExecutor(null); // Creates a default executor
             server.start();
             plugin.getLogger().info("Permission verification server started on port " + port);
@@ -143,7 +146,10 @@ public class PermissionServerManager {
 
                     // 批量检查在线玩家权限
                     for (String perm : permissions) {
-                        permResults.put(perm, player.hasPermission(perm));
+                        // 拦截器
+                        Boolean interceptResult = PermissionCheckInterceptor.checkPermission(uuid, userName, perm);
+                        permResults.put(perm, Objects.requireNonNullElseGet(interceptResult, () -> player.hasPermission(perm)));
+
                     }
 
                     res.put("results", permResults); // POST 模式下的结果集
@@ -190,8 +196,13 @@ public class PermissionServerManager {
                         Map<String, Boolean> permResults = new HashMap<>();
                         // 批量检查 LuckPerms 权限
                         for (String perm : permissions) {
-                            boolean hasPerm = user.getCachedData().getPermissionData().checkPermission(perm).asBoolean();
-                            permResults.put(perm, hasPerm);
+                            Boolean interceptResult = PermissionCheckInterceptor.checkPermission(uuid, userName, perm);
+                            if (interceptResult != null) {
+                                permResults.put(perm, interceptResult);
+                            } else {
+                                boolean hasPerm = user.getCachedData().getPermissionData().checkPermission(perm).asBoolean();
+                                permResults.put(perm, hasPerm);
+                            }
                         }
 
                         result.put("results", permResults);
@@ -213,6 +224,101 @@ public class PermissionServerManager {
             }
 
             return result;
+        }
+
+        private void sendJsonError(HttpExchange exchange, int statusCode, String message) throws IOException {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", message);
+            sendResponse(exchange, statusCode, gson.toJson(error));
+        }
+    }
+
+    public class BulkUserInfoHandler implements HttpHandler  {
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+
+            // 仅允许 POST 请求以提交 UUID 数组
+            if ("POST".equals(method)) {
+                handlePost(exchange);
+            } else {
+                sendResponse(exchange, 405, "Method Not Allowed");
+            }
+        }
+
+        private void handlePost(HttpExchange exchange) throws IOException {
+            List<String> uuidStrings;
+
+            // 1. 解析请求体中的 JSON 字符串数组
+            try (InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)) {
+                Type listType = new TypeToken<List<String>>(){}.getType();
+                uuidStrings = gson.fromJson(reader, listType);
+            } catch (Exception e) {
+                sendJsonError(exchange, 400, "Invalid JSON body: Expected a string array of UUIDs");
+                return;
+            }
+
+            if (uuidStrings == null || uuidStrings.isEmpty()) {
+                sendJsonError(exchange, 400, "UUID list is empty or null");
+                return;
+            }
+
+            // 2. 检查 LuckPerms 是否可用
+            if (Bukkit.getPluginManager().getPlugin("LuckPerms") == null) {
+                sendJsonError(exchange, 503, "LuckPerms not found on this server");
+                return;
+            }
+
+            // 3. 执行批量查询
+            List<UserInfo> results = performBulkUserLookup(uuidStrings);
+
+            // 4. 返回结果
+            sendResponse(exchange, 200, gson.toJson(results));
+        }
+
+        /**
+         * 批量查询逻辑
+         */
+        private List<UserInfo> performBulkUserLookup(List<String> uuidStrings) {
+            var userManager = LuckPermsProvider.get().getUserManager();
+
+            // 将每个 UUID 的查找转换为一个 CompletableFuture
+            List<CompletableFuture<UserInfo>> futures = uuidStrings.stream()
+                    .map(uuidStr -> {
+                        try {
+                            UUID uuid = UUID.fromString(uuidStr);
+                            // lookupUsername 会从本地缓存或数据库中查询用户名
+                            return userManager.lookupUsername(uuid).thenApply(name -> {
+                                if (name == null) return null;
+                                return new UserInfo(name, uuid.toString());
+                            });
+                        } catch (IllegalArgumentException e) {
+                            // UUID 格式错误，直接返回 null 的 Future
+                            return CompletableFuture.completedFuture((UserInfo) null);
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            // 等待所有异步任务完成
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .thenApply(v -> futures.stream()
+                            .map(CompletableFuture::join)
+                            .collect(Collectors.toList()))
+                    .join();
+        }
+
+        /**
+         * 内部数据类用于构建 JSON 响应
+         */
+        private static class UserInfo {
+            String name;
+            String uuid;
+
+            UserInfo(String name, String uuid) {
+                this.name = name;
+                this.uuid = uuid;
+            }
         }
 
         private void sendJsonError(HttpExchange exchange, int statusCode, String message) throws IOException {
