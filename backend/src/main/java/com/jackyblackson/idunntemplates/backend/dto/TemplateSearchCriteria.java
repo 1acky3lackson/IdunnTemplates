@@ -1,10 +1,18 @@
 package com.jackyblackson.idunntemplates.backend.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
+@Setter
+@Getter
 public class TemplateSearchCriteria {
+    // Getters & Setters ...
     // 基础路径查询
     private String pathPrefix;
+    private String pathLike;
+    private String nameLike;
 
     // Metadata 过滤条件
     private UUID creatorId;
@@ -19,25 +27,4 @@ public class TemplateSearchCriteria {
     private Integer minLength;
     private Integer maxLength;
 
-    // Getters & Setters ...
-    public String getPathPrefix() { return pathPrefix; }
-    public void setPathPrefix(String pathPrefix) { this.pathPrefix = pathPrefix; }
-    public UUID getCreatorId() { return creatorId; }
-    public void setCreatorId(UUID creatorId) { this.creatorId = creatorId; }
-    public UUID getWorldId() { return worldId; }
-    public void setWorldId(UUID worldId) { this.worldId = worldId; }
-    public Boolean getLocked() { return locked; }
-    public void setLocked(Boolean locked) { this.locked = locked; }
-    public Integer getMinWidth() { return minWidth; }
-    public void setMinWidth(Integer minWidth) { this.minWidth = minWidth; }
-    public Integer getMaxWidth() { return maxWidth; }
-    public void setMaxWidth(Integer maxWidth) { this.maxWidth = maxWidth; }
-    public Integer getMinHeight() { return minHeight; }
-    public void setMinHeight(Integer minHeight) { this.minHeight = minHeight; }
-    public Integer getMaxHeight() { return maxHeight; }
-    public void setMaxHeight(Integer maxHeight) { this.maxHeight = maxHeight; }
-    public Integer getMinLength() { return minLength; }
-    public void setMinLength(Integer minLength) { this.minLength = minLength; }
-    public Integer getMaxLength() { return maxLength; }
-    public void setMaxLength(Integer maxLength) { this.maxLength = maxLength; }
 }
