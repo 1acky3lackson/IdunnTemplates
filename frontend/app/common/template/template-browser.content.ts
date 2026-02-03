@@ -26,9 +26,9 @@ const templateBrowserContent = {
                 [Locales.CHINESE_TRADITIONAL]: "僅顯示已鎖定",
             }),
             categories: t({
-                [Locales.ENGLISH]: "Categories",
-                [Locales.CHINESE]: "分类",
-                [Locales.CHINESE_TRADITIONAL]: "分類",
+                [Locales.ENGLISH]: "Folders",
+                [Locales.CHINESE]: "文件夹",
+                [Locales.CHINESE_TRADITIONAL]: "文件夹",
             }),
             allCategories: t({
                 [Locales.ENGLISH]: "All Categories",

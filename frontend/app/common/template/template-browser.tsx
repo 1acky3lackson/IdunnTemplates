@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, SlidersHorizontal, Loader2, ArrowDownUp } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, Loader2, ArrowDownUp, LockKeyhole, FolderTree } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -73,7 +73,10 @@ const TemplateFilters = () => {
 
             {/* 目录树区域 */}
             <div className="space-y-2">
-                <Label className="font-bold">{filters.categories}</Label>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <FolderTree className="h-4 w-4" />
+                    <Label className="font-bold text-foreground">{filters.categories}</Label>
+                </div>
                 {/* 使用 ScrollArea 确保树太长时可以滚动，而不影响外层布局 */}
                 <div className="min-h-25 max-h-75 overflow-y-auto pr-2 border rounded-md bg-background/50 p-2">
                     <DirectoryTree 
@@ -91,7 +94,10 @@ const TemplateFilters = () => {
 
             {/* 锁定状态 */}
             <div className="flex items-center justify-between space-x-2">
-                <Label htmlFor="locked-mode" className="font-bold">{filters.lockedOnly}</Label>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <LockKeyhole className="h-4 w-4" />
+                    <Label htmlFor="locked-mode" className="font-bold text-foreground">{filters.lockedOnly}</Label>
+                </div>
                 <Switch
                     id="locked-mode"
                     checked={criteria.locked === true}
@@ -126,6 +132,8 @@ const TemplateFilters = () => {
         </div>
     );
 };
+
+IDUNN_API.apiV1UserinfoCreatorsGet
 
 // --- 2. 核心视图组件 (Main View) ---
 const TemplateBrowserView = () => {
