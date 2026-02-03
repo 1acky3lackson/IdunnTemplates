@@ -199,7 +199,7 @@ const TemplateBrowserView = () => {
                 >
                     {/* 使用 CSS Columns 实现两列瀑布流 */}
                     {/* gap-4 对应 tailwind 的间距，columns-2 强制两列 */}
-                    <div className="columns-1 sm:columns-2 gap-4 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {items.map((tpl) => (
                             <div key={tpl.id} className="break-inside-avoid mb-4">
                                 <TemplateCard template={tpl} className="w-full" />
