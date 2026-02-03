@@ -48,4 +48,4 @@ jobs:
 
       - name: Deploy Files
         # 注意：rsync 的源路径现在也是相对于 frontend/ 的
-        run: rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }}" build/client/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/websites/sites-enabled/idunn.taixue.cc
+        run: rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }}" build/client/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/websites/sites-enabled/idunn.taixue.cc/app
