@@ -240,9 +240,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
     // --- 核心变化：计算 Mesh Gradient ---
     const backgroundStyle = useMemo(() => {
-        const gradient = generateMeshGradient(template.colorSchemes, template.id, theme);
+        const gradient = generateMeshGradient(template.colorSchemes, template.id + theme + ((angle+1)*147), theme);
         return gradient ? { backgroundImage: gradient } : {};
-    }, [template.colorSchemes, template.id, theme]);
+    }, [template.colorSchemes, template.id, theme, angle]);
 
     return (
         <div

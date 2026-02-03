@@ -17,6 +17,12 @@ export interface TemplateSearchParams {
     page?: ApiArgs[5]; // 对应 page
     size?: ApiArgs[6]; // 对应 size
     sort?: ApiArgs[7]; // 对应 sort
+    minLength?: ApiArgs[8]; // 对应 minLength
+    maxLength?: ApiArgs[9]; // 对应 maxLength
+    minHeight?: ApiArgs[10]; // 对应 minHeight
+    maxHeight?: ApiArgs[11]; // 对应 maxHeight
+    pathLike?: ApiArgs[12]; // 对应 pathLike
+    nameLike?: ApiArgs[13]; // 对应 nameLike
     // options 通常不需要透传给业务层，所以可以忽略
 }
 
@@ -29,8 +35,14 @@ export const searchTemplatesObjectParam = (params: TemplateSearchParams) => {
         params.maxWidth,
         params.worldId,
         params.page ?? 0,   // 可以在这里做默认值处理
-        params.size ?? 20,
-        params.sort
+        params.size ?? 10,  // 可以在这里做默认值处理
+        params.sort ?? 'metadata.creationTime,desc', // 默认按创建时间降序
+        params.minLength,
+        params.maxLength,
+        params.minHeight,
+        params.maxHeight,
+        params.pathLike,
+        params.nameLike,
     );
 };
 

@@ -14,7 +14,12 @@
 
 
 
-export * from './api/default-api';
-export * from './api/idunn-api';
-export * from './api/schem-api';
+export interface Get200Response {
+    'result': boolean;
+    /**
+     * online_player / luckperms
+     */
+    'source': string;
+    'name': string;
+}
 

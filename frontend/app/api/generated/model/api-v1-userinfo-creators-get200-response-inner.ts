@@ -14,7 +14,8 @@
 
 
 
-export * from './api/default-api';
-export * from './api/idunn-api';
-export * from './api/schem-api';
+export interface ApiV1UserinfoCreatorsGet200ResponseInner {
+    'name'?: string;
+    'uuid'?: string;
+}
 

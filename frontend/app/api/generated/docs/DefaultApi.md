@@ -6,11 +6,13 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 |[**apiAuthLoginPost**](#apiauthloginpost) | **POST** /api/auth/login | Yggdrasil 登录|
 |[**apiAuthMeGet**](#apiauthmeget) | **GET** /api/auth/me | 查看个人信息 / 验证登录|
+|[**apiV1PathsPathsGet**](#apiv1pathspathsget) | **GET** /api/v1/paths/{paths} | 获取子目录|
 |[**apiV1TemplatesGet**](#apiv1templatesget) | **GET** /api/v1/templates | 模板列表（或根据Path）|
 |[**apiV1TemplatesIdDownloadGet**](#apiv1templatesiddownloadget) | **GET** /api/v1/templates/{id}/download | 模板版本 schem 数据下载|
 |[**apiV1TemplatesIdGet**](#apiv1templatesidget) | **GET** /api/v1/templates/{id} | 模板详细数据|
 |[**apiV1TemplatesIdThumbnailGet**](#apiv1templatesidthumbnailget) | **GET** /api/v1/templates/{id}/thumbnail | 模板最新版本的缩略图|
 |[**apiV1TemplatesIdVersionsGet**](#apiv1templatesidversionsget) | **GET** /api/v1/templates/{id}/versions | 模板版本列表/复杂检索|
+|[**apiV1UserinfoCreatorsGet**](#apiv1userinfocreatorsget) | **GET** /api/v1/userinfo/creators | 获取所有模板作者的用户信息|
 
 # **apiAuthLoginPost**
 > ApiAuthLoginPost200Response apiAuthLoginPost()
@@ -115,6 +117,57 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **apiV1PathsPathsGet**
+> object apiV1PathsPathsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let paths: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1PathsPathsGet(
+    paths
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **paths** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **apiV1TemplatesGet**
 > TemplatePagenable apiV1TemplatesGet()
 
@@ -139,6 +192,12 @@ let worldId: string; //世界 uuid (optional) (default to undefined)
 let page: number; // (optional) (default to undefined)
 let size: number; // (optional) (default to undefined)
 let sort: string; // (optional) (default to undefined)
+let minLength: number; // (optional) (default to undefined)
+let maxLength: number; // (optional) (default to undefined)
+let minHeight: number; // (optional) (default to undefined)
+let maxHeight: number; // (optional) (default to undefined)
+let pathLike: string; //模糊搜索 Path (optional) (default to undefined)
+let nameLike: string; //模糊搜索 Name (optional) (default to undefined)
 
 const { status, data } = await apiInstance.apiV1TemplatesGet(
     pathPrefix,
@@ -148,7 +207,13 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
     worldId,
     page,
     size,
-    sort
+    sort,
+    minLength,
+    maxLength,
+    minHeight,
+    maxHeight,
+    pathLike,
+    nameLike
 );
 ```
 
@@ -164,6 +229,12 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
 | **page** | [**number**] |  | (optional) defaults to undefined|
 | **size** | [**number**] |  | (optional) defaults to undefined|
 | **sort** | [**string**] |  | (optional) defaults to undefined|
+| **minLength** | [**number**] |  | (optional) defaults to undefined|
+| **maxLength** | [**number**] |  | (optional) defaults to undefined|
+| **minHeight** | [**number**] |  | (optional) defaults to undefined|
+| **maxHeight** | [**number**] |  | (optional) defaults to undefined|
+| **pathLike** | [**string**] | 模糊搜索 Path | (optional) defaults to undefined|
+| **nameLike** | [**string**] | 模糊搜索 Name | (optional) defaults to undefined|
 
 
 ### Return type
@@ -409,6 +480,50 @@ const { status, data } = await apiInstance.apiV1TemplatesIdVersionsGet(
 ### Return type
 
 **TemplateVersionPagenable**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1UserinfoCreatorsGet**
+> Array<ApiV1UserinfoCreatorsGet200ResponseInner> apiV1UserinfoCreatorsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1UserinfoCreatorsGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**Array<ApiV1UserinfoCreatorsGet200ResponseInner>**
 
 ### Authorization
 

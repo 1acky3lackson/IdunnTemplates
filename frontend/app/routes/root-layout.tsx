@@ -10,6 +10,8 @@ import { useEffect } from "react";
 export default function RootLayout({ params }: Route.ComponentProps) {
     let { lang } = params;
 
+    const localstorageLang = localStorage.getItem("i18nextLng");
+
     useEffect(() => {
         const localstorageLang = localStorage.getItem("i18nextLng");
         const currentLang = lang || localstorageLang || Locales.CHINESE;
@@ -18,9 +20,10 @@ export default function RootLayout({ params }: Route.ComponentProps) {
             localStorage.setItem("i18nextLng", lang);
         }
         document.documentElement.setAttribute("i18n-lang", currentLang as string);
+        document.documentElement.setAttribute("lang", currentLang as string);
     }, [lang]);
 
-    const currentLocale = lang || Locales.CHINESE;
+    const currentLocale = localstorageLang || lang || Locales.CHINESE;
 
     return (
         <IntlayerProvider locale={currentLocale}>
@@ -31,7 +34,6 @@ export default function RootLayout({ params }: Route.ComponentProps) {
                         <main className="flex-1">
                             <Outlet />
                         </main>
-                        <Footer />
                     </div>
                 </AuthProvider>
             </ThemeProvider>

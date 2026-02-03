@@ -14,7 +14,24 @@
 
 
 
-export * from './api/default-api';
-export * from './api/idunn-api';
-export * from './api/schem-api';
+export interface ApiRenderPostRequest {
+    /**
+     * 必须能够直链访问，且没有 CORS 问题
+     */
+    'schematicUrl': string;
+    'width': number;
+    'height': number;
+    /**
+     * 默认 Math.PI / 4
+     */
+    'alpha': number;
+    /**
+     * 默认 atan(2);
+     */
+    'beta': number;
+    /**
+     * 默认 0.5
+     */
+    'radius': number;
+}
 
