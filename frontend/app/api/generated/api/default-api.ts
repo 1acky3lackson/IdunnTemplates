@@ -177,10 +177,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @summary 模板版本 schem 数据下载
          * @param {string} id 模板的 UUID
          * @param {string} [version] 模板的版本号，不填则下载最新版
+         * @param {string} [format] litematica | litematic | nbt | becrock | structure | structure_block | schem | sponge | bp | axiom
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1TemplatesIdDownloadGet: async (id: string, version?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1TemplatesIdDownloadGet: async (id: string, version?: string, format?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('apiV1TemplatesIdDownloadGet', 'id', id)
             const localVarPath = `/api/v1/templates/{id}/download`
@@ -198,6 +199,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (version !== undefined) {
                 localVarQueryParameter['version'] = version;
+            }
+
+            if (format !== undefined) {
+                localVarQueryParameter['format'] = format;
             }
 
             localVarHeaderParameter['Accept'] = '*/*';
@@ -425,11 +430,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @summary 模板版本 schem 数据下载
          * @param {string} id 模板的 UUID
          * @param {string} [version] 模板的版本号，不填则下载最新版
+         * @param {string} [format] litematica | litematic | nbt | becrock | structure | structure_block | schem | sponge | bp | axiom
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1TemplatesIdDownloadGet(id: string, version?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdDownloadGet(id, version, options);
+        async apiV1TemplatesIdDownloadGet(id: string, version?: string, format?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdDownloadGet(id, version, format, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1TemplatesIdDownloadGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -534,11 +540,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @summary 模板版本 schem 数据下载
          * @param {string} id 模板的 UUID
          * @param {string} [version] 模板的版本号，不填则下载最新版
+         * @param {string} [format] litematica | litematic | nbt | becrock | structure | structure_block | schem | sponge | bp | axiom
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1TemplatesIdDownloadGet(id: string, version?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.apiV1TemplatesIdDownloadGet(id, version, options).then((request) => request(axios, basePath));
+        apiV1TemplatesIdDownloadGet(id: string, version?: string, format?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1TemplatesIdDownloadGet(id, version, format, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -632,11 +639,12 @@ export class DefaultApi extends BaseAPI {
      * @summary 模板版本 schem 数据下载
      * @param {string} id 模板的 UUID
      * @param {string} [version] 模板的版本号，不填则下载最新版
+     * @param {string} [format] litematica | litematic | nbt | becrock | structure | structure_block | schem | sponge | bp | axiom
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiV1TemplatesIdDownloadGet(id: string, version?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiV1TemplatesIdDownloadGet(id, version, options).then((request) => request(this.axios, this.basePath));
+    public apiV1TemplatesIdDownloadGet(id: string, version?: string, format?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1TemplatesIdDownloadGet(id, version, format, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

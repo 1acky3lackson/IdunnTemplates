@@ -205,10 +205,12 @@ const apiInstance = new DefaultApi(configuration);
 
 let id: string; //模板的 UUID (default to undefined)
 let version: string; //模板的版本号，不填则下载最新版 (optional) (default to undefined)
+let format: string; //litematica | litematic | nbt | becrock | structure | structure_block | schem | sponge | bp | axiom (optional) (default to undefined)
 
 const { status, data } = await apiInstance.apiV1TemplatesIdDownloadGet(
     id,
-    version
+    version,
+    format
 );
 ```
 
@@ -218,6 +220,7 @@ const { status, data } = await apiInstance.apiV1TemplatesIdDownloadGet(
 |------------- | ------------- | ------------- | -------------|
 | **id** | [**string**] | 模板的 UUID | defaults to undefined|
 | **version** | [**string**] | 模板的版本号，不填则下载最新版 | (optional) defaults to undefined|
+| **format** | [**string**] | litematica | litematic | nbt | becrock | structure | structure_block | schem | sponge | bp | axiom | (optional) defaults to undefined|
 
 
 ### Return type
