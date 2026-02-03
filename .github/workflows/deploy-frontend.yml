@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 设置该 Job 下所有 run 指令的默认工作目录
     defaults:
       run:
         working-directory: ./frontend
@@ -23,17 +22,22 @@ jobs:
         with:
           node-version: 23.x
           cache: 'npm'
-          # 注意：这里的 cache-dependency-path 需要指向子目录下的 package-lock.json
           cache-dependency-path: './frontend/package-lock.json'
 
       - run: npm install
-      - run: npm run build
+
+      # --- 修改点开始 ---
+      - name: Build Project
+        # 在这里注入环境变量，Vite 会在构建时将其写入代码
+        env:
+          VITE_API_URL: https://idunn.taixue.cc/api
+        run: npm run build
+      # --- 修改点结束 ---
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: build
-          # 这里的路径也是相对于 working-directory 的，或者使用绝对路径
           path: frontend/build/
 
       - name: Add SSH Key
@@ -47,5 +51,6 @@ jobs:
           ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy Files
-        # 注意：rsync 的源路径现在也是相对于 frontend/ 的
+        # 请确保 frontend/build/client/ 这个路径是正确的
+        # 如果你的 vite 配置输出目录是 dist，这里可能需要改为 build/dist/ 或者直接 dist/
         run: rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }}" build/client/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/websites/sites-enabled/idunn.taixue.cc/app
