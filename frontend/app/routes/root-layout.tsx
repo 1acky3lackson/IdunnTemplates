@@ -1,36 +1,38 @@
 import { IntlayerProvider } from "react-intlayer";
 import { Outlet } from "react-router";
-
 import type { Route } from "./+types/root-layout";
 import { Locales } from "intlayer";
 import { ThemeProvider } from "~/components/theme/theme-provider";
 import { AuthProvider } from "~/common/auth/auth-provider";
+import { Footer } from "./footer"; // 引入下方创建的组件
+import { useEffect } from "react";
 
 export default function RootLayout({ params }: Route.ComponentProps) {
     let { lang } = params;
-    let localstorageLang = localStorage.getItem("i18nextLng");
-    if (lang && localstorageLang !== lang) {
-        localStorage.setItem("i18nextLng", lang);
-    }
-    if (!lang && localstorageLang) {
-        lang = localstorageLang;
-    }
-    console.log(lang);
 
-    if (lang === undefined) {
-        lang = Locales.CHINESE;
-        console.log("no lang found, set to default:", lang);
-    }
+    useEffect(() => {
+        const localstorageLang = localStorage.getItem("i18nextLng");
+        const currentLang = lang || localstorageLang || Locales.CHINESE;
+        
+        if (lang) {
+            localStorage.setItem("i18nextLng", lang);
+        }
+        document.documentElement.setAttribute("i18n-lang", currentLang as string);
+    }, [lang]);
 
-    // 修改 html 的 lang 属性
-    document.documentElement.setAttribute("i18n-lang", lang);
-
+    const currentLocale = lang || Locales.CHINESE;
 
     return (
-        <IntlayerProvider locale={lang ? lang : Locales.CHINESE}>
+        <IntlayerProvider locale={currentLocale}>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
                 <AuthProvider>
-                    <Outlet />
+                    {/* 使用 Flex 布局确保 Footer 始终在页面底部 */}
+                    <div className="relative flex min-h-screen flex-col">
+                        <main className="flex-1">
+                            <Outlet />
+                        </main>
+                        <Footer />
+                    </div>
                 </AuthProvider>
             </ThemeProvider>
         </IntlayerProvider>
