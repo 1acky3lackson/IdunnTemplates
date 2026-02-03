@@ -1,0 +1,51 @@
+name: Node.js CI & Deployment
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    # 设置该 Job 下所有 run 指令的默认工作目录
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 23.x
+        cache: 'npm'
+        # 注意：这里的 cache-dependency-path 需要指向子目录下的 package-lock.json
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - run: npm install
+    - run: npm run build
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build
+        # 这里的路径也是相对于 working-directory 的，或者使用绝对路径
+        path: frontend/build/
+
+    - name: Add SSH Key
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Configure SSH
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy Files
+      # 注意：rsync 的源路径现在也是相对于 frontend/ 的
+      run: rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }}" build/client/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/websites/sites-enabled/idunn.taixue.cc
