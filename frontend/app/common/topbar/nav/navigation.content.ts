@@ -17,7 +17,7 @@ const navigationContent = {
             templates: t({ [Locales.ENGLISH]: "Templates", [Locales.CHINESE]: "模板", [Locales.CHINESE_TRADITIONAL]: "模板" }),
             tags: t({ [Locales.ENGLISH]: "Tags", [Locales.CHINESE]: "标签", [Locales.CHINESE_TRADITIONAL]: "標籤" }),
             sets: t({ [Locales.ENGLISH]: "Sets", [Locales.CHINESE]: "合集", [Locales.CHINESE_TRADITIONAL]: "合集" }),
-            brushes: t({ [Locales.ENGLISH]: "Brushes", [Locales.CHINESE]: "刷子", [Locales.CHINESE_TRADITIONAL]: "刷子" }),
+            brushes: t({ [Locales.ENGLISH]: "Brushes", [Locales.CHINESE]: "笔刷", [Locales.CHINESE_TRADITIONAL]: "筆刷" }),
             utilities: t({ [Locales.ENGLISH]: "Utilities", [Locales.CHINESE]: "工具", [Locales.CHINESE_TRADITIONAL]: "工具" }),
         },
         items: {
@@ -47,12 +47,15 @@ const navigationContent = {
             createSet: t({ [Locales.ENGLISH]: "Create New Set", [Locales.CHINESE]: "创建合集", [Locales.CHINESE_TRADITIONAL]: "創建合集" }),
             createSetDesc: t({ [Locales.ENGLISH]: "Create a new template set.", [Locales.CHINESE]: "创建一个新的模板合集。", [Locales.CHINESE_TRADITIONAL]: "創建一個新的模板合集。" }),
             // Brushes 部分
-            browseBrushes: t({ [Locales.ENGLISH]: "Browse Brushes", [Locales.CHINESE]: "浏览刷子", [Locales.CHINESE_TRADITIONAL]: "瀏覽刷子" }),
+            browseBrushes: t({ [Locales.ENGLISH]: "Browse Brushes", [Locales.CHINESE]: "浏览笔刷", [Locales.CHINESE_TRADITIONAL]: "瀏覽刷子" }),
             browseBrushesDesc: t({ [Locales.ENGLISH]: "Browse all available brushes.", [Locales.CHINESE]: "浏览所有可用的刷子。", [Locales.CHINESE_TRADITIONAL]: "瀏覽所有可用的刷子。" }),
-            myBrushes: t({ [Locales.ENGLISH]: "My Brushes", [Locales.CHINESE]: "我的刷子", [Locales.CHINESE_TRADITIONAL]: "我的刷子" }),
-            myBrushesDesc: t({ [Locales.ENGLISH]: "View and manage your personal brushes.", [Locales.CHINESE]: "查看并管理您的个人刷子。", [Locales.CHINESE_TRADITIONAL]: "查看並管理您的個人刷子。" }),
-            createBrush: t({ [Locales.ENGLISH]: "Create New Brush", [Locales.CHINESE]: "创建刷子", [Locales.CHINESE_TRADITIONAL]: "創建刷子" }),
-            createBrushDesc: t({ [Locales.ENGLISH]: "Create a new brush.", [Locales.CHINESE]: "创建一个新的刷子工具。", [Locales.CHINESE_TRADITIONAL]: "創建一個新的刷子工具。" }),
+            myBrushes: t({ [Locales.ENGLISH]: "My Brushes", [Locales.CHINESE]: "我的笔刷", [Locales.CHINESE_TRADITIONAL]: "我的刷子" }),
+            myBrushesDesc: t({ [Locales.ENGLISH]: "View and manage your personal brushes.", [Locales.CHINESE]: "查看并管理您的个人笔刷。", [Locales.CHINESE_TRADITIONAL]: "查看並管理您的個人筆刷。" }),
+            createBrush: t({ [Locales.ENGLISH]: "Create New Brush", [Locales.CHINESE]: "创建笔刷", [Locales.CHINESE_TRADITIONAL]: "創建刷子" }),
+            createBrushDesc: t({ [Locales.ENGLISH]: "Create a new brush.", [Locales.CHINESE]: "创建一个新的笔刷工具。", [Locales.CHINESE_TRADITIONAL]: "創建一個新的筆刷工具。" }),
+            // Utilities 部分
+            resize: t({ [Locales.ENGLISH]: "Resize Player", [Locales.CHINESE]: "缩放玩家大小", [Locales.CHINESE_TRADITIONAL]: "調整大小工具" }),
+            resizeDesc: t({ [Locales.ENGLISH]: "Resize player models easily.", [Locales.CHINESE]: "轻松调整玩家模型的大小。", [Locales.CHINESE_TRADITIONAL]: "輕鬆調整玩家模型的大小。" }),
         }
     },
 } satisfies Dictionary;

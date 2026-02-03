@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Menu, User, X } from "lucide-react"
+import { LogIn, Menu, User, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/theme/mode-toggle"
@@ -9,11 +9,17 @@ import darkLogo from "@/common/topbar/logo-dark.svg"
 import lightLogo from "@/common/topbar/logo-light.svg"
 import { useTheme } from "@/components/theme/theme-provider"
 import { LocaleSwitcher } from "../i18n/locale-switcher"
+import { useAuth } from "../auth/auth-provider"
+import { is } from "zod/v4/locales"
+import { Link } from "react-router"
+import { useIntlayer } from "react-intlayer"
 
 export default function TopBar() {
+    const { siteTitle, login } = useIntlayer("topbar");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
     const { theme } = useTheme()
 
+    const { isAuthenticated, user, login: loginFunc, logout} = useAuth();
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen)
     }
@@ -35,18 +41,18 @@ export default function TopBar() {
                 alt="Logo"
                 className="h-12 w-auto hidden dark:block"
             />
-            <span className="hidden md:inline-block">IdunnTemplates</span>
+            <span className="hidden md:inline-block">{siteTitle}</span>
         </div>
     )
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-7">
                 {/* Left: Logo */}
                 <div className="flex items-center">
-                    <a href="/" className="flex items-center gap-2">
+                    <Link to="/" className="flex items-center gap-2">
                         <Logo />
-                    </a>
+                    </Link>
                 </div>
 
                 {/* Center: Navigation (Desktop) */}
@@ -66,10 +72,24 @@ export default function TopBar() {
                     <div className="h-6 w-[1px] bg-border mx-1 hidden sm:block" /> {/* 视觉分割线 */}
 
                     {/* 3. 用户按钮 */}
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <User className="h-5 w-5" />
-                        <span className="sr-only">User profile</span>
-                    </Button>
+                    {
+                        isAuthenticated
+                        ?
+                        <div className="flex flex-row gap-2 items-center hover:bg-accent hover:text-accent-foreground transition-colors px-3 py-1 rounded-md hover:cursor-pointer">
+                            <div className="text-sm">{user?.username}</div>
+                            <Button variant="outline" size="icon">
+                                <User className="h-5 w-5" />
+                                <span className="sr-only">User profile</span>
+                            </Button>
+                        </div>
+                        :
+                        <Link to="/login">
+                            <Button variant="default">
+                                <span className="pr-0.5">{login}</span>
+                                <LogIn className="h-5 w-5" />
+                            </Button>
+                        </Link>
+                    }
 
                     {/* Mobile Menu Trigger */}
                     <Button

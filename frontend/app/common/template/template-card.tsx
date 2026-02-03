@@ -1,0 +1,417 @@
+import {
+    ChevronLeft,
+    ChevronRight,
+    Box,
+    Lock,
+    Unlock,
+    Clock,
+    Ruler,
+    ImageIcon
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from "react";
+import { getThumbnailUrlForTemplate } from "~/api";
+import type { Template } from "~/api/generated/model/template";
+import { cn } from "~/lib/utils";
+
+interface TemplateCardProps {
+    template: Template;
+    className?: string;
+}
+
+export const EXAMPLE_TEMPLATE_1: Template = JSON.parse(`
+    {
+        "id": "be44b74f-a9f3-4a24-bde8-7d8b3f692c3e",
+        "path": "minecraft/village/plains/houses/butcher_shop_1",
+        "name": "butcher_shop_1",
+        "metadata": {
+            "templateId": "be44b74f-a9f3-4a24-bde8-7d8b3f692c3e",
+            "creatorId": "500d59d1-84a8-3207-932c-e62f8a543ef7",
+            "creationTime": 1769973879770,
+            "worldId": "c95b4000-db96-48dc-b754-40e910e89f29",
+            "anchorX": -1622,
+            "anchorY": 85,
+            "anchorZ": -47,
+            "width": 19,
+            "height": 15,
+            "length": 20,
+            "locked": false,
+            "lockedTimestamp": null,
+            "childTemplateInstances": {},
+            "parentTemplateInstances": {},
+            "deleted": false,
+            "stagedChanges": {
+                "addedInstances": [],
+                "removedInstanceIds": [],
+                "empty": true
+            },
+            "versions": []
+        },
+        "usePermissionNode": "idunn.template.use.minecraft.village.plains.houses.butcher_shop_1",
+        "latestVersion": null,
+        "locked": false,
+        "colorSchemes": [
+            "b89058",
+            "886840",
+            "584828",
+            "606060",
+            "382818",
+            "888088"
+        ]
+    }
+`);
+
+export const EXAMPLE_TEMPLATE_2: Template = JSON.parse(`
+    {
+        "id": "e9f424e4-c0ab-49f6-b341-b600faa38ffa",
+        "path": "minecraft/village/plains/houses/cartographer_1",
+        "name": "cartographer_1",
+        "metadata": {
+            "templateId": "e9f424e4-c0ab-49f6-b341-b600faa38ffa",
+            "creatorId": "500d59d1-84a8-3207-932c-e62f8a543ef7",
+            "creationTime": 1769973956829,
+            "worldId": "c95b4000-db96-48dc-b754-40e910e89f29",
+            "anchorX": -1625,
+            "anchorY": 85,
+            "anchorZ": -89,
+            "width": 19,
+            "height": 16,
+            "length": 16,
+            "locked": false,
+            "lockedTimestamp": null,
+            "childTemplateInstances": {},
+            "parentTemplateInstances": {},
+            "deleted": false,
+            "stagedChanges": {
+                "addedInstances": [],
+                "removedInstanceIds": [],
+                "empty": true
+            },
+            "versions": []
+        },
+        "usePermissionNode": "idunn.template.use.minecraft.village.plains.houses.cartographer_1",
+        "latestVersion": null,
+        "locked": false,
+        "colorSchemes": [
+            "886840",
+            "b89058",
+            "483820",
+            "606060",
+            "684838",
+            "506830"
+        ]
+    }
+`);
+
+export const EXAMPLE_TEMPLATE_3: Template = JSON.parse(`
+    {
+        "id": "d97ecd43-3a99-4820-b202-fab4e3f5bb1d",
+        "path": "users/Jacky_Blackson/lantern",
+        "name": "lantern",
+        "metadata": {
+            "templateId": "d97ecd43-3a99-4820-b202-fab4e3f5bb1d",
+            "creatorId": "500d59d1-84a8-3207-932c-e62f8a543ef7",
+            "creationTime": 1769856943040,
+            "worldId": "c95b4000-db96-48dc-b754-40e910e89f29",
+            "anchorX": 1249,
+            "anchorY": 109,
+            "anchorZ": -2225,
+            "width": 3,
+            "height": 4,
+            "length": 3,
+            "locked": false,
+            "lockedTimestamp": null,
+            "childTemplateInstances": {},
+            "parentTemplateInstances": {},
+            "deleted": false,
+            "stagedChanges": {
+                "addedInstances": [],
+                "removedInstanceIds": [],
+                "empty": true
+            },
+            "versions": []
+        },
+        "usePermissionNode": "idunn.template.use.users.Jacky_Blackson.lantern",
+        "latestVersion": null,
+        "locked": false,
+        "colorSchemes": [
+            "283038",
+            "909090",
+            "e8e8e8",
+            "a8a8a8",
+            "d0d0d0",
+            "302010"
+        ]
+    }
+`);
+
+const transprent = 50;
+const gradientAlpha = 40;
+
+/**
+ * 生成基于 ID 稳定的随机 Mesh 渐变
+ * @param colors 颜色数组（建议传入 6 个颜色）
+ * @param id 用于生成稳定随机位置的唯一标识
+ */
+const generateMeshGradient = (colors: string[], id: string) => {
+    if (!colors || colors.length === 0) return undefined;
+
+    // 1. 确保颜色池有 6 个颜色
+    const pool = [...colors];
+    while (pool.length < 6) {
+        pool.push(...colors);
+    }
+
+    // 2. 简单的 Hash 函数，根据 ID 生成种子
+    const getSeed = (str: string) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return hash;
+    };
+
+    // 3. 基于种子的伪随机数生成器 (Linear Congruential Generator)
+    const seededRandom = (seed: number) => {
+        const x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    };
+
+    let seed = getSeed(id);
+
+    // 4. 生成 6 个随机位置的光点
+    // 调高透明度至 '33' (约 20%)，缩小半径至 40%-60% 使颜色更凝聚
+    const gradientAlpha = "33"; 
+    const radius = 50; 
+
+    const gradients = pool.slice(0, 6).map((color) => {
+        // 为每个点生成稳定的 X 和 Y 坐标 (0-100)
+        const posX = Math.floor(seededRandom(seed++) * 100);
+        const posY = Math.floor(seededRandom(seed++) * 100);
+        
+        // 动态生成的径向渐变
+        return `radial-gradient(at ${posX}% ${posY}%, ${color}${gradientAlpha} 0%, transparent ${radius}%)`;
+    });
+
+    return gradients.join(', ');
+};
+
+export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className }) => {
+    template.colorSchemes = template.colorSchemes?.map(color => color.startsWith("#") ? color : "#" + color);
+    // console.log("Rendering TemplateCard for template:", template);
+
+    // 状态管理
+    const [angle, setAngle] = useState<0 | 1 | 2 | 3>(0);
+    const [isHovering, setIsHovering] = useState(false);
+
+    // --- 新增：图片错误状态 ---
+    const [imgError, setImgError] = useState(false);
+
+    // --- 新增：当角度或模板ID改变时，重置错误状态，尝试加载新图片 ---
+    useEffect(() => {
+        setImgError(false);
+    }, [angle, template.id]);
+
+    // 1. 处理主题色
+    // 取第一个颜色作为主色，如果没有则回退到灰色
+    // 我们需要确保颜色格式是 hex 或 rgb 才能用于 css 变量，这里假设后端返回的是 hex
+    const primaryColor = template.colorSchemes?.[0] || '#71717a';
+
+    // 角度切换逻辑
+    const nextAngle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setAngle((prev) => (prev + 1) % 4 as 0 | 1 | 2 | 3);
+    };
+
+    const prevAngle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setAngle((prev) => (prev - 1 + 4) % 4 as 0 | 1 | 2 | 3);
+    };
+
+    const formattedDate = useMemo(() => {
+        return new Date(template.metadata.creationTime).toLocaleDateString();
+    }, [template.metadata.creationTime]);
+
+    // --- 核心变化：计算 Mesh Gradient ---
+    const backgroundStyle = useMemo(() => {
+        const gradient = generateMeshGradient(template.colorSchemes, template.id);
+        return gradient ? { backgroundImage: gradient } : {};
+    }, [template.colorSchemes, template.id]);
+
+    return (
+        <div
+            className={cn(
+                "group relative flex flex-col overflow-hidden rounded-xl border transition-all duration-300 hover:shadow-lg",
+                // 基础背景色：必须设置 bg-card (白色/深灰色)，否则透明渐变会透到底部的页面背景
+                // "bg-card text-card-foreground",
+                "hover:-translate-y-1",
+                className
+            )}
+            style={backgroundStyle} // 应用生成的渐变
+        >
+            {/* --- Top: Thumbnail Area --- */}
+            <div
+                className="relative aspect-video w-full overflow-hidden bg-muted/20" // 改淡了一点默认背景
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+            >
+                {/* 条件渲染：如果出错显示可爱图标，否则显示图片 */}
+                {imgError ? (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/40 transition-colors group-hover:bg-muted/60">
+                        {/* 可爱的图标组合：一个相框加上一个小问号或点缀 */}
+                        <div className="relative rounded-full bg-background/60 p-3 shadow-sm backdrop-blur-sm">
+                            <ImageIcon 
+                                className="h-6 w-6 text-muted-foreground/70" 
+                                strokeWidth={1.5}
+                            />
+                            {/* 右下角的小装饰点，根据主题色变化 */}
+                            <div 
+                                className="absolute bottom-2 right-2 h-1.5 w-1.5 rounded-full"
+                                style={{ backgroundColor: template.colorSchemes?.[0] || 'currentColor' }} 
+                            />
+                        </div>
+                        <span className="text-[10px] font-medium text-muted-foreground/60 tracking-wider">
+                            No Preview
+                        </span>
+                    </div>
+                ) : (
+                    <img 
+                        src={getThumbnailUrlForTemplate(template.id, angle)} 
+                        alt={template.name}
+                        // 核心：加载失败时触发
+                        onError={() => setImgError(true)}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                    />
+                )}
+
+                {/* 悬停时的遮罩：为了让白色箭头更清晰，可以加一个非常淡的暗色渐变 */}
+                <div className={cn(
+                    "absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent transition-opacity duration-300",
+                    isHovering ? "opacity-100" : "opacity-0"
+                )} />
+
+                {/* 左右切换按钮 */}
+                <div className={cn(
+                    "absolute inset-0 flex items-center justify-between px-2 transition-opacity duration-200",
+                    isHovering ? "opacity-100" : "opacity-0"
+                )}>
+                    {/* 使用 backdrop-blur 增加毛玻璃感，显得更高级 */}
+                    <button
+                        onClick={prevAngle}
+                        className="rounded-full bg-black/20 p-1.5 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                        onClick={nextAngle}
+                        className="rounded-full bg-black/20 p-1.5 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* 角度指示点 */}
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 p-1 rounded-full bg-black/10 backdrop-blur-[2px]">
+                    {[0, 1, 2, 3].map((i) => (
+                        <div
+                            key={i}
+                            className={cn(
+                                "h-1.5 w-1.5 rounded-full transition-all duration-300",
+                                i === angle ? "bg-white scale-110 shadow-[0_0_4px_rgba(255,255,255,0.8)]" : "bg-white/40 hover:bg-white/60"
+                            )}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* --- Middle: Logo Area (Color Bubbles) --- */}
+            <div className="relative px-4 z-10">
+                {/* 使用 -mt-5 让圆圈组向上浮动，一半压在图片上，一半在内容区 */}
+                <div className="-mt-5 flex items-center">
+                    {template.colorSchemes && template.colorSchemes.length > 0 ? (
+                        <div className="flex items-center">
+                            {template.colorSchemes.slice(0, 6).map((color, idx) => (
+                                <div
+                                    key={idx}
+                                    // 样式详解：
+                                    // 1. relative + zIndex: 配合 inline-style 确保层级递减
+                                    // 2. h-9 w-9: 增大尺寸 (36px)
+                                    // 3. border-[3px] border-card: 边框颜色与卡片背景一致，形成“切割”效果
+                                    // 4. hover:scale-125 hover:z-50: 悬停时显著放大，并强制提到最顶层
+                                    className="relative h-9 w-9 rounded-full border-[3px] border-card shadow-sm transition-all duration-300 ease-out hover:scale-125 hover:z-50 hover:border-background"
+                                    style={{
+                                        backgroundColor: color,
+                                        // 核心叠加逻辑：
+                                        // 第一个元素不偏移，后续元素向左偏移 14px (形成重叠)
+                                        marginLeft: idx === 0 ? 0 : '-14px',
+                                        // 权重递减：idx 越小层级越高
+                                        zIndex: 10 - idx
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        // Fallback: 如果没有颜色，显示一个默认的圆圈图标
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-card bg-muted shadow-sm">
+                            <Box className="h-5 w-5 text-muted-foreground/50" />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* --- Bottom: Info Body --- */}
+            <div className="flex flex-1 flex-col p-4 pt-2 z-10">
+
+                <div className="mb-3">
+                    <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
+                        {template.name}
+                    </h3>
+                    <p className="mt-1 line-clamp-1 text-[10px] font-mono text-muted-foreground/70 break-all" title={template.path}>
+                        {template.path}
+                    </p>
+                </div>
+
+                {/* Metadata Tags */}
+                <div className="mt-auto grid grid-cols-2 gap-2 text-xs">
+                    {/* 状态 Badge */}
+                    <div className={cn(
+                        "inline-flex items-center gap-1.5 px-2 py-1 rounded-md w-fit border",
+                        template.locked
+                            ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-500"
+                            : "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-500"
+                    )}>
+                        {template.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                        <span className="font-medium text-[10px] uppercase">{template.locked ? 'Locked' : 'Open'}</span>
+                    </div>
+
+                    {/* 尺寸 Badge */}
+                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md w-fit border bg-muted/50 border-border/50 text-muted-foreground ml-auto">
+                        <Ruler className="h-3 w-3" />
+                        <span className="font-mono text-[10px]">
+                            {template.metadata.width}×{template.metadata.height}×{template.metadata.length}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Footer Info */}
+                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground/60">
+                    <div className="flex items-center gap-1">
+                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold">
+                            V{template.latestVersion || '1.0'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <Clock className="h-2.5 w-2.5" />
+                        <span>{formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* 噪点纹理层 (Noise Overlay) - 可选 */}
+            {/* 这会让渐变看起来更有质感，不会有色阶断层 */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+            />
+        </div>
+    );
+};

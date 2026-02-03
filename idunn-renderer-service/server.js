@@ -70,7 +70,12 @@ async function startServer() {
             radius  // Optional
         } = req.body;
 
-        if (!schematicUrl) return res.status(400).json({ error: 'Missing schematicUrl' });
+        console.log("Requested to generate, url=" + schematicUrl + ", " + width + "x" + height + ", a=" + alpha + ", b=" + beta + ", r=" + radius);
+
+        if (!schematicUrl) {
+            console.error("    -> Error! Missing schematic URL")
+            return res.status(400).json({error: 'Missing schematicUrl'})
+        }
 
         let page;
         try {
@@ -96,6 +101,8 @@ async function startServer() {
             type: 'png', 
             omitBackground: false 
         });
+
+        console.log("    -> Respond SUCCESS for url=" + schematicUrl + ", " + width + "x" + height + ", a=" + alpha + ", b=" + beta + ", r=" + radius);
 
         // 3. 【核心】使用 Sharp 进行抠图处理
         // 获取原始像素数据
@@ -138,12 +145,14 @@ async function startServer() {
         .png()
         .toBuffer();
 
+        console.log("    -> Post processing SUCCESS for url=" + schematicUrl + ", " + width + "x" + height + ", a=" + alpha + ", b=" + beta + ", r=" + radius);
+
         // 4. 返回处理后的图片
         res.set('Content-Type', 'image/png');
         res.send(finalBuffer);
-
+        console.log("    -> Respond send for url=" + schematicUrl + ", " + width + "x" + height + ", a=" + alpha + ", b=" + beta + ", r=" + radius);
         } catch (error) {
-            console.error("Render Error:", error);
+            console.error("    -> Render Error:", error);
             res.status(500).json({ error: error.message });
         } finally {
             if (page) await page.close();

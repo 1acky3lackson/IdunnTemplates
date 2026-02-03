@@ -22,12 +22,12 @@ export const LocaleSwitcher: FC = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" size="icon">
                     <Languages className="h-5 w-5" />
                     <span className="sr-only">{localeSwitcherLabel?.value || "Switch Language"}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuContent align="end" className="w-45">
                 {availableLocales.map((localeItem) => {
                     const isActive = localeItem === locale;
 

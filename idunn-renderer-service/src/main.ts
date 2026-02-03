@@ -105,7 +105,7 @@ async function startRendererWithUrl(
             renderArrow: false,
             orbit: false, // 截图模式不需要自动旋转
             orbitSpeed: 0.02,
-            antialias: true,
+            antialias: false,
             backgroundColor: 0x012345, // 透明背景
             debug: false,
             disableAutoRender: false,

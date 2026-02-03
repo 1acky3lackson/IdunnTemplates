@@ -1,0 +1,20 @@
+import { Locales, t, type Dictionary } from "intlayer";
+
+const topbarContent = {
+    key: "topbar",
+    content: {
+        // 网站标题
+        siteTitle: t({
+            [Locales.ENGLISH]:              "IdunnTemplates™",
+            [Locales.CHINESE]:              "Idunn™ 模板",
+            [Locales.CHINESE_TRADITIONAL]:  "Idunn™ 模板",
+        }),
+        login: t({
+            [Locales.ENGLISH]:              "LOGIN",
+            [Locales.CHINESE]:              "登录",
+            [Locales.CHINESE_TRADITIONAL]:  "登入",
+        }),
+    },
+} satisfies Dictionary;
+
+export default topbarContent;

@@ -12,6 +12,14 @@ const apiConfig = new Configuration({
     basePath: import.meta.env.VITE_API_URL || "http://localhost:8080", 
 });
 
+export const getBackendBaseUrl = (): string => {
+    return import.meta.env.VITE_API_URL || "http://localhost:8080";
+};
+
+export const getThumbnailUrlForTemplate = (templateId: string, angle: 0 | 1 | 2 | 3): string => {
+    return `${getBackendBaseUrl()}/api/v1/templates/${templateId}/thumbnail?angle=${angle}`;
+}
+
 /**
  * 导出单例接口实例
  * 这里的注入顺序：apiConfig, basePath, axiosInstance

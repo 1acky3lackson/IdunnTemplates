@@ -1,9 +1,31 @@
+import { EXAMPLE_TEMPLATE_1, EXAMPLE_TEMPLATE_2, EXAMPLE_TEMPLATE_3, TemplateCard } from "~/common/template/template-card";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
+import React from "react";
+import type { Template } from "~/api/generated";
+import { useEffect } from "react";
+import { IDUNN_API } from "~/api";
 
 export function Welcome() {
+  const [templateList, setTemplateList] = React.useState<Template[]>([]);
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await IDUNN_API.apiV1TemplatesGet();
+        setTemplateList(response.data.content);
+      } catch (error) {
+        console.error("Failed to fetch templates:", error);
+      }
+    };
+    fetchTemplates();
+  }, []);
+
+
+
   return (
-    <main className="flex items-center justify-center pt-16 pb-4">
+    // <main className="flex items-center justify-center pt-16 pb-4">
+    <>
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
         <header className="flex flex-col items-center gap-9">
           <div className="w-[500px] max-w-[100vw] p-4">
@@ -42,7 +64,18 @@ export function Welcome() {
           </nav>
         </div>
       </div>
-    </main>
+      {/* Grid, 2 cols, max-w-7xl */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl w-full px-4 md:px-0 mx-auto my-4">
+        {templateList.map((template) => (
+          <TemplateCard
+            key={template.id}
+            template={template}
+            className="w-full"
+          />
+        ))}
+      </div>
+    </>
+    // </main>
   );
 }
 
