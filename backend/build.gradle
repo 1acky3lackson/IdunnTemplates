@@ -12,7 +12,10 @@ dependencies {
     implementation 'pitheguy.schemconvert:SchemConvert'
 
     // Source: https://mvnrepository.com/artifact/org.projectlombok/lombok
-    implementation group: 'org.projectlombok', name: 'lombok', version: '1.18.42'
+    // lombok，编译有效，打包无效
+    compileOnly 'org.projectlombok:lombok'
+// gradle 5.0以上版本注解处理不再compile classpath，需要增加 annotation processor path
+    annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'

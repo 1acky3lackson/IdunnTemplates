@@ -42,7 +42,7 @@ public class PathService {
                         return null;
                     }
                     // 返回下一级目录名，例如 "b/x" 返回 "b"
-                    return remaining.substring(0, firstSlash);
+                    return normalizedPath + remaining.substring(0, firstSlash);
                 })
                 .filter(Objects::nonNull)
                 .distinct() // 去重
