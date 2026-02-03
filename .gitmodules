@@ -1,0 +1,3 @@
+[submodule "lib/SchemConvert"]
+	path = lib/SchemConvert
+	url = https://github.com/PiTheGuy/SchemConvert.git

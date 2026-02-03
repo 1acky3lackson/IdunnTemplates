@@ -6,6 +6,11 @@ plugins {
 
 dependencies {
     implementation project(':common')
+
+    // 引入 SchemConvert
+    // 注意：这里的 group:name 必须匹配子模块定义的 group 和其文件夹名（或 rootProject.name）
+    implementation 'pitheguy.schemconvert:SchemConvert'
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 

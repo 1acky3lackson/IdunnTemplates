@@ -4,6 +4,7 @@ import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateWithColorsDto;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.SchematicFormatService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateColorService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateService;
 import com.jackyblackson.idunntemplates.backend.util.CollectionUtils;
@@ -21,6 +22,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import pitheguy.schemconvert.converter.ConversionException;
+import pitheguy.schemconvert.converter.formats.SchemSchematicFormat;
+import pitheguy.schemconvert.converter.formats.SchematicFormat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,10 +41,13 @@ public class TemplateController {
     private final TemplateService templateService;
     private final TemplateColorService templateColorService;
 
+    private final SchematicFormatService schematicFormatService;
+
     @Autowired
-    public TemplateController(TemplateService templateService, TemplateColorService templateColorService) {
+    public TemplateController(TemplateService templateService, TemplateColorService templateColorService, SchematicFormatService schematicFormatService) {
         this.templateService = templateService;
         this.templateColorService = templateColorService;
+        this.schematicFormatService = schematicFormatService;
     }
 
     /**
@@ -89,40 +96,71 @@ public class TemplateController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * 下载 Template Schematic 文件
-     * URL 示例:
-     * 1. /api/v1/templates/{id}/download (下载最新版)
-     * 2. /api/v1/templates/{id}/download?version=1706781234000 (下载指定版)
-     */
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> downloadSchematic(
             @PathVariable UUID id,
-            @RequestParam(required = false) String version
+            @RequestParam(required = false) String version,
+            @RequestParam(required = false, defaultValue = "schem") String format // 1. 添加参数
     ) {
+        File fileToDownload = null;
+        boolean isTempFile = false; // 标记是否为临时文件
+
+        SchematicFormat requestedFormat = schematicFormatService.resolveFormat(format);
+
         try {
-            File file = templateService.getSchematicFile(id, version);
-            Resource resource = new FileSystemResource(file);
+            // 获取原始文件 (通常是 .schem)
+            File originalFile = templateService.getSchematicFile(id, version);
 
-            // 构造下载文件名: templateName_version.schem
-            // 为了文件名安全，只保留字母数字
-            String filename = file.getName();
+            // 2. 判断逻辑
+            if (requestedFormat instanceof SchemSchematicFormat) {
+                // 逻辑 A: 直接下载原文件
+                fileToDownload = originalFile;
+            } else {
+                // 逻辑 B: 格式转换
+                try {
+                    fileToDownload = schematicFormatService.convert(originalFile, format);
+                    isTempFile = true;
+                } catch (IllegalArgumentException e) {
+                    // 格式不支持
+                    return ResponseEntity.badRequest().body(null);
+                } catch (ConversionException e) {
+                    // 转换内部错误
+                    System.err.println("Conversion failed: " + e.getMessage());
+                    return ResponseEntity.internalServerError().build();
+                }
+            }
 
-            // 如果你想让下载的文件名更友好（包含模板名），需要再查一次 templateName
-            // 但为了性能，直接用磁盘上的 versionId.schem 也可以，或者如下处理：
-            // String friendlyName = template.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_" + file.getName();
+            // 3. 构造下载文件名
+            // 如果是转换后的文件，必须改变后缀名
+            // 原始文件名: "house.schem" -> 转换后: "house.litematic"
+            String originalName = originalFile.getName();
+            String downloadFilename;
+
+            if (isTempFile) {
+                // 剥离原后缀，加上新后缀
+                String nameWithoutExt = originalName.contains(".")
+                        ? originalName.substring(0, originalName.lastIndexOf('.'))
+                        : originalName;
+                // 注意：这里简单加个点。如果 format 是 "nbt"，后缀就是 ".nbt"
+                downloadFilename = nameWithoutExt + "." + requestedFormat.getExtension().replace(".", "");
+            } else {
+                downloadFilename = originalName;
+            }
+
+            // 4. 构造 Resource
+            // 这里的 FileCleanupResource 是一个建议的优化（见下方说明），或者直接用 FileSystemResource
+            Resource resource = new FileSystemResource(fileToDownload);
 
             return ResponseEntity.ok()
-                    // 二进制流类型
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    // 强制浏览器弹出下载框
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadFilename + "\"")
                     .body(resource);
 
         } catch (FileNotFoundException e) {
-            System.out.println("   downloadSchematic, Schem file not found, message: " + e.getMessage());
+            System.out.println("downloadSchematic, File not found: " + e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }

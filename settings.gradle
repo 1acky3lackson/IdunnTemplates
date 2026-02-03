@@ -1,2 +1,11 @@
 rootProject.name = 'IdunnTemplates'
 include 'common', 'plugin', 'backend'
+
+// 引入外部项目作为复合构建
+includeBuild('lib/SchemConvert') {
+    dependencySubstitution {
+        // 当主项目寻找 'pitheguy.schemconvert:SchemConvert' 时
+        // 自动替换为本地子模块的根项目
+        substitute module('pitheguy.schemconvert:SchemConvert') using project(':')
+    }
+}
