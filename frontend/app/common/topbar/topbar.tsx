@@ -47,7 +47,7 @@ export default function TopBar() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-7">
+            <div className="mx-auto flex h-16 max-w-6xl items-center justify-between md:px-4 px-0">
                 {/* Left: Logo */}
                 <div className="flex items-center">
                     <Link to="/" className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export default function TopBar() {
                         isAuthenticated
                         ?
                         <div className="flex flex-row gap-2 items-center hover:bg-accent hover:text-accent-foreground transition-colors px-3 py-1 rounded-md hover:cursor-pointer">
-                            <div className="text-sm">{user?.username}</div>
+                            <div className="text-sm hidden lg:block">{user?.username}</div>
                             <Button variant="outline" size="icon">
                                 <User className="h-5 w-5" />
                                 <span className="sr-only">User profile</span>

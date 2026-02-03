@@ -6,8 +6,10 @@ import {
     Unlock,
     Clock,
     Ruler,
-    ImageIcon
+    ImageIcon,
+    HelpCircle
 } from 'lucide-react';
+import { useTheme } from "~/components/theme/theme-provider";
 import { useEffect, useMemo, useState } from "react";
 import { getThumbnailUrlForTemplate } from "~/api";
 import type { Template } from "~/api/generated/model/template";
@@ -144,16 +146,24 @@ export const EXAMPLE_TEMPLATE_3: Template = JSON.parse(`
     }
 `);
 
-const transprent = 50;
-const gradientAlpha = 40;
+// 调高透明度至 '33' (约 20%)，缩小半径至 40%-60% 使颜色更凝聚
+const gradientAlphaDark = "80";
+const gradientAlphaLight = "25";
+const radius = 60;
 
 /**
  * 生成基于 ID 稳定的随机 Mesh 渐变
  * @param colors 颜色数组（建议传入 6 个颜色）
  * @param id 用于生成稳定随机位置的唯一标识
  */
-const generateMeshGradient = (colors: string[], id: string) => {
+const generateMeshGradient = (colors: string[], id: string, theme: string = 'light') => {
     if (!colors || colors.length === 0) return undefined;
+
+    let gradientAlpha = gradientAlphaLight;
+    // 从 html 元素的 class 判断当前主题
+    if (theme && theme.includes('dark')) {
+        gradientAlpha = gradientAlphaDark;
+    }
 
     // 1. 确保颜色池有 6 个颜色
     const pool = [...colors];
@@ -179,15 +189,11 @@ const generateMeshGradient = (colors: string[], id: string) => {
     let seed = getSeed(id);
 
     // 4. 生成 6 个随机位置的光点
-    // 调高透明度至 '33' (约 20%)，缩小半径至 40%-60% 使颜色更凝聚
-    const gradientAlpha = "33"; 
-    const radius = 50; 
-
     const gradients = pool.slice(0, 6).map((color) => {
         // 为每个点生成稳定的 X 和 Y 坐标 (0-100)
         const posX = Math.floor(seededRandom(seed++) * 100);
         const posY = Math.floor(seededRandom(seed++) * 100);
-        
+
         // 动态生成的径向渐变
         return `radial-gradient(at ${posX}% ${posY}%, ${color}${gradientAlpha} 0%, transparent ${radius}%)`;
     });
@@ -202,6 +208,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
     // 状态管理
     const [angle, setAngle] = useState<0 | 1 | 2 | 3>(0);
     const [isHovering, setIsHovering] = useState(false);
+    const { setTheme, theme } = useTheme();
 
     // --- 新增：图片错误状态 ---
     const [imgError, setImgError] = useState(false);
@@ -233,9 +240,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
     // --- 核心变化：计算 Mesh Gradient ---
     const backgroundStyle = useMemo(() => {
-        const gradient = generateMeshGradient(template.colorSchemes, template.id);
+        const gradient = generateMeshGradient(template.colorSchemes, template.id, theme);
         return gradient ? { backgroundImage: gradient } : {};
-    }, [template.colorSchemes, template.id]);
+    }, [template.colorSchemes, template.id, theme]);
 
     return (
         <div
@@ -259,14 +266,14 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                     <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/40 transition-colors group-hover:bg-muted/60">
                         {/* 可爱的图标组合：一个相框加上一个小问号或点缀 */}
                         <div className="relative rounded-full bg-background/60 p-3 shadow-sm backdrop-blur-sm">
-                            <ImageIcon 
-                                className="h-6 w-6 text-muted-foreground/70" 
+                            <ImageIcon
+                                className="h-6 w-6 text-muted-foreground/70"
                                 strokeWidth={1.5}
                             />
                             {/* 右下角的小装饰点，根据主题色变化 */}
-                            <div 
+                            <div
                                 className="absolute bottom-2 right-2 h-1.5 w-1.5 rounded-full"
-                                style={{ backgroundColor: template.colorSchemes?.[0] || 'currentColor' }} 
+                                style={{ backgroundColor: template.colorSchemes?.[0] || 'currentColor' }}
                             />
                         </div>
                         <span className="text-[10px] font-medium text-muted-foreground/60 tracking-wider">
@@ -274,12 +281,12 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                         </span>
                     </div>
                 ) : (
-                    <img 
-                        src={getThumbnailUrlForTemplate(template.id, angle)} 
+                    <img
+                        src={getThumbnailUrlForTemplate(template.id, angle)}
                         alt={template.name}
                         // 核心：加载失败时触发
                         onError={() => setImgError(true)}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="h-full mx-auto object-cover transition-transform duration-700 group-hover:scale-105"
                         loading="lazy"
                     />
                 )}
@@ -292,7 +299,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
                 {/* 左右切换按钮 */}
                 <div className={cn(
-                    "absolute inset-0 flex items-center justify-between px-2 transition-opacity duration-200",
+                    "absolute inset-0 flex items-center justify-between transition-opacity duration-200",
                     isHovering ? "opacity-100" : "opacity-0"
                 )}>
                     {/* 使用 backdrop-blur 增加毛玻璃感，显得更高级 */}
@@ -325,30 +332,36 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             </div>
 
             {/* --- Middle: Logo Area (Color Bubbles) --- */}
-            <div className="relative px-4 z-10">
+            <div className="relative z-20 top-5 md:top-5 left-3">
                 {/* 使用 -mt-5 让圆圈组向上浮动，一半压在图片上，一半在内容区 */}
-                <div className="-mt-5 flex items-center">
+                <div className="flex items-center h-0 z-10 -mt-5">
                     {template.colorSchemes && template.colorSchemes.length > 0 ? (
                         <div className="flex items-center">
-                            {template.colorSchemes.slice(0, 6).map((color, idx) => (
-                                <div
-                                    key={idx}
-                                    // 样式详解：
-                                    // 1. relative + zIndex: 配合 inline-style 确保层级递减
-                                    // 2. h-9 w-9: 增大尺寸 (36px)
-                                    // 3. border-[3px] border-card: 边框颜色与卡片背景一致，形成“切割”效果
-                                    // 4. hover:scale-125 hover:z-50: 悬停时显著放大，并强制提到最顶层
-                                    className="relative h-9 w-9 rounded-full border-[3px] border-card shadow-sm transition-all duration-300 ease-out hover:scale-125 hover:z-50 hover:border-background"
-                                    style={{
-                                        backgroundColor: color,
-                                        // 核心叠加逻辑：
-                                        // 第一个元素不偏移，后续元素向左偏移 14px (形成重叠)
-                                        marginLeft: idx === 0 ? 0 : '-14px',
-                                        // 权重递减：idx 越小层级越高
-                                        zIndex: 10 - idx
-                                    }}
-                                />
-                            ))}
+                            {template.colorSchemes.slice(0, 6).map((color, idx) => {
+                                const isUnknown = color.endsWith("unknown");
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`
+                                            relative h-7 w-7 md:h-9 md:w-9 rounded-full border-[3px] border-card shadow-sm 
+                                            transition-all duration-300 ease-out 
+                                            hover:scale-125 hover:z-50 hover:border-background
+                                            flex items-center justify-center overflow-hidden
+                                            ${isUnknown ? "bg-linear-to-tr from-slate-200 via-gray-300 to-slate-400" : ""}
+                                        `}
+                                        style={{
+                                            backgroundColor: isUnknown ? undefined : color,
+                                            marginLeft: idx === 0 ? 0 : "-14px",
+                                            zIndex: 10 - idx,
+                                        }}
+                                    >
+                                        {isUnknown && (
+                                            <HelpCircle className="w-1/2 h-1/2 text-muted-foreground/80" strokeWidth={2.5} />
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     ) : (
                         // Fallback: 如果没有颜色，显示一个默认的圆圈图标
@@ -360,9 +373,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             </div>
 
             {/* --- Bottom: Info Body --- */}
-            <div className="flex flex-1 flex-col p-4 pt-2 z-10">
+            <div className="flex flex-1 flex-col p-4 pt-2 z-10 bg-primary-foreground/50">
 
-                <div className="mb-3">
+                <div className="mb-3 mt-4">
                     <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
                         {template.name}
                     </h3>
