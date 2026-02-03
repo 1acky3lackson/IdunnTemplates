@@ -30,7 +30,7 @@ jobs:
       - name: Build Project
         # 在这里注入环境变量，Vite 会在构建时将其写入代码
         env:
-          VITE_API_URL: https://idunn.taixue.cc/api
+          VITE_API_URL: https://idunn.taixue.cc
         run: npm run build
       # --- 修改点结束 ---
 
