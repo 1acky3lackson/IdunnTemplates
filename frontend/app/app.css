@@ -147,7 +147,7 @@ body {
   --destructive-foreground: oklch(0.98 0.01 25);
   
   --border: oklch(0.30 0.05 285 / 50%);
-  --input: oklch(0.30 0.05 285 / 50%);
+  --input: oklch(67.613% 0.12844 283.964 / 0.5);
   --ring: oklch(0.75 0.14 285);
 
   --chart-1: oklch(0.75 0.15 285);

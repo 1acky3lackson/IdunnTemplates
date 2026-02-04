@@ -396,7 +396,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             </div>
 
             {/* --- Bottom: Info Body --- */}
-            <div className="flex flex-1 flex-col p-4 pt-2 z-10 bg-primary-foreground/50">
+            <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/85 bg-primary-foreground/65">
 
                 <div className="mb-3 mt-4">
                     <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">

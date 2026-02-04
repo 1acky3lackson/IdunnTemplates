@@ -6,6 +6,7 @@ import { ThemeProvider } from "~/components/theme/theme-provider";
 import { AuthProvider } from "~/common/auth/auth-provider";
 import { Footer } from "./footer"; // 引入下方创建的组件
 import { useEffect } from "react";
+import { Toaster } from "sonner";
 
 export default function RootLayout({ params }: Route.ComponentProps) {
     let { lang } = params;
@@ -35,6 +36,7 @@ export default function RootLayout({ params }: Route.ComponentProps) {
                             <Outlet />
                         </main>
                     </div>
+                    <Toaster />
                 </AuthProvider>
             </ThemeProvider>
         </IntlayerProvider>

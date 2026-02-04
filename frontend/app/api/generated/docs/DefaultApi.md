@@ -198,6 +198,7 @@ let minHeight: number; // (optional) (default to undefined)
 let maxHeight: number; // (optional) (default to undefined)
 let pathLike: string; //模糊搜索 Path (optional) (default to undefined)
 let nameLike: string; //模糊搜索 Name (optional) (default to undefined)
+let creatorId: string; //创建玩家的 uuid，单个，精确匹配 (optional) (default to undefined)
 
 const { status, data } = await apiInstance.apiV1TemplatesGet(
     pathPrefix,
@@ -213,7 +214,8 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
     minHeight,
     maxHeight,
     pathLike,
-    nameLike
+    nameLike,
+    creatorId
 );
 ```
 
@@ -235,6 +237,7 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
 | **maxHeight** | [**number**] |  | (optional) defaults to undefined|
 | **pathLike** | [**string**] | 模糊搜索 Path | (optional) defaults to undefined|
 | **nameLike** | [**string**] | 模糊搜索 Name | (optional) defaults to undefined|
+| **creatorId** | [**string**] | 创建玩家的 uuid，单个，精确匹配 | (optional) defaults to undefined|
 
 
 ### Return type

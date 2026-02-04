@@ -6,6 +6,8 @@ import type { Template } from "../generated";
 type ApiFuncType = typeof IDUNN_API.apiV1TemplatesGet;
 type ApiArgs = Parameters<ApiFuncType>;
 
+export const MAX_SIZE = 150;
+
 // 2. 定义对象类型，利用索引访问对应的参数类型
 // 这样做的好处是：不需要手动写 string | undefined，完全引用源头
 export interface TemplateSearchParams {
@@ -23,26 +25,57 @@ export interface TemplateSearchParams {
     maxHeight?: ApiArgs[11]; // 对应 maxHeight
     pathLike?: ApiArgs[12]; // 对应 pathLike
     nameLike?: ApiArgs[13]; // 对应 nameLike
+    creatorId?: ApiArgs[14]; // 对应 creatorId
     // options 通常不需要透传给业务层，所以可以忽略
 }
+
+const filterMinSizes = (min: number | undefined) => {
+    if (min === undefined) {
+        return undefined;
+    }
+    if (min <= 0) {
+        return 0;
+    }
+    if (min > MAX_SIZE) {
+        return MAX_SIZE;
+    }
+    return min;
+}
+
+const VERRRRRRRY_BIG_NUMBER = 114514;
+
+const filterMaxSizes = (max: number | undefined) => {
+    if (max === undefined) {
+        return undefined;
+    }
+    if (max <= 0) {
+        return 0;
+    }
+    if (max >= MAX_SIZE) {
+        return VERRRRRRRY_BIG_NUMBER;
+    }
+    return max;
+}
+
 
 // 3. 封装一个 Wrapper 函数
 export const searchTemplatesObjectParam = (params: TemplateSearchParams) => {
     return IDUNN_API.apiV1TemplatesGet(
         params.pathPrefix,
         params.locked,
-        params.minWidth,
-        params.maxWidth,
+        filterMinSizes(params.minWidth),
+        filterMaxSizes(params.maxWidth),
         params.worldId,
         params.page ?? 0,   // 可以在这里做默认值处理
         params.size ?? 10,  // 可以在这里做默认值处理
         params.sort ?? 'metadata.creationTime,desc', // 默认按创建时间降序
-        params.minLength,
-        params.maxLength,
-        params.minHeight,
-        params.maxHeight,
+        filterMinSizes(params.minLength),
+        filterMaxSizes(params.maxLength),
+        filterMinSizes(params.minHeight),
+        filterMaxSizes(params.maxHeight),
         params.pathLike,
         params.nameLike,
+        params.creatorId,
     );
 };
 

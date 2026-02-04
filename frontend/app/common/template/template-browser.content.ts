@@ -26,19 +26,130 @@ const templateBrowserContent = {
                 [Locales.CHINESE_TRADITIONAL]: "僅顯示已鎖定",
             }),
             categories: t({
-                [Locales.ENGLISH]: "Folders",
-                [Locales.CHINESE]: "文件夹",
-                [Locales.CHINESE_TRADITIONAL]: "文件夹",
+                [Locales.ENGLISH]: "Filter Folders",
+                [Locales.CHINESE]: "按文件夹筛选",
+                [Locales.CHINESE_TRADITIONAL]: "按文件夾篩選",
             }),
-            allCategories: t({
-                [Locales.ENGLISH]: "All Categories",
-                [Locales.CHINESE]: "全部分类",
-                [Locales.CHINESE_TRADITIONAL]: "全部分類",
+            creators: t({
+                [Locales.ENGLISH]: "Filter Creators",
+                [Locales.CHINESE]: "按创建者筛选",
+                [Locales.CHINESE_TRADITIONAL]: "按創作者篩選",
             }),
-            minWidth: t({ [Locales.ENGLISH]: "Min Width", [Locales.CHINESE]: "最小宽度", [Locales.CHINESE_TRADITIONAL]: "最小寬度" }),
-            minLength: t({ [Locales.ENGLISH]: "Min Length", [Locales.CHINESE]: "最小长度", [Locales.CHINESE_TRADITIONAL]: "最小長度" }),
-            minHeight: t({ [Locales.ENGLISH]: "Min Height", [Locales.CHINESE]: "最小高度", [Locales.CHINESE_TRADITIONAL]: "最小高度" }),
+            minWidth: t({ [Locales.ENGLISH]: "Min Width (Z Axis)", [Locales.CHINESE]: "最小宽度（Z轴）", [Locales.CHINESE_TRADITIONAL]: "最小寬度（Z軸）" }),
+            maxWidth: t({ [Locales.ENGLISH]: "Max Width (Z Axis)", [Locales.CHINESE]: "最大宽度（Z轴）", [Locales.CHINESE_TRADITIONAL]: "最大寬度（Z軸）" }),
+            minLength: t({ [Locales.ENGLISH]: "Min Length (x Axis)", [Locales.CHINESE]: "最小长度（X轴）", [Locales.CHINESE_TRADITIONAL]: "最小長度（X軸）" }),
+            maxLength: t({ [Locales.ENGLISH]: "Max Length (x Axis)", [Locales.CHINESE]: "最大长度（X轴）", [Locales.CHINESE_TRADITIONAL]: "最大長度（X軸）" }),  
+            minHeight: t({ [Locales.ENGLISH]: "Min Height (Y Axis)", [Locales.CHINESE]: "最小高度（Y轴）", [Locales.CHINESE_TRADITIONAL]: "最小高度（Y軸）" }),
+            maxHeight: t({ [Locales.ENGLISH]: "Max Height (Y Axis)", [Locales.CHINESE]: "最大高度（Y轴）", [Locales.CHINESE_TRADITIONAL]: "最大高度（Y軸）" }),
             blocksUnit: t({ [Locales.ENGLISH]: "blocks", [Locales.CHINESE]: "方块", [Locales.CHINESE_TRADITIONAL]: "方塊" }),
+            notSpecified: t({
+                [Locales.ENGLISH]: "Not Specified",
+                [Locales.CHINESE]: "未指定",
+                [Locales.CHINESE_TRADITIONAL]: "未指定",
+            }),
+            tabs: {
+                folders: {
+                    hoverTitle: t({
+                        [Locales.ENGLISH]: "Folders",
+                        [Locales.CHINESE]: "文件夹",
+                        [Locales.CHINESE_TRADITIONAL]: "文件夾",
+                    }),
+                    hoverDesc: t({
+                        [Locales.ENGLISH]: "Filter templates by folder structure.",
+                        [Locales.CHINESE]: "通过文件夹结构筛选模板。",
+                        [Locales.CHINESE_TRADITIONAL]: "通過文件夾結構筛选模板。",
+                    }),
+                    currentValue: t({
+                        [Locales.ENGLISH]: "Current Folder is: ",
+                        [Locales.CHINESE]: "当前文件夹：",
+                        [Locales.CHINESE_TRADITIONAL]: "當前文件夾：",
+                    }),
+                    clearBtn: t({
+                        [Locales.ENGLISH]: "Clear",
+                        [Locales.CHINESE]: "清空",
+                        [Locales.CHINESE_TRADITIONAL]: "清空",
+                    }),
+                },
+                tags: {
+                    hoverTitle: t({
+                        [Locales.ENGLISH]: "Tags",
+                        [Locales.CHINESE]: "标签",
+                        [Locales.CHINESE_TRADITIONAL]: "標籤",
+                    }),
+                    hoverDesc: t({
+                        [Locales.ENGLISH]: "Filter templates by tags.",
+                        [Locales.CHINESE]: "通过标签筛选模板。",
+                        [Locales.CHINESE_TRADITIONAL]: "通過標籤筛选模板。",
+                    }),
+                    currentValue: t({
+                        [Locales.ENGLISH]: "Current Tags are: ",
+                        [Locales.CHINESE]: "当前标签：",
+                        [Locales.CHINESE_TRADITIONAL]: "當前標籤：",
+                    }),
+                    clearBtn: t({
+                        [Locales.ENGLISH]: "Clear",
+                        [Locales.CHINESE]: "清空",
+                        [Locales.CHINESE_TRADITIONAL]: "清空",
+                    }),
+                },
+                creators: {
+                    hoverTitle: t({
+                        [Locales.ENGLISH]: "Creators",
+                        [Locales.CHINESE]: "创建者",
+                        [Locales.CHINESE_TRADITIONAL]: "創作者",
+                    }),
+                    hoverDesc: t({
+                        [Locales.ENGLISH]: "Filter templates by their creators.",
+                        [Locales.CHINESE]: "通过创建者筛选模板。",
+                        [Locales.CHINESE_TRADITIONAL]: "通過創作者筛选模板。",
+                    }),
+                    currentValue: t({
+                        [Locales.ENGLISH]: "Current Creator are: ",
+                        [Locales.CHINESE]: "当前筛选创建者：",
+                        [Locales.CHINESE_TRADITIONAL]: "當前筛选創作者：",
+                    }),
+                    clearBtn: t({
+                        [Locales.ENGLISH]: "Clear",
+                        [Locales.CHINESE]: "清空",
+                        [Locales.CHINESE_TRADITIONAL]: "清空",
+                    }),
+                },
+                metrics: {
+                    hoverTitle: t({
+                        [Locales.ENGLISH]: "Metrics",
+                        [Locales.CHINESE]: "尺寸",
+                        [Locales.CHINESE_TRADITIONAL]: "尺寸",
+                    }),
+                    hoverDesc: t({
+                        [Locales.ENGLISH]: "Filter templates by their dimensions.",
+                        [Locales.CHINESE]: "通过尺寸筛选模板。",
+                        [Locales.CHINESE_TRADITIONAL]: "通過尺寸筛选模板。",
+                    }),
+                    currentValue: t({
+                        [Locales.ENGLISH]: "Current Metrics are: ",
+                        [Locales.CHINESE]: "当前尺寸：",
+                        [Locales.CHINESE_TRADITIONAL]: "當前尺寸：",
+                    }),
+                    unitMono: t({ [Locales.ENGLISH]: "block",
+                        [Locales.CHINESE]: "方块",
+                        [Locales.CHINESE_TRADITIONAL]: "方塊",
+                    }),
+                    unitPoly: t({ [Locales.ENGLISH]: "blocks",
+                        [Locales.CHINESE]: "方块",
+                        [Locales.CHINESE_TRADITIONAL]: "方塊",
+                    }),
+                    logicAnd: t({ [Locales.ENGLISH]: "and",
+                        [Locales.CHINESE]: "且",
+                        [Locales.CHINESE_TRADITIONAL]: "且",
+                    }),
+                    clearBtn: t({
+                        [Locales.ENGLISH]: "Clear",
+                        [Locales.CHINESE]: "清空",
+                        [Locales.CHINESE_TRADITIONAL]: "清空",
+                    }),
+                    
+                }
+            }
         },
         view: {
             filterTitle: t({

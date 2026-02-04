@@ -72,6 +72,7 @@ function SheetContent({
           className
         )}
         {...props}
+        forceMount
       >
         {children}
         {showCloseButton && (
