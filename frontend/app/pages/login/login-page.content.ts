@@ -5,14 +5,24 @@ const loginContent = {
     content: {
         // 页面标题与描述
         title: t({
-            [Locales.ENGLISH]: "Idunn Templates",
-            [Locales.CHINESE]: "Idunn Templates",
-            [Locales.CHINESE_TRADITIONAL]: "Idunn Templates",
+            [Locales.ENGLISH]: "IdunnTemplates - Login",
+            [Locales.CHINESE]: "登录 Idunn 模板",
+            [Locales.CHINESE_TRADITIONAL]: "登入 Idunn 模板",
         }),
         description: t({
-            [Locales.ENGLISH]: "Please enter your username and password to continue",
-            [Locales.CHINESE]: "请输入您的账号密码以继续",
-            [Locales.CHINESE_TRADITIONAL]: "請輸入您的帳號密碼以繼續",
+            [Locales.ENGLISH]: "Please enter your username and password in ",
+            [Locales.CHINESE]: "请输入您在 ",
+            [Locales.CHINESE_TRADITIONAL]: "請輸入您在 ",
+        }),
+        skinServerName: t({
+            [Locales.ENGLISH]: "Taixue Skin",
+            [Locales.CHINESE]: "太学皮肤站",
+            [Locales.CHINESE_TRADITIONAL]: "太學皮膚站",
+        }),
+        description2: t({
+            [Locales.ENGLISH]: "to access protected template data.",
+            [Locales.CHINESE]: "的账号密码以访问受保护的模板数据。",
+            [Locales.CHINESE_TRADITIONAL]: "的帳號密碼以訪問受保護的模板數據。",
         }),
 
         // 表单标签
@@ -34,9 +44,9 @@ const loginContent = {
             [Locales.CHINESE_TRADITIONAL]: "請輸入使用者名稱",
         }),
         passwordPlaceholder: t({
-            [Locales.ENGLISH]: "••••••••",
-            [Locales.CHINESE]: "••••••••",
-            [Locales.CHINESE_TRADITIONAL]: "••••••••",
+            [Locales.ENGLISH]: "Password here",
+            [Locales.CHINESE]: "请输入密码",
+            [Locales.CHINESE_TRADITIONAL]: "請輸入密碼",
         }),
 
         // 验证错误信息
@@ -65,9 +75,9 @@ const loginContent = {
 
         // 底部文字
         footerText: t({
-            [Locales.ENGLISH]: "Protected internal system",
-            [Locales.CHINESE]: "受保护的内部系统",
-            [Locales.CHINESE_TRADITIONAL]: "受保護的內部系統",
+            [Locales.ENGLISH]: "Your username and password are the same as those you use to log in to Taixue Skin.",
+            [Locales.CHINESE]: "账号和密码就是你登录皮肤站的账号密码",
+            [Locales.CHINESE_TRADITIONAL]: "帳號和密碼就是你登入皮膚站的帳號密碼",
         }),
     },
 } satisfies Dictionary;

@@ -90,16 +90,16 @@ export function WaterfallProvider<T, S>({
         const requestId = ++requestRef.current;
         setLoading(true);
         setError(null);
-
+        console.log(`Fetching page ${targetPage} with criteria`, targetCriteria);
         try {
             const response = await fetchData(targetPage, targetCriteria);
 
             // 竞态检查：如果这个请求回来时，已经发起了新的请求（requestId变了），则丢弃结果
             if (requestId !== requestRef.current) return;
 
-            setTotal(response.totalElements);
-            setHasMore(!response.last);
-            setPage(response.number); // 使用服务端返回的页码以防万一
+            setTotal(() => response.totalElements);
+            setHasMore(() => !response.last);
+            setPage(() => response.number); // 使用服务端返回的页码以防万一
 
             setItems(prev => {
                 // 如果是重置/搜索，基准数据是空数组；如果是加载更多，基准是 prev
@@ -116,7 +116,7 @@ export function WaterfallProvider<T, S>({
                 setLoading(false);
             }
         }
-    }, [fetchData, mergeItems]);
+    }, [fetchData, mergeItems, setPage, setHasMore, setTotal, setItems, setError, setLoading]);
 
     // 1. 加载下一页
     const loadMore = useCallback(async () => {

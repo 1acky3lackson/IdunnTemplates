@@ -66,6 +66,11 @@ const templateBrowserContent = {
                 [Locales.CHINESE]: "已加载全部结果",
                 [Locales.CHINESE_TRADITIONAL]: "已加載全部結果",
             }),
+            loadMoreBtn: t({
+                [Locales.ENGLISH]: "Load More",
+                [Locales.CHINESE]: "加载更多",
+                [Locales.CHINESE_TRADITIONAL]: "加載更多",
+            }),
         },
         searchBar: {
             filterBtn: t({ [Locales.ENGLISH]: "Filters", [Locales.CHINESE]: "过滤", [Locales.CHINESE_TRADITIONAL]: "過濾" }),

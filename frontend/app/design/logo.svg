@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Blueprint Grid Pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#37474F" stroke-width="2"/>
+    </pattern>
+    <!-- Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#263238" />
+  <circle cx="256" cy="256" r="240" fill="url(#grid)" />
+
+  <!-- Outer Ring (Tech/Template Boundary) -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="#00BCD4" stroke-width="4" opacity="0.3"/>
+
+  <!-- The Golden Block (Isometric Cube representing a Template Instance) -->
+  <g transform="translate(0, 40)">
+      <!-- Top Face -->
+      <path d="M 256 120 L 380 180 L 256 240 L 132 180 Z" fill="#FFECB3"/>
+      <!-- Left Face -->
+      <path d="M 132 180 L 256 240 L 256 380 L 132 320 Z" fill="#FFC107"/>
+      <!-- Right Face -->
+      <path d="M 256 240 L 380 180 L 380 320 L 256 380 Z" fill="#FF6F00"/>
+  </g>
+
+  <!-- The Leaf (Idunn Symbolism - Nature/Apple) -->
+  <!-- Positioned emerging from the top of the block -->
+  <path d="M 256 160 Q 200 100 256 60 Q 312 100 256 160" fill="#76FF03" stroke="#33691E" stroke-width="3" filter="url(#glow)"/>
+  
+  <!-- Blueprint Brackets -->
+  <path d="M 120 120 L 80 120 L 80 160" fill="none" stroke="#00BCD4" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 392 120 L 432 120 L 432 160" fill="none" stroke="#00BCD4" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 120 392 L 80 392 L 80 352" fill="none" stroke="#00BCD4" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 392 392 L 432 392 L 432 352" fill="none" stroke="#00BCD4" stroke-width="8" stroke-linecap="round"/>
+
+</svg>

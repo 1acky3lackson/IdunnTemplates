@@ -250,6 +250,21 @@ const TemplateBrowserView = () => {
                         ))}
                     </div>
 
+                    {/* --- 新增：加载更多按钮 --- */}
+                    {/* 逻辑：还有更多内容 (hasMore)、且当前不在加载中 (!loading)、且列表不为空 */}
+                    {hasMore && !loading && items.length > 0 && (
+                        <div className="w-full py-6 flex justify-center">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => loadMore()}
+                                className="w-full max-w-xs font-medium transition-all hover:bg-secondary/50"
+                            >
+                                {/* 这里可以使用你 i18n 配置中的词条，如果没有可以暂时写死 */}
+                                {view.loadMoreBtn || "加载更多"}
+                            </Button>
+                        </div>
+                    )}
+
                     {/* Loading 状态 */}
                     {loading && (
                         <div className="w-full py-8 flex justify-center items-center text-muted-foreground gap-2">
@@ -292,7 +307,7 @@ export const TemplateBrowser = () => {
     const fetchTemplates = useCallback(async (page: number, criteria: TemplateSearchParams) => {
         // 将 criteria 映射到 API 参数
         // apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort)
-        const res = await searchTemplatesObjectParam(criteria);
+        const res = await searchTemplatesObjectParam({...criteria, page });
 
         // 假设 IDUNN_API 返回的是 AxiosResponse，数据在 data 中
         // 如果直接返回 data，请去掉 .data

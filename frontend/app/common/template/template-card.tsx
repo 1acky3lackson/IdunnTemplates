@@ -151,51 +151,74 @@ const gradientAlphaDark = "80";
 const gradientAlphaLight = "25";
 const radius = 60;
 
+// 2. 简单的 Hash 函数，根据 ID 生成种子
+const getSeed = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return hash;
+};
+
+// 3. 基于种子的伪随机数生成器 (Linear Congruential Generator)
+const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+};
+
+/**
+ * 基于种子生成随机颜色，直接包含 alpha 通道
+ * @param seed 随机种子
+ * @param alpha 透明度值 (0-100)
+ */
+const generateRandomColor = (seed: number, alpha: number) => {
+    const hue = Math.floor(seededRandom(seed) * 360);
+    const saturation  = Math.floor(seededRandom(seed) * 60) + 20; // 饱和度在40%-60%之间
+    const lightness = Math.floor(seededRandom(seed) * 80) + 10; // 亮度在30%-70%之间
+
+    // 使用新的 hsl 语法：hsla(hue, saturation, lightness, alpha)
+    // alpha 需要转换为 0-1 之间的小数
+    return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha / 100})`;
+};
+
 /**
  * 生成基于 ID 稳定的随机 Mesh 渐变
  * @param colors 颜色数组（建议传入 6 个颜色）
  * @param id 用于生成稳定随机位置的唯一标识
+ * @param theme 当前主题（'light' 或 'dark'）
+ * @returns CSS 渐变字符串
  */
 const generateMeshGradient = (colors: string[], id: string, theme: string = 'light') => {
     if (!colors || colors.length === 0) return undefined;
 
-    let gradientAlpha = gradientAlphaLight;
-    // 从 html 元素的 class 判断当前主题
-    if (theme && theme.includes('dark')) {
-        gradientAlpha = gradientAlphaDark;
-    }
+    // 根据主题确定当前的 alpha 值
+    const alpha = (theme && theme.includes('dark')) ? gradientAlphaDark : gradientAlphaLight;
 
-    // 1. 确保颜色池有 6 个颜色
     const pool = [...colors];
     while (pool.length < 6) {
         pool.push(...colors);
     }
-
-    // 2. 简单的 Hash 函数，根据 ID 生成种子
-    const getSeed = (str: string) => {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return hash;
-    };
-
-    // 3. 基于种子的伪随机数生成器 (Linear Congruential Generator)
-    const seededRandom = (seed: number) => {
-        const x = Math.sin(seed) * 10000;
-        return x - Math.floor(x);
-    };
-
+    
     let seed = getSeed(id);
 
-    // 4. 生成 6 个随机位置的光点
     const gradients = pool.slice(0, 6).map((color) => {
-        // 为每个点生成稳定的 X 和 Y 坐标 (0-100)
+        let finalColorWithAlpha: string;
+
+        if (color.toLowerCase() === "#unknown") {
+            // 随机生成的颜色直接携带 alpha
+            finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha));
+        } else {
+            // 处理传入的预设颜色：如果是 hex 格式，直接拼接
+            // 如果你传入的是其他格式，建议在此处统一转换为包含 alpha 的字符串
+            finalColorWithAlpha = `${color}${alpha}`; 
+        }
+
+        // 生成坐标
         const posX = Math.floor(seededRandom(seed++) * 100);
         const posY = Math.floor(seededRandom(seed++) * 100);
 
-        // 动态生成的径向渐变
-        return `radial-gradient(at ${posX}% ${posY}%, ${color}${gradientAlpha} 0%, transparent ${radius}%)`;
+        // 返回径向渐变，无需再在外部拼接 alpha
+        return `radial-gradient(at ${posX}% ${posY}%, ${finalColorWithAlpha} 0%, transparent ${radius}%)`;
     });
 
     return gradients.join(', ');
