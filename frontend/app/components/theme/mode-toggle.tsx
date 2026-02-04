@@ -1,4 +1,4 @@
-import { Moon, Sun } from "lucide-react"
+import { MonitorCog, Moon, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -8,9 +8,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "./theme-provider"
+import { useIntlayer } from "react-intlayer"
 
 export function ModeToggle() {
-    const { setTheme } = useTheme()
+    const { setTheme, theme } = useTheme()
+    const { toggle } = useIntlayer("theme");
+
 
     return (
         <DropdownMenu>
@@ -22,14 +25,14 @@ export function ModeToggle() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                    Light
+                <DropdownMenuItem onClick={() => setTheme("light")} className={theme === "light" ? "font-medium bg-accent text-accent-foreground" : ""}>
+                    <Sun className="mr-2 h-4 w-4" /> {toggle.lightMode}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                    Dark
+                <DropdownMenuItem onClick={() => setTheme("dark")} className={theme === "dark" ? "font-medium bg-accent text-accent-foreground" : ""}>
+                    <Moon className="mr-2 h-4 w-4" /> {toggle.darkMode}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                    System
+                <DropdownMenuItem onClick={() => setTheme("system")} className={theme === "system" ? "font-medium bg-accent text-accent-foreground" : ""}>
+                    <MonitorCog className="mr-2 h-4 w-4" />{toggle.systemMode}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
