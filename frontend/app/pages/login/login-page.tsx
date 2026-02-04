@@ -40,6 +40,7 @@ import darkLogo from "@/common/topbar/logo-dark.svg";
 import { FallingIconsBackground } from "~/common/util/falling-icons-background";
 import MeshGradientBackground from "~/common/util/mesh-gradient-background";
 import { useTheme } from "next-themes";
+import { th } from "zod/v4/locales";
 
 const Logo = () => (
     <div className="flex items-center gap-1 font-bold text-xl">
@@ -119,11 +120,11 @@ export default function LoginPage() {
             <MeshGradientBackground
                 id="idunn-login-page-bg"
                 count={10}
-                speedRange={{ min: 0.000007, max: 0.00012 }}
-                radiusRange={{ min: 50, max: 70 }}
-                lightnessRange={{ min: 30, max: 50 }}
-                saturationRange={{ min: 20, max: 60 }}
-                opacityRange={{ min: 0.3, max: 0.7 }}
+                speedRange={theme === 'dark' ? { min: 0.00005, max: 0.0002 } : { min: 0.0004, max: 0.0008 }}
+                radiusRange={theme === 'dark' ? { min: 20, max: 90 } : { min: 30, max: 60 }}
+                lightnessRange={theme === 'dark' ? { min: 40, max: 50 } : { min: 40, max: 60 }}
+                saturationRange={theme === 'dark' ? { min: 30, max: 70 } : { min: 20, max: 60 }}
+                opacityRange={theme === 'dark' ? { min: 0.6, max: 0.8 } : { min: 0.1, max: 0.2 }}
                 theme={theme as 'light' | 'dark' | 'system'}
             >
                 <FallingIconsBackground icons={backgroundIcons} iconCount={20}>
