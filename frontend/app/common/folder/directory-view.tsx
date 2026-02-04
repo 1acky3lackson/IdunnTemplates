@@ -24,7 +24,7 @@ const TreeNode = ({ path, level, selectedPath, onSelect }: TreeNodeProps) => {
     const [children, setChildren] = useState<string[]>([]);
 
     // 判断当前节点是否被选中
-    const isSelected = selectedPath === path;
+    const isSelected = path.endsWith('/') ? selectedPath === path : selectedPath === path || selectedPath === path + '/';
     // 判断当前节点是否是选中节点的父级
     const isParentOfSelected = selectedPath?.startsWith(path + '/');
 
