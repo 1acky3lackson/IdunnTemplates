@@ -3,8 +3,9 @@ import { toast } from "sonner"
 // 如果你需要根据语言环境通知后端，可以从 intlayer 或本地存储获取 locale
 import { getLocale, getIntlayer } from "intlayer"; 
 import axoiosContent from "./axios.content";
+import { setupCache, buildMemoryStorage } from 'axios-cache-interceptor';
 
-const apiClient: AxiosInstance = axios.create({
+let apiClient: AxiosInstance = axios.create({
     timeout: 10000, // 10秒超时
     headers: {
         "Content-Type": "application/json",
@@ -73,5 +74,13 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// 装饰 axios 实例以支持缓存
+apiClient = setupCache(apiClient, {
+    // 默认存储在内存中
+    storage: buildMemoryStorage(),
+    // 默认不开启缓存，由后续规则手动开启
+    methods: ['get'],
+});
 
 export default apiClient;

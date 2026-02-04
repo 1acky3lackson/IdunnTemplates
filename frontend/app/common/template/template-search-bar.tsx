@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { TemplateSearchParams } from "~/api/overrides/template-search-api";
 import { useIntlayer } from "react-intlayer";
+import { Separator } from "~/components/ui/separator";
 
 interface TemplateSearchBarProps {
   values: TemplateSearchParams;
@@ -47,7 +48,7 @@ export function TemplateSearchBar({
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant="ghost"
+              variant={activeAdvancedFilters > 0 ? "secondary" : "ghost"}
               size="sm"
               className="absolute left-1 h-8 px-2 text-muted-foreground hover:text-foreground z-10 gap-1"
             >
@@ -66,7 +67,7 @@ export function TemplateSearchBar({
             <h4 className="font-medium leading-none mb-2 text-sm text-muted-foreground">
               {searchBar.advancedTitle}
             </h4>
-
+            <Separator />
             {/* 1. Path Prefix 输入 */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -76,14 +77,14 @@ export function TemplateSearchBar({
                 </label>
               </div>
               <Input
-                placeholder="e.g., system/v1/"
+                placeholder="e.g., trees/nobi/"
                 value={(values.pathPrefix as string) || ""}
                 onChange={(e) => updateValue("pathPrefix", e.target.value)}
                 className="h-8"
               />
               <p className="text-[10px] text-muted-foreground">{searchBar.pathPrefixDesc}</p>
             </div>
-
+            <Separator />
             {/* 2. Name Like 输入 */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -93,14 +94,14 @@ export function TemplateSearchBar({
                 </label>
               </div>
               <Input
-                placeholder="e.g., login-form"
+                placeholder="e.g., 松"
                 value={(values.nameLike as string) || ""}
                 onChange={(e) => updateValue("nameLike", e.target.value)}
                 className="h-8"
               />
               <p className="text-[10px] text-muted-foreground">{searchBar.nameMatchDesc}</p>
             </div>
-
+            <Separator />
             {/* 清除按钮 */}
             {(values.pathPrefix || values.nameLike) && (
               <Button

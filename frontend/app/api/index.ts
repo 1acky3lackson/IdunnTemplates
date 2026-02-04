@@ -28,6 +28,26 @@ export const getThumbnailUrlForTemplate = (templateId: string, angle: 0 | 1 | 2 
     return `${getBackendBaseUrl()}/api/v1/templates/${templateId}/thumbnail?angle=${angle}`;
 }
 
+// 添加一个响应拦截器或使用内置的缓存谓词
+// apiClient.interceptors.request.use((config) => {
+//     // 示例：如果路径包含 /api/v1/templates，缓存 5 分钟 (300,000ms)
+//     if (config.url?.includes('/api/v1/templates')) {
+//         config.cache = {
+//             ttl: 1000 * 60 * 5, // 5分钟
+//             interpretHeader: false, // 忽略后端的 Cache-Control，由前端强制控制
+//         };
+//     }
+    
+//     // 示例：如果路径包含 /api/v1/categories，缓存 1 小时
+//     if (config.url?.includes('/api/v1/categories')) {
+//         config.cache = {
+//             ttl: 1000 * 60 * 60,
+//         };
+//     }
+
+//     return config;
+// });
+
 /**
  * 导出单例接口实例
  * 这里的注入顺序：apiConfig, basePath, axiosInstance

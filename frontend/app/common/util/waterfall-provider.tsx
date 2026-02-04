@@ -1,33 +1,31 @@
-import React, { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo, type ReactNode } from 'react';
 
 // --- 类型定义 ---
 
 // 对应你的 content 里的 metadata 等结构（可按需扩展，这里简化处理）
 export interface PageResponse<T> {
-    content: (T | null)[]; // 明确 content 可能包含 null
+    content: (T | null)[];
     last: boolean;
     totalElements: number;
-    number: number; // 当前页码
-    // 其他字段如 pageable, sort 等在前端逻辑中通常非必须，可按需添加
+    number: number;
 }
 
 // Context 暴露出的能力
 interface WaterfallContextType<T, S> {
-    items: T[];           // 经过清洗、去重后的最终列表
-    loading: boolean;     // 是否正在加载
-    error: Error | null;  // 错误状态
-    hasMore: boolean;     // 是否还有更多数据
-    total: number;        // 总条数
-    page: number;         // 当前页码
-    criteria: S;          // 当前搜索条件
-
-    // 动作
-    loadMore: () => Promise<void>;            // 加载下一页
-    refresh: () => Promise<void>;             // 刷新当前条件（重置数据）
-    search: (newCriteria: S) => Promise<void>;// 改变搜索条件并搜索
+    items: T[];
+    loading: boolean;
+    error: Error | null;
+    hasMore: boolean;
+    total: number;
+    page: number;
+    criteria: S;
+    loadMore: () => Promise<void>;
+    refresh: () => Promise<void>;
+    search: (newCriteria: S) => Promise<void>;
+    // 存储缓存组件实例的引用
+    cachedNodes: Record<string, ReactNode>;
 }
 
-// 组件 Props
 interface WaterfallProviderProps<T, S> {
     children: ReactNode;
     initialCriteria: S;
@@ -35,6 +33,8 @@ interface WaterfallProviderProps<T, S> {
     fetchData: (page: number, criteria: S) => Promise<PageResponse<T>>;
     // 核心去重函数：获取唯一 ID
     getId: (item: T) => string | number;
+    // 新增：接收 context 的当前状态，返回一组需要持久化的组件
+    renderCachedComponents?: (context: { criteria: S; total: number; search: (c: S) => Promise<void> }) => Record<string, ReactNode>;
 }
 
 // 创建 Context (初始化为 undefined，在 Hook 中做非空检查)
@@ -46,7 +46,8 @@ export function WaterfallProvider<T, S>({
     children,
     initialCriteria,
     fetchData,
-    getId
+    getId,
+    renderCachedComponents
 }: WaterfallProviderProps<T, S>) {
 
     // 状态维护
@@ -71,17 +72,12 @@ export function WaterfallProvider<T, S>({
 
         // 2. 遍历新数据
         newItems.forEach(item => {
-            if (!item) return; // 过滤 null
-            const id = getId(item);
-            // Map.set 特性：Key 存在则更新 Value（覆盖），Key 不存在则追加到末尾
-            // 这完美符合“ID去重且覆盖”以及“瀑布流追加”的需求
-            map.set(id, item);
+            if (!item) return;
+            map.set(getId(item), item);
         });
-
         return Array.from(map.values());
     }, [getId]);
 
-    // 通用请求处理函数
     const executeFetch = useCallback(async (
         targetPage: number,
         targetCriteria: S,
@@ -90,23 +86,18 @@ export function WaterfallProvider<T, S>({
         const requestId = ++requestRef.current;
         setLoading(true);
         setError(null);
-        console.log(`Fetching page ${targetPage} with criteria`, targetCriteria);
         try {
             const response = await fetchData(targetPage, targetCriteria);
-
-            // 竞态检查：如果这个请求回来时，已经发起了新的请求（requestId变了），则丢弃结果
             if (requestId !== requestRef.current) return;
 
-            setTotal(() => response.totalElements);
-            setHasMore(() => !response.last);
-            setPage(() => response.number); // 使用服务端返回的页码以防万一
+            setTotal(response.totalElements);
+            setHasMore(!response.last);
+            setPage(targetPage); // 修正：使用请求的目标页码
 
             setItems(prev => {
-                // 如果是重置/搜索，基准数据是空数组；如果是加载更多，基准是 prev
                 const baseItems = isReset ? [] : prev;
                 return mergeItems(baseItems, response.content);
             });
-
         } catch (err) {
             if (requestId === requestRef.current) {
                 setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -116,39 +107,34 @@ export function WaterfallProvider<T, S>({
                 setLoading(false);
             }
         }
-    }, [fetchData, mergeItems, setPage, setHasMore, setTotal, setItems, setError, setLoading]);
+    }, [fetchData, mergeItems]);
 
-    // 1. 加载下一页
     const loadMore = useCallback(async () => {
         if (loading || !hasMore) return;
         await executeFetch(page + 1, criteria, false);
     }, [loading, hasMore, page, criteria, executeFetch]);
 
-    // 2. 改变搜索条件（重置页码为0，清空数据）
     const search = useCallback(async (newCriteria: S) => {
         setCriteria(newCriteria);
-        // 重置状态
         setHasMore(true);
-        // 立即发起请求，page=0, isReset=true
         await executeFetch(0, newCriteria, true);
     }, [executeFetch]);
 
-    // 3. 刷新当前列表（保留条件，但数据重抓，通常用于下拉刷新）
     const refresh = useCallback(async () => {
         await executeFetch(0, criteria, true);
     }, [criteria, executeFetch]);
 
-    // 首次挂载是否自动加载？
-    // 通常瀑布流组件挂载时需要自动加载第一页。
-    // 可以在这里使用 useEffect，或者让 UI 层决定何时调用 search/refresh。
-    // 这里做一个简单的初始化加载：
+    // --- 核心：组件持久化逻辑 ---
+    // 使用 useMemo 保证只要依赖项不变，返回的 ReactNode 引用永远相同
+    // 只有当搜索逻辑 search 变动时才会重新生成
+    const cachedNodes = useMemo(() => {
+        if (!renderCachedComponents) return {};
+        return renderCachedComponents({ criteria, total, search });
+    }, [renderCachedComponents, criteria, total, search]);
+
     React.useEffect(() => {
-        // 仅在组件挂载且没有数据时触发一次，或者由父组件控制。
-        // 为了更可控，这里建议让使用者在 useEffect 中调用 search，或者在这里加一个 init Ref。
-        // 这里采取最常见模式：挂载即加载第一页。
         executeFetch(0, initialCriteria, true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // 依赖项空，只由 initialCriteria 决定初始
+    }, []);
 
     const value: WaterfallContextType<T, S> = {
         items,
@@ -160,7 +146,8 @@ export function WaterfallProvider<T, S>({
         criteria,
         loadMore,
         refresh,
-        search
+        search,
+        cachedNodes
     };
 
     return (
@@ -170,13 +157,20 @@ export function WaterfallProvider<T, S>({
     );
 }
 
-// --- Hook ---
+// --- Hooks ---
 
 export function useWaterfall<T, S>() {
     const context = useContext(WaterfallContext);
     if (!context) {
         throw new Error('useWaterfall must be used within a WaterfallProvider');
     }
-    // 强制转换类型，因为 Context 内部存储的是泛型
     return context as WaterfallContextType<T, S>;
+}
+
+/**
+ * 新增 Hook：专门用于提取缓存的组件实例
+ */
+export function useWaterfallCachedComponents() {
+    const { cachedNodes } = useWaterfall();
+    return cachedNodes;
 }

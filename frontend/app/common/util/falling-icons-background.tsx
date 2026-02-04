@@ -53,7 +53,7 @@ export function FallingIconsBackground({
                 bg-background 确保有底色
             */}
             
-            <div className="fixed inset-0 overflow-hidden pointer-events-none bg-background  z-10">
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-10">
                 {fallingIcons.map((item) => (
                     <div
                         key={item.id}

@@ -3,6 +3,7 @@ import { ChevronRight, ChevronDown, Folder, FolderOpen, Loader2 } from 'lucide-r
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { IDUNN_API } from '~/api';
+import { useIntlayer } from 'react-intlayer';
 
 // 辅助函数：从完整路径中提取文件夹名称
 const getFolderName = (path: string) => {
@@ -154,6 +155,7 @@ interface DirectoryTreeProps {
 export const DirectoryTree = ({ currentPath, onSelect }: DirectoryTreeProps) => {
     const [rootPaths, setRootPaths] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
+    const {folder} = useIntlayer("directory");
 
     useEffect(() => {
         const fetchRoots = async () => {
@@ -180,9 +182,9 @@ export const DirectoryTree = ({ currentPath, onSelect }: DirectoryTreeProps) => 
                 onClick={() => onSelect('')}
             >
                 {/* 使用一个通用的 Folder 图标表示全部 */}
-                <div className="mr-1 w-4 flex justify-center"></div> {/* 模拟图标区的缩进 */}
+                <div className="w-4 flex justify-center"></div> {/* 模拟图标区的缩进 */}
                 <Folder className="mr-2 h-4 w-4 text-foreground/50" />
-                All Categories
+                {folder.all}
             </Button>
 
             {loading ? (

@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 // --- 假设的卡片组件 (来自你的需求) ---
 import type { Template } from '~/api/generated/model';
-import { useWaterfall, WaterfallProvider } from '../util/waterfall-provider';
+import { useWaterfall, useWaterfallCachedComponents, WaterfallProvider } from '../util/waterfall-provider';
 import { searchTemplatesObjectParam, templateSearchBatchBuildSortParams, templateSearchSortBuilder, type TemplateSearchParams } from '~/api/overrides/template-search-api';
 import { IDUNN_API } from '~/api';
 import { TemplateCard } from './template-card';
@@ -22,10 +22,10 @@ import { Separator } from '~/components/ui/separator';
 
 // --- 1. 筛选组件 (Filter Component) ---
 // 提取出来以便在 Desktop Sidebar 和 Mobile Sheet 中复用
-const TemplateFilters = () => {
+export const TemplateFilters = () => {
     // 获取翻译内容
     const { filters } = useIntlayer("template-browser");
-    
+
     // 假设这些是从自定义 hook 获取的
     const { criteria, search } = useWaterfall<Template, TemplateSearchParams>();
 
@@ -38,7 +38,8 @@ const TemplateFilters = () => {
     };
 
     return (
-        <div className="space-y-6 p-1">
+        <ScrollArea className="w-full h-[calc(100vh-200px)]">
+            <div className="space-y-6 p-1">
             {/* 排序 */}
             <div className="flex flex-row items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-muted-foreground flex-row">
@@ -78,7 +79,7 @@ const TemplateFilters = () => {
                     <Label className="font-bold text-foreground">{filters.categories}</Label>
                 </div>
                 {/* 使用 ScrollArea 确保树太长时可以滚动，而不影响外层布局 */}
-                <div className="min-h-25 max-h-75 overflow-y-auto pr-2 border rounded-md bg-background/50 p-2">
+                <ScrollArea className="min-h-25 h-[calc(100vh-650px)] pr-2 border rounded-md bg-background/50 p-2">
                     <DirectoryTree 
                         currentPath={criteria.pathPrefix}
                         onSelect={(path) => handleFilterChange({ pathPrefix: 
@@ -87,7 +88,7 @@ const TemplateFilters = () => {
                             )
                         })}
                     />
-                </div>
+                </ScrollArea>
             </div>
 
             <Separator />
@@ -129,7 +130,8 @@ const TemplateFilters = () => {
                     />
                 </div>
             ))}
-        </div>
+            </div>
+        </ScrollArea>
     );
 };
 
@@ -148,8 +150,12 @@ const TemplateBrowserView = () => {
         loadMore,
         criteria, // 当前生效的搜索条件 (服务端确认后的)
         search,   // 触发实际搜索的方法
-        total
+        total,
+        
     } = useWaterfall<Template, TemplateSearchParams>();
+    const cachedComponents = useWaterfallCachedComponents();
+    const TemplateFilters = cachedComponents.templateFilters;
+
 
     // 3. 本地状态管理 (Local State)
     const [localParams, setLocalParams] = useState<TemplateSearchParams>(criteria);
@@ -181,24 +187,39 @@ const TemplateBrowserView = () => {
     };
 
     // 5. 滚动监听
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    // 1. 更新 handleScroll 逻辑
+    const handleScroll = useCallback(() => {
+        // 获取页面滚动的关键数值
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+        const clientHeight = window.innerHeight;
+
+        // 调试日志，可以根据需要保留或删除
+        // console.log('Global Scroll:', scrollTop, scrollHeight, clientHeight);
+
+        // 判断逻辑：距离底部小于 100px 且不在加载中
         if (scrollHeight - scrollTop - clientHeight < 100 && !loading && hasMore) {
             loadMore();
         }
-    };
+    }, [loading, hasMore, loadMore]);
+
+    // 2. 注册全局监听
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
 
     return (
         <div className="flex h-full w-full bg-background">
 
             {/* --- 左侧侧边栏 (LG+ 显示) --- */}
-            <aside className="hidden lg:block w-72 xl:w-96 border-r bg-muted/10 shrink-0">
+            <aside className="hidden lg:block w-72 xl:w-96 border-r bg-muted/10 shrink-0 sticky top-0 h-screen">
                 <div className="h-full flex flex-col">
                     <div className="p-4 border-b h-14 flex items-center">
                         <h2 className="font-semibold text-lg">{view.filterTitle}</h2>
                     </div>
                     <ScrollArea className="flex-1 p-4">
-                        <TemplateFilters />
+                        {TemplateFilters}
                     </ScrollArea>
                 </div>
             </aside>
@@ -217,19 +238,19 @@ const TemplateBrowserView = () => {
                                     <Filter className="h-4 w-4" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="w-[80%] sm:w-75">
+                            <SheetContent side="left" className="w-[90vw] sm:w-95" forceMount>
                                 <SheetHeader>
                                     <SheetTitle>{view.filterTitle}</SheetTitle>
                                 </SheetHeader>
                                 <div className="mt-4">
-                                    <TemplateFilters />
+                                    {TemplateFilters}
                                 </div>
                             </SheetContent>
                         </Sheet>
                     </div>
 
                     {/* 中间：集成搜索组件 */}
-                    <TemplateSearchBar 
+                    <TemplateSearchBar
                         values={localParams}
                         onChange={handleSearchChange}
                         total={total}
@@ -249,50 +270,52 @@ const TemplateBrowserView = () => {
                             </div>
                         ))}
                     </div>
+                    {/* 底部标志，监听页面滚动 */}
+                    <div>
+                        {/* --- 新增：加载更多按钮 --- */}
+                        {/* 逻辑：还有更多内容 (hasMore)、且当前不在加载中 (!loading)、且列表不为空 */}
+                        {hasMore && !loading && items.length > 0 && (
+                            <div className="w-full py-6 flex justify-center">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => loadMore()}
+                                    className="w-full max-w-xs font-medium transition-all hover:bg-secondary/50"
+                                >
+                                    {/* 这里可以使用你 i18n 配置中的词条，如果没有可以暂时写死 */}
+                                    {view.loadMoreBtn || "加载更多"}
+                                </Button>
+                            </div>
+                        )}
 
-                    {/* --- 新增：加载更多按钮 --- */}
-                    {/* 逻辑：还有更多内容 (hasMore)、且当前不在加载中 (!loading)、且列表不为空 */}
-                    {hasMore && !loading && items.length > 0 && (
-                        <div className="w-full py-6 flex justify-center">
-                            <Button 
-                                variant="outline" 
-                                onClick={() => loadMore()}
-                                className="w-full max-w-xs font-medium transition-all hover:bg-secondary/50"
-                            >
-                                {/* 这里可以使用你 i18n 配置中的词条，如果没有可以暂时写死 */}
-                                {view.loadMoreBtn || "加载更多"}
-                            </Button>
-                        </div>
-                    )}
+                        {/* Loading 状态 */}
+                        {loading && (
+                            <div className="w-full py-8 flex justify-center items-center text-muted-foreground gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>{view.loadingMore}</span>
+                            </div>
+                        )}
 
-                    {/* Loading 状态 */}
-                    {loading && (
-                        <div className="w-full py-8 flex justify-center items-center text-muted-foreground gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>{view.loadingMore}</span>
-                        </div>
-                    )}
+                        {/* 空状态 */}
+                        {!loading && items.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                                <SlidersHorizontal className="h-12 w-12 mb-2 opacity-20" />
+                                <p>{view.noTemplates}</p>
+                                <Button
+                                    variant="link"
+                                    onClick={() => search({})}
+                                    className="mt-2"
+                                >
+                                    {view.clearFilters}
+                                </Button>
+                            </div>
+                        )}
 
-                    {/* 空状态 */}
-                    {!loading && items.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                            <SlidersHorizontal className="h-12 w-12 mb-2 opacity-20" />
-                            <p>{view.noTemplates}</p>
-                            <Button 
-                                variant="link" 
-                                onClick={() => search({})} 
-                                className="mt-2"
-                            >
-                                {view.clearFilters}
-                            </Button>
-                        </div>
-                    )}
-
-                    {!hasMore && items.length > 0 && (
-                        <div className="w-full py-8 text-center text-sm text-muted-foreground border-t mt-4">
-                            {view.endOfResults}
-                        </div>
-                    )}
+                        {!hasMore && items.length > 0 && (
+                            <div className="w-full py-8 text-center text-sm text-muted-foreground border-t mt-4">
+                                {view.endOfResults}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -307,7 +330,7 @@ export const TemplateBrowser = () => {
     const fetchTemplates = useCallback(async (page: number, criteria: TemplateSearchParams) => {
         // 将 criteria 映射到 API 参数
         // apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort)
-        const res = await searchTemplatesObjectParam({...criteria, page });
+        const res = await searchTemplatesObjectParam({ ...criteria, page });
 
         // 假设 IDUNN_API 返回的是 AxiosResponse，数据在 data 中
         // 如果直接返回 data，请去掉 .data
@@ -326,6 +349,11 @@ export const TemplateBrowser = () => {
                 }}
                 fetchData={fetchTemplates}
                 getId={getId}
+                renderCachedComponents={() => {
+                    return {
+                        templateFilters: <TemplateFilters />
+                    }
+                }}
             >
                 <TemplateBrowserView />
             </WaterfallProvider>
