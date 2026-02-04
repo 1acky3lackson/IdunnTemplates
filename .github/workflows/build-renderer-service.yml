@@ -1,4 +1,4 @@
-name: Node.js CI & Deployment
+name: Schem Render Service Build & Deployment
 
 on:
   push:
