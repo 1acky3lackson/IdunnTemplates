@@ -69,7 +69,7 @@ export default function TopBar() {
                     {/* 2. 主题切换器 */}
                     <ModeToggle />
 
-                    <div className="h-6 w-[1px] bg-border mx-1 hidden sm:block" /> {/* 视觉分割线 */}
+                    <div className="h-6 w-px bg-border mx-1 hidden sm:block" /> {/* 视觉分割线 */}
 
                     {/* 3. 用户按钮 */}
                     {

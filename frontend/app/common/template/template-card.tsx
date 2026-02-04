@@ -316,7 +316,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
                 {/* 悬停时的遮罩：为了让白色箭头更清晰，可以加一个非常淡的暗色渐变 */}
                 <div className={cn(
-                    "absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent transition-opacity duration-300",
+                    "absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent transition-opacity duration-300",
                     isHovering ? "opacity-100" : "opacity-0"
                 )} />
 
