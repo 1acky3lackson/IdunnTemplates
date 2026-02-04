@@ -181,15 +181,18 @@ public class PermissionServerManager {
             result = new HashMap<>();
             if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
                 try {
-                    // 尝试通过 UUID 加载
-                    User user = LuckPermsProvider.get().getUserManager().loadUser(uuid).join();
-
-                    // 如果 UUID 没找到，尝试通过用户名查找 UUID 再加载
-                    if (user == null && userName != null && !userName.isEmpty()) {
+                    net.luckperms.api.model.user.User user = null;
+                    // 1. 优先尝试：通过用户名查找 UUID 并加载
+                    if (userName != null && !userName.isEmpty()) {
                         UUID userNameUUID = LuckPermsProvider.get().getUserManager().lookupUniqueId(userName).join();
                         if (userNameUUID != null) {
                             user = LuckPermsProvider.get().getUserManager().loadUser(userNameUUID).join();
                         }
+                    }
+
+                    // 2. 兜底策略：如果上面没找到用户（或者没传用户名），则尝试通过传入的原始 UUID 加载
+                    if (user == null) {
+                        user = LuckPermsProvider.get().getUserManager().loadUser(uuid).join();
                     }
 
                     if (user != null) {
