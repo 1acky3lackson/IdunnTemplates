@@ -367,7 +367,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                                     <div
                                         key={idx}
                                         className={`
-                                            relative h-7 w-7 md:h-9 md:w-9 rounded-full border-[3px] border-card shadow-sm 
+                                            relative h-6 w-6 md:h-8 md:w-8 rounded-full border-[3px] border-card shadow-sm 
                                             transition-all duration-300 ease-out 
                                             hover:scale-125 hover:z-50 hover:border-background
                                             flex items-center justify-center overflow-hidden
@@ -388,7 +388,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                         </div>
                     ) : (
                         // Fallback: 如果没有颜色，显示一个默认的圆圈图标
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-card bg-muted shadow-sm">
+                        <div className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full border-[3px] border-card bg-muted shadow-sm">
                             <Box className="h-5 w-5 text-muted-foreground/50" />
                         </div>
                     )}
