@@ -85,4 +85,25 @@ public class JwtUtil {
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
+
+    public String generateThumbnailToken(java.util.UUID templateId, String path, String version, Integer angle) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("templateId", templateId.toString());
+        claims.put("path", path);
+        claims.put("version", version);
+        claims.put("angle", angle);
+        // Set a short expiration for this specific token if needed, but createToken uses default expiration
+        // We can override expiration if we want, but using default is fine as per prompt "short-term" (config dependent)
+        return createToken(claims, "thumbnail_upload");
+    }
+
+    public Map<String, Object> extractThumbnailClaims(String token) {
+        Claims claims = extractAllClaims(token);
+        Map<String, Object> result = new HashMap<>();
+        result.put("templateId", claims.get("templateId", String.class));
+        result.put("path", claims.get("path", String.class));
+        result.put("version", claims.get("version", String.class));
+        result.put("angle", claims.get("angle", Integer.class));
+        return result;
+    }
 }

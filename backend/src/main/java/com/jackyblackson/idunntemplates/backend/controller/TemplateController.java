@@ -8,6 +8,8 @@ import com.jackyblackson.idunntemplates.backend.service.SchematicFormatService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateColorService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateService;
 import com.jackyblackson.idunntemplates.backend.util.CollectionUtils;
+import com.jackyblackson.idunntemplates.backend.util.JwtUtil;
+import com.jackyblackson.idunntemplates.backend.dto.TemplateThumbnailInfo;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -15,9 +17,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import java.util.Base64;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -42,12 +47,14 @@ public class TemplateController {
     private final TemplateColorService templateColorService;
 
     private final SchematicFormatService schematicFormatService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public TemplateController(TemplateService templateService, TemplateColorService templateColorService, SchematicFormatService schematicFormatService) {
+    public TemplateController(TemplateService templateService, TemplateColorService templateColorService, SchematicFormatService schematicFormatService, JwtUtil jwtUtil) {
         this.templateService = templateService;
         this.templateColorService = templateColorService;
         this.schematicFormatService = schematicFormatService;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -193,11 +200,68 @@ public class TemplateController {
 
         } catch (FileNotFoundException e) {
             // 预期内的异常：图片还没生成好，或者生成失败了
-            // 返回 404 Not Found，前端应该展示“暂无预览”或“加载中”的占位图
-            return ResponseEntity.notFound().build();
+            // 返回 404 Not Found，同时设置 cookie 允许上传
+            try {
+                TemplateThumbnailInfo info = templateService.getThumbnailInfo(id);
+                String token = jwtUtil.generateThumbnailToken(id, info.getPath(), info.getVersion(), angle);
+                ResponseCookie cookie = ResponseCookie.from("auth_thumbnail_upload", token)
+                        .httpOnly(true)
+                        .path("/")
+                        .maxAge(300) // 5 minutes
+                        .build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                        .build();
+            } catch (Exception ex) {
+                // If info fetch fails (e.g. template not found), just return 404 without cookie
+                return ResponseEntity.notFound().build();
+            }
 
         } catch (Exception e) {
             // 预期外的异常 (数据库连接失败、IO错误等)
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/thumbnail")
+    public ResponseEntity<Void> uploadThumbnail(
+            @CookieValue(value = "auth_thumbnail_upload", required = true) String token,
+            @RequestBody String base64Image
+    ) {
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Validate Subject to ensure it's a thumbnail upload token
+        String subject = jwtUtil.extractUsername(token);
+        if (!"thumbnail_upload".equals(subject)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Map<String, Object> claims = jwtUtil.extractThumbnailClaims(token);
+        String path = (String) claims.get("path");
+        String version = (String) claims.get("version");
+        Integer angle = (Integer) claims.get("angle");
+
+        if (path == null || version == null || angle == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // base64 decode
+        String cleanBase64 = base64Image;
+        if (cleanBase64.contains(",")) {
+            cleanBase64 = cleanBase64.split(",")[1];
+        }
+        // Remove new lines if any
+        cleanBase64 = cleanBase64.replaceAll("\\s", "");
+
+        byte[] imageBytes = Base64.getDecoder().decode(cleanBase64);
+
+        try {
+            templateService.saveThumbnail(path, version, angle, imageBytes);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
