@@ -34,6 +34,10 @@ public class TemplateManager {
     private final Map<UUID, Template> idCache = new ConcurrentHashMap<>();
     private final Map<String, Template> pathCache = new ConcurrentHashMap<>();
 
+    public PluginSnapshotManager getSnapshotManager() {
+        return snapshotManager;
+    }
+
     public TemplateManager(TemplateStorage storage) {
         this.storage = storage;
         // [新增] 初始化 SnapshotManager

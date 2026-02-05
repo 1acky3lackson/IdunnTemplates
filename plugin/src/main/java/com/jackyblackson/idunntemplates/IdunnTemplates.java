@@ -253,5 +253,16 @@ public final class IdunnTemplates extends JavaPlugin {
         if (permissionServerManager != null) {
             permissionServerManager.stop();
         }
+
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
+
+        if (templateManager != null) {
+            var snapshotServer = templateManager.getSnapshotManager();
+            if (snapshotServer != null) {
+                snapshotServer.clearTasks();
+            }
+        }
     }
 }
