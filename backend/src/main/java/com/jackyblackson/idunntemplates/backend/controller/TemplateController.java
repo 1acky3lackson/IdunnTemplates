@@ -10,6 +10,8 @@ import com.jackyblackson.idunntemplates.backend.service.TemplateService;
 import com.jackyblackson.idunntemplates.backend.util.CollectionUtils;
 import com.jackyblackson.idunntemplates.backend.util.JwtUtil;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateThumbnailInfo;
+import com.jackyblackson.idunntemplates.backend.dto.ThumbnailUploadRequestDto;
+import com.jackyblackson.idunntemplates.backend.dto.ThumbnailUploadTokenDto;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -19,7 +21,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import java.util.Base64;
@@ -179,7 +180,7 @@ public class TemplateController {
      * 图片的生成现在完全由插件侧 (PluginSnapshotManager) 在提交时负责。
      */
     @GetMapping("/{id}/thumbnail")
-    public ResponseEntity<Resource> getThumbnail(
+    public ResponseEntity<?> getThumbnail(
             @PathVariable UUID id,
             @RequestParam(required = false, defaultValue = "0") Integer angle
     ) {
@@ -200,20 +201,14 @@ public class TemplateController {
 
         } catch (FileNotFoundException e) {
             // 预期内的异常：图片还没生成好，或者生成失败了
-            // 返回 404 Not Found，同时设置 cookie 允许上传
+            // 返回 404 Not Found，同时返回 token 允许上传
             try {
                 TemplateThumbnailInfo info = templateService.getThumbnailInfo(id);
                 String token = jwtUtil.generateThumbnailToken(id, info.getPath(), info.getVersion(), angle);
-                ResponseCookie cookie = ResponseCookie.from("auth_thumbnail_upload", token)
-                        .httpOnly(true)
-                        .path("/")
-                        .maxAge(300) // 5 minutes
-                        .build();
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                        .build();
+                        .body(new ThumbnailUploadTokenDto(token));
             } catch (Exception ex) {
-                // If info fetch fails (e.g. template not found), just return 404 without cookie
+                // If info fetch fails (e.g. template not found), just return 404 without token
                 return ResponseEntity.notFound().build();
             }
 
@@ -226,10 +221,10 @@ public class TemplateController {
 
     @PostMapping("/thumbnail")
     public ResponseEntity<Void> uploadThumbnail(
-            @CookieValue(value = "auth_thumbnail_upload", required = true) String token,
-            @RequestBody String base64Image
+            @RequestBody ThumbnailUploadRequestDto request
     ) {
-        if (!jwtUtil.validateToken(token)) {
+        String token = request.getToken();
+        if (token == null || !jwtUtil.validateToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -249,7 +244,7 @@ public class TemplateController {
         }
 
         // base64 decode
-        String cleanBase64 = base64Image;
+        String cleanBase64 = request.getImage();
         if (cleanBase64.contains(",")) {
             cleanBase64 = cleanBase64.split(",")[1];
         }

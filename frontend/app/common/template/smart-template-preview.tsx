@@ -27,15 +27,10 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
 }) => {
     const [viewState, setViewState] = useState<ViewState>('thumbnail');
     const [renderSrc, setRenderSrc] = useState<string | null>(null);
+    const [imageSrc, setImageSrc] = useState<string | null>(null);
     const renderAttemptedRef = useRef(false);
     const renderResultCache = useRef<Record<string, string>>({})
-
-    // 当 template ID 变化时，重置状态
-    useEffect(() => {
-        setViewState('thumbnail');
-        setRenderSrc(null);
-        renderAttemptedRef.current = false;
-    }, [template.id]);
+    const uploadTokenRef = useRef<string | null>(null);
 
     // 获取主色调（用于装饰 Loading 界面）
     const primaryColor = template.colorSchemes?.[0] 
@@ -74,13 +69,19 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
 
             setViewState('rendered');
 
-            // 尝试上传缩略图 (利用 404 时设置的 cookie)
-            apiClient.post('/api/v1/templates/thumbnail', base64Image, {
-                headers: { 'Content-Type': 'text/plain' }
-            }).catch(e => {
-                // 默默失败，不影响用户体验
-                console.warn("Auto-upload thumbnail failed (likely expected if no auth cookie):", e);
-            });
+            // 尝试上传缩略图 (利用 token)
+            const token = uploadTokenRef.current;
+            if (token) {
+                apiClient.post('/api/v1/templates/thumbnail', {
+                    token: token,
+                    image: base64Image
+                }, {
+                    headers: { 'Content-Type': 'application/json' }
+                }).catch(e => {
+                    // 默默失败，不影响用户体验
+                    console.warn("Auto-upload thumbnail failed:", e);
+                });
+            }
 
         } catch (error) {
             console.error("Client-side rendering failed:", error);
@@ -98,15 +99,59 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
         setViewState('rendering');
     }, [template, onDisplayFail]);
 
-    // 根据状态触发重渲染
+    // 当 template ID 或 angle 变化时，重置并尝试加载图片
     useEffect(() => {
         setViewState('thumbnail');
+        setRenderSrc(null);
+        renderAttemptedRef.current = false;
+        uploadTokenRef.current = null;
+        setImageSrc(null);
+
+        // 如果只是 angle 变化，不需要清空缓存，但这里简单起见，id 变化时清空缓存
+        // 实际上之前的代码有重复 useEffect，这里合并逻辑
+    }, [template.id, angle]);
+
+    useEffect(() => {
         renderResultCache.current = {};
     }, [template.id]);
 
     useEffect(() => {
-        setViewState('thumbnail');
-    }, [angle]);
+        let isMounted = true;
+        const url = getThumbnailUrl(template.id, angle);
+
+        apiClient.get(url, { responseType: 'blob' })
+            .then(response => {
+                if (!isMounted) return;
+                const imageUrl = URL.createObjectURL(response.data);
+                setImageSrc(imageUrl);
+                setViewState('thumbnail');
+            })
+            .catch(async error => {
+                if (!isMounted) return;
+                if (error.response && error.response.status === 404) {
+                    // 404, 解析 token 并触发渲染
+                    try {
+                        const text = await error.response.data.text();
+                        const json = JSON.parse(text);
+                        if (json.token) {
+                            uploadTokenRef.current = json.token;
+                        }
+                    } catch (e) {
+                         // ignore JSON parse error
+                    }
+                    handleTriggerRender();
+                    render();
+                } else {
+                     setViewState('error');
+                     if (onDisplayFail) onDisplayFail();
+                }
+            });
+
+        return () => {
+            isMounted = false;
+            // imageSrc cleanup handled by state update but URL.revoke could be added if tracked
+        };
+    }, [template.id, angle, getThumbnailUrl, handleTriggerRender, render]);
 
     // === 子组件：渲染中状态 (美化版) ===
     const LoadingView = () => (
@@ -156,17 +201,13 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
         <div className={`relative h-full w-full overflow-hidden rounded-md ${className}`}>
             
             {/* 1. 静态缩略图模式 */}
-            {viewState === 'thumbnail' && (
+            {viewState === 'thumbnail' && imageSrc && (
                 <img
-                    src={getThumbnailUrl(template.id, angle)}
+                    src={imageSrc}
                     alt={template.name}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
-                    onError={() => {
-                        // 图片加载失败，切换到渲染模式
-                        handleTriggerRender();
-                        render();
-                    }}
+                    // Error handling is now done in fetch
                 />
             )}
 
