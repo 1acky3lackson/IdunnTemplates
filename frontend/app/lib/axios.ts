@@ -5,8 +5,20 @@ import { getLocale, getIntlayer } from "intlayer";
 import axoiosContent from "./axios.content";
 import { setupCache, buildMemoryStorage } from 'axios-cache-interceptor';
 
+export const getBackendBaseUrl = (): string => {
+    const envBackendUrl = import.meta.env.VITE_API_URL;
+    if(envBackendUrl === "VITE_PROXY") {
+        return "";
+    }
+    if (envBackendUrl) {
+        return envBackendUrl;
+    }
+    return envBackendUrl || "http://localhost:8080";
+};
+
 let apiClient: AxiosInstance = axios.create({
     timeout: 10000, // 10秒超时
+    baseURL: getBackendBaseUrl(),
     headers: {
         "Content-Type": "application/json",
     },
@@ -64,9 +76,6 @@ apiClient.interceptors.response.use(
                     toast.error("服务器内部错误");
                     console.error("服务器内部错误");
                     break;
-                default:
-                    toast.error("连接错误: " + error.response.status);
-                    console.error(`连接错误: ${error.response.status}`);
             }
         } else {
             console.error("网络异常，请检查您的网络连接");

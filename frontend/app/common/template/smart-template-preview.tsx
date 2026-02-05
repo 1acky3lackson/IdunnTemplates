@@ -51,7 +51,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             const { renderSchemFile } = await import('~/lib/schematic-renderer');
 
             // 计算合适的渲染尺寸 (稍微大一点以保证清晰度)
-            const renderWidth = 400; 
+            const renderWidth = 600; 
             const renderHeight = 400;
 
             // 调用之前的渲染函数
@@ -59,7 +59,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
                 width: renderWidth,
                 height: renderHeight,
                 alpha: Math.PI / 4 + Math.PI * 2 / 4 * angle, // 45度角
-                beta: Math.atan(Math.sqrt(0.5)), // 标准等轴测视角
+                beta: Math.atan(Math.sqrt(4)), // 标准等轴测视角
                 radius: 0.6, // 稍微拉远一点防止切边
                 backgroundColor: 'transparent' // 尝试透明背景
             });
@@ -205,7 +205,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
                 <img
                     src={imageSrc}
                     alt={template.name}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
                     // Error handling is now done in fetch
                 />
