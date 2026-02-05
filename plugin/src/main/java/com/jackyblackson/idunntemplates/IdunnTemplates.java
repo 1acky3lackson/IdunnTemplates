@@ -98,6 +98,10 @@ public final class IdunnTemplates extends JavaPlugin {
         return databaseManager;
     }
 
+    public PermissionServerManager getPermissionServerManager() {
+        return permissionServerManager;
+    }
+
     @Override
     public void onEnable() {
         getLogger().info("""

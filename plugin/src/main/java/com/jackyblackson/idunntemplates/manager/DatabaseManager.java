@@ -232,15 +232,28 @@ public class DatabaseManager {
     }
 
     public void close() {
-        if (connectionSource != null) {
-            try {
-                connectionSource.close(); // 关闭 ORMLite 连接源
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Error closing connection source", e);
+        plugin.getLogger().info("Closing database connections...");
+
+        try {
+            if (connectionSource != null) {
+                // ORMLite 的 ConnectionSource 包装了底层连接
+                connectionSource.close();
+                connectionSource = null;
             }
-        }
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close(); // 关闭 HikariCP 线程池
+
+            if (dataSource != null && !dataSource.isClosed()) {
+                // HikariCP 真正关闭物理连接池
+                dataSource.close();
+                dataSource = null;
+            }
+
+            // 清理 DAO 缓存，防止重载后持有旧的连接引用
+            instanceDao = null;
+            templateDao = null;
+
+            plugin.getLogger().info("Database connections closed successfully.");
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error while closing database connections!", e);
         }
     }
 

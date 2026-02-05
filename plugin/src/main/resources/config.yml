@@ -19,7 +19,7 @@ services:
     backend-api-url: "http://localhost:8085"
 
     # Admin Username and password to login to the backend server
-    yggdrasil-username: "Idunn_Admin",
+    yggdrasil-username: "Idunn_Admin"
     yggdrasil-password: "Cdf9988423"
 
 # =============================================================

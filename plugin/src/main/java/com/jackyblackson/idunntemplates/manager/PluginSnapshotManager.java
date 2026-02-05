@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -183,11 +184,12 @@ public class PluginSnapshotManager {
     private boolean callRenderService(String schematicUrl, File outputFile, double angle) {
         HttpURLConnection conn = null;
         try {
-            URL url = new URL(renderServiceUrl + "/api/render");
+            URL url = new URI(renderServiceUrl + "/api/render").toURL();
+            IdunnTemplates.getInstance().getLogger().info("Rendering server call url: " + url.toString());
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "image/png");
+//            conn.setRequestProperty("Accept", "image/png");
             conn.setDoOutput(true);
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(6000000); // 增加超时时间，渲染可能很慢

@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.command.sub;
 
+import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.manager.TemplateManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -17,7 +18,17 @@ public class ReloadCommand extends BaseSubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        templateManager.reloadTemplates();
+//        templateManager.reloadTemplates();
+        // 清理资源
+        IdunnTemplates.getInstance().getDatabaseManager().close();
+        IdunnTemplates.getInstance().getPermissionServerManager().close();
+
+        // 重载配置
+        IdunnTemplates.getInstance().reloadConfig();
+
+        // 重新初始化
+        IdunnTemplates.getInstance().onEnable();
+
         player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "reload.success"));
     }
 

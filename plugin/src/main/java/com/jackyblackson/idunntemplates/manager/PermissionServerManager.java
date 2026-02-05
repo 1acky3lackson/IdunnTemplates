@@ -355,4 +355,22 @@ public class PermissionServerManager {
         }
         return result;
     }
+
+    public void close() {
+        if (server != null) {
+            plugin.getLogger().info("Stopping permission verification server...");
+            try {
+                // 参数 0 表示立即停止，不等待当前请求处理完毕
+                // 如果希望更优雅，可以设置 1-2 秒的延迟：server.stop(1);
+                server.stop(0);
+
+                // 将引用置空，确保垃圾回收并防止重载时的逻辑错误
+                server = null;
+
+                plugin.getLogger().info("Permission server stopped successfully.");
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Error while stopping permission server", e);
+            }
+        }
+    }
 }

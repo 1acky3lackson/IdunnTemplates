@@ -1,6 +1,28 @@
 language: "en-us"
 
 # =============================================================
+# 依赖的各种服务
+# =============================================================
+services:
+  # 缩略图渲染服务，需要用到 NodeJS 渲染服务和后端提供可访问的 url
+  thumbnail-generation:
+    # 是否开启
+    available: true
+
+    # Node.js 渲染服务的地址
+    # 留空则关闭渲染服务
+    renderer-url: "http://localhost:3000"
+
+    # 后端 API 的基础地址，Node 服务将通过这个地址下载 .schem 文件
+    # 注意：如果 Node 服务和后端在 Docker 同一网络下，这里可能需要填 Docker 内部的 service name
+    # 例如: http://backend-service:8080/api/v1
+    backend-api-url: "http://localhost:8085"
+
+    # Admin Username and password to login to the backend server
+    yggdrasil-username: "Idunn_Admin"
+    yggdrasil-password: "Cdf9988423"
+
+# =============================================================
 # 数据库存储配置 (Database Configuration)
 # =============================================================
 storage:
