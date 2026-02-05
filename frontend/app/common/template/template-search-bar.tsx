@@ -119,11 +119,11 @@ export function TemplateSearchBar({
 
         {/* 主输入框：默认为 Path Like (Fuzzy) */}
         <div className="relative w-full">
-          <Search className="absolute left-19 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-21 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
             placeholder={searchBar.mainPlaceholder.value}
-            className="pl-24.75 bg-muted/50 w-full"
+            className="pl-26.75 bg-muted/50 w-full"
             value={(values.pathLike as string) || ""}
             onChange={(e) => updateValue("pathLike", e.target.value)}
           />
