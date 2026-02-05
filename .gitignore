@@ -119,4 +119,5 @@ runs/
 !gradle-wrapper.jar
 /idunn-renderer-service/node_modules/
 /idunn-renderer-service/dist/
-/idunn-renderer-service/dist/
+
+**/bin
