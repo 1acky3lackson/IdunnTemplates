@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.backend.service;
 
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
+import com.jackyblackson.idunntemplates.backend.dto.TemplateThumbnailInfo;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.store.repository.TemplateRepository;
 import com.jackyblackson.idunntemplates.backend.domain.TemplateColorScheme;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -172,6 +175,26 @@ public class TemplateService {
 
         // 4. 不存在直接抛出异常，交给 Controller 处理
         throw new FileNotFoundException("Thumbnail image not found on disk: " + targetFilename);
+    }
+
+    public TemplateThumbnailInfo getThumbnailInfo(UUID templateId) throws FileNotFoundException {
+        Template template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new FileNotFoundException("Template not found: " + templateId));
+        TemplateVersion latest = templateVersionService.getLatestVersion(templateId)
+                .orElseThrow(() -> new FileNotFoundException("No versions found for template: " + templateId));
+        return new TemplateThumbnailInfo(template.getPath(), latest.getVersionId());
+    }
+
+    public void saveThumbnail(String templatePath, String version, int angle, byte[] imageBytes) throws IOException {
+        int filteredAngle = angle % 4;
+        File rootDir = new File(schematicRootDirPath);
+        File templateDir = new File(rootDir, templatePath);
+        if (!templateDir.exists()) {
+            templateDir.mkdirs();
+        }
+        String targetFilename = "thumbnail_angle" + filteredAngle + "_v" + version + ".png";
+        File targetFile = new File(templateDir, targetFilename);
+        Files.write(targetFile.toPath(), imageBytes);
     }
 
 }
