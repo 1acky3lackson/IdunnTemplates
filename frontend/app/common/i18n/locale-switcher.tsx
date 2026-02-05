@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 export const LocaleSwitcher: FC = () => {
     const { localeSwitcherLabel } = useIntlayer("locale-switcher");
     const { pathname } = useLocation();
-    const { availableLocales, locale } = useLocale();
+    const { availableLocales, locale, setLocale } = useLocale();
 
     const pathWithoutLocale = getPathWithoutLocale(pathname);
 
@@ -38,7 +38,8 @@ export const LocaleSwitcher: FC = () => {
                             onClick={() => {
                                 localStorage.setItem("i18nextLng", localeItem);
                                 // re render page
-                                window.location.reload();
+                                // window.location.reload();
+                                setLocale(localeItem);
                             }}
                         >
                             <div
