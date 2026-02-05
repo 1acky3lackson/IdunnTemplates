@@ -48,7 +48,7 @@ public class TemplateManager {
         pathCache.clear();
         try {
             java.util.List<Template> loaded = storage.loadAllTemplates();
-
+            snapshotManager.clearTasks();
             // [新增] 异步批量检查所有模版的缩略图
             // 避免在服务器启动时阻塞主线程，等待所有请求完成
             Bukkit.getScheduler().runTaskAsynchronously(IdunnTemplates.getInstance(), () -> {
