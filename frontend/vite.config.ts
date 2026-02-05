@@ -4,13 +4,26 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { nodePolyfills } from 'vite-plugin-node-polyfills'; // [新增] 引入插件
 
 export default defineConfig({
-  plugins: [intlayer(), intlayerCompiler(), tailwindcss(), reactRouter(), tsconfigPaths(),],
+  plugins: [
+    intlayer(), 
+    intlayerCompiler(), 
+    tailwindcss(), 
+    reactRouter(), 
+    tsconfigPaths(),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './app')
     }
+  },
+  // 强制 Vite 预构建 buffer 包，防止开发模式下转换出错
+  optimizeDeps: {
+      include: [
+        'buffer',
+      ],
   },
   server:{
     proxy: {
