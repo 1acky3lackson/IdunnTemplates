@@ -28,6 +28,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
     const [viewState, setViewState] = useState<ViewState>('thumbnail');
     const [renderSrc, setRenderSrc] = useState<string | null>(null);
     const renderAttemptedRef = useRef(false);
+    const renderResultCache = useRef<Record<string, string>>({})
 
     // 当 template ID 变化时，重置状态
     useEffect(() => {
@@ -41,14 +42,12 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
         ? `#${template.colorSchemes[0]}` 
         : 'currentColor';
 
-    // 核心逻辑：触发前端渲染
-    const handleTriggerRender = useCallback(async () => {
-        // 防止重复触发
-        if (renderAttemptedRef.current) return;
-        renderAttemptedRef.current = true;
-
-        setViewState('rendering');
-
+    const render = useCallback(async() => {
+        if (renderResultCache.current[`${angle}`] !== undefined && renderResultCache.current[`${angle}`] !== null && renderResultCache.current[`${angle}`] !== "") {
+            setRenderSrc(renderResultCache.current[`${angle}`] as string);
+            setViewState('rendered');
+            return renderResultCache.current[`${angle}`];
+        }
         try {
             const schemUrl = getSchemLinkForTemplate(template);
             if (!schemUrl) throw new Error("No schem link available");
@@ -61,20 +60,41 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             const base64Image = await renderSchemFile(schemUrl, {
                 width: renderWidth,
                 height: renderHeight,
-                alpha: Math.PI / 4, // 45度角
+                alpha: Math.PI / 4 + Math.PI * 2 / 4 * angle, // 45度角
                 beta: Math.atan(Math.sqrt(0.5)), // 标准等轴测视角
-                radius: 1.2, // 稍微拉远一点防止切边
+                radius: 0.6, // 稍微拉远一点防止切边
                 backgroundColor: 'transparent' // 尝试透明背景
             });
 
             setRenderSrc(base64Image);
+            renderResultCache.current[`${angle}`] = base64Image;
+
             setViewState('rendered');
         } catch (error) {
             console.error("Client-side rendering failed:", error);
             setViewState('error');
             if (onDisplayFail) onDisplayFail();
         }
+    }, [template.id, angle])
+
+    // 核心逻辑：触发前端渲染
+    const handleTriggerRender = useCallback(async () => {
+        // 防止重复触发
+        if (renderAttemptedRef.current) return;
+        renderAttemptedRef.current = true;
+
+        setViewState('rendering');
     }, [template, onDisplayFail]);
+
+    // 根据状态触发重渲染
+    useEffect(() => {
+        setViewState('thumbnail');
+        renderResultCache.current = {};
+    }, [template.id]);
+
+    useEffect(() => {
+        setViewState('thumbnail');
+    }, [angle]);
 
     // === 子组件：渲染中状态 (美化版) ===
     const LoadingView = () => (
@@ -133,6 +153,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
                     onError={() => {
                         // 图片加载失败，切换到渲染模式
                         handleTriggerRender();
+                        render();
                     }}
                 />
             )}

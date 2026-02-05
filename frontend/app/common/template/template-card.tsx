@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getThumbnailUrlForTemplate } from "~/api";
 import type { Template } from "~/api/generated/model/template";
 import { cn } from "~/lib/utils";
+import { SmartTemplatePreview } from './smart-template-preview';
 
 interface TemplateCardProps {
     template: Template;
@@ -285,34 +286,12 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 onMouseLeave={() => setIsHovering(false)}
             >
                 {/* 条件渲染：如果出错显示可爱图标，否则显示图片 */}
-                {imgError ? (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/40 transition-colors group-hover:bg-muted/60">
-                        {/* 可爱的图标组合：一个相框加上一个小问号或点缀 */}
-                        <div className="relative rounded-full bg-background/60 p-3 shadow-sm backdrop-blur-sm">
-                            <ImageIcon
-                                className="h-6 w-6 text-muted-foreground/70"
-                                strokeWidth={1.5}
-                            />
-                            {/* 右下角的小装饰点，根据主题色变化 */}
-                            <div
-                                className="absolute bottom-2 right-2 h-1.5 w-1.5 rounded-full"
-                                style={{ backgroundColor: template.colorSchemes?.[0] || 'currentColor' }}
-                            />
-                        </div>
-                        <span className="text-[10px] font-medium text-muted-foreground/60 tracking-wider">
-                            No Preview
-                        </span>
-                    </div>
-                ) : (
-                    <img
-                        src={getThumbnailUrlForTemplate(template.id, angle)}
-                        alt={template.name}
-                        // 核心：加载失败时触发
-                        onError={() => setImgError(true)}
-                        className="h-full mx-auto object-cover transition-transform duration-700 group-hover:scale-105"
-                        loading="lazy"
-                    />
-                )}
+                
+                <SmartTemplatePreview
+                    template={template}
+                    angle={angle}
+                    getThumbnailUrl={getThumbnailUrlForTemplate}
+                />
 
                 {/* 悬停时的遮罩：为了让白色箭头更清晰，可以加一个非常淡的暗色渐变 */}
                 <div className={cn(
@@ -360,7 +339,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 <div className="flex items-center h-0 z-10 -mt-5">
                     {template.colorSchemes && template.colorSchemes.length > 0 ? (
                         <div className="flex items-center">
-                            {template.colorSchemes.slice(0, 6).map((color, idx) => {
+                            {template.colorSchemes.slice(0, 6).filter(c => c !== null && !c.endsWith("unknown")).map((color, idx) => {
                                 const isUnknown = color.endsWith("unknown");
 
                                 return (

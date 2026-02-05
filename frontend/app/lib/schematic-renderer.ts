@@ -33,7 +33,7 @@ export async function renderSchemFile(
         assetsUrl = '/mc-assets.zip', // 确保你的前端静态资源里有这个文件
         backgroundColor = 0xFFFFFF, // 如果库支持，设为 0 或 null 可能获得透明背景
     } = options;
-
+    // debugger;
     // --- 1. 创建不可见的 Canvas ---
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -47,12 +47,12 @@ export async function renderSchemFile(
 
     // 简单的判断是否为 Base64 (这里假设 URL 不包含换行符，且 Base64 较长)
     // 也可以通过正则判断，或者由调用方明确
-    const isBase64 = (str: string) => !str.includes('/') || str.length > 2000 || !str.startsWith('http');
+    // const isBase64 = (str: string) => !str.includes('/') || str.length > 2000 || !str.startsWith('http');
 
-    if (isBase64(input)) {
-        // 如果输入包含了 data URI 前缀，去掉它
-        base64Data = input.includes(',') ? input.split(',')[1] : input;
-    } else {
+    // if (isBase64(input)) {
+    //     // 如果输入包含了 data URI 前缀，去掉它
+    //     base64Data = input.includes(',') ? input.split(',')[1] : input;
+    // } else {
         // 如果是 URL，先 fetch 下来
         try {
             const response = await fetch(input);
@@ -62,7 +62,7 @@ export async function renderSchemFile(
         } catch (e) {
             throw new Error(`Error loading schematic from URL: ${e}`);
         }
-    }
+    // }
 
     let schematicHandle: SchematicHandles | null = null;
 
