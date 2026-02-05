@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ImageIcon, Loader2, Box } from 'lucide-react';
 import type { Template } from '~/api/generated/model';
-import { renderSchemFile } from '~/lib/schematic-renderer';
 import { getSchemLinkForTemplate } from '~/api/overrides/template-file-download-api';
 
 interface SmartTemplatePreviewProps {
@@ -51,6 +50,9 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
         try {
             const schemUrl = getSchemLinkForTemplate(template);
             if (!schemUrl) throw new Error("No schem link available");
+            
+            // 动态导入，拆分模块
+            const { renderSchemFile } = await import('~/lib/schematic-renderer');
 
             // 计算合适的渲染尺寸 (稍微大一点以保证清晰度)
             const renderWidth = 400; 
