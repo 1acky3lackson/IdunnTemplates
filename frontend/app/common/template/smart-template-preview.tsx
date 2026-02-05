@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ImageIcon, Loader2, Box } from 'lucide-react';
 import type { Template } from '~/api/generated/model';
 import { getSchemLinkForTemplate } from '~/api/overrides/template-file-download-api';
+import apiClient from '~/lib/axios';
 
 interface SmartTemplatePreviewProps {
     template: Template;
@@ -72,6 +73,15 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             renderResultCache.current[`${angle}`] = base64Image;
 
             setViewState('rendered');
+
+            // 尝试上传缩略图 (利用 404 时设置的 cookie)
+            apiClient.post('/api/v1/templates/thumbnail', base64Image, {
+                headers: { 'Content-Type': 'text/plain' }
+            }).catch(e => {
+                // 默默失败，不影响用户体验
+                console.warn("Auto-upload thumbnail failed (likely expected if no auth cookie):", e);
+            });
+
         } catch (error) {
             console.error("Client-side rendering failed:", error);
             setViewState('error');
