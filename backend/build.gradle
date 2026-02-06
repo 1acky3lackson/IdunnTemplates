@@ -14,7 +14,7 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/org.projectlombok/lombok
     // lombok，编译有效，打包无效
     compileOnly 'org.projectlombok:lombok'
-// gradle 5.0以上版本注解处理不再compile classpath，需要增加 annotation processor path
+    // gradle 5.0以上版本注解处理不再compile classpath，需要增加 annotation processor path
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -32,6 +32,9 @@ dependencies {
     implementation 'org.hibernate.orm:hibernate-community-dialects:6.4.4.Final'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Source: https://mvnrepository.com/artifact/com.github.usefulness/webp-imageio
+    implementation group: 'com.github.usefulness', name: 'webp-imageio', version: '0.10.2'
 }
 
 tasks.named('test') {

@@ -94,8 +94,8 @@ public class TemplateController {
 
     @GetMapping("/{id}")
     @AuthRequired
-    public ResponseEntity<TemplateWithColorsDto> getTemplate(@PathVariable UUID id) {
-        return templateService.getTemplateById(id)
+    public ResponseEntity<TemplateWithColorsDto> getTemplate(@PathVariable UUID id, UserContext user) {
+        return templateService.getTemplateById(id, user)
                 .map(t -> {
                     Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(Collections.singletonList(t));
                     return new TemplateWithColorsDto(t, colors.getOrDefault(t.getId(), Collections.emptyList()));
@@ -105,7 +105,9 @@ public class TemplateController {
     }
 
     @GetMapping("/{id}/download")
+    @AuthRequired
     public ResponseEntity<Resource> downloadSchematic(
+            UserContext user,
             @PathVariable UUID id,
             @RequestParam(required = false) String version,
             @RequestParam(required = false, defaultValue = "schem") String format // 1. 添加参数
@@ -114,6 +116,8 @@ public class TemplateController {
         boolean isTempFile = false; // 标记是否为临时文件
 
         SchematicFormat requestedFormat = schematicFormatService.resolveFormat(format);
+
+        Template targetTemplate = templateService.getTemplateById(id, user).orElseThrow();
 
         try {
             // 获取原始文件 (通常是 .schem)
@@ -179,8 +183,10 @@ public class TemplateController {
      * * 逻辑变更：只读模式。如果图片不存在，直接返回 404，不触发后端生成。
      * 图片的生成现在完全由插件侧 (PluginSnapshotManager) 在提交时负责。
      */
+    @AuthRequired
     @GetMapping("/{id}/thumbnail")
     public ResponseEntity<?> getThumbnail(
+            UserContext user,
             @PathVariable UUID id,
             @RequestParam(required = false, defaultValue = "0") Integer angle
     ) {
@@ -203,7 +209,7 @@ public class TemplateController {
             // 预期内的异常：图片还没生成好，或者生成失败了
             // 返回 404 Not Found，同时返回 token 允许上传
             try {
-                TemplateThumbnailInfo info = templateService.getThumbnailInfo(id);
+                TemplateThumbnailInfo info = templateService.getThumbnailInfo(id, user);
                 String token = jwtUtil.generateThumbnailToken(id, info.getPath(), info.getVersion(), angle);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ThumbnailUploadTokenDto(token));
