@@ -199,10 +199,9 @@ public class TemplateController {
 
             // 3. 返回图片流
             return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_PNG)
                     // 设置缓存：因为文件名带版本号，内容是不可变的，可以设置较长的缓存时间
                     // 客户端检测到 404 后可以显示默认占位图
-                    .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+                    .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS))
                     .body(resource);
 
         } catch (FileNotFoundException e) {
