@@ -37,7 +37,7 @@ public class TemplateColorGenerator {
      * 使用 REQUIRES_NEW 确保即使外部事务失败，生成的颜色缓存也能独立提交（或根据业务需求调整）
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public List<String> generateColorScheme(Template template) {
+    public List<String> generateColorScheme(Template template, String versionName) {
         List<File> images = new ArrayList<>();
         // 1. Get images (0-3)
         for (int i = 0; i < 4; i++) {
@@ -98,13 +98,12 @@ public class TemplateColorGenerator {
             if (latest == null) {
                 latest = versionService.getLatestVersion(template.getId()).orElse(null);
             }
-            String versionId = latest != null ? latest.getVersionId() : "unknown";
             String colorsStr = String.join(",", colors);
 
             TemplateColorScheme scheme = repository.findByTemplateId(template.getId())
-                    .orElse(new TemplateColorScheme(template.getId(), versionId, colorsStr));
+                    .orElse(new TemplateColorScheme(template.getId(), versionName, colorsStr));
 
-            scheme.setVersion(versionId);
+            scheme.setVersion(versionName);
             scheme.setColors(colorsStr);
             repository.save(scheme);
 
@@ -114,6 +113,24 @@ public class TemplateColorGenerator {
             e.printStackTrace();
             return Collections.nCopies(6, "unknown");
         }
+    }
+
+    public String getColorSchemVersionId(Template template) {
+        TemplateVersion latestVersion = template.getLatestVersion();
+        if (latestVersion == null) {
+            latestVersion = versionService.getLatestVersion(template.getId()).orElse(null);
+        }
+        if (latestVersion == null) {
+            return "unknown";
+        }
+        StringBuilder versionIdSb = new StringBuilder(latestVersion.getVersionId()).append("-");
+        for (int i = 0; i < 4; i++) {
+            File f = getThumbnailFile(template, i);
+            if (f != null && f.exists()) {
+                versionIdSb.append(i);
+            }
+        }
+        return versionIdSb.toString();
     }
 
     private File getThumbnailFile(Template template, int angle) {
@@ -127,7 +144,7 @@ public class TemplateColorGenerator {
 
             File rootDir = new File(schematicRootDirPath);
             File templateDir = new File(rootDir, template.getPath());
-            String targetFilename = "thumbnail_angle" + (angle % 4) + "_v" + latestVersion.getVersionId() + ".png";
+            String targetFilename = "thumbnail_angle" + (angle % 4) + "_v" + latestVersion.getVersionId() + ".webp";
             return new File(templateDir, targetFilename);
         } catch (Exception e) {
             return null;
