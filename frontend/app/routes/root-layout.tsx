@@ -34,9 +34,9 @@ export default function RootLayout({ params }: Route.ComponentProps) {
                     <div className="relative flex min-h-screen flex-col">
                         <main className="flex-1">
                             <Outlet />
+                            <Toaster />
                         </main>
                     </div>
-                    <Toaster />
                 </AuthProvider>
             </ThemeProvider>
         </IntlayerProvider>

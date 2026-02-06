@@ -452,6 +452,10 @@ export const TemplateFilters: React.FC<{
     );
 };
 
+function isDefaultCriteria(criteria: TemplateSearchParams) {
+    return criteria.sort === 'metadata.creationTime,desc' && criteria.pathPrefix === "";
+}
+
 // --- 2. 核心视图组件 (Main View) ---
 const TemplateBrowserView: React.FC<{
     sidebar?: boolean;
@@ -476,30 +480,30 @@ const TemplateBrowserView: React.FC<{
 
     // 当 criteria 变化时，写入 localStorage 缓存
     useEffect(() => {
+        // debugger;
+        // default {"sort":"metadata.creationTime,desc","pathPrefix":""}
+        if (isDefaultCriteria(criteria)) {
+            const saved = localStorage.getItem(`template-browser-criteria-${browserId}`);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved) as TemplateSearchParams;
+                    // 只有当保存的条件与当前初始条件不一致时，才询问用户
+                    if (isDefaultCriteria(parsed)) {
+                        return;
+                    } else {
+                        handleSearchChange({...parsed});
+                    }
+                } catch (e) {
+                    console.error("Failed to parse cached criteria", e);
+                }
+            }
+        } else {
+            // do nothing
+        }
         localStorage.setItem(`template-browser-criteria-${browserId}`, JSON.stringify(criteria));
     }, [criteria, browserId]);
 
-    // 初次渲染，或ID变化，则弹窗询问用户是否加载旧的搜索设置，是的话，就加载
-    useEffect(() => {
-        const saved = localStorage.getItem(`template-browser-criteria-${browserId}`);
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved) as TemplateSearchParams;
-                // 只有当保存的条件与当前初始条件不一致时，才询问用户
-                if (JSON.stringify(parsed) !== JSON.stringify(criteria)) {
-                    toast(view.restoreFiltersTitle || "Restore previous filters?", {
-                        description: view.restoreFiltersDesc || "We found your last search settings. Would you like to apply them?",
-                        action: {
-                            label: view.restoreFiltersAction || "Restore",
-                            onClick: () => search(parsed),
-                        },
-                    });
-                }
-            } catch (e) {
-                console.error("Failed to parse cached criteria", e);
-            }
-        }
-    }, [browserId]);
+    
     
 
 

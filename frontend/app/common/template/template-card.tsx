@@ -302,7 +302,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
                 {/* 左右切换按钮 */}
                 <div className={cn(
-                    "absolute inset-0 flex items-center justify-between transition-opacity duration-200",
+                    "absolute inset-0 p-2 flex items-center justify-between transition-opacity duration-200",
                     isHovering ? "opacity-100" : "opacity-0"
                 )}>
                     {/* 使用 backdrop-blur 增加毛玻璃感，显得更高级 */}

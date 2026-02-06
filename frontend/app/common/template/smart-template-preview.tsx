@@ -31,6 +31,11 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
     const [viewState, setViewState] = useState<ViewState>('thumbnail');
     const [renderSrc, setRenderSrc] = useState<string | null>(null);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
+    
+    // Lazy Load State
+    const [isVisible, setIsVisible] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
     const renderAttemptedRef = useRef(false);
     const renderResultCache = useRef<Record<string, string>>({});
     const uploadTokenRef = useRef<string | null>(null);
@@ -41,7 +46,35 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
         ? `#${template.colorSchemes[0]}`
         : 'currentColor';
 
+    // === Intersection Observer for Lazy Loading ===
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect(); // 一旦加载，就不再监听，避免反复触发
+                }
+            },
+            {
+                root: null, // viewport
+                rootMargin: '100px', // 提前 100px 开始加载，提升体验
+                threshold: 0.01 // 只要出现一点点就开始
+            }
+        );
+
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
     const render = useCallback(async () => {
+        // 如果不可见，不执行渲染逻辑 (虽然通常被上层逻辑拦截，这里做双重保险)
+        if (!isVisible) return null;
+
         if (renderResultCache.current[`${angle}`] !== undefined && renderResultCache.current[`${angle}`] !== null && renderResultCache.current[`${angle}`] !== "") {
             setRenderSrc(renderResultCache.current[`${angle}`] as string);
             setViewState('rendered');
@@ -63,6 +96,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             // 计算合适的渲染尺寸 (稍微大一点以保证清晰度)
             const renderWidth = 600;
             const renderHeight = 400;
+            const renderSizeRatio = 3;
 
             // 调用之前的渲染函数
             const base64Image = await renderSchemFile(
@@ -73,12 +107,20 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
                     return res.data;
                 },
                 {
-                    width: renderWidth,
-                    height: renderHeight,
+                    width: renderWidth * renderSizeRatio,
+                    height: renderHeight * renderSizeRatio,
                     alpha: Math.PI / 4 + Math.PI * 2 / 4 * angle, // 45度角
-                    beta: Math.atan(Math.sqrt(4)), // 标准等轴测视角
-                    radius: 0.6, // 稍微拉远一点防止切边
-                    backgroundColor: 'transparent' // 尝试透明背景
+                    beta: Math.atan(Math.sqrt(8)), // 标准等轴测视角
+                    radius: 1.2, // 稍微拉远一点防止切边
+                    backgroundColor: 'transparent', // 尝试透明背景
+                    autoFraming: true,
+                    autoClipping: true,
+                    autoClippingConfig: {
+                        backgroundColor: 'transparent',
+                        targetHeight: renderHeight,
+                        targetWidth: renderWidth,
+                        padding: 15 * renderSizeRatio
+                    }
                 }
             );
 
@@ -106,7 +148,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             setViewState('error');
             if (onDisplayFail) onDisplayFail();
         }
-    }, [template.id, angle])
+    }, [template, angle, isVisible, onDisplayFail])
 
     // 核心逻辑：触发前端渲染
     const handleTriggerRender = useCallback(async () => {
@@ -134,6 +176,9 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
     }, [template.id]);
 
     useEffect(() => {
+        // === 关键修改：如果未进入视口，直接返回，不发起请求 ===
+        if (!isVisible) return;
+
         let isMounted = true;
         const url = getThumbnailUrl(template.id, angle);
 
@@ -169,7 +214,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             isMounted = false;
             // imageSrc cleanup handled by state update but URL.revoke could be added if tracked
         };
-    }, [template.id, angle, getThumbnailUrl, handleTriggerRender, render]);
+    }, [template.id, angle, getThumbnailUrl, handleTriggerRender, render, isVisible]); // 添加 isVisible 依赖
 
     // === 子组件：渲染中状态 (美化版) ===
     const LoadingView = () => (
@@ -252,41 +297,52 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
 
     // === 主渲染逻辑 ===
     return (
-        <div className={`relative h-full w-full overflow-hidden rounded-md ${className}`}>
+        <div 
+            ref={containerRef} 
+            className={`relative h-full w-full overflow-hidden rounded-md ${className}`}
+        >
 
-            {/* 1. 静态缩略图模式 */}
-            {viewState === 'thumbnail' && imageSrc && (
-                <img
-                    src={imageSrc}
-                    alt={template.name}
-                    className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                // Error handling is now done in fetch
-                />
+            {/* 0. 只有进入视口后，才开始渲染以下内容，否则只展示占位符或空内容 */}
+            {isVisible ? (
+                <>
+                    {/* 1. 静态缩略图模式 */}
+                    {viewState === 'thumbnail' && imageSrc && (
+                        <img
+                            src={imageSrc}
+                            alt={template.name}
+                            className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
+                            loading="lazy"
+                        // Error handling is now done in fetch
+                        />
+                    )}
+
+                    {/* 2. 渲染中模式 */}
+                    {viewState === 'rendering' && <LoadingView />}
+
+                    {/* 3. 渲染成功模式 */}
+                    {viewState === 'rendered' && renderSrc && (
+                        <img
+                            src={renderSrc}
+                            alt={`${template.name} (Rendered)`}
+                            className="h-full w-full object-contain animate-in fade-in zoom-in-95 duration-700 group-hover:scale-105"
+                            // 如果生成的图片也坏了（极少见），回退到错误状态
+                            onError={() => {
+                                setViewState('error');
+                                if (onDisplayFail) onDisplayFail();
+                            }}
+                        />
+                    )}
+
+                    {/* 4. 失败模式 */}
+                    {viewState === 'error' && <ErrorView />}
+
+                    {/* 5. 尺寸过大模式 */}
+                    {viewState === 'too_large' && <LimitExceededView />}
+                </>
+            ) : (
+                // 可选：未加载时的占位符，可以是 LoadingView 的简化版或纯背景
+                <div className="h-full w-full bg-muted/10" />
             )}
-
-            {/* 2. 渲染中模式 */}
-            {viewState === 'rendering' && <LoadingView />}
-
-            {/* 3. 渲染成功模式 */}
-            {viewState === 'rendered' && renderSrc && (
-                <img
-                    src={renderSrc}
-                    alt={`${template.name} (Rendered)`}
-                    className="h-full w-full object-contain animate-in fade-in zoom-in-95 duration-700 group-hover:scale-105"
-                    // 如果生成的图片也坏了（极少见），回退到错误状态
-                    onError={() => {
-                        setViewState('error');
-                        if (onDisplayFail) onDisplayFail();
-                    }}
-                />
-            )}
-
-            {/* 4. 失败模式 */}
-            {viewState === 'error' && <ErrorView />}
-
-            {/* 5. 尺寸过大模式 */}
-            {viewState === 'too_large' && <LimitExceededView />}
         </div>
     );
 };
