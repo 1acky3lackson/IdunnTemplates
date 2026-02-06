@@ -24,7 +24,7 @@ export interface RenderSchemOptions {
  * @returns Promise<string> - 图片的 Base64 字符串 (data:image/png;base64,...)
  */
 export async function renderSchemFile(
-    input: string,
+    input: string | (() => Promise<ArrayBuffer | string | any>),
     options: RenderSchemOptions = {}
 ): Promise<string> {
     const {
@@ -44,25 +44,32 @@ export async function renderSchemFile(
     // --- 2. 处理输入 (URL 转 Base64) ---
     // schematicwebviewer 的 renderSchematic 第二个参数实际上只接受 base64 字符串
     let base64Data = '';
+    try {
+        if (typeof input === 'function') {
+            // 1. 如果是函数，执行它
+            const result = await input();
+            
+            // 兼容处理：如果用户直接传了 axios 的 response 对象
+            const data = (result && result.data) ? result.data : result;
 
-    // 简单的判断是否为 Base64 (这里假设 URL 不包含换行符，且 Base64 较长)
-    // 也可以通过正则判断，或者由调用方明确
-    // const isBase64 = (str: string) => !str.includes('/') || str.length > 2000 || !str.startsWith('http');
-
-    // if (isBase64(input)) {
-    //     // 如果输入包含了 data URI 前缀，去掉它
-    //     base64Data = input.includes(',') ? input.split(',')[1] : input;
-    // } else {
-        // 如果是 URL，先 fetch 下来
-        try {
+            if (data instanceof ArrayBuffer) {
+                base64Data = Buffer.from(data).toString('base64');
+            } else if (typeof data === 'string') {
+                // 如果已经是 base64 字符串（带不带前缀都处理一下）
+                base64Data = data.replace(/^data:.*;base64,/, '');
+            } else {
+                throw new Error("Function must return ArrayBuffer or Base64 string");
+            }
+        } else {
+            // 2. 原有的 URL 字符串处理逻辑
             const response = await fetch(input);
             if (!response.ok) throw new Error(`Failed to fetch schematic: ${response.statusText}`);
             const arrayBuffer = await response.arrayBuffer();
             base64Data = Buffer.from(arrayBuffer).toString('base64');
-        } catch (e) {
-            throw new Error(`Error loading schematic from URL: ${e}`);
         }
-    // }
+    } catch (e) {
+        throw new Error(`Error loading schematic source: ${e}`);
+    }
 
     let schematicHandle: SchematicHandles | null = null;
 

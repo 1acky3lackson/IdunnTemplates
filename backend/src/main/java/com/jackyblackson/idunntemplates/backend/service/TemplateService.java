@@ -4,7 +4,6 @@ import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateThumbnailInfo;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.store.repository.TemplateRepository;
-import com.jackyblackson.idunntemplates.backend.domain.TemplateColorScheme;
 import com.jackyblackson.idunntemplates.backend.store.spec.TemplateSpecifications;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
@@ -16,12 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class TemplateService {
@@ -111,8 +111,14 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Template> getTemplateById(UUID id) {
-        return templateRepository.findById(id);
+    public Optional<Template> getTemplateById(UUID id, UserContext user) {
+        Template template = templateRepository.findById(id).orElseThrow();
+        boolean hasPerm = luckyPermAuthService.checkPermission(user.getUuid(), user.getUsername(), template.getUsePermissionNode());
+        if (hasPerm) {
+            return Optional.of(template);
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -144,16 +150,12 @@ public class TemplateService {
     }
 
     /**
-     * [修改后] 仅获取缩略图文件，不进行生成
-     * @param templateId 模版ID
-     * @param angle 角度 (0-3)
-     * @return 存在的图片文件
-     * @throws FileNotFoundException 如果模版不存在、无版本信息或图片文件不存在
+     * [修改后] 获取 WebP 格式的缩略图文件
      */
     public File getThumbnailFile(UUID templateId, int angle) throws FileNotFoundException {
         int filteredAngle = angle % 4;
 
-        // 1. 获取基础信息 (数据库查询)
+        // 1. 获取基础信息
         Template template = templateRepository.findById(templateId)
                 .orElseThrow(() -> new FileNotFoundException("Template not found: " + templateId));
 
@@ -164,8 +166,8 @@ public class TemplateService {
         File rootDir = new File(schematicRootDirPath);
         File templateDir = new File(rootDir, template.getPath());
 
-        // 文件名格式严格匹配：thumbnail_angle{0-3}_v{versionId}.png
-        String targetFilename = "thumbnail_angle" + filteredAngle + "_v" + latestVersion.getVersionId() + ".png";
+        // [变更点] 后缀名改为 .webp
+        String targetFilename = "thumbnail_angle" + filteredAngle + "_v" + latestVersion.getVersionId() + ".webp";
         File targetFile = new File(templateDir, targetFilename);
 
         // 3. 仅检查是否存在
@@ -173,28 +175,62 @@ public class TemplateService {
             return targetFile;
         }
 
-        // 4. 不存在直接抛出异常，交给 Controller 处理
+        // 4. 异常处理
         throw new FileNotFoundException("Thumbnail image not found on disk: " + targetFilename);
     }
 
-    public TemplateThumbnailInfo getThumbnailInfo(UUID templateId) throws FileNotFoundException {
+    public TemplateThumbnailInfo getThumbnailInfo(UUID templateId, UserContext user) throws FileNotFoundException {
+        // ... 原有权限检查逻辑保持不变 ...
         Template template = templateRepository.findById(templateId)
                 .orElseThrow(() -> new FileNotFoundException("Template not found: " + templateId));
+        if (!luckyPermAuthService.checkPermission(user.getUuid(), user.getUsername(), template.getUsePermissionNode())) {
+            throw new RuntimeException("You have no permission to access the thumbnail");
+        }
         TemplateVersion latest = templateVersionService.getLatestVersion(templateId)
                 .orElseThrow(() -> new FileNotFoundException("No versions found for template: " + templateId));
+
+        // 注意：如果 TemplateThumbnailInfo 包含文件扩展名或完整 URL，
+        // 你可能需要更新这个类的构造函数或者让前端知道现在默认是 webp
         return new TemplateThumbnailInfo(template.getPath(), latest.getVersionId());
     }
 
+    /**
+     * [修改后] 保存时将 PNG 字节流转换为 WebP 文件
+     */
     public void saveThumbnail(String templatePath, String version, int angle, byte[] imageBytes) throws IOException {
         int filteredAngle = angle % 4;
         File rootDir = new File(schematicRootDirPath);
         File templateDir = new File(rootDir, templatePath);
+
         if (!templateDir.exists()) {
-            templateDir.mkdirs();
+            boolean mkdirsSuccess = templateDir.mkdirs();
+            // 建议加上简单的检查
+            if (!mkdirsSuccess && !templateDir.exists()) {
+                throw new IOException("Failed to create directory: " + templateDir.getAbsolutePath());
+            }
         }
-        String targetFilename = "thumbnail_angle" + filteredAngle + "_v" + version + ".png";
+
+        // 1. 读取原始图片 (假设是 PNG 或 JPEG 等常见格式，ImageIO 会自动识别)
+        BufferedImage image;
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes)) {
+            image = ImageIO.read(bis);
+        }
+
+        if (image == null) {
+            throw new IOException("Failed to decode uploaded image bytes. Is the format supported?");
+        }
+
+        // [变更点] 后缀名改为 .webp
+        String targetFilename = "thumbnail_angle" + filteredAngle + "_v" + version + ".webp";
         File targetFile = new File(templateDir, targetFilename);
-        Files.write(targetFile.toPath(), imageBytes);
+
+        // 2. 写入 WebP 格式
+        // 只要引入了 TwelveMonkeys 依赖，这里就可以直接写 "webp"
+        boolean success = ImageIO.write(image, "webp", targetFile);
+
+        if (!success) {
+            throw new IOException("No WebP writer found. Please ensure 'com.twelvemonkeys.imageio:imageio-webp' dependency is added.");
+        }
     }
 
 }
