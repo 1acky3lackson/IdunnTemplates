@@ -182,6 +182,21 @@ const templateBrowserContent = {
                 [Locales.CHINESE]: "加载更多",
                 [Locales.CHINESE_TRADITIONAL]: "加載更多",
             }),
+            restoreFiltersTitle: t({
+                [Locales.ENGLISH]: "Restore previous filters?",
+                [Locales.CHINESE]: "",
+                [Locales.CHINESE_TRADITIONAL]: "",
+            }),
+            restoreFiltersDesc: t({
+                [Locales.ENGLISH]: "Restore previous filters?",
+                [Locales.CHINESE]: "",
+                [Locales.CHINESE_TRADITIONAL]: "",
+            }),
+            restoreFiltersAction: t({
+                [Locales.ENGLISH]: "Restore",
+                [Locales.CHINESE]: "",
+                [Locales.CHINESE_TRADITIONAL]: "",
+            }),
         },
         searchBar: {
             filterBtn: t({ [Locales.ENGLISH]: "Filters", [Locales.CHINESE]: "过滤", [Locales.CHINESE_TRADITIONAL]: "過濾" }),

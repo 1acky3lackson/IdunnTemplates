@@ -107,15 +107,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 获取子目录
-         * @param {string} paths 
+         * @param {string} [path] 路径
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1PathsPathsGet: async (paths: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'paths' is not null or undefined
-            assertParamExists('apiV1PathsPathsGet', 'paths', paths)
-            const localVarPath = `/api/v1/paths/{paths}`
-                .replace(`{${"paths"}}`, encodeURIComponent(String(paths)));
+        apiV1PathsGet: async (path?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/paths`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -126,6 +123,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (path !== undefined) {
+                localVarQueryParameter['path'] = path;
+            }
 
             localVarHeaderParameter['Accept'] = 'application/json';
 
@@ -443,6 +444,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 上传缩略图
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesThumbnailPost: async (body?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/templates/thumbnail`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'text/plain';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 获取所有模板作者的用户信息
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -509,14 +543,14 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 获取子目录
-         * @param {string} paths 
+         * @param {string} [path] 路径
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1PathsPathsGet(paths: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1PathsPathsGet(paths, options);
+        async apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1PathsGet(path, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1PathsPathsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1PathsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -612,6 +646,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 上传缩略图
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1TemplatesThumbnailPost(body?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesThumbnailPost(body, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1TemplatesThumbnailPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 获取所有模板作者的用户信息
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -654,12 +701,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 获取子目录
-         * @param {string} paths 
+         * @param {string} [path] 路径
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1PathsPathsGet(paths: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.apiV1PathsPathsGet(paths, options).then((request) => request(axios, basePath));
+        apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1PathsGet(path, options).then((request) => request(axios, basePath));
         },
         /**
          * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
@@ -739,6 +786,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 上传缩略图
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesThumbnailPost(body?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1TemplatesThumbnailPost(body, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 获取所有模板作者的用户信息
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -778,12 +835,12 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 获取子目录
-     * @param {string} paths 
+     * @param {string} [path] 路径
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiV1PathsPathsGet(paths: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiV1PathsPathsGet(paths, options).then((request) => request(this.axios, this.basePath));
+    public apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1PathsGet(path, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -865,6 +922,17 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1TemplatesIdVersionsGet(id: string, messageKeyword?: string, submitterId?: string, versionId?: string, minCreatedAt?: string, maxCreatedAt?: string, page?: string, size?: string, sort?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1TemplatesIdVersionsGet(id, messageKeyword, submitterId, versionId, minCreatedAt, maxCreatedAt, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 上传缩略图
+     * @param {string} [body] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1TemplatesThumbnailPost(body?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1TemplatesThumbnailPost(body, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

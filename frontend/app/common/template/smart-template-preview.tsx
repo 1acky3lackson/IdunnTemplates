@@ -273,7 +273,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
                 <img
                     src={renderSrc}
                     alt={`${template.name} (Rendered)`}
-                    className="h-full w-full object-contain p-2 animate-in fade-in zoom-in-95 duration-500"
+                    className="h-full w-full object-contain animate-in fade-in zoom-in-95 duration-700 group-hover:scale-105"
                     // 如果生成的图片也坏了（极少见），回退到错误状态
                     onError={() => {
                         setViewState('error');

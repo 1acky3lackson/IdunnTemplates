@@ -39,7 +39,7 @@ const TreeNode = ({ path, level, selectedPath, onSelect }: TreeNodeProps) => {
         const fetchChildren = async () => {
             setIsLoading(true);
             try {
-                const res = await IDUNN_API.apiV1PathsPathsGet(path);
+                const res = await IDUNN_API.apiV1PathsGet(path);
                 const subPaths = (res.data as unknown as string[]) || [];
 
                 if (isMounted) {
@@ -161,7 +161,7 @@ export const DirectoryTree = ({ currentPath, onSelect }: DirectoryTreeProps) => 
         const fetchRoots = async () => {
             try {
                 // 获取根目录
-                const res = await IDUNN_API.apiV1PathsPathsGet("");
+                const res = await IDUNN_API.apiV1PathsGet("");
                 setRootPaths((res.data as unknown as string[]) || []);
             } catch (error) {
                 console.error("Failed to load root paths", error);
