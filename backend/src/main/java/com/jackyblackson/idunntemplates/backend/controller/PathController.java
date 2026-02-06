@@ -21,11 +21,11 @@ public class PathController {
     @GetMapping
 //    @AuthRequired
     public ResponseEntity<List<String>> getNextNodes(
-            @RequestParam(required = false, defaultValue = "") String paths//,
+            @RequestParam(required = false, defaultValue = "") String path//,
 //            UserContext user
     ) {
         // 处理 Spring 捕获路径时可能带有的前导斜杠
-        String cleanPath = sanitizePath(paths);
+        String cleanPath = sanitizePath(path);
 
         List<String> nextLevels = pathService.getNextLevelDirectories(cleanPath);
         return ResponseEntity.ok(nextLevels);
