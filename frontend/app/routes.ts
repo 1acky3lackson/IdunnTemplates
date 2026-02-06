@@ -18,7 +18,7 @@ export default [
       // 首页
       route("/:lang?", "routes/home.tsx"), 
       // 模板列表
-      route("/:lang?/templates", "templates/templates.tsx"),
+      route("/:lang?/templates", "routes/templates/templates.tsx"),
       // 模板详情
       route("/:lang?/templates/:uuid", "templates/templates-detail.tsx"),
     ]),

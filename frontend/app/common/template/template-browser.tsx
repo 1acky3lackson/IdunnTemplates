@@ -88,8 +88,12 @@ function generateMetricsDescString(
 
 // --- 1. 筛选组件 (Filter Component) ---
 // 提取出来以便在 Desktop Sidebar 和 Mobile Sheet 中复用
-export const TemplateFilters = ({
-    defaultFilterTab = 'folders'
+export const TemplateFilters: React.FC<{
+    defaultFilterTab:   FilterType;
+    disabledCatetories: Array<FilterType>;
+}> = ({
+    defaultFilterTab    = 'folders',
+    disabledCatetories  = [],
 }) => {
     // 获取翻译内容
     const { filters } = useIntlayer("template-browser");
@@ -108,6 +112,8 @@ export const TemplateFilters = ({
     const [filterTabsValue, setFilterTabsValue] = useState<'folders' | 'tags' | 'creators' | 'metrics'>((defaultFilterTab ?? 'folders') as any);
 
     const [creatorInfoList, setCreatorInfoList] = useState<Array<{ uuid?: string; name?: string }>>([]);
+
+    const disabledSet = new Set(disabledCatetories);
 
     // 同步搜索状态
     useEffect(
@@ -233,208 +239,224 @@ export const TemplateFilters = ({
                 <Tabs defaultValue={defaultFilterTab} value={filterTabsValue} className="w-full" onValueChange={(val) => setFilterTabsValue(val as any)}>
                     <TabsList className="w-full mb-2 gap-2">
                         {/* 文件夹选项 */}
-                        <TabsTrigger value="folders" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                            <HoverCard openDelay={10} closeDelay={100}>
-                                <HoverCardTrigger asChild>
-                                    <div className="relative">
-                                        <FolderTree className="h-4 w-4" />
-                                        {isFolderActive && (
-                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                            </span>
-                                        )}
-                                    </div>
-                                </HoverCardTrigger>
-                                <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                    <div className="font-semibold text-sm flex flex-row justify-between items-center">
-                                        <div>{filters.tabs.folders.hoverTitle}</div>
-                                        {isFolderActive && <Button size="xs" variant="destructive" onClick={clearFolderConditions} className='text-xs'>
-                                            {filters.tabs.folders.clearBtn}
-                                        </Button>}
-                                    </div>
-                                    <div className="text-sm">{filters.tabs.folders.hoverDesc}</div>
-                                    {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
-                                        {filters.tabs.folders.currentValue}<Badge>{criteria.pathPrefix}</Badge>
-                                    </div>)}
-                                </HoverCardContent>
-                            </HoverCard>
-                        </TabsTrigger>
+                        {!disabledSet.has('folders') && 
+                            <TabsTrigger value="folders" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                <HoverCard openDelay={10} closeDelay={100}>
+                                    <HoverCardTrigger asChild>
+                                        <div className="relative">
+                                            <FolderTree className="h-4 w-4" />
+                                            {isFolderActive && (
+                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                        <div className="font-semibold text-sm flex flex-row justify-between items-center">
+                                            <div>{filters.tabs.folders.hoverTitle}</div>
+                                            {isFolderActive && <Button size="xs" variant="destructive" onClick={clearFolderConditions} className='text-xs'>
+                                                {filters.tabs.folders.clearBtn}
+                                            </Button>}
+                                        </div>
+                                        <div className="text-sm">{filters.tabs.folders.hoverDesc}</div>
+                                        {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
+                                            {filters.tabs.folders.currentValue}<Badge>{criteria.pathPrefix}</Badge>
+                                        </div>)}
+                                    </HoverCardContent>
+                                </HoverCard>
+                            </TabsTrigger>
+                        }
                         {/* 标签选项 */}
-                        <TabsTrigger value="tags" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                            <HoverCard openDelay={10} closeDelay={100}>
-                                <HoverCardTrigger asChild>
-                                    <div className="relative">
-                                        <Tags className="h-4 w-4" />
-                                        {false && (
-                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                            </span>
-                                        )}
-                                    </div>
-                                </HoverCardTrigger>
-                                <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                    <div className="font-semibold text-sm">{filters.tabs.tags.hoverTitle}</div>
-                                    <div className="text-sm">{filters.tabs.tags.hoverDesc}</div>
-                                    {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
-                                        {filters.tabs.tags.currentValue}<Badge>{criteria.pathPrefix}</Badge>
-                                    </div>)}
-                                </HoverCardContent>
-                            </HoverCard>
-                        </TabsTrigger>
+                        {!disabledSet.has('tags') &&
+                            <TabsTrigger value="tags" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                <HoverCard openDelay={10} closeDelay={100}>
+                                    <HoverCardTrigger asChild>
+                                        <div className="relative">
+                                            <Tags className="h-4 w-4" />
+                                            {false && (
+                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                        <div className="font-semibold text-sm">{filters.tabs.tags.hoverTitle}</div>
+                                        <div className="text-sm">{filters.tabs.tags.hoverDesc}</div>
+                                        {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
+                                            {filters.tabs.tags.currentValue}<Badge>{criteria.pathPrefix}</Badge>
+                                        </div>)}
+                                    </HoverCardContent>
+                                </HoverCard>
+                            </TabsTrigger>
+                        }
                         {/* 创作者选项 */}
-                        <TabsTrigger value="creators" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                            <HoverCard openDelay={10} closeDelay={100}>
-                                <HoverCardTrigger asChild>
-                                    <span className="relative">
-                                        <UserPen className="h-4 w-4" />
-                                        {isCreatorActive && (
-                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                            </span>
-                                        )}
-                                    </span>
-                                </HoverCardTrigger>
-                                <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                    <div className="font-semibold text-sm flex flex-row justify-between items-center">
-                                        <div>{filters.tabs.creators.hoverTitle}</div>
-                                        {isCreatorActive && <Button size="xs" variant="destructive" onClick={clearCreatorConditions} className='text-xs'>
-                                            {filters.tabs.creators.clearBtn}
-                                        </Button>}
-                                    </div>
-                                    <div className="text-sm">{filters.tabs.creators.hoverDesc}</div>
-                                    {isCreatorActive && (<div className="text-muted-foreground text-sm mt-1">
-                                        {filters.tabs.creators.currentValue}<Badge>{creatorInfoList.filter(i => i.uuid === criteria.creatorId).at(0)?.name}</Badge>
-                                    </div>)}
-                                </HoverCardContent>
-                            </HoverCard>
-                        </TabsTrigger>
+                        {!disabledSet.has('creators') &&
+                            <TabsTrigger value="creators" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                <HoverCard openDelay={10} closeDelay={100}>
+                                    <HoverCardTrigger asChild>
+                                        <span className="relative">
+                                            <UserPen className="h-4 w-4" />
+                                            {isCreatorActive && (
+                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                </span>
+                                            )}
+                                        </span>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                        <div className="font-semibold text-sm flex flex-row justify-between items-center">
+                                            <div>{filters.tabs.creators.hoverTitle}</div>
+                                            {isCreatorActive && <Button size="xs" variant="destructive" onClick={clearCreatorConditions} className='text-xs'>
+                                                {filters.tabs.creators.clearBtn}
+                                            </Button>}
+                                        </div>
+                                        <div className="text-sm">{filters.tabs.creators.hoverDesc}</div>
+                                        {isCreatorActive && (<div className="text-muted-foreground text-sm mt-1">
+                                            {filters.tabs.creators.currentValue}<Badge>{creatorInfoList.filter(i => i.uuid === criteria.creatorId).at(0)?.name}</Badge>
+                                        </div>)}
+                                    </HoverCardContent>
+                                </HoverCard>
+                            </TabsTrigger>
+                        }
                         {/* 尺寸选项 */}
-                        <TabsTrigger value="metrics" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                            <HoverCard openDelay={10} closeDelay={100}>
-                                <HoverCardTrigger asChild>
-                                    <span className="relative">
-                                        <PencilRuler className="h-4 w-4" />
-                                        {isMetricsActive && (
-                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                            </span>
-                                        )}
-                                    </span>
-                                </HoverCardTrigger>
-                                <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                    <div className="font-semibold text-sm flex flex-row justify-between items-center">
-                                        <div>{filters.tabs.metrics.hoverTitle}</div>
-                                        {isMetricsActive && <Button size="xs" variant="destructive" onClick={clearMetricsConditions} className='text-xs'>
-                                            {filters.tabs.metrics.clearBtn}
-                                        </Button>}
-                                    </div>
-                                    <div className="text-sm">{filters.tabs.metrics.hoverDesc}</div>
-                                    {isMetricsActive && (<div className="text-muted-foreground text-sm mt-1">
-                                        <span className='mr-2'>{filters.tabs.metrics.currentValue}</span>{generateMetricsDescString(
-                                            criteria,
-                                            filters.tabs.metrics.unitMono,
-                                            filters.tabs.metrics.unitPoly,
-                                            filters.tabs.metrics.logicAnd
-                                        )}
-                                    </div>)}
-                                </HoverCardContent>
-                            </HoverCard>
-                        </TabsTrigger>
+                        {!disabledSet.has('metrics') &&
+                            <TabsTrigger value="metrics" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                <HoverCard openDelay={10} closeDelay={100}>
+                                    <HoverCardTrigger asChild>
+                                        <span className="relative">
+                                            <PencilRuler className="h-4 w-4" />
+                                            {isMetricsActive && (
+                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                </span>
+                                            )}
+                                        </span>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                        <div className="font-semibold text-sm flex flex-row justify-between items-center">
+                                            <div>{filters.tabs.metrics.hoverTitle}</div>
+                                            {isMetricsActive && <Button size="xs" variant="destructive" onClick={clearMetricsConditions} className='text-xs'>
+                                                {filters.tabs.metrics.clearBtn}
+                                            </Button>}
+                                        </div>
+                                        <div className="text-sm">{filters.tabs.metrics.hoverDesc}</div>
+                                        {isMetricsActive && (<div className="text-muted-foreground text-sm mt-1">
+                                            <span className='mr-2'>{filters.tabs.metrics.currentValue}</span>{generateMetricsDescString(
+                                                criteria,
+                                                filters.tabs.metrics.unitMono,
+                                                filters.tabs.metrics.unitPoly,
+                                                filters.tabs.metrics.logicAnd
+                                            )}
+                                        </div>)}
+                                    </HoverCardContent>
+                                </HoverCard>
+                            </TabsTrigger>
+                        }
                     </TabsList>
                     {/* 目录树区域 */}
-                    <TabsContent value="folders">
-                        <div className="space-y-6 p-1">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    {/* <FolderTree className="h-4 w-4" /> */}
-                                    <Label className="font-bold text-foreground">{filters.categories}</Label>
-                                </div>
-                                {/* 使用 ScrollArea 确保树太长时可以滚动，而不影响外层布局 */}
-                                <div className="min-h-25 pr-2 border rounded-md bg-background/50 p-2">
-                                    <DirectoryTree
-                                        currentPath={criteria.pathPrefix}
-                                        onSelect={(path) => handleFilterChange({
-                                            pathPrefix:
-                                                path === "" || path === "/" ? undefined : (
-                                                    path.endsWith('/') ? path : (path + '/')
-                                                )
-                                        })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="tags">
-                        <div>Yet to come...</div>
-                    </TabsContent>
-                    {/* 创作者过滤 */}
-                    <TabsContent value="creators">
-                        <div className="space-y-6 p-1">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    {/* <FolderTree className="h-4 w-4" /> */}
-                                    <Label className="font-bold text-foreground">{filters.creators}</Label>
-                                </div>
-                                <div className="w-full px-2 py-4 border rounded-md bg-background/50">
-                                    <CreatorPicker
-                                        creators={creatorInfoList}
-                                        value={criteria.creatorId}
-                                        onValueChange={(val) => handleFilterChange({ creatorId: val })}
-                                    // multiple={true}
-                                    // title={filters.creators}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                    </TabsContent>
-                    {/* 尺寸过滤 */}
-                    <TabsContent value="metrics">
-                        <div className="space-y-6 p-1">
-                            {[
-                                { label: filters.minLength, val: localMinLength, setLocal: setLocalMinLength, key: 'minLength', type: "min" },
-                                { label: filters.maxLength, val: localMaxLength, setLocal: setLocalMaxLength, key: 'maxLength', type: "max" },
-                                { label: filters.minHeight, val: localMinHeight, setLocal: setLocalMinHeight, key: 'minHeight', type: "min" },
-                                { label: filters.maxHeight, val: localMaxHeight, setLocal: setLocalMaxHeight, key: 'maxHeight', type: "max" },
-                                { label: filters.minWidth, val: localMinWidth, setLocal: setLocalMinWidth, key: 'minWidth', type: "min" },
-                                { label: filters.maxWidth, val: localMaxWidth, setLocal: setLocalMaxWidth, key: 'maxWidth', type: "max" },
-                            ].map((item) => (
-                                <div className="space-y-4" key={item.key}>
-                                    <div className="flex justify-between">
-                                        <Label className="font-bold">{item.label}</Label>
-                                        {(
-                                            (item.type === "min" && item.val > 0)
-                                            || (item.type === "max" && item.val < MAX_SIZE)
-
-                                        ) ? <span className="text-xs text-muted-foreground">
-                                            {item.type === "min" ? "≥" : "≤"} {item.val} {filters.blocksUnit}
-                                        </span> : <span className="text-xs text-muted-foreground">{filters.notSpecified}</span>}
+                    {!disabledSet.has('folders') && 
+                        <TabsContent value="folders">
+                            <div className="space-y-6 p-1">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        {/* <FolderTree className="h-4 w-4" /> */}
+                                        <Label className="font-bold text-foreground">{filters.categories}</Label>
                                     </div>
-                                    <Slider
-                                        value={[item.val]}
-                                        max={MAX_SIZE}
-                                        step={1}
-                                        onValueChange={(val) => item.setLocal(val[0])}
-                                        onValueCommit={(val) => handleFilterChange({ [item.key]: val[0] })}
-                                    />
+                                    {/* 使用 ScrollArea 确保树太长时可以滚动，而不影响外层布局 */}
+                                    <div className="min-h-25 pr-2 border rounded-md bg-background/50 p-2">
+                                        <DirectoryTree
+                                            currentPath={criteria.pathPrefix}
+                                            onSelect={(path) => handleFilterChange({
+                                                pathPrefix:
+                                                    path === "" || path === "/" ? undefined : (
+                                                        path.endsWith('/') ? path : (path + '/')
+                                                    )
+                                            })}
+                                        />
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </TabsContent>
+                            </div>
+                        </TabsContent>
+                    }
+                    {!disabledSet.has('tags') && 
+                        <TabsContent value="tags">
+                            <div>Yet to come...</div>
+                        </TabsContent>
+                    }
+                    {/* 创作者过滤 */}
+                    {!disabledSet.has('creators') && 
+                        <TabsContent value="creators">
+                            <div className="space-y-6 p-1">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        {/* <FolderTree className="h-4 w-4" /> */}
+                                        <Label className="font-bold text-foreground">{filters.creators}</Label>
+                                    </div>
+                                    <div className="w-full px-2 py-4 border rounded-md bg-background/50">
+                                        <CreatorPicker
+                                            creators={creatorInfoList}
+                                            value={criteria.creatorId}
+                                            onValueChange={(val) => handleFilterChange({ creatorId: val })}
+                                        // multiple={true}
+                                        // title={filters.creators}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    }
+                    {/* 尺寸过滤 */}
+                    {!disabledSet.has('metrics') && 
+                        <TabsContent value="metrics">
+                            <div className="space-y-6 p-1">
+                                {[
+                                    { label: filters.minLength, val: localMinLength, setLocal: setLocalMinLength, key: 'minLength', type: "min" },
+                                    { label: filters.maxLength, val: localMaxLength, setLocal: setLocalMaxLength, key: 'maxLength', type: "max" },
+                                    { label: filters.minHeight, val: localMinHeight, setLocal: setLocalMinHeight, key: 'minHeight', type: "min" },
+                                    { label: filters.maxHeight, val: localMaxHeight, setLocal: setLocalMaxHeight, key: 'maxHeight', type: "max" },
+                                    { label: filters.minWidth, val: localMinWidth, setLocal: setLocalMinWidth, key: 'minWidth', type: "min" },
+                                    { label: filters.maxWidth, val: localMaxWidth, setLocal: setLocalMaxWidth, key: 'maxWidth', type: "max" },
+                                ].map((item) => (
+                                    <div className="space-y-4" key={item.key}>
+                                        <div className="flex justify-between">
+                                            <Label className="font-bold">{item.label}</Label>
+                                            {(
+                                                (item.type === "min" && item.val > 0)
+                                                || (item.type === "max" && item.val < MAX_SIZE)
+
+                                            ) ? <span className="text-xs text-muted-foreground">
+                                                {item.type === "min" ? "≥" : "≤"} {item.val} {filters.blocksUnit}
+                                            </span> : <span className="text-xs text-muted-foreground">{filters.notSpecified}</span>}
+                                        </div>
+                                        <Slider
+                                            value={[item.val]}
+                                            max={MAX_SIZE}
+                                            step={1}
+                                            onValueChange={(val) => item.setLocal(val[0])}
+                                            onValueCommit={(val) => handleFilterChange({ [item.key]: val[0] })}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </TabsContent>
+                    }
                 </Tabs>
             </div>
         </ScrollArea>
     );
 };
 
-IDUNN_API.apiV1UserinfoCreatorsGet
-
 // --- 2. 核心视图组件 (Main View) ---
-const TemplateBrowserView = () => {
+const TemplateBrowserView: React.FC<{
+    sidebar?: boolean;
+    
+}> = ({ sidebar = true }) => {
     // 1. 获取翻译内容
     const { view } = useIntlayer("template-browser");
 
@@ -509,25 +531,27 @@ const TemplateBrowserView = () => {
         <div className="flex h-full w-full bg-background">
 
             {/* --- 左侧侧边栏 (LG+ 显示) --- */}
-            <aside className="hidden lg:block w-72 xl:w-96 border-r bg-muted/10 shrink-0 sticky top-0 h-screen">
-                <div className="h-full flex flex-col">
-                    <div className="p-4 border-b h-14 flex items-center justify-between align-middle">
-                        <h2 className="font-semibold text-lg">
-                            {view.filterTitle}
-                        </h2>
-                        <Button
-                            variant="link"
-                            onClick={() => {search({}); toast.info(view.clearFilters)}}
-                            className=""
-                        >
-                            {view.clearFilters}
-                        </Button>
+            {sidebar && 
+                <aside className="hidden lg:block w-72 xl:w-96 border-r bg-muted/10 shrink-0 sticky top-0 h-screen">
+                    <div className="h-full flex flex-col">
+                        <div className="p-4 border-b h-14 flex items-center justify-between align-middle">
+                            <h2 className="font-semibold text-lg">
+                                {view.filterTitle}
+                            </h2>
+                            <Button
+                                variant="link"
+                                onClick={() => {search({}); toast.info(view.clearFilters)}}
+                                className=""
+                            >
+                                {view.clearFilters}
+                            </Button>
+                        </div>
+                        <ScrollArea className="flex-1 p-1">
+                            {TemplateFilters}
+                        </ScrollArea>
                     </div>
-                    <ScrollArea className="flex-1 p-1">
-                        {TemplateFilters}
-                    </ScrollArea>
-                </div>
-            </aside>
+                </aside>
+            }
 
             {/* --- 右侧内容区域 --- */}
             <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -629,11 +653,20 @@ const TemplateBrowserView = () => {
 
 IDUNN_API.apiV1PathsPathsGet
 
+type FilterType = 'folders' | 'tags' | 'creators' | 'metrics';
+
 // --- 3. 入口组件 (Wrapper) ---
 export const TemplateBrowser: React.FC<{
     initialCriteria?: Partial<TemplateSearchParams>;
-    defaultFilterTab?: 'folders' | 'tags' | 'creators' | 'metrics';
-}> = ({ initialCriteria, defaultFilterTab }) => {
+    defaultFilterTab?: FilterType;
+    sidebar?: boolean;
+    disabledCategories?: Array<FilterType>;
+}> = ({ 
+    initialCriteria, 
+    defaultFilterTab = ('folder' as FilterType),
+    sidebar = true,
+    disabledCategories = ([] as Array<FilterType>)
+}) => {
     // 定义 Fetch 函数，连接 IDUNN_API
     const fetchTemplates = useCallback(async (page: number, criteria: TemplateSearchParams) => {
         // 将 criteria 映射到 API 参数
@@ -660,11 +693,11 @@ export const TemplateBrowser: React.FC<{
                 getId={getId}
                 renderCachedComponents={() => {
                     return {
-                        templateFilters: <TemplateFilters defaultFilterTab={defaultFilterTab} />
+                        templateFilters: <TemplateFilters defaultFilterTab={defaultFilterTab} disabledCatetories={disabledCategories}/>
                     }
                 }}
             >
-                <TemplateBrowserView />
+                <TemplateBrowserView sidebar={sidebar}/>
             </WaterfallProvider>
         </div>
     );
