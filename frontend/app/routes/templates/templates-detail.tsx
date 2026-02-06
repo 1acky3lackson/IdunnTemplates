@@ -1,5 +1,6 @@
 import type { Route } from "./+types/templates-detail";
 
+
 export function meta({ params }: Route.MetaArgs) {
   return [
     { title: `Template ${params.uuid}` },

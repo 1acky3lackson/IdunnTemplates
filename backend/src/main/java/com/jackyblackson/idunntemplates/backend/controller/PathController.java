@@ -1,17 +1,10 @@
 package com.jackyblackson.idunntemplates.backend.controller;
 
-import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
-import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.PathService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.util.AntPathMatcher;
 import java.util.List;
 
 @RestController
@@ -25,10 +18,10 @@ public class PathController {
      * 获取指定路径下的下一级目录
      * 使用 {*path} 捕获包括斜杠在内的所有剩余路径
      */
-    @GetMapping("/{*path}")
+    @GetMapping
 //    @AuthRequired
     public ResponseEntity<List<String>> getNextNodes(
-            @PathVariable("path") String path//,
+            @RequestParam(required = false, defaultValue = "") String path//,
 //            UserContext user
     ) {
         // 处理 Spring 捕获路径时可能带有的前导斜杠

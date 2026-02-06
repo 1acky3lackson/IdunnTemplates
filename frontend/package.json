@@ -7,7 +7,7 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "genapi": "npx openapi-generator-cli generate -i http://127.0.0.1:4523/export/openapi/6?version=3.0 -g typescript-axios --additional-properties=apiPackage=api,modelPackage=model,withSeparateModelsAndApi=true -o ./app/api/generated --skip-validate-spec"
+    "genapi": "npx openapi-generator-cli generate -i http://127.0.0.1:4523/export/openapi/2?version=3.0 -g typescript-axios --additional-properties=apiPackage=api,modelPackage=model,withSeparateModelsAndApi=true -o ./app/api/generated --skip-validate-spec"
   },
   "dependencies": {
     "@enginehub/schematicwebviewer": "^5.0.1",

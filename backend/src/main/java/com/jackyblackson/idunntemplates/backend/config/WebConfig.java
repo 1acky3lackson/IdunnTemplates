@@ -38,6 +38,9 @@ public class WebConfig implements WebMvcConfigurer {
                 // 使用 allowedOriginPatterns 而不是 allowedOrigins
                 // 这样可以利用通配符 * 匹配 localhost 下的任意端口
                 .allowedOriginPatterns(
+                        "*",
+                        "**",
+                        "http://localhost:5173/",
                         "http://localhost:*",
                         "http://127.0.0.1:*"
                 )

@@ -109,7 +109,7 @@ export const TemplateFilters: React.FC<{
     const [localMaxHeight, setLocalMaxHeight] = useState(criteria.maxHeight || MAX_SIZE);
     const [localMaxLength, setLocalMaxLength] = useState(criteria.maxLength || MAX_SIZE);
 
-    const [filterTabsValue, setFilterTabsValue] = useState<'folders' | 'tags' | 'creators' | 'metrics'>((defaultFilterTab ?? 'folders') as any);
+    const [filterTabsValue, setFilterTabsValue] = useState<'folders' | 'tags' | 'creators' | 'metrics'>(defaultFilterTab || 'folders');
 
     const [creatorInfoList, setCreatorInfoList] = useState<Array<{ uuid?: string; name?: string }>>([]);
 
@@ -452,11 +452,15 @@ export const TemplateFilters: React.FC<{
     );
 };
 
+function isDefaultCriteria(criteria: TemplateSearchParams) {
+    return criteria.sort === 'metadata.creationTime,desc' && criteria.pathPrefix === "";
+}
+
 // --- 2. 核心视图组件 (Main View) ---
 const TemplateBrowserView: React.FC<{
     sidebar?: boolean;
-    
-}> = ({ sidebar = true }) => {
+    browserId?: string;
+}> = ({ sidebar = true, browserId = "default" }) => {
     // 1. 获取翻译内容
     const { view } = useIntlayer("template-browser");
 
@@ -473,6 +477,34 @@ const TemplateBrowserView: React.FC<{
     } = useWaterfall<Template, TemplateSearchParams>();
     const cachedComponents = useWaterfallCachedComponents();
     const TemplateFilters = cachedComponents.templateFilters;
+
+    // 当 criteria 变化时，写入 localStorage 缓存
+    useEffect(() => {
+        // debugger;
+        // default {"sort":"metadata.creationTime,desc","pathPrefix":""}
+        if (isDefaultCriteria(criteria)) {
+            const saved = localStorage.getItem(`template-browser-criteria-${browserId}`);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved) as TemplateSearchParams;
+                    // 只有当保存的条件与当前初始条件不一致时，才询问用户
+                    if (isDefaultCriteria(parsed)) {
+                        return;
+                    } else {
+                        handleSearchChange({...parsed});
+                    }
+                } catch (e) {
+                    console.error("Failed to parse cached criteria", e);
+                }
+            }
+        } else {
+            // do nothing
+        }
+        localStorage.setItem(`template-browser-criteria-${browserId}`, JSON.stringify(criteria));
+    }, [criteria, browserId]);
+
+    
+    
 
 
     // 3. 本地状态管理 (Local State)
@@ -651,8 +683,6 @@ const TemplateBrowserView: React.FC<{
     );
 };
 
-IDUNN_API.apiV1PathsPathsGet
-
 type FilterType = 'folders' | 'tags' | 'creators' | 'metrics';
 
 // --- 3. 入口组件 (Wrapper) ---
@@ -663,7 +693,7 @@ export const TemplateBrowser: React.FC<{
     disabledCategories?: Array<FilterType>;
 }> = ({ 
     initialCriteria, 
-    defaultFilterTab = ('folder' as FilterType),
+    defaultFilterTab = 'folders',
     sidebar = true,
     disabledCategories = ([] as Array<FilterType>)
 }) => {

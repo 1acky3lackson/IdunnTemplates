@@ -20,7 +20,7 @@ export default [
       // 模板列表
       route("/:lang?/templates", "routes/templates/templates.tsx"),
       // 模板详情
-      route("/:lang?/templates/:uuid", "templates/templates-detail.tsx"),
+      route("/:lang?/templates/:uuid", "routes/templates/templates-detail.tsx"),
     ]),
 
   ]),

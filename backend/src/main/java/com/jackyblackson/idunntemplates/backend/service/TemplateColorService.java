@@ -53,14 +53,14 @@ public class TemplateColorService {
                         Template t = templateMap.get(id);
                         TemplateColorScheme scheme = schemeMap.get(id);
 
-                        var latestOptional = templateVersionService.getLatestVersion(t.getId());
-                        String currentVersion = latestOptional.isPresent() ? latestOptional.get().getVersionId() : "unknown";
+//                        var latestOptional = templateVersionService.getLatestVersion(t.getId());
+                        String currentVersion = colorGenerator.getColorSchemVersionId(t);
 
                         if (scheme != null && currentVersion.equals(scheme.getVersion())) {
                             batchResult.put(id, Arrays.asList(scheme.getColors().split(",")));
                         } else {
                             // 触发生成（已解决循环依赖，直接调 generator）
-                            batchResult.put(id, colorGenerator.generateColorScheme(t));
+                            batchResult.put(id, colorGenerator.generateColorScheme(t, currentVersion));
                         }
                     }
                     return batchResult;

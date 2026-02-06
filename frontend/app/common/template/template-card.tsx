@@ -15,6 +15,7 @@ import { getThumbnailUrlForTemplate } from "~/api";
 import type { Template } from "~/api/generated/model/template";
 import { cn } from "~/lib/utils";
 import { SmartTemplatePreview } from './smart-template-preview';
+import { Link } from 'react-router';
 
 interface TemplateCardProps {
     template: Template;
@@ -301,7 +302,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
                 {/* 左右切换按钮 */}
                 <div className={cn(
-                    "absolute inset-0 flex items-center justify-between transition-opacity duration-200",
+                    "absolute inset-0 p-2 flex items-center justify-between transition-opacity duration-200",
                     isHovering ? "opacity-100" : "opacity-0"
                 )}>
                     {/* 使用 backdrop-blur 增加毛玻璃感，显得更高级 */}
@@ -376,15 +377,16 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
             {/* --- Bottom: Info Body --- */}
             <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/85 bg-primary-foreground/65">
-
-                <div className="mb-3 mt-4">
-                    <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
-                        {template.name}
-                    </h3>
-                    <p className="mt-1 line-clamp-1 text-[10px] font-mono text-muted-foreground/70 break-all" title={template.path}>
-                        {template.path}
-                    </p>
-                </div>
+                <Link to={`/templates/${template.id}`}>
+                    <div className="mb-3 mt-4">
+                        <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
+                            {template.name}
+                        </h3>
+                        <p className="mt-1 line-clamp-1 text-[10px] font-mono text-muted-foreground/70 break-all" title={template.path}>
+                            {template.path}
+                        </p>
+                    </div>
+                </Link>
 
                 {/* Metadata Tags */}
                 <div className="mt-auto grid grid-cols-2 gap-2 text-xs">
