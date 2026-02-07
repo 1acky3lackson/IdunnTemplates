@@ -13,4 +13,6 @@ public interface TemplateRepository extends
         JpaRepository<Template, UUID>,
         JpaSpecificationExecutor<Template> {
     List<Template> findByPathStartingWith(String path);
+
+    List<Template> findByLastVersionAtIsNull();
 }

@@ -25,4 +25,6 @@ public interface TemplateVersionRepository extends  JpaRepository<TemplateVersio
 
     // 批量查找多个模板的版本
     List<TemplateVersion> findByTemplateIn(List<Template> templates);
+
+    Optional<TemplateVersion> findTopByTemplateOrderByCreatedAtDesc(Template template);
 }
