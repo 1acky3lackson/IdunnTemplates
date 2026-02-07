@@ -56,4 +56,27 @@ public class AuthController {
     public ResponseEntity<UserContext> getCurrentUser(UserContext user) {
         return ResponseEntity.ok(user);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // 创建一个同名的 Cookie
+        Cookie cookie = new Cookie("auth_token", null);
+
+        // 关键设置：Path 必须与登录时设置的完全一致（通常是 "/"）
+        cookie.setPath("/");
+
+        // 设为 HttpOnly 保持一致性
+        cookie.setHttpOnly(true);
+
+        // 将有效期设置为 0，指令浏览器立即删除该 Cookie
+        cookie.setMaxAge(0);
+
+        // 如果生产环境开启了 Secure，这里也建议保持一致
+        // cookie.setSecure(true);
+
+        // 将该 Cookie 写入响应头
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("Successfully logged out");
+    }
 }
