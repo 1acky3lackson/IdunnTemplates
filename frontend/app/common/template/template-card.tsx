@@ -7,15 +7,21 @@ import {
     Clock,
     Ruler,
     ImageIcon,
-    HelpCircle
+    HelpCircle,
+    Milestone,
+    AtSign,
+    User
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { getThumbnailUrlForTemplate } from "~/api";
 import type { Template } from "~/api/generated/model/template";
 import { cn } from "~/lib/utils";
-import { SmartTemplatePreview } from './smart-template-preview';
+import { SmartTemplatePreview, type ViewState } from './smart-template-preview';
 import { Link } from 'react-router';
+import { toast } from 'sonner';
+import { useIntlayer } from 'react-intlayer';
+import { useUserInfoCache } from '../util/user-info-cache';
 
 interface TemplateCardProps {
     template: Template;
@@ -203,12 +209,22 @@ const generateMeshGradient = (colors: string[], id: string, theme: string = 'lig
     
     let seed = getSeed(id);
 
-    const gradients = pool.slice(0, 6).map((color) => {
+    let minValidIndex = -1;
+
+    const gradients = pool.slice(0, 6).map((color, index) => {
         let finalColorWithAlpha: string;
 
         if (color.toLowerCase() === "#unknown") {
-            // 随机生成的颜色直接携带 alpha
-            finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha));
+            if (minValidIndex === -1) {
+                minValidIndex = index;
+            }
+            if (pool[index - minValidIndex] !== "#unknown") {
+                finalColorWithAlpha = `${pool[index - minValidIndex]}${alpha}`; 
+            } else {
+                // 随机生成的颜色直接携带 alpha
+                finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha));
+            }
+            
         } else {
             // 处理传入的预设颜色：如果是 hex 格式，直接拼接
             // 如果你传入的是其他格式，建议在此处统一转换为包含 alpha 的字符串
@@ -226,14 +242,30 @@ const generateMeshGradient = (colors: string[], id: string, theme: string = 'lig
     return gradients.join(', ');
 };
 
+const getDaytimeStringFromMsTimestampString = (timestamp: string) => {
+    const date = new Date(Number.parseInt(timestamp));
+    return date.toLocaleString();
+};
+
 export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className }) => {
     template.colorSchemes = template.colorSchemes?.map(color => color.startsWith("#") ? color : "#" + color);
     // console.log("Rendering TemplateCard for template:", template);
 
     // 状态管理
     const [angle, setAngle] = useState<0 | 1 | 2 | 3>(0);
+    const [previewState, setPreviewState] = useState<ViewState>('thumbnail');
     const [isHovering, setIsHovering] = useState(false);
     const { setTheme, theme } = useTheme();
+    const { templateCard } = useIntlayer('template-card');
+    const { setUserInfo, getUsernameByUuid, getUuidByUsername } = useUserInfoCache();
+
+    const handleAngleChange = useCallback((newAngle: (0 | 1 | 2 | 3) | ((prev: 0 | 1 | 2 | 3) => 0 | 1 | 2 | 3)) => {
+        if (previewState === 'rendering') {
+            toast.info(templateCard.notAllowedToChangeAngle);
+            return;
+        }
+        setAngle(newAngle);
+    }, [previewState]);
 
     // --- 新增：图片错误状态 ---
     const [imgError, setImgError] = useState(false);
@@ -251,12 +283,12 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
     // 角度切换逻辑
     const nextAngle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setAngle((prev) => (prev + 1) % 4 as 0 | 1 | 2 | 3);
+        handleAngleChange((prev) => (prev + 1) % 4 as 0 | 1 | 2 | 3);
     };
 
     const prevAngle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setAngle((prev) => (prev - 1 + 4) % 4 as 0 | 1 | 2 | 3);
+        handleAngleChange((prev) => (prev - 1 + 4) % 4 as 0 | 1 | 2 | 3);
     };
 
     const formattedDate = useMemo(() => {
@@ -292,6 +324,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                     template={template}
                     angle={angle}
                     getThumbnailUrl={getThumbnailUrlForTemplate}
+                    onStateChange={setPreviewState}
                 />
 
                 {/* 悬停时的遮罩：为了让白色箭头更清晰，可以加一个非常淡的暗色渐变 */}
@@ -302,7 +335,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
                 {/* 左右切换按钮 */}
                 <div className={cn(
-                    "absolute inset-0 p-2 flex items-center justify-between transition-opacity duration-200",
+                    "absolute inset-0 p-4 flex items-center justify-between transition-opacity duration-300",
                     isHovering ? "opacity-100" : "opacity-0"
                 )}>
                     {/* 使用 backdrop-blur 增加毛玻璃感，显得更高级 */}
@@ -310,25 +343,26 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                         onClick={prevAngle}
                         className="rounded-full bg-black/20 p-1.5 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
                     >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-5 w-5" />
                     </button>
                     <button
                         onClick={nextAngle}
                         className="rounded-full bg-black/20 p-1.5 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
                     >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-5 w-5" />
                     </button>
                 </div>
 
                 {/* 角度指示点 */}
-                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 p-1 rounded-full bg-black/10 backdrop-blur-[2px]">
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 p-1 rounded-full bg-black/10 backdrop-blur-[2px] hover:scale-150 hover:mb-2 transition-all duration-300">
                     {[0, 1, 2, 3].map((i) => (
                         <div
                             key={i}
                             className={cn(
-                                "h-1.5 w-1.5 rounded-full transition-all duration-300",
+                                "h-1.5 w-1.5 rounded-full transition-all duration-300 cursor-pointer",
                                 i === angle ? "bg-white scale-110 shadow-[0_0_4px_rgba(255,255,255,0.8)]" : "bg-white/40 hover:bg-white/60"
                             )}
+                            onClick={() => handleAngleChange(i as 0 | 1 | 2 | 3)}
                         />
                     ))}
                 </div>
@@ -376,12 +410,18 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             </div>
 
             {/* --- Bottom: Info Body --- */}
-            <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/85 bg-primary-foreground/65">
+            <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/75 bg-primary-foreground/55">
                 <Link to={`/templates/${template.id}`}>
                     <div className="mb-3 mt-4">
-                        <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
-                            {template.name}
-                        </h3>
+                        {/* 标题 row 1: 名称 作者 */}
+                        <div className="flex flex-row align-middle justify-between gap-2">
+                            <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
+                                {template.name}
+                            </h3>
+                            <div className="flex items-center gap-1 text-primary text-xs bg-primary/10 border px-1 py-0.5 rounded-md underline underline-offset-2">
+                                <User size={14} /> {getUsernameByUuid(template.metadata.creatorId)}
+                            </div>
+                        </div>
                         <p className="mt-1 line-clamp-1 text-[10px] font-mono text-muted-foreground/70 break-all" title={template.path}>
                             {template.path}
                         </p>
@@ -413,8 +453,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 {/* Footer Info */}
                 <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground/60">
                     <div className="flex items-center gap-1">
-                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold">
-                            V{template.latestVersion || '1.0'}
+                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex flex-row align-middle justify-start gap-1">
+                            <Milestone size={12}/> <div>@</div>
+                            <div>{getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}</div>
                         </span>
                     </div>
                     <div className="flex items-center gap-1">

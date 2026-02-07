@@ -3,6 +3,9 @@ import { User, Check, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox'; // 确保你安装了 shadcn checkbox
+import { useAuth } from '../auth/auth-provider';
+import { Badge } from '@/components/ui/badge'; // 建议使用 shadcn 的 Badge，如果没有可替换为 span
+import { useIntlayer } from 'react-intlayer';
 
 interface CreatorInfo {
     uuid?: string;
@@ -26,6 +29,9 @@ export const CreatorPicker = ({
     className,
     title,
 }: CreatorPickerProps) => {
+
+    const { isAuthenticated, user } = useAuth();
+    const { creatorPicker } = useIntlayer("creatorpicker");
 
     // 处理显示文本的逻辑
     const getDisplayName = (creator: CreatorInfo) => {
@@ -74,8 +80,10 @@ export const CreatorPicker = ({
                     </div>
                 ) : (
                     creators.map((creator) => {
+                        // debugger;
                         const uuid = creator.uuid || "";
                         const selected = isSelected(uuid);
+                        const isCurrentUser = isAuthenticated && user && user?.username && creator.name?.toLowerCase() === (user.username as string).toLowerCase();
 
                         return (
                             <Button
@@ -83,8 +91,9 @@ export const CreatorPicker = ({
                                 variant={selected && !multiple ? "secondary" : "ghost"}
                                 size="sm"
                                 className={cn(
-                                    "w-full justify-start h-8 px-2 font-normal transition-all",
+                                    "w-full justify-start h-8 px-2 font-normal transition-all relative",
                                     selected && !multiple && "bg-accent text-accent-foreground font-medium",
+                                    isCurrentUser && "bg-primary/5 hover:bg-primary/10 border-primary/10",
                                     "group"
                                 )}
                                 onClick={() => handleSelect(uuid)}
@@ -103,16 +112,25 @@ export const CreatorPicker = ({
                                     <div className="w-4 mr-2 flex justify-center shrink-0">
                                         <User className={cn(
                                             "h-4 w-4 transition-colors",
-                                            selected ? "text-primary" : "text-muted-foreground/60 group-hover:text-primary/70"
+                                            selected ? "text-primary" : "text-muted-foreground/60 group-hover:text-primary/70",
+                                            isCurrentUser && "text-primary"
                                         )} />
                                     </div>
                                 )}
 
-                                <span className="truncate flex-1 text-left">
+                                <span className={cn(
+                                    "truncate flex-1 text-left flex items-center gap-2",
+                                    isCurrentUser && "font-medium"
+                                )}>
                                     {getDisplayName(creator)}
+                                    {isCurrentUser && (
+                                        <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                            {creatorPicker.meLabel}
+                                        </span>
+                                    )}
                                 </span>
 
-                                {/* 单选模式下的勾选标记 (可选，增加视觉反馈) */}
+                                {/* 单选模式下的勾选标记 */}
                                 {selected && !multiple && (
                                     <Check className="ml-auto h-3 w-3 opacity-60" />
                                 )}

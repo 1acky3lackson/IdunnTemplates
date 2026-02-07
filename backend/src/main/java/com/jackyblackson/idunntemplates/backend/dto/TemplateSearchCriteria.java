@@ -14,6 +14,9 @@ public class TemplateSearchCriteria {
     private String pathLike;
     private String nameLike;
 
+    private Boolean sortByLatestVersionTime;
+    private String versionMessageLike;
+
     // Metadata 过滤条件
     private UUID creatorId;
     private UUID worldId;

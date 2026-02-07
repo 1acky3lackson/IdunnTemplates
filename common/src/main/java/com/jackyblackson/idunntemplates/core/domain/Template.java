@@ -9,7 +9,10 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -38,6 +41,10 @@ public class Template {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "metadata_id")
     private TemplateMetadata metadata;
 
+    @OneToMany(mappedBy = "template", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<TemplateVersion> versions = new ArrayList<>();
+
     // ORM required
     public Template() {}
 
@@ -62,6 +69,9 @@ public class Template {
     public String getName() { return name; }
     public TemplateMetadata getMetadata() { return metadata; }
     public void setMetadata(TemplateMetadata metadata) { this.metadata = metadata; }
+
+    public List<TemplateVersion> getVersions() { return versions; }
+    public void setVersions(List<TemplateVersion> versions) { this.versions = versions; }
 
     public TemplateVersion getLatestVersion() {
         if (metadata.getVersions().isEmpty()) return null;

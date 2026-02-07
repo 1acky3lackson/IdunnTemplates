@@ -14,9 +14,10 @@ interface SmartTemplatePreviewProps {
     // 假设这些辅助函数是从外部传入或导入的，这里作为 Props 为了演示
     getThumbnailUrl: (id: string, angle: 0 | 1 | 2 | 3) => string;
     // getSchemLink: (template: Template) => string;
+    onStateChange?: (state: ViewState) => void;
 }
 
-type ViewState = 'thumbnail' | 'rendering' | 'rendered' | 'error' | 'too_large';
+export type ViewState = 'thumbnail' | 'rendering' | 'rendered' | 'error' | 'too_large';
 
 const RENDER_REFUSE_THRESHOLD = 100 * 60 * 100;
 
@@ -26,6 +27,7 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
     className = "",
     onDisplayFail,
     getThumbnailUrl,
+    onStateChange,
     // getSchemLink
 }) => {
     const [viewState, setViewState] = useState<ViewState>('thumbnail');
@@ -149,6 +151,12 @@ export const SmartTemplatePreview: React.FC<SmartTemplatePreviewProps> = ({
             if (onDisplayFail) onDisplayFail();
         }
     }, [template, angle, isVisible, onDisplayFail])
+
+    useEffect(() => {
+        if (onStateChange) {
+            onStateChange(viewState);
+        }
+    }, [viewState, onStateChange]);
 
     // 核心逻辑：触发前端渲染
     const handleTriggerRender = useCallback(async () => {

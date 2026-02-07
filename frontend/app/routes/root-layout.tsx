@@ -7,6 +7,7 @@ import { AuthProvider } from "~/common/auth/auth-provider";
 import { Footer } from "./footer"; // 引入下方创建的组件
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { UserInfoProvider } from "~/common/util/user-info-cache";
 
 export default function RootLayout({ params }: Route.ComponentProps) {
     let { lang } = params;
@@ -30,13 +31,15 @@ export default function RootLayout({ params }: Route.ComponentProps) {
         <IntlayerProvider locale={currentLocale}>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
                 <AuthProvider>
-                    {/* 使用 Flex 布局确保 Footer 始终在页面底部 */}
-                    <div className="relative flex min-h-screen flex-col">
-                        <main className="flex-1">
-                            <Outlet />
-                            <Toaster />
-                        </main>
-                    </div>
+                    <UserInfoProvider>
+                        {/* 使用 Flex 布局确保 Footer 始终在页面底部 */}
+                        <div className="relative flex min-h-screen flex-col">
+                            <main className="flex-1">
+                                <Outlet />
+                                <Toaster />
+                            </main>
+                        </div>
+                    </UserInfoProvider>
                 </AuthProvider>
             </ThemeProvider>
         </IntlayerProvider>

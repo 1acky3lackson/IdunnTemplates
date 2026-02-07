@@ -1,14 +1,16 @@
-import { intlayer } from 'vite-intlayer'; // Add the plugin to the Vite plugin list
+import { intlayer, intlayerCompiler } from 'vite-intlayer'; // Add the plugin to the Vite plugin list
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { nodePolyfills } from 'vite-plugin-node-polyfills'; // [新增] 引入插件
+import { IntlayerClientContext } from 'react-intlayer';
 
 export default defineConfig({
   plugins: [
     intlayer(), 
+    intlayerCompiler(),
     tailwindcss(), 
     reactRouter(), 
     tsconfigPaths(),

@@ -24,6 +24,7 @@ import { CreatorPicker } from '../userinfo/creator-picker';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '~/components/ui/hover-card';
 import { Badge } from '~/components/ui/badge';
 import { toast } from 'sonner';
+import { useUserInfoCache } from '../util/user-info-cache';
 
 
 
@@ -89,368 +90,374 @@ function generateMetricsDescString(
 // --- 1. 筛选组件 (Filter Component) ---
 // 提取出来以便在 Desktop Sidebar 和 Mobile Sheet 中复用
 export const TemplateFilters: React.FC<{
-    defaultFilterTab:   FilterType;
+    defaultFilterTab: FilterType;
     disabledCatetories: Array<FilterType>;
 }> = ({
-    defaultFilterTab    = 'folders',
-    disabledCatetories  = [],
+    defaultFilterTab = 'folders',
+    disabledCatetories = [],
 }) => {
-    // 获取翻译内容
-    const { filters } = useIntlayer("template-browser");
+        // 获取翻译内容
+        const { filters } = useIntlayer("template-browser");
 
-    // 假设这些是从自定义 hook 获取的
-    const { criteria, search } = useWaterfall<Template, TemplateSearchParams>();
+        // 假设这些是从自定义 hook 获取的
+        const { criteria, search } = useWaterfall<Template, TemplateSearchParams>();
 
-    const [localMinWidth, setLocalMinWidth] = useState(criteria.minWidth || 0);
-    const [localMinLength, setLocalMinLength] = useState(criteria.minLength || 0);
-    const [localMinHeight, setLocalMinHeight] = useState(criteria.minHeight || 0);
+        const [localMinWidth, setLocalMinWidth] = useState(criteria.minWidth || 0);
+        const [localMinLength, setLocalMinLength] = useState(criteria.minLength || 0);
+        const [localMinHeight, setLocalMinHeight] = useState(criteria.minHeight || 0);
 
-    const [localMaxWidth, setLocalMaxWidth] = useState(criteria.maxWidth || MAX_SIZE);
-    const [localMaxHeight, setLocalMaxHeight] = useState(criteria.maxHeight || MAX_SIZE);
-    const [localMaxLength, setLocalMaxLength] = useState(criteria.maxLength || MAX_SIZE);
+        const [localMaxWidth, setLocalMaxWidth] = useState(criteria.maxWidth || MAX_SIZE);
+        const [localMaxHeight, setLocalMaxHeight] = useState(criteria.maxHeight || MAX_SIZE);
+        const [localMaxLength, setLocalMaxLength] = useState(criteria.maxLength || MAX_SIZE);
 
-    const [filterTabsValue, setFilterTabsValue] = useState<'folders' | 'tags' | 'creators' | 'metrics'>(defaultFilterTab || 'folders');
+        const [filterTabsValue, setFilterTabsValue] = useState<'folders' | 'tags' | 'creators' | 'metrics'>(defaultFilterTab || 'folders');
 
-    const [creatorInfoList, setCreatorInfoList] = useState<Array<{ uuid?: string; name?: string }>>([]);
+        const [creatorInfoList, setCreatorInfoList] = useState<Array<{ uuid?: string; name?: string }>>([]);
 
-    const disabledSet = new Set(disabledCatetories);
+        const disabledSet = new Set(disabledCatetories);
 
-    // 同步搜索状态
-    useEffect(
-        () => {
-            setLocalMinWidth(criteria.minWidth || 0);
-            setLocalMinLength(criteria.minLength || 0);
-            setLocalMinHeight(criteria.minHeight || 0);
-            setLocalMaxWidth(criteria.maxWidth || MAX_SIZE);
-            setLocalMaxHeight(criteria.maxHeight || MAX_SIZE);
-            setLocalMaxLength(criteria.maxLength || MAX_SIZE);
-        },
-        [criteria]
-    )
+        const { setUserInfo, getUsernameByUuid, getUuidByUsername } = useUserInfoCache();
 
-    const handleFilterChange = (updates: Partial<TemplateSearchParams>) => {
-        search({ ...criteria, ...updates });
-    };
+        // 同步搜索状态
+        useEffect(
+            () => {
+                setLocalMinWidth(criteria.minWidth || 0);
+                setLocalMinLength(criteria.minLength || 0);
+                setLocalMinHeight(criteria.minHeight || 0);
+                setLocalMaxWidth(criteria.maxWidth || MAX_SIZE);
+                setLocalMaxHeight(criteria.maxHeight || MAX_SIZE);
+                setLocalMaxLength(criteria.maxLength || MAX_SIZE);
+            },
+            [criteria]
+        )
 
-    const clearMetricsConditions = useCallback(() => {
-        setLocalMinWidth(0);
-        setLocalMinLength(0);
-        setLocalMinHeight(0);
-        setLocalMaxWidth(MAX_SIZE);
-        setLocalMaxHeight(MAX_SIZE);
-        setLocalMaxLength(MAX_SIZE);
-        handleFilterChange({
-            minWidth: 0,
-            minLength: 0,
-            minHeight: 0,
-            maxWidth: MAX_SIZE,
-            maxLength: MAX_SIZE,
-            maxHeight: MAX_SIZE,
-        });
-    }, [handleFilterChange]);
+        const handleFilterChange = (updates: Partial<TemplateSearchParams>) => {
+            search({ ...criteria, ...updates });
+        };
 
-    const clearCreatorConditions = useCallback(() => {
-        // setFilterTabsValue('folders');
-        handleFilterChange({ creatorId: "" });
-    }, [handleFilterChange]);
+        const clearMetricsConditions = useCallback(() => {
+            setLocalMinWidth(0);
+            setLocalMinLength(0);
+            setLocalMinHeight(0);
+            setLocalMaxWidth(MAX_SIZE);
+            setLocalMaxHeight(MAX_SIZE);
+            setLocalMaxLength(MAX_SIZE);
+            handleFilterChange({
+                minWidth: 0,
+                minLength: 0,
+                minHeight: 0,
+                maxWidth: MAX_SIZE,
+                maxLength: MAX_SIZE,
+                maxHeight: MAX_SIZE,
+            });
+        }, [handleFilterChange]);
 
-    const clearFolderConditions = useCallback(() => {
-        handleFilterChange({ pathPrefix: "" });
-    }, [handleFilterChange]);
+        const clearCreatorConditions = useCallback(() => {
+            // setFilterTabsValue('folders');
+            handleFilterChange({ creatorId: "" });
+        }, [handleFilterChange]);
 
-    useEffect(() => {
-        IDUNN_API.apiV1UserinfoCreatorsGet().then((res) => {
-            setCreatorInfoList(res.data);
-        });
-    }, []);
+        const clearFolderConditions = useCallback(() => {
+            handleFilterChange({ pathPrefix: "" });
+        }, [handleFilterChange]);
 
-
-    const isFolderActive =
-        criteria.pathPrefix !== undefined
-        && criteria.pathPrefix
-        && criteria.pathPrefix !== ''
-        && criteria.pathPrefix !== '/'
-        && criteria.pathPrefix.endsWith('/');
-
-    const isMetricsActive =
-        // min
-        (criteria.minWidth !== undefined && criteria.minWidth > 0)
-        || (criteria.minLength !== undefined && criteria.minLength > 0)
-        || (criteria.minHeight !== undefined && criteria.minHeight > 0)
-        // max
-        || (criteria.maxWidth !== undefined && criteria.maxWidth < MAX_SIZE)
-        || (criteria.maxLength !== undefined && criteria.maxLength < MAX_SIZE)
-        || (criteria.maxHeight !== undefined && criteria.maxHeight < MAX_SIZE)
-        ;
-
-    const isCreatorActive =
-        criteria.creatorId !== undefined
-        && criteria.creatorId !== '';
+        useEffect(() => {
+            IDUNN_API.apiV1UserinfoCreatorsGet().then((res) => {
+                setCreatorInfoList(res.data);
+                res.data.forEach(i => {
+                    setUserInfo(i.name ?? "", i.uuid ?? "");
+                });
+            }
+            )
+        }, []);
 
 
-    return (
-        <ScrollArea className="w-full h-[calc(100vh-200px)] p-3">
-            <div className="space-y-6">
-                {/* 排序 */}
-                <div className="flex flex-row items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 text-muted-foreground flex-row">
-                        <ArrowDownUp className="h-4 w-4" />
-                        <Label className="font-bold text-foreground">{filters.sortBy}</Label>
+        const isFolderActive =
+            criteria.pathPrefix !== undefined
+            && criteria.pathPrefix
+            && criteria.pathPrefix !== ''
+            && criteria.pathPrefix !== '/'
+            && criteria.pathPrefix.endsWith('/');
+
+        const isMetricsActive =
+            // min
+            (criteria.minWidth !== undefined && criteria.minWidth > 0)
+            || (criteria.minLength !== undefined && criteria.minLength > 0)
+            || (criteria.minHeight !== undefined && criteria.minHeight > 0)
+            // max
+            || (criteria.maxWidth !== undefined && criteria.maxWidth < MAX_SIZE)
+            || (criteria.maxLength !== undefined && criteria.maxLength < MAX_SIZE)
+            || (criteria.maxHeight !== undefined && criteria.maxHeight < MAX_SIZE)
+            ;
+
+        const isCreatorActive =
+            criteria.creatorId !== undefined
+            && criteria.creatorId !== '';
+
+
+        return (
+            <ScrollArea className="w-full h-[calc(100vh-200px)] p-3">
+                <div className="space-y-6">
+                    {/* 排序 */}
+                    <div className="flex flex-row items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2 text-muted-foreground flex-row">
+                            <ArrowDownUp className="h-4 w-4" />
+                            <Label className="font-bold text-foreground">{filters.sortBy}</Label>
+                        </div>
+                        <Select
+                            value={criteria.sort || 'metadata.creationTime,desc'}
+                            onValueChange={(val) => handleFilterChange({ sort: val })}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={filters.sortBy} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="metadata.creationTime,desc">{filters.sortOrders.newest}</SelectItem>
+                                <SelectItem value="metadata.creationTime,asc">{filters.sortOrders.oldest}</SelectItem>
+                                <SelectSeparator />
+                                <SelectItem value="metadata.lockedTimestamp,desc">{filters.sortOrders.newestLocked}</SelectItem>
+                                <SelectItem value="metadata.lockedTimestamp,asc">{filters.sortOrders.oldestLocked}</SelectItem>
+                                <SelectSeparator />
+                                <SelectItem value="metadata.height,desc">{filters.sortOrders.tallest}</SelectItem>
+                                <SelectItem value="metadata.width,desc">{filters.sortOrders.widest}</SelectItem>
+                                <SelectItem value="metadata.length,desc">{filters.sortOrders.longest}</SelectItem>
+                                <SelectSeparator />
+                                <SelectItem value="name,asc">{filters.sortOrders.nameAZ}</SelectItem>
+                                <SelectItem value="name,desc">{filters.sortOrders.nameZA}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <Select
-                        value={criteria.sort || 'metadata.creationTime,desc'}
-                        onValueChange={(val) => handleFilterChange({ sort: val })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder={filters.sortBy} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="metadata.creationTime,desc">{filters.sortOrders.newest}</SelectItem>
-                            <SelectItem value="metadata.creationTime,asc">{filters.sortOrders.oldest}</SelectItem>
-                            <SelectSeparator />
-                            <SelectItem value="metadata.lockedTimestamp,desc">{filters.sortOrders.newestLocked}</SelectItem>
-                            <SelectItem value="metadata.lockedTimestamp,asc">{filters.sortOrders.oldestLocked}</SelectItem>
-                            <SelectSeparator />
-                            <SelectItem value="metadata.height,desc">{filters.sortOrders.tallest}</SelectItem>
-                            <SelectItem value="metadata.width,desc">{filters.sortOrders.widest}</SelectItem>
-                            <SelectItem value="metadata.length,desc">{filters.sortOrders.longest}</SelectItem>
-                            <SelectSeparator />
-                            <SelectItem value="name,asc">{filters.sortOrders.nameAZ}</SelectItem>
-                            <SelectItem value="name,desc">{filters.sortOrders.nameZA}</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
 
-                {/* 锁定状态 */}
-                <div className="flex items-center justify-between space-x-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <LockKeyhole className="h-4 w-4" />
-                        <Label htmlFor="locked-mode" className="font-bold text-foreground">{filters.lockedOnly}</Label>
+                    {/* 锁定状态 */}
+                    <div className="flex items-center justify-between space-x-2">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <LockKeyhole className="h-4 w-4" />
+                            <Label htmlFor="locked-mode" className="font-bold text-foreground">{filters.lockedOnly}</Label>
+                        </div>
+                        <Switch
+                            id="locked-mode"
+                            checked={criteria.locked === true}
+                            onCheckedChange={(checked) => handleFilterChange({ locked: checked ? true : undefined })}
+                        />
                     </div>
-                    <Switch
-                        id="locked-mode"
-                        checked={criteria.locked === true}
-                        onCheckedChange={(checked) => handleFilterChange({ locked: checked ? true : undefined })}
-                    />
-                </div>
 
-                <Separator />
+                    <Separator />
 
-                <Tabs defaultValue={defaultFilterTab} value={filterTabsValue} className="w-full" onValueChange={(val) => setFilterTabsValue(val as any)}>
-                    <TabsList className="w-full mb-2 gap-2">
-                        {/* 文件夹选项 */}
-                        {!disabledSet.has('folders') && 
-                            <TabsTrigger value="folders" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                                <HoverCard openDelay={10} closeDelay={100}>
-                                    <HoverCardTrigger asChild>
-                                        <div className="relative">
-                                            <FolderTree className="h-4 w-4" />
-                                            {isFolderActive && (
-                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                                </span>
-                                            )}
+                    <Tabs defaultValue={defaultFilterTab} value={filterTabsValue} className="w-full" onValueChange={(val) => setFilterTabsValue(val as any)}>
+                        <TabsList className="w-full mb-2 gap-2">
+                            {/* 文件夹选项 */}
+                            {!disabledSet.has('folders') &&
+                                <TabsTrigger value="folders" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                    <HoverCard openDelay={10} closeDelay={100}>
+                                        <HoverCardTrigger asChild>
+                                            <div className="relative">
+                                                <FolderTree className="h-4 w-4" />
+                                                {isFolderActive && (
+                                                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                            <div className="font-semibold text-sm flex flex-row justify-between items-center">
+                                                <div>{filters.tabs.folders.hoverTitle}</div>
+                                                {isFolderActive && <Button size="xs" variant="destructive" onClick={clearFolderConditions} className='text-xs'>
+                                                    {filters.tabs.folders.clearBtn}
+                                                </Button>}
+                                            </div>
+                                            <div className="text-sm">{filters.tabs.folders.hoverDesc}</div>
+                                            {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
+                                                {filters.tabs.folders.currentValue}<Badge>{criteria.pathPrefix}</Badge>
+                                            </div>)}
+                                        </HoverCardContent>
+                                    </HoverCard>
+                                </TabsTrigger>
+                            }
+                            {/* 标签选项 */}
+                            {!disabledSet.has('tags') &&
+                                <TabsTrigger value="tags" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                    <HoverCard openDelay={10} closeDelay={100}>
+                                        <HoverCardTrigger asChild>
+                                            <div className="relative">
+                                                <Tags className="h-4 w-4" />
+                                                {false && (
+                                                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                            <div className="font-semibold text-sm">{filters.tabs.tags.hoverTitle}</div>
+                                            <div className="text-sm">{filters.tabs.tags.hoverDesc}</div>
+                                            {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
+                                                {filters.tabs.tags.currentValue}<Badge>{criteria.pathPrefix}</Badge>
+                                            </div>)}
+                                        </HoverCardContent>
+                                    </HoverCard>
+                                </TabsTrigger>
+                            }
+                            {/* 创作者选项 */}
+                            {!disabledSet.has('creators') &&
+                                <TabsTrigger value="creators" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                    <HoverCard openDelay={10} closeDelay={100}>
+                                        <HoverCardTrigger asChild>
+                                            <span className="relative">
+                                                <UserPen className="h-4 w-4" />
+                                                {isCreatorActive && (
+                                                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                            <div className="font-semibold text-sm flex flex-row justify-between items-center">
+                                                <div>{filters.tabs.creators.hoverTitle}</div>
+                                                {isCreatorActive && <Button size="xs" variant="destructive" onClick={clearCreatorConditions} className='text-xs'>
+                                                    {filters.tabs.creators.clearBtn}
+                                                </Button>}
+                                            </div>
+                                            <div className="text-sm">{filters.tabs.creators.hoverDesc}</div>
+                                            {isCreatorActive && (<div className="text-muted-foreground text-sm mt-1">
+                                                {filters.tabs.creators.currentValue}<Badge>{creatorInfoList.filter(i => i.uuid === criteria.creatorId).at(0)?.name}</Badge>
+                                            </div>)}
+                                        </HoverCardContent>
+                                    </HoverCard>
+                                </TabsTrigger>
+                            }
+                            {/* 尺寸选项 */}
+                            {!disabledSet.has('metrics') &&
+                                <TabsTrigger value="metrics" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
+                                    <HoverCard openDelay={10} closeDelay={100}>
+                                        <HoverCardTrigger asChild>
+                                            <span className="relative">
+                                                <PencilRuler className="h-4 w-4" />
+                                                {isMetricsActive && (
+                                                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
+                                            <div className="font-semibold text-sm flex flex-row justify-between items-center">
+                                                <div>{filters.tabs.metrics.hoverTitle}</div>
+                                                {isMetricsActive && <Button size="xs" variant="destructive" onClick={clearMetricsConditions} className='text-xs'>
+                                                    {filters.tabs.metrics.clearBtn}
+                                                </Button>}
+                                            </div>
+                                            <div className="text-sm">{filters.tabs.metrics.hoverDesc}</div>
+                                            {isMetricsActive && (<div className="text-muted-foreground text-sm mt-1">
+                                                <span className='mr-2'>{filters.tabs.metrics.currentValue}</span>{generateMetricsDescString(
+                                                    criteria,
+                                                    filters.tabs.metrics.unitMono,
+                                                    filters.tabs.metrics.unitPoly,
+                                                    filters.tabs.metrics.logicAnd
+                                                )}
+                                            </div>)}
+                                        </HoverCardContent>
+                                    </HoverCard>
+                                </TabsTrigger>
+                            }
+                        </TabsList>
+                        {/* 目录树区域 */}
+                        {!disabledSet.has('folders') &&
+                            <TabsContent value="folders">
+                                <div className="space-y-6 p-1">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            {/* <FolderTree className="h-4 w-4" /> */}
+                                            <Label className="font-bold text-foreground">{filters.categories}</Label>
                                         </div>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                        <div className="font-semibold text-sm flex flex-row justify-between items-center">
-                                            <div>{filters.tabs.folders.hoverTitle}</div>
-                                            {isFolderActive && <Button size="xs" variant="destructive" onClick={clearFolderConditions} className='text-xs'>
-                                                {filters.tabs.folders.clearBtn}
-                                            </Button>}
+                                        {/* 使用 ScrollArea 确保树太长时可以滚动，而不影响外层布局 */}
+                                        <div className="min-h-25 pr-2 border rounded-md bg-background/50 p-2">
+                                            <DirectoryTree
+                                                currentPath={criteria.pathPrefix}
+                                                onSelect={(path) => handleFilterChange({
+                                                    pathPrefix:
+                                                        path === "" || path === "/" ? undefined : (
+                                                            path.endsWith('/') ? path : (path + '/')
+                                                        )
+                                                })}
+                                            />
                                         </div>
-                                        <div className="text-sm">{filters.tabs.folders.hoverDesc}</div>
-                                        {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
-                                            {filters.tabs.folders.currentValue}<Badge>{criteria.pathPrefix}</Badge>
-                                        </div>)}
-                                    </HoverCardContent>
-                                </HoverCard>
-                            </TabsTrigger>
+                                    </div>
+                                </div>
+                            </TabsContent>
                         }
-                        {/* 标签选项 */}
                         {!disabledSet.has('tags') &&
-                            <TabsTrigger value="tags" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                                <HoverCard openDelay={10} closeDelay={100}>
-                                    <HoverCardTrigger asChild>
-                                        <div className="relative">
-                                            <Tags className="h-4 w-4" />
-                                            {false && (
-                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                                </span>
-                                            )}
-                                        </div>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                        <div className="font-semibold text-sm">{filters.tabs.tags.hoverTitle}</div>
-                                        <div className="text-sm">{filters.tabs.tags.hoverDesc}</div>
-                                        {isFolderActive && (<div className="text-muted-foreground text-sm mt-1">
-                                            {filters.tabs.tags.currentValue}<Badge>{criteria.pathPrefix}</Badge>
-                                        </div>)}
-                                    </HoverCardContent>
-                                </HoverCard>
-                            </TabsTrigger>
+                            <TabsContent value="tags">
+                                <div>Yet to come...</div>
+                            </TabsContent>
                         }
-                        {/* 创作者选项 */}
+                        {/* 创作者过滤 */}
                         {!disabledSet.has('creators') &&
-                            <TabsTrigger value="creators" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                                <HoverCard openDelay={10} closeDelay={100}>
-                                    <HoverCardTrigger asChild>
-                                        <span className="relative">
-                                            <UserPen className="h-4 w-4" />
-                                            {isCreatorActive && (
-                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                                </span>
-                                            )}
-                                        </span>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                        <div className="font-semibold text-sm flex flex-row justify-between items-center">
-                                            <div>{filters.tabs.creators.hoverTitle}</div>
-                                            {isCreatorActive && <Button size="xs" variant="destructive" onClick={clearCreatorConditions} className='text-xs'>
-                                                {filters.tabs.creators.clearBtn}
-                                            </Button>}
+                            <TabsContent value="creators">
+                                <div className="space-y-6 p-1">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            {/* <FolderTree className="h-4 w-4" /> */}
+                                            <Label className="font-bold text-foreground">{filters.creators}</Label>
                                         </div>
-                                        <div className="text-sm">{filters.tabs.creators.hoverDesc}</div>
-                                        {isCreatorActive && (<div className="text-muted-foreground text-sm mt-1">
-                                            {filters.tabs.creators.currentValue}<Badge>{creatorInfoList.filter(i => i.uuid === criteria.creatorId).at(0)?.name}</Badge>
-                                        </div>)}
-                                    </HoverCardContent>
-                                </HoverCard>
-                            </TabsTrigger>
+                                        <div className="w-full px-2 py-4 border rounded-md bg-background/50">
+                                            <CreatorPicker
+                                                creators={creatorInfoList}
+                                                value={criteria.creatorId}
+                                                onValueChange={(val) => handleFilterChange({ creatorId: val })}
+                                            // multiple={true}
+                                            // title={filters.creators}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
                         }
-                        {/* 尺寸选项 */}
+                        {/* 尺寸过滤 */}
                         {!disabledSet.has('metrics') &&
-                            <TabsTrigger value="metrics" className='cursor-pointer hover:translate-px hover:shadow-md transition-all'>
-                                <HoverCard openDelay={10} closeDelay={100}>
-                                    <HoverCardTrigger asChild>
-                                        <span className="relative">
-                                            <PencilRuler className="h-4 w-4" />
-                                            {isMetricsActive && (
-                                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                                </span>
-                                            )}
-                                        </span>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="flex w-full flex-col gap-0.5 bg-background/50 backdrop-blur">
-                                        <div className="font-semibold text-sm flex flex-row justify-between items-center">
-                                            <div>{filters.tabs.metrics.hoverTitle}</div>
-                                            {isMetricsActive && <Button size="xs" variant="destructive" onClick={clearMetricsConditions} className='text-xs'>
-                                                {filters.tabs.metrics.clearBtn}
-                                            </Button>}
-                                        </div>
-                                        <div className="text-sm">{filters.tabs.metrics.hoverDesc}</div>
-                                        {isMetricsActive && (<div className="text-muted-foreground text-sm mt-1">
-                                            <span className='mr-2'>{filters.tabs.metrics.currentValue}</span>{generateMetricsDescString(
-                                                criteria,
-                                                filters.tabs.metrics.unitMono,
-                                                filters.tabs.metrics.unitPoly,
-                                                filters.tabs.metrics.logicAnd
-                                            )}
-                                        </div>)}
-                                    </HoverCardContent>
-                                </HoverCard>
-                            </TabsTrigger>
-                        }
-                    </TabsList>
-                    {/* 目录树区域 */}
-                    {!disabledSet.has('folders') && 
-                        <TabsContent value="folders">
-                            <div className="space-y-6 p-1">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        {/* <FolderTree className="h-4 w-4" /> */}
-                                        <Label className="font-bold text-foreground">{filters.categories}</Label>
-                                    </div>
-                                    {/* 使用 ScrollArea 确保树太长时可以滚动，而不影响外层布局 */}
-                                    <div className="min-h-25 pr-2 border rounded-md bg-background/50 p-2">
-                                        <DirectoryTree
-                                            currentPath={criteria.pathPrefix}
-                                            onSelect={(path) => handleFilterChange({
-                                                pathPrefix:
-                                                    path === "" || path === "/" ? undefined : (
-                                                        path.endsWith('/') ? path : (path + '/')
-                                                    )
-                                            })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-                    }
-                    {!disabledSet.has('tags') && 
-                        <TabsContent value="tags">
-                            <div>Yet to come...</div>
-                        </TabsContent>
-                    }
-                    {/* 创作者过滤 */}
-                    {!disabledSet.has('creators') && 
-                        <TabsContent value="creators">
-                            <div className="space-y-6 p-1">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        {/* <FolderTree className="h-4 w-4" /> */}
-                                        <Label className="font-bold text-foreground">{filters.creators}</Label>
-                                    </div>
-                                    <div className="w-full px-2 py-4 border rounded-md bg-background/50">
-                                        <CreatorPicker
-                                            creators={creatorInfoList}
-                                            value={criteria.creatorId}
-                                            onValueChange={(val) => handleFilterChange({ creatorId: val })}
-                                        // multiple={true}
-                                        // title={filters.creators}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-                    }
-                    {/* 尺寸过滤 */}
-                    {!disabledSet.has('metrics') && 
-                        <TabsContent value="metrics">
-                            <div className="space-y-6 p-1">
-                                {[
-                                    { label: filters.minLength, val: localMinLength, setLocal: setLocalMinLength, key: 'minLength', type: "min" },
-                                    { label: filters.maxLength, val: localMaxLength, setLocal: setLocalMaxLength, key: 'maxLength', type: "max" },
-                                    { label: filters.minHeight, val: localMinHeight, setLocal: setLocalMinHeight, key: 'minHeight', type: "min" },
-                                    { label: filters.maxHeight, val: localMaxHeight, setLocal: setLocalMaxHeight, key: 'maxHeight', type: "max" },
-                                    { label: filters.minWidth, val: localMinWidth, setLocal: setLocalMinWidth, key: 'minWidth', type: "min" },
-                                    { label: filters.maxWidth, val: localMaxWidth, setLocal: setLocalMaxWidth, key: 'maxWidth', type: "max" },
-                                ].map((item) => (
-                                    <div className="space-y-4" key={item.key}>
-                                        <div className="flex justify-between">
-                                            <Label className="font-bold">{item.label}</Label>
-                                            {(
-                                                (item.type === "min" && item.val > 0)
-                                                || (item.type === "max" && item.val < MAX_SIZE)
+                            <TabsContent value="metrics">
+                                <div className="space-y-6 p-1">
+                                    {[
+                                        { label: filters.minLength, val: localMinLength, setLocal: setLocalMinLength, key: 'minLength', type: "min" },
+                                        { label: filters.maxLength, val: localMaxLength, setLocal: setLocalMaxLength, key: 'maxLength', type: "max" },
+                                        { label: filters.minHeight, val: localMinHeight, setLocal: setLocalMinHeight, key: 'minHeight', type: "min" },
+                                        { label: filters.maxHeight, val: localMaxHeight, setLocal: setLocalMaxHeight, key: 'maxHeight', type: "max" },
+                                        { label: filters.minWidth, val: localMinWidth, setLocal: setLocalMinWidth, key: 'minWidth', type: "min" },
+                                        { label: filters.maxWidth, val: localMaxWidth, setLocal: setLocalMaxWidth, key: 'maxWidth', type: "max" },
+                                    ].map((item) => (
+                                        <div className="space-y-4" key={item.key}>
+                                            <div className="flex justify-between">
+                                                <Label className="font-bold">{item.label}</Label>
+                                                {(
+                                                    (item.type === "min" && item.val > 0)
+                                                    || (item.type === "max" && item.val < MAX_SIZE)
 
-                                            ) ? <span className="text-xs text-muted-foreground">
-                                                {item.type === "min" ? "≥" : "≤"} {item.val} {filters.blocksUnit}
-                                            </span> : <span className="text-xs text-muted-foreground">{filters.notSpecified}</span>}
+                                                ) ? <span className="text-xs text-muted-foreground">
+                                                    {item.type === "min" ? "≥" : "≤"} {item.val} {filters.blocksUnit}
+                                                </span> : <span className="text-xs text-muted-foreground">{filters.notSpecified}</span>}
+                                            </div>
+                                            <Slider
+                                                value={[item.val]}
+                                                max={MAX_SIZE}
+                                                step={1}
+                                                onValueChange={(val) => item.setLocal(val[0])}
+                                                onValueCommit={(val) => handleFilterChange({ [item.key]: val[0] })}
+                                            />
                                         </div>
-                                        <Slider
-                                            value={[item.val]}
-                                            max={MAX_SIZE}
-                                            step={1}
-                                            onValueChange={(val) => item.setLocal(val[0])}
-                                            onValueCommit={(val) => handleFilterChange({ [item.key]: val[0] })}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </TabsContent>
-                    }
-                </Tabs>
-            </div>
-        </ScrollArea>
-    );
-};
+                                    ))}
+                                </div>
+                            </TabsContent>
+                        }
+                    </Tabs>
+                </div>
+            </ScrollArea>
+        );
+    };
 
 function isDefaultCriteria(criteria: TemplateSearchParams) {
     return criteria.sort === 'metadata.creationTime,desc' && criteria.pathPrefix === "";
@@ -491,7 +498,7 @@ const TemplateBrowserView: React.FC<{
                     if (isDefaultCriteria(parsed)) {
                         return;
                     } else {
-                        handleSearchChange({...parsed});
+                        handleSearchChange({ ...parsed });
                     }
                 } catch (e) {
                     console.error("Failed to parse cached criteria", e);
@@ -503,8 +510,8 @@ const TemplateBrowserView: React.FC<{
         localStorage.setItem(`template-browser-criteria-${browserId}`, JSON.stringify(criteria));
     }, [criteria, browserId]);
 
-    
-    
+
+
 
 
     // 3. 本地状态管理 (Local State)
@@ -563,7 +570,7 @@ const TemplateBrowserView: React.FC<{
         <div className="flex h-full w-full bg-background">
 
             {/* --- 左侧侧边栏 (LG+ 显示) --- */}
-            {sidebar && 
+            {sidebar &&
                 <aside className="hidden lg:block w-72 xl:w-96 border-r bg-muted/10 shrink-0 sticky top-0 h-screen">
                     <div className="h-full flex flex-col">
                         <div className="p-4 border-b h-14 flex items-center justify-between align-middle">
@@ -572,7 +579,7 @@ const TemplateBrowserView: React.FC<{
                             </h2>
                             <Button
                                 variant="link"
-                                onClick={() => {search({}); toast.info(view.clearFilters)}}
+                                onClick={() => { search({}); toast.info(view.clearFilters) }}
                                 className=""
                             >
                                 {view.clearFilters}
@@ -691,46 +698,46 @@ export const TemplateBrowser: React.FC<{
     defaultFilterTab?: FilterType;
     sidebar?: boolean;
     disabledCategories?: Array<FilterType>;
-}> = ({ 
-    initialCriteria, 
+}> = ({
+    initialCriteria,
     defaultFilterTab = 'folders',
     sidebar = true,
     disabledCategories = ([] as Array<FilterType>)
 }) => {
-    // 定义 Fetch 函数，连接 IDUNN_API
-    const fetchTemplates = useCallback(async (page: number, criteria: TemplateSearchParams) => {
-        // 将 criteria 映射到 API 参数
-        // apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort)
-        const res = await searchTemplatesObjectParam({ ...criteria, page });
+        // 定义 Fetch 函数，连接 IDUNN_API
+        const fetchTemplates = useCallback(async (page: number, criteria: TemplateSearchParams) => {
+            // 将 criteria 映射到 API 参数
+            // apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort)
+            const res = await searchTemplatesObjectParam({ ...criteria, page });
 
-        // 假设 IDUNN_API 返回的是 AxiosResponse，数据在 data 中
-        // 如果直接返回 data，请去掉 .data
-        return res.data;
-    }, []);
+            // 假设 IDUNN_API 返回的是 AxiosResponse，数据在 data 中
+            // 如果直接返回 data，请去掉 .data
+            return res.data;
+        }, []);
 
-    // 定义如何获取 ID
-    const getId = useCallback((t: Template) => t.id, []);
+        // 定义如何获取 ID
+        const getId = useCallback((t: Template) => t.id, []);
 
-    return (
-        <div className="w-full">
-            <WaterfallProvider<Template, TemplateSearchParams>
-                initialCriteria={{
-                    sort: templateSearchSortBuilder('metadata.creationTime', 'desc'),
-                    pathPrefix: '',
-                    ...initialCriteria
-                }}
-                fetchData={fetchTemplates}
-                getId={getId}
-                renderCachedComponents={() => {
-                    return {
-                        templateFilters: <TemplateFilters defaultFilterTab={defaultFilterTab} disabledCatetories={disabledCategories}/>
-                    }
-                }}
-            >
-                <TemplateBrowserView sidebar={sidebar}/>
-            </WaterfallProvider>
-        </div>
-    );
-};
+        return (
+            <div className="w-full">
+                <WaterfallProvider<Template, TemplateSearchParams>
+                    initialCriteria={{
+                        sort: templateSearchSortBuilder('metadata.creationTime', 'desc'),
+                        pathPrefix: '',
+                        ...initialCriteria
+                    }}
+                    fetchData={fetchTemplates}
+                    getId={getId}
+                    renderCachedComponents={() => {
+                        return {
+                            templateFilters: <TemplateFilters defaultFilterTab={defaultFilterTab} disabledCatetories={disabledCategories} />
+                        }
+                    }}
+                >
+                    <TemplateBrowserView sidebar={sidebar} />
+                </WaterfallProvider>
+            </div>
+        );
+    };
 
 export default TemplateBrowser;
