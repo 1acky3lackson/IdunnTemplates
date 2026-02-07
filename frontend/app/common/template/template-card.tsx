@@ -10,12 +10,14 @@ import {
     HelpCircle
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { getThumbnailUrlForTemplate } from "~/api";
 import type { Template } from "~/api/generated/model/template";
 import { cn } from "~/lib/utils";
-import { SmartTemplatePreview } from './smart-template-preview';
+import { SmartTemplatePreview, type ViewState } from './smart-template-preview';
 import { Link } from 'react-router';
+import { toast } from 'sonner';
+import { useIntlayer } from 'react-intlayer';
 
 interface TemplateCardProps {
     template: Template;
@@ -242,8 +244,18 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
     // 状态管理
     const [angle, setAngle] = useState<0 | 1 | 2 | 3>(0);
+    const [previewState, setPreviewState] = useState<ViewState>('thumbnail');
     const [isHovering, setIsHovering] = useState(false);
     const { setTheme, theme } = useTheme();
+    const { templateCard } = useIntlayer('template-card');
+
+    const handleAngleChange = useCallback((newAngle: (0 | 1 | 2 | 3) | ((prev: 0 | 1 | 2 | 3) => 0 | 1 | 2 | 3)) => {
+        if (previewState === 'rendering') {
+            toast.info(templateCard.notAllowedToChangeAngle);
+            return;
+        }
+        setAngle(newAngle);
+    }, [previewState]);
 
     // --- 新增：图片错误状态 ---
     const [imgError, setImgError] = useState(false);
@@ -261,12 +273,12 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
     // 角度切换逻辑
     const nextAngle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setAngle((prev) => (prev + 1) % 4 as 0 | 1 | 2 | 3);
+        handleAngleChange((prev) => (prev + 1) % 4 as 0 | 1 | 2 | 3);
     };
 
     const prevAngle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setAngle((prev) => (prev - 1 + 4) % 4 as 0 | 1 | 2 | 3);
+        handleAngleChange((prev) => (prev - 1 + 4) % 4 as 0 | 1 | 2 | 3);
     };
 
     const formattedDate = useMemo(() => {
@@ -302,6 +314,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                     template={template}
                     angle={angle}
                     getThumbnailUrl={getThumbnailUrlForTemplate}
+                    onStateChange={setPreviewState}
                 />
 
                 {/* 悬停时的遮罩：为了让白色箭头更清晰，可以加一个非常淡的暗色渐变 */}
@@ -312,7 +325,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
                 {/* 左右切换按钮 */}
                 <div className={cn(
-                    "absolute inset-0 p-2 flex items-center justify-between transition-opacity duration-200",
+                    "absolute inset-0 p-4 flex items-center justify-between transition-opacity duration-300",
                     isHovering ? "opacity-100" : "opacity-0"
                 )}>
                     {/* 使用 backdrop-blur 增加毛玻璃感，显得更高级 */}
@@ -320,25 +333,26 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                         onClick={prevAngle}
                         className="rounded-full bg-black/20 p-1.5 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
                     >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-5 w-5" />
                     </button>
                     <button
                         onClick={nextAngle}
                         className="rounded-full bg-black/20 p-1.5 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
                     >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-5 w-5" />
                     </button>
                 </div>
 
                 {/* 角度指示点 */}
-                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 p-1 rounded-full bg-black/10 backdrop-blur-[2px]">
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 p-1 rounded-full bg-black/10 backdrop-blur-[2px] hover:scale-150 hover:mb-2 transition-all duration-300">
                     {[0, 1, 2, 3].map((i) => (
                         <div
                             key={i}
                             className={cn(
-                                "h-1.5 w-1.5 rounded-full transition-all duration-300",
+                                "h-1.5 w-1.5 rounded-full transition-all duration-300 cursor-pointer",
                                 i === angle ? "bg-white scale-110 shadow-[0_0_4px_rgba(255,255,255,0.8)]" : "bg-white/40 hover:bg-white/60"
                             )}
+                            onClick={() => handleAngleChange(i as 0 | 1 | 2 | 3)}
                         />
                     ))}
                 </div>

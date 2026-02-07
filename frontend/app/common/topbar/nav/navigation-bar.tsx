@@ -37,7 +37,7 @@ export function NavigationBar() {
                 {/* TEMPLATES */}
                 <NavigationMenuItem>
                     <NavigationMenuTrigger className="bg-transparent">{menus.templates}</NavigationMenuTrigger>
-                    <NavigationMenuContent>
+                    <NavigationMenuContent className="bg-background/50 backdrop-blur-2xl">
                         <ul className="grid gap-3 p-6 md:w-100 lg:w-125 lg:grid-cols-[.75fr_1fr]">
                             <li className="row-span-3">
                                 <NavigationMenuLink asChild>
