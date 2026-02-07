@@ -4,15 +4,19 @@ import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateWithColorsDto;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.backend.service.SchematicFormatService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateColorService;
 import com.jackyblackson.idunntemplates.backend.service.TemplateService;
+import com.jackyblackson.idunntemplates.backend.store.repository.TemplateVersionRepository;
 import com.jackyblackson.idunntemplates.backend.util.CollectionUtils;
 import com.jackyblackson.idunntemplates.backend.util.JwtUtil;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateThumbnailInfo;
 import com.jackyblackson.idunntemplates.backend.dto.ThumbnailUploadRequestDto;
 import com.jackyblackson.idunntemplates.backend.dto.ThumbnailUploadTokenDto;
 import com.jackyblackson.idunntemplates.core.domain.Template;
+import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -34,11 +38,9 @@ import pitheguy.schemconvert.converter.formats.SchematicFormat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/templates")
@@ -49,13 +51,22 @@ public class TemplateController {
 
     private final SchematicFormatService schematicFormatService;
     private final JwtUtil jwtUtil;
+    private final LuckyPermAuthService luckyPermAuthService;
+    private final TemplateVersionRepository templateVersionRepository;
 
     @Autowired
-    public TemplateController(TemplateService templateService, TemplateColorService templateColorService, SchematicFormatService schematicFormatService, JwtUtil jwtUtil) {
+    public TemplateController(TemplateService templateService,
+                              TemplateColorService templateColorService,
+                              SchematicFormatService schematicFormatService,
+                              JwtUtil jwtUtil,
+                              LuckyPermAuthService luckyPermAuthService,
+                              TemplateVersionRepository templateVersionRepository) {
         this.templateService = templateService;
         this.templateColorService = templateColorService;
         this.schematicFormatService = schematicFormatService;
         this.jwtUtil = jwtUtil;
+        this.luckyPermAuthService = luckyPermAuthService;
+        this.templateVersionRepository = templateVersionRepository;
     }
 
     /**
@@ -74,16 +85,46 @@ public class TemplateController {
         Page<Template> page = templateService.searchTemplates(criteria, pageable, userContext);
         Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(page.getContent());
 
-        // 假设 colors 是之前 resolveColorsForTemplates 得到的结果 Map
-        List<String> defaultColorList = Collections.emptyList();
+        // Batch check commit permissions
+        List<String> distinctPaths = page.getContent().stream()
+                .map(t -> PermissionNames.Templates.commitToPath$R + "." + t.getPath().replace("/", "."))
+                .distinct()
+                .collect(Collectors.toList());
 
-        List<TemplateWithColorsDto> dtos = CollectionUtils.mapToList(
-                page.getContent(),
-                Template::getId,
-                colors,
-                TemplateWithColorsDto::new, // 构造函数引用：(template, colorList) -> new Dto
-                defaultColorList
-        );
+        Map<String, Boolean> commitPermResults = luckyPermAuthService.batchCheckPermissions(
+                userContext.getUuid(), userContext.getUsername(), distinctPaths);
+
+        // Batch fetch versions (avoid N+1)
+        List<TemplateVersion> versionList = templateVersionRepository.findByTemplateIn(page.getContent());
+        Map<UUID, List<TemplateVersion>> versionsMap = versionList.stream()
+                .collect(Collectors.groupingBy(v -> v.getTemplate().getId()));
+
+        List<TemplateWithColorsDto> dtos = page.getContent().stream().map(t -> {
+            List<String> colorList = colors.getOrDefault(t.getId(), Collections.emptyList());
+            TemplateWithColorsDto dto = new TemplateWithColorsDto(t, colorList);
+
+            // Populate new fields
+            List<TemplateVersion> allVersions = versionsMap.getOrDefault(t.getId(), Collections.emptyList());
+            // Sort desc
+            List<TemplateVersion> sortedVersions = allVersions.stream()
+                    .sorted(Comparator.comparingLong(TemplateVersion::getCreatedAt).reversed())
+                    .collect(Collectors.toList());
+
+            dto.setVersionCount(sortedVersions.size());
+            if (!sortedVersions.isEmpty()) {
+                dto.setLatestVersionName(sortedVersions.get(0).getVersionId());
+                dto.setLatestVersions(sortedVersions.stream().limit(10).collect(Collectors.toList()));
+            } else {
+                dto.setLatestVersions(Collections.emptyList());
+            }
+
+            dto.setCanUse(true); // Filtered by service
+
+            String commitPerm = PermissionNames.Templates.commitToPath$R + "." + t.getPath().replace("/", ".");
+            dto.setCanCommit(commitPermResults.getOrDefault(commitPerm, false));
+
+            return dto;
+        }).collect(Collectors.toList());
 
         return ResponseEntity.ok(new PageImpl<>(
                 dtos,
