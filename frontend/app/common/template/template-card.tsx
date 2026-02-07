@@ -7,7 +7,8 @@ import {
     Clock,
     Ruler,
     ImageIcon,
-    HelpCircle
+    HelpCircle,
+    Milestone
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
@@ -238,6 +239,11 @@ const generateMeshGradient = (colors: string[], id: string, theme: string = 'lig
     return gradients.join(', ');
 };
 
+const getDaytimeStringFromMsTimestampString = (timestamp: string) => {
+    const date = new Date(Number.parseInt(timestamp));
+    return date.toLocaleString();
+};
+
 export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className }) => {
     template.colorSchemes = template.colorSchemes?.map(color => color.startsWith("#") ? color : "#" + color);
     // console.log("Rendering TemplateCard for template:", template);
@@ -437,8 +443,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 {/* Footer Info */}
                 <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground/60">
                     <div className="flex items-center gap-1">
-                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold">
-                            V{template.latestVersion || '1.0'}
+                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex flex-row align-middle justify-start gap-1">
+                            <Milestone size={12}/> @ 
+                            {getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}
                         </span>
                     </div>
                     <div className="flex items-center gap-1">
