@@ -52,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_exp");
         localStorage.removeItem("auth_user");
+        IDUNN_API.apiAuthLogoutPost();
         setUser(null);
         navigate("/login");
     }, [navigate]);

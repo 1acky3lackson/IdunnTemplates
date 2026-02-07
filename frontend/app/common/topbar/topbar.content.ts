@@ -14,6 +14,11 @@ const topbarContent = {
             [Locales.CHINESE]:              "登录",
             [Locales.CHINESE_TRADITIONAL]:  "登入",
         }),
+        logout: t({
+            [Locales.ENGLISH]:              "LOGOUT",
+            [Locales.CHINESE]:              "登出",
+            [Locales.CHINESE_TRADITIONAL]:  "登出",
+        }),
     },
 } satisfies Dictionary;
 

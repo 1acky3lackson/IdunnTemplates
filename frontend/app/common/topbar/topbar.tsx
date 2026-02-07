@@ -13,13 +13,14 @@ import { useAuth } from "../auth/auth-provider"
 import { is } from "zod/v4/locales"
 import { Link } from "react-router"
 import { useIntlayer } from "react-intlayer"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "~/components/ui/hover-card"
 
 export default function TopBar() {
-    const { siteTitle, login } = useIntlayer("topbar");
+    const { siteTitle, login, logout: logoutBtn } = useIntlayer("topbar");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
     const { theme } = useTheme()
 
-    const { isAuthenticated, user, login: loginFunc, logout} = useAuth();
+    const { isAuthenticated, user, login: loginFunc, logout } = useAuth();
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen)
     }
@@ -74,21 +75,29 @@ export default function TopBar() {
                     {/* 3. 用户按钮 */}
                     {
                         isAuthenticated
-                        ?
-                        <div className="flex flex-row gap-2 items-center hover:bg-accent hover:text-accent-foreground transition-colors px-3 py-1 rounded-md hover:cursor-pointer">
-                            <div className="text-sm hidden lg:block">{user?.username}</div>
-                            <Button variant="outline" size="icon">
-                                <User className="h-5 w-5" />
-                                <span className="sr-only">User profile</span>
-                            </Button>
-                        </div>
-                        :
-                        <Link to="/login">
-                            <Button variant="default">
-                                <span className="pr-0.5">{login}</span>
-                                <LogIn className="h-5 w-5" />
-                            </Button>
-                        </Link>
+                            ?
+                            <HoverCard openDelay={10} closeDelay={100}>
+                                <HoverCardTrigger asChild>
+                                    <div className="flex flex-row gap-2 items-center hover:bg-accent hover:text-accent-foreground transition-colors px-3 py-1 rounded-md hover:cursor-pointer">
+                                        <div className="text-sm hidden lg:block">{user?.username}</div>
+                                        <Button variant="outline" size="icon">
+                                            <User className="h-5 w-5" />
+                                            <span className="sr-only">User profile</span>
+                                        </Button>
+                                    </div>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="flex w-64 flex-col gap-0.5">
+                                    <Button onClick={logout}>{logoutBtn}</Button>
+                                </HoverCardContent>
+                            </HoverCard>
+
+                            :
+                            <Link to="/login">
+                                <Button variant="default">
+                                    <span className="pr-0.5">{login}</span>
+                                    <LogIn className="h-5 w-5" />
+                                </Button>
+                            </Link>
                     }
 
                     {/* Mobile Menu Trigger */}
