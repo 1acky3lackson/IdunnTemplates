@@ -203,12 +203,22 @@ const generateMeshGradient = (colors: string[], id: string, theme: string = 'lig
     
     let seed = getSeed(id);
 
-    const gradients = pool.slice(0, 6).map((color) => {
+    let minValidIndex = -1;
+
+    const gradients = pool.slice(0, 6).map((color, index) => {
         let finalColorWithAlpha: string;
 
         if (color.toLowerCase() === "#unknown") {
-            // 随机生成的颜色直接携带 alpha
-            finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha));
+            if (minValidIndex === -1) {
+                minValidIndex = index;
+            }
+            if (pool[index - minValidIndex] !== "#unknown") {
+                finalColorWithAlpha = `${pool[index - minValidIndex]}${alpha}`; 
+            } else {
+                // 随机生成的颜色直接携带 alpha
+                finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha));
+            }
+            
         } else {
             // 处理传入的预设颜色：如果是 hex 格式，直接拼接
             // 如果你传入的是其他格式，建议在此处统一转换为包含 alpha 的字符串
@@ -376,7 +386,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             </div>
 
             {/* --- Bottom: Info Body --- */}
-            <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/85 bg-primary-foreground/65">
+            <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/75 bg-primary-foreground/55">
                 <Link to={`/templates/${template.id}`}>
                     <div className="mb-3 mt-4">
                         <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
