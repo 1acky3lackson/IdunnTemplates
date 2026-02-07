@@ -74,7 +74,7 @@ public class TemplateController {
     public ResponseEntity<Page<TemplateWithColorsDto>> searchTemplates(
             @ModelAttribute TemplateSearchCriteria criteria,
             UserContext userContext,
-            @PageableDefault(size = 20, sort = "path", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 20, direction = Sort.Direction.ASC) Pageable pageable
     ) {
         Page<Template> page = templateService.searchTemplates(criteria, pageable, userContext);
         List<Template> originalContent = page.getContent();

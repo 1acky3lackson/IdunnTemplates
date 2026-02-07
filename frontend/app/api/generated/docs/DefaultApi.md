@@ -252,6 +252,8 @@ let maxHeight: number; // (optional) (default to undefined)
 let pathLike: string; //模糊搜索 Path (optional) (default to undefined)
 let nameLike: string; //模糊搜索 Name (optional) (default to undefined)
 let creatorId: string; //创建玩家的 uuid，单个，精确匹配 (optional) (default to undefined)
+let sortByLatestVersionTime: boolean; //是否按照最新更新时间排序 (optional) (default to undefined)
+let versionMessageLike: string; //模糊搜索更新文本 (optional) (default to undefined)
 
 const { status, data } = await apiInstance.apiV1TemplatesGet(
     pathPrefix,
@@ -268,7 +270,9 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
     maxHeight,
     pathLike,
     nameLike,
-    creatorId
+    creatorId,
+    sortByLatestVersionTime,
+    versionMessageLike
 );
 ```
 
@@ -291,6 +295,8 @@ const { status, data } = await apiInstance.apiV1TemplatesGet(
 | **pathLike** | [**string**] | 模糊搜索 Path | (optional) defaults to undefined|
 | **nameLike** | [**string**] | 模糊搜索 Name | (optional) defaults to undefined|
 | **creatorId** | [**string**] | 创建玩家的 uuid，单个，精确匹配 | (optional) defaults to undefined|
+| **sortByLatestVersionTime** | [**boolean**] | 是否按照最新更新时间排序 | (optional) defaults to undefined|
+| **versionMessageLike** | [**string**] | 模糊搜索更新文本 | (optional) defaults to undefined|
 
 
 ### Return type

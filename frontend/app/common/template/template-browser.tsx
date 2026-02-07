@@ -205,8 +205,24 @@ export const TemplateFilters: React.FC<{
                             <Label className="font-bold text-foreground">{filters.sortBy}</Label>
                         </div>
                         <Select
-                            value={criteria.sort || 'metadata.creationTime,desc'}
-                            onValueChange={(val) => handleFilterChange({ sort: val })}
+                            value={
+                                criteria.sortByLatestVersionTime
+                                    ? "#NEWLY_UPDATED"
+                                    : criteria.sort || 'metadata.creationTime,desc'
+                            }
+                            onValueChange={(val) => {
+                                if (val === "#NEWLY_UPDATED") {
+                                    handleFilterChange({
+                                        sort: "",
+                                        sortByLatestVersionTime: true
+                                    })
+                                    return;
+                                }
+                                handleFilterChange({
+                                    sort: val,
+                                    sortByLatestVersionTime: false,
+                                })
+                            }}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder={filters.sortBy} />
@@ -214,6 +230,8 @@ export const TemplateFilters: React.FC<{
                             <SelectContent>
                                 <SelectItem value="metadata.creationTime,desc">{filters.sortOrders.newest}</SelectItem>
                                 <SelectItem value="metadata.creationTime,asc">{filters.sortOrders.oldest}</SelectItem>
+                                <SelectSeparator />
+                                <SelectItem value="#NEWLY_UPDATED">{filters.sortOrders.newlyUpdated}</SelectItem>
                                 <SelectSeparator />
                                 <SelectItem value="metadata.lockedTimestamp,desc">{filters.sortOrders.newestLocked}</SelectItem>
                                 <SelectItem value="metadata.lockedTimestamp,asc">{filters.sortOrders.oldestLocked}</SelectItem>

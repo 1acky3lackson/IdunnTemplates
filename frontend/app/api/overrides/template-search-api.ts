@@ -26,6 +26,8 @@ export interface TemplateSearchParams {
     pathLike?: ApiArgs[12]; // 对应 pathLike
     nameLike?: ApiArgs[13]; // 对应 nameLike
     creatorId?: ApiArgs[14]; // 对应 creatorId
+    sortByLatestVersionTime?: ApiArgs[15]; // 对应 creatorId
+    versionMessageLike?: ApiArgs[16]; // 对应 creatorId
     // options 通常不需要透传给业务层，所以可以忽略
 }
 
@@ -76,6 +78,8 @@ export const searchTemplatesObjectParam = (params: TemplateSearchParams) => {
         params.pathLike,
         params.nameLike,
         params.creatorId,
+        params.sortByLatestVersionTime,
+        params.versionMessageLike
     );
 };
 

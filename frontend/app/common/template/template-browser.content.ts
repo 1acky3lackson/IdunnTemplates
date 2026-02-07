@@ -10,6 +10,7 @@ const templateBrowserContent = {
                 [Locales.CHINESE_TRADITIONAL]: "排序方式",
             }),
             sortOrders: {
+                newlyUpdated: t({ [Locales.ENGLISH]: "Newest Updated", [Locales.CHINESE]: "最新更新优先", [Locales.CHINESE_TRADITIONAL]: "最新更新優先" }),
                 newest: t({ [Locales.ENGLISH]: "Newest First", [Locales.CHINESE]: "最新优先", [Locales.CHINESE_TRADITIONAL]: "最新優先" }),
                 oldest: t({ [Locales.ENGLISH]: "Oldest First", [Locales.CHINESE]: "最早优先", [Locales.CHINESE_TRADITIONAL]: "最早優先" }),
                 newestLocked: t({ [Locales.ENGLISH]: "Newest Locked First", [Locales.CHINESE]: "最近锁定优先", [Locales.CHINESE_TRADITIONAL]: "最近鎖定優先" }),
