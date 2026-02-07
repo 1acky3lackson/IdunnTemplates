@@ -54,7 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("auth_user");
         IDUNN_API.apiAuthLogoutPost();
         setUser(null);
-        navigate("/login");
+        // navigate("/login");
+
+        // full reload page to page /login
+        window.location.reload();
     }, [navigate]);
 
     // 核心：自动过期检查器
