@@ -28,6 +28,8 @@ import type { ApiAuthLoginPostRequest } from '../model';
 // @ts-ignore
 import type { ApiAuthMeGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1PathsGet200ResponseInner } from '../model';
+// @ts-ignore
 import type { ApiV1UserinfoCreatorsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { Template } from '../model';
@@ -67,6 +69,37 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(apiAuthLoginPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 查看个人信息 / 验证登录 Copy
+         * @param {string} [authToken] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiAuthLogoutPost: async (authToken?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/auth/logout`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -529,6 +562,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 查看个人信息 / 验证登录 Copy
+         * @param {string} [authToken] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiAuthLogoutPost(authToken?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiAuthLogoutPost(authToken, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiAuthLogoutPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 查看个人信息 / 验证登录
          * @param {string} [authToken] 
          * @param {*} [options] Override http request option.
@@ -547,7 +593,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ApiV1PathsGet200ResponseInner>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1PathsGet(path, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1PathsGet']?.[localVarOperationServerIndex]?.url;
@@ -690,6 +736,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 查看个人信息 / 验证登录 Copy
+         * @param {string} [authToken] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiAuthLogoutPost(authToken?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiAuthLogoutPost(authToken, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 查看个人信息 / 验证登录
          * @param {string} [authToken] 
          * @param {*} [options] Override http request option.
@@ -705,7 +761,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+        apiV1PathsGet(path?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<ApiV1PathsGet200ResponseInner>> {
             return localVarFp.apiV1PathsGet(path, options).then((request) => request(axios, basePath));
         },
         /**
@@ -819,6 +875,17 @@ export class DefaultApi extends BaseAPI {
      */
     public apiAuthLoginPost(apiAuthLoginPostRequest?: ApiAuthLoginPostRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiAuthLoginPost(apiAuthLoginPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 查看个人信息 / 验证登录 Copy
+     * @param {string} [authToken] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiAuthLogoutPost(authToken?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiAuthLogoutPost(authToken, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
