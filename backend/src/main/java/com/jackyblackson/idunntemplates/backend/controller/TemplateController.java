@@ -69,46 +69,61 @@ public class TemplateController {
         this.templateVersionRepository = templateVersionRepository;
     }
 
-    /**
-     * 搜索接口
-     * 示例 URL: GET /api/v1/templates?pathPrefix=users/&minWidth=10&locked=true&page=0&size=10&sort=metadata.creationTime,desc
-     */
     @GetMapping
     @AuthRequired
     public ResponseEntity<Page<TemplateWithColorsDto>> searchTemplates(
-            // 自动绑定 url 参数到 criteria 对象
             @ModelAttribute TemplateSearchCriteria criteria,
             UserContext userContext,
-            // 自动处理分页和排序参数 (默认每页 20 条，按路径升序)
             @PageableDefault(size = 20, sort = "path", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         Page<Template> page = templateService.searchTemplates(criteria, pageable, userContext);
-        Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(page.getContent());
+        List<Template> originalContent = page.getContent();
 
-        // Batch check commit permissions
-        List<String> distinctPaths = page.getContent().stream()
-                .map(t -> PermissionNames.Templates.commitToPath$R + "." + t.getPath().replace("/", "."))
+        // 1. 提取非空的 ID 和 Path 用于批量查询，避免对 null 对象调用方法
+        List<Template> nonNullTemplates = originalContent.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // 2. 批量解析颜色 (Map 的 Key 是 UUID)
+        Map<UUID, List<String>> colors = nonNullTemplates.isEmpty() ? Collections.emptyMap() :
+                templateColorService.resolveColorsForTemplates(nonNullTemplates);
+
+        // 3. 批量检查权限 (需处理 path 为 null 的情况)
+        List<String> distinctPaths = nonNullTemplates.stream()
+                .map(Template::getPath)
+                .filter(Objects::nonNull)
+                .map(path -> PermissionNames.Templates.commitToPath$R + "." + path.replace("/", "."))
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<String, Boolean> commitPermResults = luckyPermAuthService.batchCheckPermissions(
-                userContext.getUuid(), userContext.getUsername(), distinctPaths);
+        Map<String, Boolean> commitPermResults = (userContext != null && !distinctPaths.isEmpty()) ?
+                luckyPermAuthService.batchCheckPermissions(userContext.getUuid(), userContext.getUsername(), distinctPaths) :
+                Collections.emptyMap();
 
-        // Batch fetch versions (avoid N+1)
-        List<TemplateVersion> versionList = templateVersionRepository.findByTemplateIn(page.getContent());
-        Map<UUID, List<TemplateVersion>> versionsMap = versionList.stream()
-                .collect(Collectors.groupingBy(v -> v.getTemplate().getId()));
+        // 4. 批量获取版本 (关联查询)
+        Map<UUID, List<TemplateVersion>> versionsMap = nonNullTemplates.isEmpty() ? Collections.emptyMap() :
+                templateVersionRepository.findByTemplateIn(nonNullTemplates).stream()
+                        .filter(v -> v != null && v.getTemplate() != null)
+                        .collect(Collectors.groupingBy(v -> v.getTemplate().getId()));
 
-        List<TemplateWithColorsDto> dtos = page.getContent().stream().map(t -> {
+        // 5. 映射 DTO，严格保持 originalContent 的顺序和长度
+        List<TemplateWithColorsDto> dtos = originalContent.stream().map(t -> {
+            // 如果元素为 null，直接返回 null 保持占位
+            if (t == null) {
+                return null;
+            }
+
+            // 此时 t 保证非空
             List<String> colorList = colors.getOrDefault(t.getId(), Collections.emptyList());
             TemplateWithColorsDto dto = new TemplateWithColorsDto(t, colorList);
 
-            // Populate new fields
+            // 处理版本信息
             List<TemplateVersion> allVersions = versionsMap.getOrDefault(t.getId(), Collections.emptyList());
-            // Sort desc
             List<TemplateVersion> sortedVersions = allVersions.stream()
-                    .sorted(Comparator.comparingLong(TemplateVersion::getCreatedAt).reversed())
-                    .collect(Collectors.toList());
+                    .filter(Objects::nonNull)
+                    .sorted(Comparator.comparingLong((TemplateVersion v) ->
+                            Optional.of(v.getCreatedAt()).orElse(0L)).reversed())
+                    .toList();
 
             dto.setVersionCount(sortedVersions.size());
             if (!sortedVersions.isEmpty()) {
@@ -118,19 +133,21 @@ public class TemplateController {
                 dto.setLatestVersions(Collections.emptyList());
             }
 
-            dto.setCanUse(true); // Filtered by service
+            dto.setCanUse(true);
 
-            String commitPerm = PermissionNames.Templates.commitToPath$R + "." + t.getPath().replace("/", ".");
-            dto.setCanCommit(commitPermResults.getOrDefault(commitPerm, false));
+            // 处理权限
+            String path = t.getPath();
+            if (path != null) {
+                String commitPerm = PermissionNames.Templates.commitToPath$R + "." + path.replace("/", ".");
+                dto.setCanCommit(commitPermResults.getOrDefault(commitPerm, false));
+            } else {
+                dto.setCanCommit(false);
+            }
 
             return dto;
         }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(new PageImpl<>(
-                dtos,
-                page.getPageable(),
-                page.getTotalElements()
-        ));
+        return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
     }
 
     @GetMapping("/{id}")
