@@ -45,6 +45,9 @@ public class Template {
     @JsonIgnore
     private List<TemplateVersion> versions = new ArrayList<>();
 
+    @Column(name = "last_version_at")
+    private Long lastVersionAt;
+
     // ORM required
     public Template() {}
 
@@ -72,6 +75,14 @@ public class Template {
 
     public List<TemplateVersion> getVersions() { return versions; }
     public void setVersions(List<TemplateVersion> versions) { this.versions = versions; }
+
+    public Long getLastVersionAt() {
+        return lastVersionAt;
+    }
+
+    public void setLastVersionAt(Long lastVersionAt) {
+        this.lastVersionAt = lastVersionAt;
+    }
 
     public TemplateVersion getLatestVersion() {
         if (metadata.getVersions().isEmpty()) return null;

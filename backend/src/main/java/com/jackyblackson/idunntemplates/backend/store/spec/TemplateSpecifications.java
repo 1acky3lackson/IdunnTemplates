@@ -33,12 +33,12 @@ public class TemplateSpecifications {
             }
 
             // 2.3 路径模糊匹配 (Like 'name')
-            if (criteria.getNameLike() != null && !criteria.getNameLike().isEmpty()) {
-                predicates.add(cb.like(
-                        cb.lower(root.get("name")),
-                        "%" + criteria.getNameLike().toLowerCase() + "%"
-                ));
-            }
+//            if (criteria.getNameLike() != null && !criteria.getNameLike().isEmpty()) {
+//                predicates.add(cb.like(
+//                        cb.lower(root.get("name")),
+//                        "%" + criteria.getNameLike().toLowerCase() + "%"
+//                ));
+//            }
 
             // 2.4 版本 Message 模糊匹配
             if (criteria.getVersionMessageLike() != null && !criteria.getVersionMessageLike().isEmpty()) {
