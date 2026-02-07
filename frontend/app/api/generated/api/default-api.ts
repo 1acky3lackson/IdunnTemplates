@@ -190,10 +190,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [pathLike] 模糊搜索 Path
          * @param {string} [nameLike] 模糊搜索 Name
          * @param {string} [creatorId] 创建玩家的 uuid，单个，精确匹配
+         * @param {boolean} [sortByLatestVersionTime] 是否按照最新更新时间排序
+         * @param {string} [versionMessageLike] 模糊搜索更新文本
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1TemplatesGet: async (pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1TemplatesGet: async (pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, sortByLatestVersionTime?: boolean, versionMessageLike?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/templates`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -264,6 +266,14 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (creatorId !== undefined) {
                 localVarQueryParameter['creatorId'] = creatorId;
+            }
+
+            if (sortByLatestVersionTime !== undefined) {
+                localVarQueryParameter['sortByLatestVersionTime'] = sortByLatestVersionTime;
+            }
+
+            if (versionMessageLike !== undefined) {
+                localVarQueryParameter['versionMessageLike'] = versionMessageLike;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -617,11 +627,13 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {string} [pathLike] 模糊搜索 Path
          * @param {string} [nameLike] 模糊搜索 Name
          * @param {string} [creatorId] 创建玩家的 uuid，单个，精确匹配
+         * @param {boolean} [sortByLatestVersionTime] 是否按照最新更新时间排序
+         * @param {string} [versionMessageLike] 模糊搜索更新文本
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1TemplatesGet(pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TemplatePagenable>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort, minLength, maxLength, minHeight, maxHeight, pathLike, nameLike, creatorId, options);
+        async apiV1TemplatesGet(pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, sortByLatestVersionTime?: boolean, versionMessageLike?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TemplatePagenable>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort, minLength, maxLength, minHeight, maxHeight, pathLike, nameLike, creatorId, sortByLatestVersionTime, versionMessageLike, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1TemplatesGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -782,11 +794,13 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [pathLike] 模糊搜索 Path
          * @param {string} [nameLike] 模糊搜索 Name
          * @param {string} [creatorId] 创建玩家的 uuid，单个，精确匹配
+         * @param {boolean} [sortByLatestVersionTime] 是否按照最新更新时间排序
+         * @param {string} [versionMessageLike] 模糊搜索更新文本
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1TemplatesGet(pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, options?: RawAxiosRequestConfig): AxiosPromise<TemplatePagenable> {
-            return localVarFp.apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort, minLength, maxLength, minHeight, maxHeight, pathLike, nameLike, creatorId, options).then((request) => request(axios, basePath));
+        apiV1TemplatesGet(pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, sortByLatestVersionTime?: boolean, versionMessageLike?: string, options?: RawAxiosRequestConfig): AxiosPromise<TemplatePagenable> {
+            return localVarFp.apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort, minLength, maxLength, minHeight, maxHeight, pathLike, nameLike, creatorId, sortByLatestVersionTime, versionMessageLike, options).then((request) => request(axios, basePath));
         },
         /**
          * *  /api/v1/templates/{id}/download (下载最新版) * /api/v1/templates/{id}/download?version=1706781234000 (下载指定版)
@@ -928,11 +942,13 @@ export class DefaultApi extends BaseAPI {
      * @param {string} [pathLike] 模糊搜索 Path
      * @param {string} [nameLike] 模糊搜索 Name
      * @param {string} [creatorId] 创建玩家的 uuid，单个，精确匹配
+     * @param {boolean} [sortByLatestVersionTime] 是否按照最新更新时间排序
+     * @param {string} [versionMessageLike] 模糊搜索更新文本
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiV1TemplatesGet(pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort, minLength, maxLength, minHeight, maxHeight, pathLike, nameLike, creatorId, options).then((request) => request(this.axios, this.basePath));
+    public apiV1TemplatesGet(pathPrefix?: string, locked?: boolean, minWidth?: number, maxWidth?: number, worldId?: string, page?: number, size?: number, sort?: string, minLength?: number, maxLength?: number, minHeight?: number, maxHeight?: number, pathLike?: string, nameLike?: string, creatorId?: string, sortByLatestVersionTime?: boolean, versionMessageLike?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1TemplatesGet(pathPrefix, locked, minWidth, maxWidth, worldId, page, size, sort, minLength, maxLength, minHeight, maxHeight, pathLike, nameLike, creatorId, sortByLatestVersionTime, versionMessageLike, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
