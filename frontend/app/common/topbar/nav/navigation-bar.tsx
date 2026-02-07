@@ -36,7 +36,7 @@ export function NavigationBar() {
             <NavigationMenuList>
                 {/* TEMPLATES */}
                 <NavigationMenuItem>
-                    <NavigationMenuTrigger>{menus.templates}</NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="bg-transparent">{menus.templates}</NavigationMenuTrigger>
                     <NavigationMenuContent>
                         <ul className="grid gap-3 p-6 md:w-100 lg:w-125 lg:grid-cols-[.75fr_1fr]">
                             <li className="row-span-3">
@@ -69,7 +69,7 @@ export function NavigationBar() {
 
                 {/* TAGS */}
                 <NavigationMenuItem>
-                    <NavigationMenuLink asChild>
+                    <NavigationMenuLink asChild className="bg-transparent">
                         <a href="/tags" className={navigationMenuTriggerStyle()}>
                             {menus.tags}
                         </a>
@@ -78,7 +78,7 @@ export function NavigationBar() {
 
                 {/* SETS */}
                 <NavigationMenuItem>
-                    <NavigationMenuTrigger>{menus.sets}</NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="bg-transparent">{menus.sets}</NavigationMenuTrigger>
                     <NavigationMenuContent>
                         <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
                             {setComponents.map((component, index) => (
@@ -96,7 +96,7 @@ export function NavigationBar() {
 
                 {/* BRUSHES */}
                 <NavigationMenuItem>
-                    <NavigationMenuTrigger>{menus.brushes}</NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="bg-transparent">{menus.brushes}</NavigationMenuTrigger>
                     <NavigationMenuContent>
                         <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
                             {brushComponents.map((component, index) => (
@@ -114,7 +114,7 @@ export function NavigationBar() {
 
                 {/* BRUSHES */}
                 <NavigationMenuItem>
-                    <NavigationMenuTrigger>{menus.utilities}</NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="bg-transparent">{menus.utilities}</NavigationMenuTrigger>
                     <NavigationMenuContent>
                         <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
                             {utilComponents.map((component, index) => (
