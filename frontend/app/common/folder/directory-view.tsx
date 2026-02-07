@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, Folder, FolderOpen, Loader2, Landmark, PencilLine, LayersPlus } from 'lucide-react';
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Loader2, Landmark, PencilLine, LayersPlus, MapPlus, Map, GitMerge, GitBranchPlus, GitBranchPlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { IDUNN_API } from '~/api';
@@ -139,25 +139,25 @@ const TreeNode = ({ path, level, selectedPath, onSelect }: TreeNodeProps) => {
 
                 {
                     !isLoading && (
-                        <div className="inline-flex flex-row gap-1 text-xs align-middle transition-transform duration-300">
+                        <div className="inline-flex flex-row gap-1 align-middle transition-transform duration-300">
                             {
                                 path.canUse && (
-                                    <span className="relative text-[10px] bg-primary/10 text-primary p-0.5 rounded-full font-bold top-0 hover:-top-1.5 transition-all duration-300">
-                                        <Landmark className="w-2 h-2" />
+                                    <span className="relative bg-primary/10 text-primary p-0.5 rounded-full font-bold top-0 hover:-top-1.5 transition-all duration-300">
+                                        <Map size={10} />
                                     </span>
                                 )
                             }
                             {
                                 path.canCommit && (
-                                    <span className="relative text-[10px] bg-primary/10 text-primary p-0.5 rounded-full font-bold top-0 hover:-top-1.5 transition-all duration-300">
-                                        <PencilLine className="w-2 h-2" />
+                                    <span className="relative bg-primary/10 text-primary p-0.5 rounded-full font-bold top-0 hover:-top-1.5 transition-all duration-300">
+                                        <GitBranchPlusIcon size={10} />
                                     </span>
                                 )
                             }
                             {
                                 path.canSave && (
-                                    <span className="relative text-[10px] bg-primary/10 text-primary p-0.5 rounded-full font-bold top-0 hover:-top-1.5 transition-all duration-300">
-                                        <LayersPlus className="w-2 h-2" />
+                                    <span className="relative bg-primary/10 text-primary p-0.5 rounded-full font-bold top-0 hover:-top-1.5 transition-all duration-300">
+                                        <LayersPlus size={10} />
                                     </span>
                                 )
                             }

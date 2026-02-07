@@ -8,7 +8,9 @@ import {
     Ruler,
     ImageIcon,
     HelpCircle,
-    Milestone
+    Milestone,
+    AtSign,
+    User
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
@@ -19,6 +21,7 @@ import { SmartTemplatePreview, type ViewState } from './smart-template-preview';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { useIntlayer } from 'react-intlayer';
+import { useUserInfoCache } from '../util/user-info-cache';
 
 interface TemplateCardProps {
     template: Template;
@@ -254,6 +257,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
     const [isHovering, setIsHovering] = useState(false);
     const { setTheme, theme } = useTheme();
     const { templateCard } = useIntlayer('template-card');
+    const { setUserInfo, getUsernameByUuid, getUuidByUsername } = useUserInfoCache();
 
     const handleAngleChange = useCallback((newAngle: (0 | 1 | 2 | 3) | ((prev: 0 | 1 | 2 | 3) => 0 | 1 | 2 | 3)) => {
         if (previewState === 'rendering') {
@@ -409,9 +413,15 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             <div className="flex flex-1 flex-col p-4 pt-2 z-10 dark:bg-primary-foreground/75 bg-primary-foreground/55">
                 <Link to={`/templates/${template.id}`}>
                     <div className="mb-3 mt-4">
-                        <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
-                            {template.name}
-                        </h3>
+                        {/* 标题 row 1: 名称 作者 */}
+                        <div className="flex flex-row align-middle justify-between gap-2">
+                            <h3 className="line-clamp-1 text-base font-bold tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
+                                {template.name}
+                            </h3>
+                            <div className="flex items-center gap-1 text-primary text-xs bg-primary/10 border px-1 py-0.5 rounded-md underline underline-offset-2">
+                                <User size={14} /> {getUsernameByUuid(template.metadata.creatorId)}
+                            </div>
+                        </div>
                         <p className="mt-1 line-clamp-1 text-[10px] font-mono text-muted-foreground/70 break-all" title={template.path}>
                             {template.path}
                         </p>
@@ -444,8 +454,8 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground/60">
                     <div className="flex items-center gap-1">
                         <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex flex-row align-middle justify-start gap-1">
-                            <Milestone size={12}/> @ 
-                            {getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}
+                            <Milestone size={12}/> <div>@</div>
+                            <div>{getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}</div>
                         </span>
                     </div>
                     <div className="flex items-center gap-1">
