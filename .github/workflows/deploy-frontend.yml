@@ -1,10 +1,10 @@
-name: Node.js CI & Deployment
+name: Frontend Build & Deployment
 
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  # 允许手动触发部署
+  workflow_dispatch:
 
 jobs:
   build:
