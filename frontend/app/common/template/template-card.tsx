@@ -10,7 +10,8 @@ import {
     HelpCircle,
     Milestone,
     AtSign,
-    User
+    User,
+    GitCommit
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
@@ -181,7 +182,7 @@ const seededRandom = (seed: number) => {
  */
 const generateRandomColor = (seed: number, alpha: number) => {
     const hue = Math.floor(seededRandom(seed) * 360);
-    const saturation  = Math.floor(seededRandom(seed) * 60) + 20; // 饱和度在40%-60%之间
+    const saturation = Math.floor(seededRandom(seed) * 60) + 20; // 饱和度在40%-60%之间
     const lightness = Math.floor(seededRandom(seed) * 80) + 10; // 亮度在30%-70%之间
 
     // 使用新的 hsl 语法：hsla(hue, saturation, lightness, alpha)
@@ -206,7 +207,7 @@ const generateMeshGradient = (colors: string[], id: string, theme: string = 'lig
     while (pool.length < 6) {
         pool.push(...colors);
     }
-    
+
     let seed = getSeed(id);
 
     let minValidIndex = -1;
@@ -219,16 +220,16 @@ const generateMeshGradient = (colors: string[], id: string, theme: string = 'lig
                 minValidIndex = index;
             }
             if (pool[index - minValidIndex] !== "#unknown") {
-                finalColorWithAlpha = `${pool[index - minValidIndex]}${alpha}`; 
+                finalColorWithAlpha = `${pool[index - minValidIndex]}${alpha}`;
             } else {
                 // 随机生成的颜色直接携带 alpha
                 finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha));
             }
-            
+
         } else {
             // 处理传入的预设颜色：如果是 hex 格式，直接拼接
             // 如果你传入的是其他格式，建议在此处统一转换为包含 alpha 的字符串
-            finalColorWithAlpha = `${color}${alpha}`; 
+            finalColorWithAlpha = `${color}${alpha}`;
         }
 
         // 生成坐标
@@ -297,9 +298,16 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
     // --- 核心变化：计算 Mesh Gradient ---
     const backgroundStyle = useMemo(() => {
-        const gradient = generateMeshGradient(template.colorSchemes, template.id + theme + ((angle+1)*147), theme);
+        const gradient = generateMeshGradient(template.colorSchemes, template.id + theme + ((angle + 1) * 147), theme);
         return gradient ? { backgroundImage: gradient } : {};
     }, [template.colorSchemes, template.id, theme, angle]);
+
+    let latestVersionMessage: any = template.latestVersions[0]?.message || templateCard.noVersionMessages;
+    if (typeof latestVersionMessage === 'string' && latestVersionMessage === "Initial creation") {
+        latestVersionMessage = templateCard.initMessage;
+    } else if (typeof latestVersionMessage === 'string' && latestVersionMessage === "Auto-commit: Cascading update from child instances.") {
+        latestVersionMessage = templateCard.cascadingUpdateMessage;
+    }
 
     return (
         <div
@@ -319,7 +327,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 onMouseLeave={() => setIsHovering(false)}
             >
                 {/* 条件渲染：如果出错显示可爱图标，否则显示图片 */}
-                
+
                 <SmartTemplatePreview
                     template={template}
                     angle={angle}
@@ -453,9 +461,16 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 {/* Footer Info */}
                 <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-[10px] text-muted-foreground/60">
                     <div className="flex items-center gap-1">
-                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex flex-row align-middle justify-start gap-1">
-                            <Milestone size={12}/> <div>@</div>
-                            <div>{getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}</div>
+                        <span className=" inline-flex flex-row align-middle justify-start gap-1">
+                            <div className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex flex-row gap-1">
+                                    <Milestone size={12} />
+                                <div>{getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}</div>
+                            </div>
+                            
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                                <GitCommit className="h-2.5 w-2.5" />
+                                <span>{latestVersionMessage}</span>
+                            </div>
                         </span>
                     </div>
                     <div className="flex items-center gap-1">
