@@ -91,7 +91,7 @@ const TreeNode = ({ path, level, selectedPath, onSelect }: TreeNodeProps) => {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                    "w-full justify-start hover:bg-muted/50 h-8 px-2 font-normal flex flex-row justify-between",
+                    "w-full hover:bg-muted/50 h-8 px-2 font-normal flex flex-row justify-between",
                     isSelected && "bg-accent text-accent-foreground font-medium",
                     level > 0 && "ml-0"
                 )}
