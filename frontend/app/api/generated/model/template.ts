@@ -15,6 +15,9 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { TemplateLatestVersionsInner } from './template-latest-versions-inner';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { TemplateMetadata } from './template-metadata';
 
 export interface Template {
@@ -26,5 +29,16 @@ export interface Template {
     'latestVersion': string;
     'usePermissionNode': string;
     'colorSchemes': Array<string>;
+    /**
+     * 最多10个
+     */
+    'latestVersions': Array<TemplateLatestVersionsInner>;
+    /**
+     * 毫秒时间戳字符串
+     */
+    'latestVersionName': string;
+    'versionCount': number;
+    'canUse': boolean;
+    'canCommit': boolean;
 }
 

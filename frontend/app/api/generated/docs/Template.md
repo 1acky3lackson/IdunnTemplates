@@ -13,6 +13,11 @@ Name | Type | Description | Notes
 **latestVersion** | **string** |  | [default to undefined]
 **usePermissionNode** | **string** |  | [default to undefined]
 **colorSchemes** | **Array&lt;string&gt;** |  | [default to undefined]
+**latestVersions** | [**Array&lt;TemplateLatestVersionsInner&gt;**](TemplateLatestVersionsInner.md) | 最多10个 | [default to undefined]
+**latestVersionName** | **string** | 毫秒时间戳字符串 | [default to undefined]
+**versionCount** | **number** |  | [default to undefined]
+**canUse** | **boolean** |  | [default to undefined]
+**canCommit** | **boolean** |  | [default to undefined]
 
 ## Example
 
@@ -28,6 +33,11 @@ const instance: Template = {
     latestVersion,
     usePermissionNode,
     colorSchemes,
+    latestVersions,
+    latestVersionName,
+    versionCount,
+    canUse,
+    canCommit,
 };
 ```
 

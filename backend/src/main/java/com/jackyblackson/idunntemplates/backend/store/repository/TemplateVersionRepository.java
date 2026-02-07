@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.store.repository;
 
+import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -21,4 +22,7 @@ public interface TemplateVersionRepository extends  JpaRepository<TemplateVersio
 
     // 获取某个模板的最新一个版本
     Optional<TemplateVersion> findFirstByTemplateIdOrderByCreatedAtDesc(UUID templateId);
+
+    // 批量查找多个模板的版本
+    List<TemplateVersion> findByTemplateIn(List<Template> templates);
 }
