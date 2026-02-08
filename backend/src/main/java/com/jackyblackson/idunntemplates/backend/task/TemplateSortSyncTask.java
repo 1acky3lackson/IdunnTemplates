@@ -62,7 +62,9 @@ public class TemplateSortSyncTask {
                                 () -> {
                                     // 兜底策略：若无版本，则使用模板本身的创建时间
                                     // 确保 lastVersionAt 永远不为 null，否则排序会失效
-                                    template.setLastVersionAt(template.getMetadata().getCreationTime());
+                                    template.setLastVersionAt(
+                                            template.getMetadata().getCreationTime()
+                                    );
                                 }
                         );
             } catch (Exception e) {
