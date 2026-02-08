@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, ChevronDown, FolderTree, FileType } from "lucide-react";
+import { Search, ChevronDown, FolderTree, FileType, GitBranch } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -100,6 +100,23 @@ export function TemplateSearchBar({
                 className="h-8"
               />
               <p className="text-[10px] text-muted-foreground">{searchBar.nameMatchDesc}</p>
+            </div>
+            <Separator />
+            {/* 3. Version message like 输入 */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-muted-foreground" />
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  {searchBar.commitMessageMatchLabel}
+                </label>
+              </div>
+              <Input
+                placeholder="e.g., 添加"
+                value={(values.versionMessageLike as string) || ""}
+                onChange={(e) => updateValue("versionMessageLike", e.target.value)}
+                className="h-8"
+              />
+              <p className="text-[10px] text-muted-foreground">{searchBar.commitMessageMatchDesc}</p>
             </div>
             <Separator />
             {/* 清除按钮 */}

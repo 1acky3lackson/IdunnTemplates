@@ -87,7 +87,7 @@ export const searchTemplatesObjectParam = (params: TemplateSearchParams) => {
 export type SortDirection = 'asc' | 'desc';
 
 // 2. 定义允许排序的基础字段 (根据文档 Section A)
-type BaseSortKeys = 'path' | 'name';
+type BaseSortKeys = 'path' | 'name' | 'lastVersionAt';
 
 // 3. 定义允许排序的 Metadata 字段 (根据文档 Section B & C)
 // 这里直接提取 TemplateMetadata 的所有 Key。
