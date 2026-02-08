@@ -33,12 +33,12 @@ public class TemplateSpecifications {
             }
 
             // 2.3 路径模糊匹配 (Like 'name')
-//            if (criteria.getNameLike() != null && !criteria.getNameLike().isEmpty()) {
-//                predicates.add(cb.like(
-//                        cb.lower(root.get("name")),
-//                        "%" + criteria.getNameLike().toLowerCase() + "%"
-//                ));
-//            }
+            if (criteria.getNameLike() != null && !criteria.getNameLike().isEmpty()) {
+                predicates.add(cb.like(
+                        cb.lower(root.get("name")),
+                        "%" + criteria.getNameLike().toLowerCase() + "%"
+                ));
+            }
 
             // 2.4 版本 Message 模糊匹配
             if (criteria.getVersionMessageLike() != null && !criteria.getVersionMessageLike().isEmpty()) {
@@ -50,18 +50,18 @@ public class TemplateSpecifications {
                 query.distinct(true);
             }
 
-            // 2.5 按最新版本时间排序
-            if (Boolean.TRUE.equals(criteria.getSortByLatestVersionTime())) {
-                // 防止在 count 查询中添加 orderBy
-                // query.getResultType() 对于 count 查询通常是 Long.class
-                if (query.getResultType() != Long.class && query.getResultType() != long.class) {
-                    Subquery<Long> subquery = query.subquery(Long.class);
-                    Root<TemplateVersion> subRoot = subquery.from(TemplateVersion.class);
-                    subquery.select(cb.max(subRoot.get("createdAt")));
-                    subquery.where(cb.equal(subRoot.get("template"), root));
-                    query.orderBy(cb.desc(subquery));
-                }
-            }
+//            // 2.5 按最新版本时间排序
+//            if (Boolean.TRUE.equals(criteria.getSortByLatestVersionTime())) {
+//                // 防止在 count 查询中添加 orderBy
+//                // query.getResultType() 对于 count 查询通常是 Long.class
+//                if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+//                    Subquery<Long> subquery = query.subquery(Long.class);
+//                    Root<TemplateVersion> subRoot = subquery.from(TemplateVersion.class);
+//                    subquery.select(cb.max(subRoot.get("createdAt")));
+//                    subquery.where(cb.equal(subRoot.get("template"), root));
+//                    query.orderBy(cb.desc(subquery));
+//                }
+//            }
 
             // 3. Metadata 字段精确匹配
             if (criteria.getCreatorId() != null) {

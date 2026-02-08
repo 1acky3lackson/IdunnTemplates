@@ -228,10 +228,11 @@ export const TemplateFilters: React.FC<{
                                 <SelectValue placeholder={filters.sortBy} />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="lastVersionAt,desc">{filters.sortOrders.newlyUpdated}</SelectItem>
+                                <SelectItem value="lastVersionAt,asc">{filters.sortOrders.oldlyUpdated}</SelectItem>
+                                <SelectSeparator />
                                 <SelectItem value="metadata.creationTime,desc">{filters.sortOrders.newest}</SelectItem>
                                 <SelectItem value="metadata.creationTime,asc">{filters.sortOrders.oldest}</SelectItem>
-                                <SelectSeparator />
-                                <SelectItem value="#NEWLY_UPDATED">{filters.sortOrders.newlyUpdated}</SelectItem>
                                 <SelectSeparator />
                                 <SelectItem value="metadata.lockedTimestamp,desc">{filters.sortOrders.newestLocked}</SelectItem>
                                 <SelectItem value="metadata.lockedTimestamp,asc">{filters.sortOrders.oldestLocked}</SelectItem>
@@ -740,7 +741,7 @@ export const TemplateBrowser: React.FC<{
             <div className="w-full">
                 <WaterfallProvider<Template, TemplateSearchParams>
                     initialCriteria={{
-                        sort: templateSearchSortBuilder('metadata.creationTime', 'desc'),
+                        sort: templateSearchSortBuilder('lastVersionAt', 'desc'),
                         pathPrefix: '',
                         ...initialCriteria
                     }}

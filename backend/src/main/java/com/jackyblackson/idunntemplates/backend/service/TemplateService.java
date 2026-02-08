@@ -70,16 +70,6 @@ public class TemplateService {
     @Transactional(readOnly = true)
     public Page<Template> searchTemplates(TemplateSearchCriteria criteria, Pageable pageable, UserContext userContext) {
         // 1. 数据库查询 (获取原始分页结果)
-        // 这一步很快，且利用了数据库索引
-        // 如果 criteria 要求按最新版本排序
-        if (Boolean.TRUE.equals(criteria.getSortByLatestVersionTime())) {
-            pageable = PageRequest.of(
-                    pageable.getPageNumber(),
-                    pageable.getPageSize(),
-                    Sort.by(Sort.Direction.DESC, "lastVersionAt").and(Sort.by(Sort.Direction.DESC, "id"))
-            );
-        }
-
         Page<Template> dbResult = templateRepository.findAll(
                 TemplateSpecifications.withCriteria(criteria),
                 pageable

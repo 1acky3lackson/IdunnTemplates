@@ -11,6 +11,7 @@ const templateBrowserContent = {
             }),
             sortOrders: {
                 newlyUpdated: t({ [Locales.ENGLISH]: "Newest Updated", [Locales.CHINESE]: "最新更新优先", [Locales.CHINESE_TRADITIONAL]: "最新更新優先" }),
+                oldlyUpdated: t({ [Locales.ENGLISH]: "Oldest Updated", [Locales.CHINESE]: "最旧更新优先", [Locales.CHINESE_TRADITIONAL]: "最旧更新優先" }),
                 newest: t({ [Locales.ENGLISH]: "Newest First", [Locales.CHINESE]: "最新优先", [Locales.CHINESE_TRADITIONAL]: "最新優先" }),
                 oldest: t({ [Locales.ENGLISH]: "Oldest First", [Locales.CHINESE]: "最早优先", [Locales.CHINESE_TRADITIONAL]: "最早優先" }),
                 newestLocked: t({ [Locales.ENGLISH]: "Newest Locked First", [Locales.CHINESE]: "最近锁定优先", [Locales.CHINESE_TRADITIONAL]: "最近鎖定優先" }),
@@ -213,6 +214,12 @@ const templateBrowserContent = {
                 [Locales.ENGLISH]: "Fuzzy match on template name.",
                 [Locales.CHINESE]: "模糊匹配模版名称。",
                 [Locales.CHINESE_TRADITIONAL]: "模糊匹配模版名稱。"
+            }),
+            commitMessageMatchLabel: t({ [Locales.ENGLISH]: "Version Message Matches", [Locales.CHINESE]: "版本信息匹配", [Locales.CHINESE_TRADITIONAL]: "版本信息匹配" }),
+            commitMessageMatchDesc: t({
+                [Locales.ENGLISH]: "Fuzzy match on version commit message.",
+                [Locales.CHINESE]: "模糊匹配版本提交信息。",
+                [Locales.CHINESE_TRADITIONAL]: "模糊匹配版本提交信息。"
             }),
             clearAdvanced: t({ [Locales.ENGLISH]: "Clear Advanced Filters", [Locales.CHINESE]: "清空高级筛选", [Locales.CHINESE_TRADITIONAL]: "清空高級篩選" }),
             mainPlaceholder: t({ [Locales.ENGLISH]: "Search paths fuzzy...", [Locales.CHINESE]: "模糊搜索路径...", [Locales.CHINESE_TRADITIONAL]: "模糊搜索路徑..." }),
