@@ -23,6 +23,16 @@ const templateCardContent = {
                 [Locales.CHINESE]: "自动级联更新",
                 [Locales.CHINESE_TRADITIONAL]: "自动级联更新",
                 [Locales.ENGLISH]: "Auto cascading update"
+            }),
+            unknownUser: t({
+                [Locales.CHINESE]: "未知用户",
+                [Locales.CHINESE_TRADITIONAL]: "未知用户",
+                [Locales.ENGLISH]: "Unknown User"
+            }),
+            autoUpdatingSystem: t({
+                [Locales.CHINESE]: "自动更新系统",
+                [Locales.CHINESE_TRADITIONAL]: "自动更新系统",
+                [Locales.ENGLISH]: "Auto Updating System"
             })
         }
     },

@@ -11,7 +11,8 @@ import {
     Milestone,
     AtSign,
     User,
-    GitCommit
+    GitCommit,
+    PersonStanding
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
@@ -463,19 +464,32 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                     <div className="flex items-center gap-1">
                         <span className=" inline-flex flex-row align-middle justify-start gap-1">
                             <div className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex flex-row gap-1">
-                                    <Milestone size={12} />
+                                <Milestone size={12} />
                                 <div>{getDaytimeStringFromMsTimestampString(template.latestVersionName) || '1.0'}</div>
                             </div>
-                            
                             <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-                                <GitCommit className="h-2.5 w-2.5" />
-                                <span>{latestVersionMessage}</span>
+                                <span>by</span>
+                                <span className="underline underline-offset-2">{
+                                    template.latestVersions[0]?.submitterId
+                                    ? (
+                                        template.latestVersions[0]?.submitterId === '00000000-0000-0000-0000-000000000000'
+                                        ? templateCard.autoUpdatingSystem
+                                        : getUsernameByUuid(template.latestVersions[0]?.submitterId)
+                                    )
+                                    : templateCard.unknownUser
+                                }</span>
                             </div>
                         </span>
                     </div>
                     <div className="flex items-center gap-1">
                         <Clock className="h-2.5 w-2.5" />
                         <span>{formattedDate}</span>
+                    </div>
+                </div>
+                <div className="py-1 flex flex-row justify-between">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 pl-1.5">
+                        <GitCommit className="h-2.5 w-2.5" />
+                        <span>{latestVersionMessage}</span>
                     </div>
                 </div>
             </div>
