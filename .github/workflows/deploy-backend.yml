@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          # 关键点：开启子模块递归拉取
+          submodules: recursive
+          # 如果你的子模块在私有仓库，且需要特定的 Token 访问，可以取消注释下面一行
+          # token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
