@@ -13,18 +13,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          submodules: recursive # 确保子模块也被拉取
-
-      - name: Pack Source Code
-        # 1. 使用 --exclude 排除生成的压缩包文件本身，防止“文件在读取时改变”的错误
-        # 2. 也可以将压缩包存放在 Runner 的临时目录 /tmp 中
-        run: |
-          tar -czf source_code.tar.gz \
-            --exclude='source_code.tar.gz' \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='backend/build' \
-            .
+          # 关键：递归拉取子模块，确保 /lib/SchemConvert 代码存在
+          submodules: recursive
+          # 如果子模块是私有库，可能需要配置 fetch-depth: 0 或使用 token
+          fetch-depth: 0
 
       - name: Add SSH Key
         uses: webfactory/ssh-agent@v0.9.0
@@ -36,19 +28,27 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Transfer and Extract Source
-        # 1. 确保目标目录存在
-        # 2. 将压缩包传输到服务器
-        # 3. 在服务器端解压并清理压缩包
+      - name: Sync Source to Server
+        # 使用 rsync 增量同步：
+        # -a: 归档模式，保留权限和时间戳
+        # -v: 显示详细日志
+        # -z: 传输时压缩数据（解决你提到的传输慢问题）
+        # --delete: 确保远程目录与本地完全一致，清理掉已删除的文件
+        # --exclude: 避开不需要同步的元数据和构建产物
         run: |
+          # 确保远程目标路径存在
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "mkdir -p /home/taixue/data/services/idunn-backend/build/src"
           
-          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" \
-            source_code.tar.gz \
+          rsync -avz --delete \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='backend/build/' \
+            --exclude='.gradle/' \
+            ./ \
             ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/services/idunn-backend/build/src/
 
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "cd /home/taixue/data/services/idunn-backend/build/src && tar -xzf source_code.tar.gz && rm source_code.tar.gz"
-
       - name: Execute Remote Build Script
+        # 同步完成后，触发服务器上的构建脚本
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "bash /home/taixue/data/services/idunn-backend/build-remote.sh"
