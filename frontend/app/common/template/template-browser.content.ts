@@ -228,4 +228,4 @@ const templateBrowserContent = {
     },
 } satisfies Dictionary;
 
-export default templateBrowserContent;
+export default templateBrowserContent; 
