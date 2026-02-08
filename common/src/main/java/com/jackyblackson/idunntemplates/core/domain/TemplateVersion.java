@@ -47,6 +47,10 @@ public class TemplateVersion {
     @DatabaseField(columnName = "created_at")
     private long createdAt;
 
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
     // ORM 必须的无参构造
     public TemplateVersion() {}
 
@@ -55,7 +59,7 @@ public class TemplateVersion {
         this.versionId = versionId;
         this.submitterId = submitterId;
         this.message = message;
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Long.parseLong(versionId);
     }
 
     // Getters

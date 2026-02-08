@@ -27,4 +27,6 @@ public interface TemplateVersionRepository extends  JpaRepository<TemplateVersio
     List<TemplateVersion> findByTemplateIn(List<Template> templates);
 
     Optional<TemplateVersion> findTopByTemplateOrderByCreatedAtDesc(Template template);
+
+    List<TemplateVersion> findByCreatedAt(long createAtMsTimestamp);
 }
