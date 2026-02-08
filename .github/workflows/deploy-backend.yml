@@ -16,9 +16,11 @@ jobs:
           submodules: recursive # 确保子模块也被拉取
 
       - name: Pack Source Code
-        # 使用 tar 打包，排除 .git 等冗余文件以减小体积
+        # 1. 使用 --exclude 排除生成的压缩包文件本身，防止“文件在读取时改变”的错误
+        # 2. 也可以将压缩包存放在 Runner 的临时目录 /tmp 中
         run: |
           tar -czf source_code.tar.gz \
+            --exclude='source_code.tar.gz' \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='backend/build' \
