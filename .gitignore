@@ -120,3 +120,4 @@ runs/
 /idunn-renderer-service/dist/
 
 **/bin
+/plugin/bin/

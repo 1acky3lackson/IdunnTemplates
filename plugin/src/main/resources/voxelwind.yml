@@ -1,0 +1,148 @@
+# VoxelWind Configuration
+separator: "-"
+
+# 1. 基础字典定义
+definitions:
+  materials:
+    ##########################
+    # WOODS
+    ##########################
+    o: oak
+    so: stripped_oak
+    # ---
+    s: spruce
+    sp: stripped_spruce
+    # ---
+    b: birch
+    sb: stripped_birch
+    # ---
+    j: jungle
+    sj: stripped_jungle
+    # ---
+    a: acacia
+    sa: stripped_acacia
+    # ---
+    do: dark_oak
+    sdo: stripped_dark_oak
+    # ---
+    m: mangrove
+    sm: stripped_mangrove
+    # ---
+    c: cherry
+    sc: stripped_cherry
+    ##########################
+    # STONES
+    ##########################
+    st: stone
+    c: cobblestone
+    an: andesite
+    di: diorite
+    pan: polished_andesite
+    san: polished_andesite
+    pdi: polished_diorite
+    sdi: polished_diorite
+    qz: quartz
+    sqz: smooth_quartz
+    #################################
+    # COLORS
+    #################################
+    bk: black
+    gy: gray
+    lg: light_gray
+    wh: white
+    pk: pink
+    mg: magenta
+    pp: purple
+    lb: light_blue
+    cy: cyan
+    gr: green
+    lm: lime
+    yl: yellow
+    or: orange
+    rd: red
+    br: brown
+  shapes:
+    ######################
+    # COMMON VARIATIONS
+    ######################
+    sl: slab
+    st: stairs
+    ######################
+    # WOOD VARIATIONS
+    ######################
+    lg: log
+    wd: wood
+    pl: planks
+    tdr: trapdoor
+    dr: door
+    fg: fence_gate
+    f: fence
+    sgn: sign
+    hsg: hanging_sign
+    btn: button
+    plt: pressure_plate
+    ######################
+    # STONE VARIATIONS
+    ######################
+    w: wall
+    ######################
+    # COLORABLES
+    ######################
+    g: stained_glass
+    gp: stained_glass_pane
+    wl: wool
+    cp: carpet
+    cpd: concrete_powder
+    c: concrete
+    t: terracotta
+    gt: glazed_terracotta
+    skb: shulker_box
+    bd: bed
+    fl: banner
+    bn: banner
+    cdl: candle
+
+
+# 2. 允许的组合规则 (Allow-list)
+rules:
+  ##########################
+  # WOODS
+  ##########################
+  o: &wood_group [lg, wd, pl, tdr, dr, fg, f, sgn, hsg, btn, plt]
+  s: *wood_group
+  b: *wood_group
+  j: *wood_group
+  a: *wood_group
+  do: *wood_group
+  m: *wood_group
+  c: *wood_group
+  ##########################
+  # STONES
+  ##########################
+  st: [sl, st]
+  c: [sl, st, w]
+  ##########################
+  # COLORABLES
+  ##########################
+  bk: &color_blocks [g, gp, wl, cp, cpd, c, t, gt, skb, bd, fl, bn, cdl]
+  gy: *color_blocks
+  lg: *color_blocks
+  wh: *color_blocks
+  pk: *color_blocks
+  mg: *color_blocks
+  pp: *color_blocks
+  lb: *color_blocks
+  cy: *color_blocks
+  gr: *color_blocks
+  lm: *color_blocks
+  yl: *color_blocks
+  or: *color_blocks
+  rd: *color_blocks
+  br: *color_blocks
+
+# 3. 直白映射 (Direct Mappings)
+# 优先级最高，直接一对一指定 Minecraft ID
+direct_mappings:
+  r-g: red_stained_glass
+  b-g: blue_stained_glass
+  d-o: dirt_path
