@@ -58,6 +58,14 @@ public class RemoteSetController {
     @AuthRequired
     public ResponseEntity<RemoteSetDto> createSet(@RequestBody CreateRemoteSetRequest request, UserContext user) {
         String ns = request.getNamespace();
+        if (request.getName() == null || request.getName().isEmpty() || request.getName().isBlank()) {
+            var response = ResponseEntity.badRequest();
+            response.body("name must not be null");
+            return response.build();
+        }
+        if (ns == null) {
+            ns = "player." + user.getUsername();
+        }
         boolean isSelf = ns.equals("player." + user.getUsername());
         if (!isSelf) {
             boolean isAdmin = luckyPermAuthService.checkPermission(user.getUuid().toString(), user.getUsername(), "idunn.admin");
@@ -66,7 +74,7 @@ public class RemoteSetController {
             }
         }
 
-        RemoteSet set = remoteSetService.createSet(request.getName(), request.getNamespace(), UUID.fromString(user.getUuid()), user.getUsername());
+        RemoteSet set = remoteSetService.createSet(request.getName(), ns, UUID.fromString(user.getUuid()), user.getUsername());
         return ResponseEntity.ok(convertToDto(set, user, false));
     }
 
