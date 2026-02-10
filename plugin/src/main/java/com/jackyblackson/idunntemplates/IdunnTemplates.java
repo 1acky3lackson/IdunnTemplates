@@ -116,7 +116,7 @@ public final class IdunnTemplates extends JavaPlugin {
                 ╚═╝╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝\s
                                                         \s
                                        By Jacky_Blackson\s
-                                                                               \s
+                                                        \s
                 """.stripIndent().indent(4)
         );
 
@@ -273,11 +273,11 @@ public final class IdunnTemplates extends JavaPlugin {
             databaseManager.close();
         }
 
-        if (templateManager != null) {
-            var snapshotServer = templateManager.getSnapshotManager();
-            if (snapshotServer != null) {
-                snapshotServer.clearTasks();
-            }
-        }
+//        if (templateManager != null) {
+//            var snapshotServer = templateManager.getSnapshotManager();
+//            if (snapshotServer != null) {
+//                snapshotServer.clearTasks();
+//            }
+//        }
     }
 }
