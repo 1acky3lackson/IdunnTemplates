@@ -29,19 +29,19 @@ import static com.jackyblackson.idunntemplates.core.util.PermissionUtil.hasRecur
 public class TemplateManager {
 
     private final TemplateStorage storage;
-    private final PluginSnapshotManager snapshotManager;
+//    private final PluginSnapshotManager snapshotManager;
     private TemplateUpdater updater;
     private final Map<UUID, Template> idCache = new ConcurrentHashMap<>();
     private final Map<String, Template> pathCache = new ConcurrentHashMap<>();
 
-    public PluginSnapshotManager getSnapshotManager() {
-        return snapshotManager;
-    }
+//    public PluginSnapshotManager getSnapshotManager() {
+//        return snapshotManager;
+//    }
 
     public TemplateManager(TemplateStorage storage) {
         this.storage = storage;
         // [新增] 初始化 SnapshotManager
-        this.snapshotManager = new PluginSnapshotManager(IdunnTemplates.getInstance());
+//        this.snapshotManager = new PluginSnapshotManager(IdunnTemplates.getInstance());
         IdunnTemplates.getInstance().getLogger().info("Scanning for all templates...");
         reloadTemplates();
         IdunnTemplates.getInstance().getLogger().info("Finished, get " + idCache.size() + " unique templates.");
@@ -52,19 +52,19 @@ public class TemplateManager {
         pathCache.clear();
         try {
             java.util.List<Template> loaded = storage.loadAllTemplates();
-            snapshotManager.clearTasks();
+//            snapshotManager.clearTasks();
             // [新增] 异步批量检查所有模版的缩略图
             // 避免在服务器启动时阻塞主线程，等待所有请求完成
-            Bukkit.getScheduler().runTaskAsynchronously(IdunnTemplates.getInstance(), () -> {
-                int checkedCount = 0;
-                for (Template t : loaded) {
-                    // checkAndGenerateThumbnails 内部本身也是异步安全的，
-                    // 但这里我们在一个大的异步任务里循环，减少调度开销
-                    snapshotManager.checkAndGenerateThumbnails(t, false);
-                    checkedCount++;
-                }
-                IdunnTemplates.getInstance().getLogger().info("Thumbnail check scheduled for " + checkedCount + " templates.");
-            });
+//            Bukkit.getScheduler().runTaskAsynchronously(IdunnTemplates.getInstance(), () -> {
+//                int checkedCount = 0;
+//                for (Template t : loaded) {
+//                    // checkAndGenerateThumbnails 内部本身也是异步安全的，
+//                    // 但这里我们在一个大的异步任务里循环，减少调度开销
+////                    snapshotManager.checkAndGenerateThumbnails(t, false);
+//                    checkedCount++;
+//                }
+//                IdunnTemplates.getInstance().getLogger().info("Thumbnail check scheduled for " + checkedCount + " templates.");
+//            });
 
             for (Template t : loaded) {
                 idCache.put(t.getId(), t);
@@ -356,7 +356,7 @@ public class TemplateManager {
         }
 
         // 10. Generate Thumbnail
-        snapshotManager.checkAndGenerateThumbnails(template, true);
+//        snapshotManager.checkAndGenerateThumbnails(template, true);
         player.sendMessage(ChatColor.GREEN + "Thumbnail generation queued.");
     }
 
@@ -397,7 +397,7 @@ public class TemplateManager {
             templateUpdater.updateInstances(template, newVer, targets);
         }
 
-        snapshotManager.checkAndGenerateThumbnails(template, true);
+//        snapshotManager.checkAndGenerateThumbnails(template, true);
     }
 
     // Getters
@@ -457,7 +457,7 @@ public class TemplateManager {
         idCache.put(t.getId(), t);
         pathCache.put(normalizePath(t.getPath()), t);
 
-        snapshotManager.checkAndGenerateThumbnails(t, true);
+//        snapshotManager.checkAndGenerateThumbnails(t, true);
 
         return t;
     }

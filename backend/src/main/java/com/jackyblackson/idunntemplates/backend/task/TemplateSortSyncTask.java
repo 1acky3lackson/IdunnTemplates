@@ -33,7 +33,7 @@ public class TemplateSortSyncTask {
     /**
      * 场景 B: 每分钟扫描一次 (60000ms)，处理外部数据源新入库的数据
      */
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000 * 5)
     public void scheduledSync() {
         log.debug("开始执行定时同步：扫描 lastVersionAt 为空的模板...");
         syncMissingLastVersionAt();

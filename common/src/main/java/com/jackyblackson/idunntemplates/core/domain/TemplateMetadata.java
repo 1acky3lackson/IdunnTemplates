@@ -37,21 +37,26 @@ public class TemplateMetadata {
     private UUID worldId;
 
     // Anchor & Dimensions
-    @Column
-    @DatabaseField
+    @Column(name = "anchorx")
+    @DatabaseField(columnName = "anchorx")
     private int anchorX;
-    @Column
-    @DatabaseField
+
+    @Column(name = "anchory")
+    @DatabaseField(columnName = "anchory")
     private int anchorY;
-    @Column
-    @DatabaseField
+
+    @Column(name = "anchorz")
+    @DatabaseField(columnName = "anchorz")
     private int anchorZ;
+
     @Column
     @DatabaseField
     private int width;
+
     @Column
     @DatabaseField
     private int height;
+
     @Column
     @DatabaseField
     private int length;
