@@ -6,6 +6,7 @@ import com.jackyblackson.idunntemplates.core.calc.DiffCalculator;
 import com.jackyblackson.idunntemplates.core.store.*;
 import com.jackyblackson.idunntemplates.listener.ChunkListener;
 import com.jackyblackson.idunntemplates.manager.*;
+import com.jackyblackson.idunntemplates.voxelwind.VoxelWind;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -115,7 +116,7 @@ public final class IdunnTemplates extends JavaPlugin {
                 ╚═╝╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝\s
                                                         \s
                                        By Jacky_Blackson\s
-                                                                               \s
+                                                        \s
                 """.stripIndent().indent(4)
         );
 
@@ -225,6 +226,20 @@ public final class IdunnTemplates extends JavaPlugin {
         this.permissionServerManager = new PermissionServerManager(this);
         this.permissionServerManager.start();
 
+        // 1. 初始化 VoxelWind 模块
+        try {
+            // 确保在 FAWE 加载后再进行注册
+            if (getServer().getPluginManager().getPlugin("FastAsyncWorldEdit") != null) {
+                VoxelWind.init();
+                getLogger().info("VoxelWind module initialized successfully.");
+            } else {
+                getLogger().warning("FastAsyncWorldEdit not found! VoxelWind features will be disabled.");
+            }
+        } catch (Exception e) {
+            getLogger().severe("An error occurred while initializing VoxelWind:");
+            e.printStackTrace();
+        }
+
         getLogger().info("IdunnTemplates has been enabled!");
     }
 
@@ -258,11 +273,11 @@ public final class IdunnTemplates extends JavaPlugin {
             databaseManager.close();
         }
 
-        if (templateManager != null) {
-            var snapshotServer = templateManager.getSnapshotManager();
-            if (snapshotServer != null) {
-                snapshotServer.clearTasks();
-            }
-        }
+//        if (templateManager != null) {
+//            var snapshotServer = templateManager.getSnapshotManager();
+//            if (snapshotServer != null) {
+//                snapshotServer.clearTasks();
+//            }
+//        }
     }
 }
