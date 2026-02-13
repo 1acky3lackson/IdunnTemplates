@@ -41,7 +41,7 @@ public class BlockComparator {
 
     public boolean isIdle(BlockState block) {
         if (block == null) return true; // Treat null/missing as air
-        return idleBlocks.contains(block.getBlockType().getId());
+        return idleBlocks.contains(block.getBlockType().id());
     }
     
     public boolean isIdle(org.bukkit.block.Block block) {
@@ -52,7 +52,7 @@ public class BlockComparator {
 
     public boolean isIgnored(BlockState block) {
         if (block == null) return false;
-        return ignoredBlocks.contains(block.getBlockType().getId());
+        return ignoredBlocks.contains(block.getBlockType().id());
     }
 
     /**
@@ -66,7 +66,7 @@ public class BlockComparator {
         if (weBlock == null) return false;
         
         // 1. Check Material/Type
-        String weId = weBlock.getBlockType().getId();
+        String weId = weBlock.getBlockType().id();
         String bukkitId = bukkitBlock.getType().getKey().toString();
         if (!weId.equals(bukkitId)) return false;
 
