@@ -6,7 +6,10 @@ import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.store.repository.TemplateRepository;
 import com.jackyblackson.idunntemplates.backend.store.spec.TemplateSpecifications;
 import com.jackyblackson.idunntemplates.core.domain.Template;
+import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.utils.TemplateFileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
@@ -228,6 +231,65 @@ public class TemplateService {
         if (!success) {
             throw new IOException("No WebP writer found. Please ensure 'com.twelvemonkeys.imageio:imageio-webp' dependency is added.");
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void moveTemplate(UUID templateId, String newPath, UserContext user) throws IOException {
+        Template template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new FileNotFoundException("Template not found"));
+
+        // Check permission
+        boolean isCreator = template.getMetadata().getCreatorId().toString().equals(user.getUuid());
+        String perm = PermissionNames.Templates.modifyPath$R + "." + template.getPath().replace("/", ".");
+        boolean hasPerm = luckyPermAuthService.checkPermission(user.getUuid(), user.getUsername(), perm);
+
+        if (!isCreator && !hasPerm) {
+            throw new SecurityException("You do not have permission to move this template.");
+        }
+
+        // Validate new path
+        if (newPath == null || newPath.trim().isEmpty()) {
+            throw new IllegalArgumentException("New path cannot be empty");
+        }
+
+        // Ensure new path is not existing
+        if (templateRepository.existsByPath(newPath)) {
+             throw new IllegalArgumentException("Target path already exists (DB check)");
+        }
+
+        String oldPath = template.getPath();
+        File rootDir = new File(schematicRootDirPath);
+
+        // Move file
+        TemplateFileUtil.moveTemplateDirectory(rootDir, oldPath, newPath);
+
+        // Update DB
+        template.setPath(newPath);
+        templateRepository.save(template);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void transferTemplate(UUID templateId, String newOwnerName, UserContext user) {
+        Template template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Template not found")); // Using RuntimeException for brevity
+
+        // Check permission
+        boolean isCreator = template.getMetadata().getCreatorId().toString().equals(user.getUuid());
+        String perm = PermissionNames.Templates.modifyPath$R + "." + template.getPath().replace("/", ".");
+        boolean hasPerm = luckyPermAuthService.checkPermission(user.getUuid(), user.getUsername(), perm);
+
+        if (!isCreator && !hasPerm) {
+            throw new SecurityException("You do not have permission to transfer this template.");
+        }
+
+        // Resolve new owner
+        UUID newOwnerId = luckyPermAuthService.resolveUser(newOwnerName)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + newOwnerName));
+
+        TemplateMetadata metadata = template.getMetadata();
+        metadata.setCreatorId(newOwnerId);
+
+        templateRepository.save(template);
     }
 
 }

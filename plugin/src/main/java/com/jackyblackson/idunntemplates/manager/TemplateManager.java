@@ -9,6 +9,7 @@ import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.core.util.PermissionUtil;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.core.utils.TemplateFileUtil;
 import com.jackyblackson.idunntemplates.util.EntityHelper;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -468,6 +469,70 @@ public class TemplateManager {
         } catch (IOException e) {
             IdunnTemplates.getInstance().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save metadata for template " + template.getId(), e);
         }
+    }
+
+    public void moveTemplate(Player player, Template template, String newPath) throws Exception {
+        // Check Permission
+        boolean isCreator = template.getMetadata().getCreatorId().equals(player.getUniqueId());
+        String perm = PermissionNames.Templates.modifyPath$R + "." + template.getPath().replace("/", ".");
+        if (!isCreator && !player.hasPermission(perm)) {
+            throw new SecurityException("You do not have permission to move this template.");
+        }
+
+        if (pathCache.containsKey(normalizePath(newPath))) {
+            throw new IllegalArgumentException("Target path already exists.");
+        }
+
+        String oldPath = template.getPath();
+
+        // Calculate rootDir from template directory
+        java.io.File oldDir = EntityHelper.getDirectory(template);
+        java.io.File rootDir = oldDir;
+        String[] parts = oldPath.split("/");
+        for (int i = 0; i < parts.length; i++) {
+            rootDir = rootDir.getParentFile();
+        }
+
+        TemplateFileUtil.moveTemplateDirectory(rootDir, oldPath, newPath);
+
+        // Update DB
+        template.setPath(newPath);
+        storage.updateMetadata(template);
+
+        // Update Cache
+        reloadTemplates();
+    }
+
+    public void transferTemplate(Player player, Template template, String newOwnerName) throws Exception {
+        // Check Permission
+        boolean isCreator = template.getMetadata().getCreatorId().equals(player.getUniqueId());
+        String perm = PermissionNames.Templates.modifyPath$R + "." + template.getPath().replace("/", ".");
+        if (!isCreator && !player.hasPermission(perm)) {
+            throw new SecurityException("You do not have permission to transfer this template.");
+        }
+
+        // Resolve User
+        UUID newOwnerId;
+        Player onlineTarget = Bukkit.getPlayer(newOwnerName);
+        if (onlineTarget != null) {
+            newOwnerId = onlineTarget.getUniqueId();
+        } else {
+            // Offline lookup
+            // Try LuckPerms if available
+            if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+                 newOwnerId = net.luckperms.api.LuckPermsProvider.get().getUserManager().lookupUniqueId(newOwnerName).join();
+            } else {
+                 newOwnerId = Bukkit.getOfflinePlayer(newOwnerName).getUniqueId();
+            }
+        }
+
+        if (newOwnerId == null) {
+            throw new IllegalArgumentException("User not found: " + newOwnerName);
+        }
+
+        TemplateMetadata metadata = template.getMetadata();
+        metadata.setCreatorId(newOwnerId);
+        saveTemplateMetadata(template);
     }
 
     private String generateVersionId() {

@@ -30,6 +30,8 @@ public class IdunnCommand implements TabExecutor {
         templateGroup.register("commit", new CommitCommand(templateManager));
         templateGroup.register("tp", new TemplateTpCommand(templateManager));
         templateGroup.register("place", new PlaceCommand(templateManager, instanceManager));
+        templateGroup.register("move", new MoveCommand(templateManager));
+        templateGroup.register("transfer", new TransferCommand(templateManager));
         subCommands.put("template", templateGroup);
 
         // Instance Group

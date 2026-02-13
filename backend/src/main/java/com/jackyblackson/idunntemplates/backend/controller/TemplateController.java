@@ -36,6 +36,7 @@ import pitheguy.schemconvert.converter.ConversionException;
 import pitheguy.schemconvert.converter.formats.SchemSchematicFormat;
 import pitheguy.schemconvert.converter.formats.SchematicFormat;
 
+import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -321,6 +322,49 @@ public class TemplateController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PatchMapping("/{id}/move")
+    @AuthRequired
+    public ResponseEntity<Void> moveTemplate(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body,
+            UserContext user
+    ) {
+        String newPath = body.get("path");
+        try {
+            templateService.moveTemplate(id, newPath, user);
+            return ResponseEntity.ok().build();
+        } catch (FileNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PatchMapping("/{id}/transfer")
+    @AuthRequired
+    public ResponseEntity<Void> transferTemplate(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body,
+            UserContext user
+    ) {
+        String newOwner = body.get("newOwner");
+        try {
+            templateService.transferTemplate(id, newOwner, user);
+            return ResponseEntity.ok().build();
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build(); // User not found
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("Template not found")) return ResponseEntity.notFound().build();
             return ResponseEntity.internalServerError().build();
         }
     }

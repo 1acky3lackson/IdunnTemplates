@@ -69,6 +69,7 @@ public class Template {
     // --- Getters ---
     public UUID getId() { return id; }
     public String getPath() { return path; }
+    public void setPath(String path) { this.path = path; }
     public String getName() { return name; }
     public TemplateMetadata getMetadata() { return metadata; }
     public void setMetadata(TemplateMetadata metadata) { this.metadata = metadata; }
