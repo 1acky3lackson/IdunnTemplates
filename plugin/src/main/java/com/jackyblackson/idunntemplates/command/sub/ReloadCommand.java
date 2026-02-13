@@ -19,16 +19,16 @@ public class ReloadCommand extends BaseSubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-//        templateManager.reloadTemplates();
+        templateManager.reloadTemplates();
         // 清理资源
-        IdunnTemplates.getInstance().getDatabaseManager().close();
-        IdunnTemplates.getInstance().getPermissionServerManager().close();
-
-        // 重载配置
-        IdunnTemplates.getInstance().reloadConfig();
-
-        // 重新初始化
-        IdunnTemplates.getInstance().onEnable();
+//        IdunnTemplates.getInstance().getDatabaseManager().close();
+//        IdunnTemplates.getInstance().getPermissionServerManager().close();
+//
+//        // 重载配置
+//        IdunnTemplates.getInstance().reloadConfig();
+//
+//        // 重新初始化
+//        IdunnTemplates.getInstance().onEnable();
 
         // 重载 VoxelWind 配置
         VoxelWindConfig.get().reload();
