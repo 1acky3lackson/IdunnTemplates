@@ -12,7 +12,10 @@ import {
     AtSign,
     User,
     GitCommit,
-    PersonStanding
+    PersonStanding,
+    MoreHorizontal,
+    FileInput,
+    ArrowRightLeft
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
@@ -24,6 +27,26 @@ import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { useIntlayer } from 'react-intlayer';
 import { useUserInfoCache } from '../util/user-info-cache';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+    SheetClose
+} from "~/components/ui/sheet"
+import { Button } from "~/components/ui/button"
+import { Input } from "~/components/ui/input"
+import { Label } from "~/components/ui/label"
 
 interface TemplateCardProps {
     template: Template;
@@ -277,6 +300,47 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
         setImgError(false);
     }, [angle, template.id]);
 
+    const [isMoveSheetOpen, setIsMoveSheetOpen] = useState(false);
+    const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
+    const [newPath, setNewPath] = useState(template.path);
+    const [newOwner, setNewOwner] = useState("");
+
+    const handleMove = async () => {
+        try {
+            const response = await fetch(`/api/v1/templates/${template.id}/move`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: newPath })
+            });
+            if (response.ok) {
+                toast.success("Template moved successfully");
+                setIsMoveSheetOpen(false);
+            } else {
+                toast.error("Failed to move template");
+            }
+        } catch (e) {
+            toast.error("Error moving template");
+        }
+    };
+
+    const handleTransfer = async () => {
+        try {
+            const response = await fetch(`/api/v1/templates/${template.id}/transfer`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newOwner: newOwner })
+            });
+            if (response.ok) {
+                toast.success("Template transferred successfully");
+                setIsTransferSheetOpen(false);
+            } else {
+                toast.error("Failed to transfer template");
+            }
+        } catch (e) {
+            toast.error("Error transferring template");
+        }
+    };
+
     // 1. 处理主题色
     // 取第一个颜色作为主色，如果没有则回退到灰色
     // 我们需要确保颜色格式是 hex 或 rgb 才能用于 css 变量，这里假设后端返回的是 hex
@@ -327,6 +391,28 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
             >
+                <div className="absolute top-2 right-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60 backdrop-blur-md border-none">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Manage Template</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setIsMoveSheetOpen(true)}>
+                                <FileInput className="mr-2 h-4 w-4" />
+                                <span>Move Location</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setIsTransferSheetOpen(true)}>
+                                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                                <span>Transfer Ownership</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
                 {/* 条件渲染：如果出错显示可爱图标，否则显示图片 */}
 
                 <SmartTemplatePreview
@@ -499,6 +585,67 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
             />
+
+            <Sheet open={isMoveSheetOpen} onOpenChange={setIsMoveSheetOpen}>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Move Template</SheetTitle>
+                        <SheetDescription>
+                            Change the path of the template. This will move the physical files.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="path" className="text-right">
+                                Path
+                            </Label>
+                            <Input
+                                id="path"
+                                value={newPath}
+                                onChange={(e) => setNewPath(e.target.value)}
+                                className="col-span-3"
+                            />
+                        </div>
+                    </div>
+                    <SheetFooter>
+                        <SheetClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                        </SheetClose>
+                        <Button onClick={handleMove}>Save changes</Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={isTransferSheetOpen} onOpenChange={setIsTransferSheetOpen}>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Transfer Ownership</SheetTitle>
+                        <SheetDescription>
+                            Transfer the ownership of this template to another user.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="owner" className="text-right">
+                                New Owner
+                            </Label>
+                            <Input
+                                id="owner"
+                                value={newOwner}
+                                onChange={(e) => setNewOwner(e.target.value)}
+                                placeholder="Username"
+                                className="col-span-3"
+                            />
+                        </div>
+                    </div>
+                    <SheetFooter>
+                        <SheetClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                        </SheetClose>
+                        <Button onClick={handleTransfer}>Transfer</Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 };

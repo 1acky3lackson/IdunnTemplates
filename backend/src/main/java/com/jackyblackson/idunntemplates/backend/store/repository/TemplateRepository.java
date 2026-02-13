@@ -16,6 +16,8 @@ public interface TemplateRepository extends
         JpaSpecificationExecutor<Template> {
     List<Template> findByPathStartingWith(String path);
 
+    boolean existsByPath(String path);
+
     Page<Template> findByPathStartingWith(String path, Pageable pageable);
 
     List<Template> findByLastVersionAtIsNull();

@@ -220,6 +220,7 @@ public class TemplateMetadata {
     public boolean isDeleted() { return deletedTimestamp != null; }
     public void setDeletedTimestamp(Long deletedTimestamp) { this.deletedTimestamp = deletedTimestamp; }
     public UUID getCreatorId() { return creatorId; }
+    public void setCreatorId(UUID creatorId) { this.creatorId = creatorId; }
     public long getCreationTime() { return creationTime; }
     public UUID getWorldId() { return worldId; }
     public int getAnchorX() { return anchorX; }

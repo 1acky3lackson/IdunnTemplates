@@ -29,6 +29,8 @@ public class PermissionNames {
         public static final String createInPath = "idunn.template.save";
         public static final String createInPath$R = "idunn.template.save";
 
+        // New permission for modify/move/transfer
+        public static final String modifyPath$R = "idunn.template.modify";
     }
     public static class Sets {
         public static final String saveToNamespace$N = "idunn.set.save.";
