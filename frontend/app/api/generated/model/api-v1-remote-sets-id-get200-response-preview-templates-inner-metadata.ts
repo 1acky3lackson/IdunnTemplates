@@ -16,8 +16,11 @@
 // May contain unused imports in some cases
 // @ts-ignore
 import type { ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges } from './api-v1-remote-sets-id-get200-response-preview-templates-inner-metadata-staged-changes';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Null } from './null';
 
-export interface TemplateMetadata {
+export interface ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadata {
     'templateId': string;
     'creatorId': string;
     'creationTime': number;
@@ -29,11 +32,11 @@ export interface TemplateMetadata {
     'height': number;
     'length': number;
     'locked': boolean;
-    'lockedTimestamp': number | null;
+    'lockedTimestamp': Null;
     'versions': Array<string>;
-    'deleted': boolean;
-    'stagedChanges': ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges;
-    'parentTemplateInstances': object;
     'childTemplateInstances': object;
+    'parentTemplateInstances': object;
+    'stagedChanges': ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges;
+    'deleted': boolean;
 }
 

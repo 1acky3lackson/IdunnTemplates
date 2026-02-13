@@ -18,6 +18,10 @@ public class TemplateFileUtil {
         File oldDir = new File(rootDir, oldPath);
         File newDir = new File(rootDir, newPath);
 
+        if (oldDir.getCanonicalPath().equals(newDir.getCanonicalPath())) {
+            return;
+        }
+
         // Security check: ensure new path is within root directory
         String rootCanonical = rootDir.getCanonicalPath();
         String newCanonical = newDir.getCanonicalPath();

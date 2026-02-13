@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from "~/components/theme/theme-provider";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import { getThumbnailUrlForTemplate } from "~/api";
+import { getThumbnailUrlForTemplate, IDUNN_API } from "~/api";
 import type { Template } from "~/api/generated/model/template";
 import { cn } from "~/lib/utils";
 import { SmartTemplatePreview, type ViewState } from './smart-template-preview';
@@ -307,37 +307,35 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
 
     const handleMove = async () => {
         try {
-            const response = await fetch(`/api/v1/templates/${template.id}/move`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: newPath })
-            });
-            if (response.ok) {
-                toast.success("Template moved successfully");
+            const response = await IDUNN_API.apiV1TemplatesIdMovePatch(
+                template.id,
+                { path: newPath }
+            );
+            if (response.status >= 200 && response.status < 300) {
+                toast.success(templateCard.move.msg.success);
                 setIsMoveSheetOpen(false);
             } else {
-                toast.error("Failed to move template");
+                toast.error(templateCard.move.msg.failed);
             }
         } catch (e) {
-            toast.error("Error moving template");
+            toast.error(templateCard.move.msg.error);
         }
     };
 
     const handleTransfer = async () => {
         try {
-            const response = await fetch(`/api/v1/templates/${template.id}/transfer`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ newOwner: newOwner })
-            });
-            if (response.ok) {
-                toast.success("Template transferred successfully");
+            const response = await IDUNN_API.apiV1TemplatesIdTransferPatch(
+                template.id,
+                { newOwner }
+            );
+            if (response.status >= 200 && response.status < 300) {
+                toast.success(templateCard.transfer.msg.success);
                 setIsTransferSheetOpen(false);
             } else {
-                toast.error("Failed to transfer template");
+                toast.error(templateCard.transfer.msg.failed);
             }
         } catch (e) {
-            toast.error("Error transferring template");
+            toast.error(templateCard.transfer.msg.error);
         }
     };
 
@@ -399,15 +397,15 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Manage Template</DropdownMenuLabel>
+                            <DropdownMenuLabel>{templateCard.manage}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setIsMoveSheetOpen(true)}>
                                 <FileInput className="mr-2 h-4 w-4" />
-                                <span>Move Location</span>
+                                <span>{templateCard.move.label}</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setIsTransferSheetOpen(true)}>
                                 <ArrowRightLeft className="mr-2 h-4 w-4" />
-                                <span>Transfer Ownership</span>
+                                <span>{templateCard.transfer.label}</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -594,7 +592,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                             Change the path of the template. This will move the physical files.
                         </SheetDescription>
                     </SheetHeader>
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-4 p-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="path" className="text-right">
                                 Path
@@ -624,7 +622,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, className 
                             Transfer the ownership of this template to another user.
                         </SheetDescription>
                     </SheetHeader>
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-4 p-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="owner" className="text-right">
                                 New Owner
