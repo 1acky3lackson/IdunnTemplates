@@ -8,10 +8,19 @@ All URIs are relative to *http://localhost*
 |[**apiAuthLogoutPost**](#apiauthlogoutpost) | **POST** /api/auth/logout | 查看个人信息 / 验证登录 Copy|
 |[**apiAuthMeGet**](#apiauthmeget) | **GET** /api/auth/me | 查看个人信息 / 验证登录|
 |[**apiV1PathsGet**](#apiv1pathsget) | **GET** /api/v1/paths | 获取子目录|
+|[**apiV1RemoteSetsGet**](#apiv1remotesetsget) | **GET** /api/v1/remote-sets | 搜索 Set|
+|[**apiV1RemoteSetsIdDependenciesGet**](#apiv1remotesetsiddependenciesget) | **GET** /api/v1/remote-sets/{id}/dependencies | 获取依赖此 Set 的所有 Set|
+|[**apiV1RemoteSetsIdGet**](#apiv1remotesetsidget) | **GET** /api/v1/remote-sets/{id} | 获取 Set 详细信息|
+|[**apiV1RemoteSetsIdRandomGet**](#apiv1remotesetsidrandomget) | **GET** /api/v1/remote-sets/{id}/random | 获取随机模板|
+|[**apiV1RemoteSetsIdSourcesGet**](#apiv1remotesetsidsourcesget) | **GET** /api/v1/remote-sets/{id}/sources | 具体RemoteSet的Source列表|
+|[**apiV1RemoteSetsIdSourcesPost**](#apiv1remotesetsidsourcespost) | **POST** /api/v1/remote-sets/{id}/sources | 为 Set 添加 Source|
+|[**apiV1RemoteSetsPost**](#apiv1remotesetspost) | **POST** /api/v1/remote-sets | 新建 RemoteSet|
 |[**apiV1TemplatesGet**](#apiv1templatesget) | **GET** /api/v1/templates | 模板列表（或根据Path）|
 |[**apiV1TemplatesIdDownloadGet**](#apiv1templatesiddownloadget) | **GET** /api/v1/templates/{id}/download | 模板版本 schem 数据下载|
 |[**apiV1TemplatesIdGet**](#apiv1templatesidget) | **GET** /api/v1/templates/{id} | 模板详细数据|
+|[**apiV1TemplatesIdMovePatch**](#apiv1templatesidmovepatch) | **PATCH** /api/v1/templates/{id}/move | 改变模板目录|
 |[**apiV1TemplatesIdThumbnailGet**](#apiv1templatesidthumbnailget) | **GET** /api/v1/templates/{id}/thumbnail | 模板最新版本的缩略图|
+|[**apiV1TemplatesIdTransferPatch**](#apiv1templatesidtransferpatch) | **PATCH** /api/v1/templates/{id}/transfer | 转移模板权限|
 |[**apiV1TemplatesIdVersionsGet**](#apiv1templatesidversionsget) | **GET** /api/v1/templates/{id}/versions | 模板版本列表/复杂检索|
 |[**apiV1TemplatesThumbnailPost**](#apiv1templatesthumbnailpost) | **POST** /api/v1/templates/thumbnail | 上传缩略图|
 |[**apiV1UserinfoCreatorsGet**](#apiv1userinfocreatorsget) | **GET** /api/v1/userinfo/creators | 获取所有模板作者的用户信息|
@@ -211,6 +220,377 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsGet**
+> ApiV1RemoteSetsGet200Response apiV1RemoteSetsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let name: string; // (optional) (default to undefined)
+let namespace: string; // (optional) (default to undefined)
+let pang: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsGet(
+    name,
+    namespace,
+    pang,
+    size
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **name** | [**string**] |  | (optional) defaults to undefined|
+| **namespace** | [**string**] |  | (optional) defaults to undefined|
+| **pang** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1RemoteSetsGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsIdDependenciesGet**
+> object apiV1RemoteSetsIdDependenciesGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsIdDependenciesGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsIdGet**
+> ApiV1RemoteSetsIdGet200Response apiV1RemoteSetsIdGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //set 的 id (default to undefined)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsIdGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | set 的 id | defaults to undefined|
+
+
+### Return type
+
+**ApiV1RemoteSetsIdGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsIdRandomGet**
+> ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInner apiV1RemoteSetsIdRandomGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsIdRandomGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInner**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsIdSourcesGet**
+> object apiV1RemoteSetsIdSourcesGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //Set 的 Id (default to undefined)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsIdSourcesGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | Set 的 Id | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsIdSourcesPost**
+> ApiV1RemoteSetsIdSourcesPost200Response apiV1RemoteSetsIdSourcesPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1RemoteSetsIdSourcesPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1RemoteSetsIdSourcesPostRequest: ApiV1RemoteSetsIdSourcesPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsIdSourcesPost(
+    id,
+    apiV1RemoteSetsIdSourcesPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1RemoteSetsIdSourcesPostRequest** | **ApiV1RemoteSetsIdSourcesPostRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1RemoteSetsIdSourcesPost200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1RemoteSetsPost**
+> ApiV1RemoteSetsPost200Response apiV1RemoteSetsPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1RemoteSetsPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let apiV1RemoteSetsPostRequest: ApiV1RemoteSetsPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1RemoteSetsPost(
+    apiV1RemoteSetsPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1RemoteSetsPostRequest** | **ApiV1RemoteSetsPostRequest**|  | |
+
+
+### Return type
+
+**ApiV1RemoteSetsPost200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 
@@ -428,6 +808,61 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **apiV1TemplatesIdMovePatch**
+> object apiV1TemplatesIdMovePatch()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1TemplatesIdMovePatchRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //模板id (default to undefined)
+let apiV1TemplatesIdMovePatchRequest: ApiV1TemplatesIdMovePatchRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1TemplatesIdMovePatch(
+    id,
+    apiV1TemplatesIdMovePatchRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1TemplatesIdMovePatchRequest** | **ApiV1TemplatesIdMovePatchRequest**|  | |
+| **id** | [**string**] | 模板id | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **apiV1TemplatesIdThumbnailGet**
 > object apiV1TemplatesIdThumbnailGet()
 
@@ -476,6 +911,61 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1TemplatesIdTransferPatch**
+> object apiV1TemplatesIdTransferPatch()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1TemplatesIdTransferPatchRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //模板id (default to undefined)
+let apiV1TemplatesIdTransferPatchRequest: ApiV1TemplatesIdTransferPatchRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1TemplatesIdTransferPatch(
+    id,
+    apiV1TemplatesIdTransferPatchRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1TemplatesIdTransferPatchRequest** | **ApiV1TemplatesIdTransferPatchRequest**|  | |
+| **id** | [**string**] | 模板id | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 
 
 ### HTTP response details

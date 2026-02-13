@@ -63,6 +63,18 @@ public class SaveCommand extends BaseSubCommand {
         }
 
         try {
+            if (savePath != null && !savePath.isEmpty()) {
+                // 替换中间连续的斜杠
+                savePath = savePath.replaceAll("/{2,}", "/");
+                // 移除开头斜杠
+                if (savePath.startsWith("/")) {
+                    savePath = savePath.substring(1);
+                }
+                // 移除结尾斜杠
+                if (savePath.endsWith("/")) {
+                    savePath = savePath.substring(0, savePath.length() - 1);
+                }
+            }
             templateManager.createTemplate(player, saveName, savePath, clipboard);
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "save.success", saveName));
         } catch (SecurityException e) {

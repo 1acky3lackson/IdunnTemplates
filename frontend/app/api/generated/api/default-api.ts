@@ -30,6 +30,24 @@ import type { ApiAuthMeGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1PathsGet200ResponseInner } from '../model';
 // @ts-ignore
+import type { ApiV1RemoteSetsGet200Response } from '../model';
+// @ts-ignore
+import type { ApiV1RemoteSetsIdGet200Response } from '../model';
+// @ts-ignore
+import type { ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInner } from '../model';
+// @ts-ignore
+import type { ApiV1RemoteSetsIdSourcesPost200Response } from '../model';
+// @ts-ignore
+import type { ApiV1RemoteSetsIdSourcesPostRequest } from '../model';
+// @ts-ignore
+import type { ApiV1RemoteSetsPost200Response } from '../model';
+// @ts-ignore
+import type { ApiV1RemoteSetsPostRequest } from '../model';
+// @ts-ignore
+import type { ApiV1TemplatesIdMovePatchRequest } from '../model';
+// @ts-ignore
+import type { ApiV1TemplatesIdTransferPatchRequest } from '../model';
+// @ts-ignore
 import type { ApiV1UserinfoCreatorsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { Template } from '../model';
@@ -166,6 +184,262 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 搜索 Set
+         * @param {string} [name] 
+         * @param {string} [namespace] 
+         * @param {number} [pang] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsGet: async (name?: string, namespace?: string, pang?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/remote-sets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (name !== undefined) {
+                localVarQueryParameter['name'] = name;
+            }
+
+            if (namespace !== undefined) {
+                localVarQueryParameter['namespace'] = namespace;
+            }
+
+            if (pang !== undefined) {
+                localVarQueryParameter['pang'] = pang;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取依赖此 Set 的所有 Set
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdDependenciesGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1RemoteSetsIdDependenciesGet', 'id', id)
+            const localVarPath = `/api/v1/remote-sets/{id}/dependencies`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取 Set 详细信息
+         * @param {string} id set 的 id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1RemoteSetsIdGet', 'id', id)
+            const localVarPath = `/api/v1/remote-sets/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取随机模板
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdRandomGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1RemoteSetsIdRandomGet', 'id', id)
+            const localVarPath = `/api/v1/remote-sets/{id}/random`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 具体RemoteSet的Source列表
+         * @param {string} id Set 的 Id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdSourcesGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1RemoteSetsIdSourcesGet', 'id', id)
+            const localVarPath = `/api/v1/remote-sets/{id}/sources`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 为 Set 添加 Source
+         * @param {string} id 
+         * @param {ApiV1RemoteSetsIdSourcesPostRequest} [apiV1RemoteSetsIdSourcesPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdSourcesPost: async (id: string, apiV1RemoteSetsIdSourcesPostRequest?: ApiV1RemoteSetsIdSourcesPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1RemoteSetsIdSourcesPost', 'id', id)
+            const localVarPath = `/api/v1/remote-sets/{id}/sources`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1RemoteSetsIdSourcesPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 新建 RemoteSet
+         * @param {ApiV1RemoteSetsPostRequest} [apiV1RemoteSetsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsPost: async (apiV1RemoteSetsPostRequest?: ApiV1RemoteSetsPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/remote-sets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1RemoteSetsPostRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -367,6 +641,43 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 改变模板目录
+         * @param {string} id 模板id
+         * @param {ApiV1TemplatesIdMovePatchRequest} [apiV1TemplatesIdMovePatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdMovePatch: async (id: string, apiV1TemplatesIdMovePatchRequest?: ApiV1TemplatesIdMovePatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1TemplatesIdMovePatch', 'id', id)
+            const localVarPath = `/api/v1/templates/{id}/move`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1TemplatesIdMovePatchRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 模板最新版本的缩略图
          * @param {string} id 模板的 UUID
          * @param {number} angle 0, 1, 2, 3
@@ -405,6 +716,43 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 转移模板权限
+         * @param {string} id 模板id
+         * @param {ApiV1TemplatesIdTransferPatchRequest} [apiV1TemplatesIdTransferPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdTransferPatch: async (id: string, apiV1TemplatesIdTransferPatchRequest?: ApiV1TemplatesIdTransferPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1TemplatesIdTransferPatch', 'id', id)
+            const localVarPath = `/api/v1/templates/{id}/transfer`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1TemplatesIdTransferPatchRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -610,6 +958,101 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @summary 搜索 Set
+         * @param {string} [name] 
+         * @param {string} [namespace] 
+         * @param {number} [pang] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsGet(name?: string, namespace?: string, pang?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1RemoteSetsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsGet(name, namespace, pang, size, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取依赖此 Set 的所有 Set
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsIdDependenciesGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsIdDependenciesGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsIdDependenciesGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取 Set 详细信息
+         * @param {string} id set 的 id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsIdGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1RemoteSetsIdGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsIdGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取随机模板
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsIdRandomGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInner>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsIdRandomGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsIdRandomGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 具体RemoteSet的Source列表
+         * @param {string} id Set 的 Id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsIdSourcesGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsIdSourcesGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsIdSourcesGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 为 Set 添加 Source
+         * @param {string} id 
+         * @param {ApiV1RemoteSetsIdSourcesPostRequest} [apiV1RemoteSetsIdSourcesPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsIdSourcesPost(id: string, apiV1RemoteSetsIdSourcesPostRequest?: ApiV1RemoteSetsIdSourcesPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1RemoteSetsIdSourcesPost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsIdSourcesPost(id, apiV1RemoteSetsIdSourcesPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsIdSourcesPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 新建 RemoteSet
+         * @param {ApiV1RemoteSetsPostRequest} [apiV1RemoteSetsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest?: ApiV1RemoteSetsPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1RemoteSetsPost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1RemoteSetsPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
          * @summary 模板列表（或根据Path）
          * @param {string} [pathPrefix] 
@@ -668,6 +1111,20 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 改变模板目录
+         * @param {string} id 模板id
+         * @param {ApiV1TemplatesIdMovePatchRequest} [apiV1TemplatesIdMovePatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1TemplatesIdMovePatch(id: string, apiV1TemplatesIdMovePatchRequest?: ApiV1TemplatesIdMovePatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdMovePatch(id, apiV1TemplatesIdMovePatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1TemplatesIdMovePatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 模板最新版本的缩略图
          * @param {string} id 模板的 UUID
          * @param {number} angle 0, 1, 2, 3
@@ -679,6 +1136,20 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdThumbnailGet(id, angle, refresh, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1TemplatesIdThumbnailGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 转移模板权限
+         * @param {string} id 模板id
+         * @param {ApiV1TemplatesIdTransferPatchRequest} [apiV1TemplatesIdTransferPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1TemplatesIdTransferPatch(id: string, apiV1TemplatesIdTransferPatchRequest?: ApiV1TemplatesIdTransferPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1TemplatesIdTransferPatch(id, apiV1TemplatesIdTransferPatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1TemplatesIdTransferPatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -777,6 +1248,80 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1PathsGet(path, options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @summary 搜索 Set
+         * @param {string} [name] 
+         * @param {string} [namespace] 
+         * @param {number} [pang] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsGet(name?: string, namespace?: string, pang?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1RemoteSetsGet200Response> {
+            return localVarFp.apiV1RemoteSetsGet(name, namespace, pang, size, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取依赖此 Set 的所有 Set
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdDependenciesGet(id: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1RemoteSetsIdDependenciesGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取 Set 详细信息
+         * @param {string} id set 的 id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdGet(id: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1RemoteSetsIdGet200Response> {
+            return localVarFp.apiV1RemoteSetsIdGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取随机模板
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdRandomGet(id: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInner> {
+            return localVarFp.apiV1RemoteSetsIdRandomGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 具体RemoteSet的Source列表
+         * @param {string} id Set 的 Id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdSourcesGet(id: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1RemoteSetsIdSourcesGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 为 Set 添加 Source
+         * @param {string} id 
+         * @param {ApiV1RemoteSetsIdSourcesPostRequest} [apiV1RemoteSetsIdSourcesPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsIdSourcesPost(id: string, apiV1RemoteSetsIdSourcesPostRequest?: ApiV1RemoteSetsIdSourcesPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1RemoteSetsIdSourcesPost200Response> {
+            return localVarFp.apiV1RemoteSetsIdSourcesPost(id, apiV1RemoteSetsIdSourcesPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 新建 RemoteSet
+         * @param {ApiV1RemoteSetsPostRequest} [apiV1RemoteSetsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest?: ApiV1RemoteSetsPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1RemoteSetsPost200Response> {
+            return localVarFp.apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
          * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
          * @summary 模板列表（或根据Path）
          * @param {string} [pathPrefix] 
@@ -826,6 +1371,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 改变模板目录
+         * @param {string} id 模板id
+         * @param {ApiV1TemplatesIdMovePatchRequest} [apiV1TemplatesIdMovePatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdMovePatch(id: string, apiV1TemplatesIdMovePatchRequest?: ApiV1TemplatesIdMovePatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1TemplatesIdMovePatch(id, apiV1TemplatesIdMovePatchRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 模板最新版本的缩略图
          * @param {string} id 模板的 UUID
          * @param {number} angle 0, 1, 2, 3
@@ -835,6 +1391,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         apiV1TemplatesIdThumbnailGet(id: string, angle: number, refresh?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<object> {
             return localVarFp.apiV1TemplatesIdThumbnailGet(id, angle, refresh, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 转移模板权限
+         * @param {string} id 模板id
+         * @param {ApiV1TemplatesIdTransferPatchRequest} [apiV1TemplatesIdTransferPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1TemplatesIdTransferPatch(id: string, apiV1TemplatesIdTransferPatchRequest?: ApiV1TemplatesIdTransferPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1TemplatesIdTransferPatch(id, apiV1TemplatesIdTransferPatchRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * # 模板版本查询接口  获取特定模板的历史版本列表。支持针对提交信息、提交者、时间的复杂筛选，以及分页排序功能。  - **URL**: `/api/v1/templates/{id}/versions` - **Method**: `GET` - **Auth**: Required (Bearer Token)  ## 路径参数 (Path Parameters)  | 参数名 | 类型 | 必填 | 说明 | | :--- | :--- | :--- | :--- | | `id` | UUID | **是** | **模板的唯一标识符**<br>例如: `500d59d1-84a8-3207-932c-e62f8a543ef7` |  ## 查询参数 (Query Parameters)  用于筛选和分页的参数，均以 Query String 形式传递 (例如 `?page=0&messageKeyword=fix`)。  ### 1. 筛选条件 (Filtering)  | 参数名 | 类型 | 说明 | 示例 | | :--- | :--- | :--- | :--- | | `messageKeyword` | String | **提交信息模糊搜索**<br>搜索包含该关键词的版本留言 (Case-insensitive)。 | `fix lighting` | | `submitterId` | UUID | **提交者 ID**<br>仅显示指定用户提交的版本。 | `0caee9cd-6987...` | | `versionId` | String | **版本业务 ID**<br>精确匹配特定的版本号 (通常是时间戳字符串)。 | `1706781234000` | | `minCreatedAt` | Long | **最小创建时间 (时间戳)**<br>筛选在此时间**之后** (>=) 提交的版本。 | `1706000000000` | | `maxCreatedAt` | Long | **最大创建时间 (时间戳)**<br>筛选在此时间**之前** (<=) 提交的版本。 | `1706999999999` |  ### 2. 分页与排序 (Pagination & Sorting)  | 参数名 | 类型 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | | `page` | Integer | `0` | **页码** (从 0 开始)。 | | `size` | Integer | `20` | **每页条数**。 | | `sort` | String | `createdAt,desc` | **排序规则**<br>格式: `字段名,方向`<br>支持字段: `createdAt`, `versionId`, `submitterId` |  ---  ## 请求示例 (Request Examples)  ### 场景 A: 查看某模板最近的提交记录 (默认) ```http GET /api/v1/templates/500d59d1-84a8-3207-932c-e62f8a543ef7/versions ```  ### 场景 B: 搜索包含 \"bugfix\" 的提交，且由特定用户提交 ```http GET /api/v1/templates/500d59d1.../versions?messageKeyword=bugfix&submitterId=0caee9cd... ```  ### 场景 C: 查找 2024年1月1日 之后的版本，按时间正序排列 ```http GET /api/v1/templates/500d59d1.../versions?minCreatedAt=1704067200000&sort=createdAt,asc ```
@@ -925,6 +1492,87 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * 
+     * @summary 搜索 Set
+     * @param {string} [name] 
+     * @param {string} [namespace] 
+     * @param {number} [pang] 
+     * @param {number} [size] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsGet(name?: string, namespace?: string, pang?: number, size?: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsGet(name, namespace, pang, size, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取依赖此 Set 的所有 Set
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsIdDependenciesGet(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsIdDependenciesGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取 Set 详细信息
+     * @param {string} id set 的 id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsIdGet(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsIdGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取随机模板
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsIdRandomGet(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsIdRandomGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 具体RemoteSet的Source列表
+     * @param {string} id Set 的 Id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsIdSourcesGet(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsIdSourcesGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 为 Set 添加 Source
+     * @param {string} id 
+     * @param {ApiV1RemoteSetsIdSourcesPostRequest} [apiV1RemoteSetsIdSourcesPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsIdSourcesPost(id: string, apiV1RemoteSetsIdSourcesPostRequest?: ApiV1RemoteSetsIdSourcesPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsIdSourcesPost(id, apiV1RemoteSetsIdSourcesPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 新建 RemoteSet
+     * @param {ApiV1RemoteSetsPostRequest} [apiV1RemoteSetsPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest?: ApiV1RemoteSetsPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
      * @summary 模板列表（或根据Path）
      * @param {string} [pathPrefix] 
@@ -977,6 +1625,18 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary 改变模板目录
+     * @param {string} id 模板id
+     * @param {ApiV1TemplatesIdMovePatchRequest} [apiV1TemplatesIdMovePatchRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1TemplatesIdMovePatch(id: string, apiV1TemplatesIdMovePatchRequest?: ApiV1TemplatesIdMovePatchRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1TemplatesIdMovePatch(id, apiV1TemplatesIdMovePatchRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary 模板最新版本的缩略图
      * @param {string} id 模板的 UUID
      * @param {number} angle 0, 1, 2, 3
@@ -986,6 +1646,18 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1TemplatesIdThumbnailGet(id: string, angle: number, refresh?: boolean, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1TemplatesIdThumbnailGet(id, angle, refresh, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 转移模板权限
+     * @param {string} id 模板id
+     * @param {ApiV1TemplatesIdTransferPatchRequest} [apiV1TemplatesIdTransferPatchRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1TemplatesIdTransferPatch(id: string, apiV1TemplatesIdTransferPatchRequest?: ApiV1TemplatesIdTransferPatchRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1TemplatesIdTransferPatch(id, apiV1TemplatesIdTransferPatchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -227,4 +227,44 @@ public class LuckyPermAuthService {
         // 2. 权限结果 Map 中包含该 key 且 value 为 true -> 通过
         return authResults.getOrDefault(perm, false);
     }
+
+    /**
+     * Attempts to resolve a username to a UUID using the plugin's auth service.
+     * Uses a dummy permission check to piggyback on the existing infrastructure.
+     * @param username The username to resolve.
+     * @return The UUID if found, or Optional.empty().
+     */
+    public Optional<UUID> resolveUser(String username) {
+        if (username == null || username.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Use a dummy permission to trigger the lookup logic in plugin
+        String dummyPerm = "idunn.internal.user.lookup";
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("uuid", "00000000-0000-0000-0000-000000000000") // Dummy UUID
+                .queryParam("username", username)
+                .queryParam("permission", dummyPerm)
+                .toUriString();
+
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            Map<String, Object> body = response.getBody();
+            if (body != null && body.containsKey("uuid")) {
+                Object uuidObj = body.get("uuid");
+                if (uuidObj instanceof String) {
+                    return Optional.of(UUID.fromString((String) uuidObj));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("User resolution failed: " + e.getMessage());
+        }
+        return Optional.empty();
+    }
 }

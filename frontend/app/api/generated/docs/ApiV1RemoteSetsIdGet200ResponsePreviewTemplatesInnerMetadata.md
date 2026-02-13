@@ -1,4 +1,4 @@
-# TemplateMetadata
+# ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadata
 
 
 ## Properties
@@ -16,19 +16,19 @@ Name | Type | Description | Notes
 **height** | **number** |  | [default to undefined]
 **length** | **number** |  | [default to undefined]
 **locked** | **boolean** |  | [default to undefined]
-**lockedTimestamp** | **number** |  | [default to undefined]
+**lockedTimestamp** | [**Null**](Null.md) |  | [default to undefined]
 **versions** | **Array&lt;string&gt;** |  | [default to undefined]
-**deleted** | **boolean** |  | [default to undefined]
-**stagedChanges** | [**ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges**](ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges.md) |  | [default to undefined]
-**parentTemplateInstances** | **object** |  | [default to undefined]
 **childTemplateInstances** | **object** |  | [default to undefined]
+**parentTemplateInstances** | **object** |  | [default to undefined]
+**stagedChanges** | [**ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges**](ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadataStagedChanges.md) |  | [default to undefined]
+**deleted** | **boolean** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { TemplateMetadata } from './api';
+import { ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadata } from './api';
 
-const instance: TemplateMetadata = {
+const instance: ApiV1RemoteSetsIdGet200ResponsePreviewTemplatesInnerMetadata = {
     templateId,
     creatorId,
     creationTime,
@@ -42,10 +42,10 @@ const instance: TemplateMetadata = {
     locked,
     lockedTimestamp,
     versions,
-    deleted,
-    stagedChanges,
-    parentTemplateInstances,
     childTemplateInstances,
+    parentTemplateInstances,
+    stagedChanges,
+    deleted,
 };
 ```
 
