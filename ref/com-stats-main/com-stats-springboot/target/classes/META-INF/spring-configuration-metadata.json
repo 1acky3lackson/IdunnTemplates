@@ -1,0 +1,71 @@
+{
+  "groups": [
+    {
+      "name": "app.crawler",
+      "type": "cn.taixue.comstats.config.CrawlerProperties",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties"
+    },
+    {
+      "name": "app.crawler.ne",
+      "type": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties",
+      "sourceMethod": "getNe()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.crawler.interval-ms",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.comp-product-span",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.interval-ms",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.pe-product-comment-span",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.pe-product-feedback-span",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.pe-product-order-days",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.pe-product-span",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.pe-product-stat-days",
+      "type": "java.lang.Long",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne",
+      "defaultValue": 0
+    },
+    {
+      "name": "app.crawler.ne.users",
+      "type": "java.util.Map<java.lang.String,cn.taixue.comstats.config.CrawlerProperties$NeUser>",
+      "sourceType": "cn.taixue.comstats.config.CrawlerProperties$Ne"
+    }
+  ],
+  "hints": []
+}
