@@ -15,12 +15,12 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Null } from './null';
+import type { Project } from './project';
 
 export interface NeteaseProduct {
     'id': number;
     'internalStatus': string;
-    'updateTimeMs': Null;
+    'updateTimeMs': number | null;
     'neUserLogId': number;
     'applyReviewTime': string;
     'applyReviewTimeMs': number;
@@ -69,6 +69,6 @@ export interface NeteaseProduct {
     'weakOfflineReason': string;
     'orderPayload': string | null;
     'statPayload': string;
-    'templates': Array<string>;
+    'project': Project | null;
 }
 

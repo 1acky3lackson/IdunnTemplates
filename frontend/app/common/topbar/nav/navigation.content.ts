@@ -19,6 +19,11 @@ const navigationContent = {
             sets: t({ [Locales.ENGLISH]: "Sets", [Locales.CHINESE]: "合集", [Locales.CHINESE_TRADITIONAL]: "合集" }),
             brushes: t({ [Locales.ENGLISH]: "Brushes", [Locales.CHINESE]: "笔刷", [Locales.CHINESE_TRADITIONAL]: "筆刷" }),
             utilities: t({ [Locales.ENGLISH]: "Utilities", [Locales.CHINESE]: "工具", [Locales.CHINESE_TRADITIONAL]: "工具" }),
+            commercial: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "商业化",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
         },
         items: {
             searchTemplates: t({ [Locales.ENGLISH]: "Search Templates", [Locales.CHINESE]: "搜索模板", [Locales.CHINESE_TRADITIONAL]: "搜尋模板" }),
@@ -56,6 +61,45 @@ const navigationContent = {
             // Utilities 部分
             resize: t({ [Locales.ENGLISH]: "Resize Player", [Locales.CHINESE]: "缩放玩家大小", [Locales.CHINESE_TRADITIONAL]: "調整大小工具" }),
             resizeDesc: t({ [Locales.ENGLISH]: "Resize player models easily.", [Locales.CHINESE]: "轻松调整玩家模型的大小。", [Locales.CHINESE_TRADITIONAL]: "輕鬆調整玩家模型的大小。" }),
+            commercial: {
+                
+                projects: {
+                    title: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "太学工程",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "查看用于商业化的工程列表",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                },
+                neteaseProducts: {
+                    title: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "网易上架商品",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "查看我们上架到网易商城的所有商品",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                },
+                neteaseOrders: {
+                    title: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "网易销售订单",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "查看网易商城中商品的全部订单",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                }
+            }
         }
     },
 } satisfies Dictionary;

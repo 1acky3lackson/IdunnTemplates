@@ -1,11 +1,14 @@
 package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
 import com.jackyblackson.idunntemplates.backend.commercial.dto.netease.NeteaseProductDto;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProduct;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProductStatus;
+import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.ProductPermissionService;
 import jakarta.persistence.Column;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.criteria.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +38,113 @@ public class NeteaseProductController {
 
     private NeteaseProductRepository repository;
     private final ProductPermissionService permissionService;  // 注入权限服务
+    private final ProjectRepository projectRepository;  // 新增依赖，用于指定项目
+
+    // ... 原有的 list, getById, buildSpecification, parseSearch, convertValue 方法保持不变 ...
+
+    /**
+     * 更新商品的部分字段（例如指定项目、修改状态）。
+     *
+     * @param id      商品ID
+     * @param request 更新请求体
+     * @return 更新后的商品信息
+     */
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<NeteaseProductDto> update(@PathVariable Long id,
+                                                    @RequestBody NeteaseProductUpdateRequest request) {
+        NeteaseProduct product = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        // 更新 project 关联
+        if (request.getProjectId() != null) {
+            Project project = projectRepository.findById(request.getProjectId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Project not found with id: " + request.getProjectId()));
+            product.setProject(project);
+        } else if (request.isClearProject()) {  // 如果明确要求清空项目
+            product.setProject(null);
+        }
+
+        // 更新状态
+        if (request.getInternalStatus() != null) {
+            product.setInternalStatus(request.getInternalStatus());
+        }
+
+        // 更新修改时间（如果有）
+        product.setUpdateTimeMs(System.currentTimeMillis());
+
+        NeteaseProduct saved = repository.save(product);
+        return ResponseEntity.ok(permissionService.toDto(saved));
+    }
+
+    /**
+     * 仅为商品指定项目（更语义化的端点）。
+     */
+    @PatchMapping("/{id}/project")
+    @Transactional
+    public ResponseEntity<NeteaseProductDto> assignProject(@PathVariable Long id,
+                                                           @RequestBody ProjectAssignmentRequest request) {
+        NeteaseProduct product = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        if (request.getProjectId() == null) {
+            product.setProject(null);
+        } else {
+            Project project = projectRepository.findById(request.getProjectId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Project not found with id: " + request.getProjectId()));
+            product.setProject(project);
+        }
+        product.setUpdateTimeMs(System.currentTimeMillis());
+        return ResponseEntity.ok(permissionService.toDto(repository.save(product)));
+    }
+
+    /**
+     * 修改商品状态。
+     */
+    @PatchMapping("/{id}/status")
+    @Transactional
+    public ResponseEntity<NeteaseProductDto> changeStatus(@PathVariable Long id,
+                                                          @RequestBody StatusChangeRequest request) {
+        NeteaseProduct product = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        if (request.getInternalStatus() != null) {
+            product.setInternalStatus(request.getInternalStatus());
+        }
+        product.setUpdateTimeMs(System.currentTimeMillis());
+        return ResponseEntity.ok(permissionService.toDto(repository.save(product)));
+    }
+
+    // ---------- 内部 DTO 类 ----------
+
+    /**
+     * 通用的商品更新请求（支持部分字段）。
+     */
+    @Getter
+    public static class NeteaseProductUpdateRequest {
+        private Long projectId;                // 要关联的项目ID，null 表示不修改
+        private boolean clearProject = false;  // 是否清空项目（当为 true 时，projectId 忽略）
+        private NeteaseProductStatus internalStatus; // 要更新的状态，null 表示不修改
+        // 可扩展其他字段
+    }
+
+    /**
+     * 项目指派请求（专用于设置项目）。
+     */
+    @Getter
+    public static class ProjectAssignmentRequest {
+        private Long projectId;  // 项目ID，null 表示清空项目
+    }
+
+    /**
+     * 状态修改请求。
+     */
+    @Getter
+    public static class StatusChangeRequest {
+        private NeteaseProductStatus internalStatus;
+    }
 
     /**
      * 分页查询商品列表，支持通过 search 参数构建动态查询条件。

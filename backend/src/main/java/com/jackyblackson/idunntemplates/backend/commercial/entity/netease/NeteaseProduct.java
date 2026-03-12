@@ -169,7 +169,7 @@ public class NeteaseProduct {
     @Column(name = "stat_payload", columnDefinition = "text")
     private String statPayload;
 
-    @ManyToOne(fetch = FetchType.LAZY)  // 默认关联查询为 LAZY 提升性能
+    @ManyToOne(fetch = FetchType.EAGER)  // 默认关联查询为 LAZY 提升性能
     @JoinColumn(name = "project_id")    // 指定外键列名
     private Project project;
 }

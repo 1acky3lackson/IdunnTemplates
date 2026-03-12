@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.commercial.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -55,8 +56,9 @@ public class Project implements Serializable {
     @Column(name = "model_kind", length = 32)
     private String modelKind;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "world_id", foreignKey = @ForeignKey(name = "fk_projects_worlds_world_id"))
+//    @JsonIgnore
     private World world;
 
     @Column(name = "min_x")

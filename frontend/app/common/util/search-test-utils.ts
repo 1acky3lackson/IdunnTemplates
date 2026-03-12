@@ -14,7 +14,7 @@ export type Schema = Record<string, FieldConfig>;
 
 // 仅提取 search 相关的 key 及其对应的输入类型
 export type SearchFields<T extends Schema> = {
-  [K in keyof T as T[K] extends { search: { fuzzy: any } } ? K : never]?: 
+  -readonly [K in keyof T as T[K] extends { search: { fuzzy: any } } ? K : never]?: 
     T[K] extends { search: { fuzzy: true } }
       ? string | { value: string; fuzzy?: boolean } 
       : string;
@@ -94,8 +94,8 @@ export function buildSortString<T extends Schema>(
   
   return Object.entries(sort)
     .filter(([_, dir]) => dir === 'asc' || dir === 'desc')
-    .map(([field, dir]) => `${field}:${dir}`) // 或者根据后端要求用 `${field},${dir}`
-    .join(',');
+    .map(([field, dir]) => `${field},${dir}`) // 或者根据后端要求用 `${field},${dir}`
+    .join(';');
 }
 
 // ========== 示例用法（无报错） ==========

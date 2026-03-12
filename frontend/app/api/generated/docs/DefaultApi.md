@@ -11,8 +11,17 @@ All URIs are relative to *http://localhost*
 |[**apiV1CommercialGlobalContextsGet**](#apiv1commercialglobalcontextsget) | **GET** /api/v1/commercial/global-contexts | 获取全部修改历史记录|
 |[**apiV1CommercialGlobalContextsPost**](#apiv1commercialglobalcontextspost) | **POST** /api/v1/commercial/global-contexts | 更新结算参数|
 |[**apiV1CommercialNeteaseOrdersGet**](#apiv1commercialneteaseordersget) | **GET** /api/v1/commercial/netease-orders | 获取/筛选订单列表|
-|[**apiV1CommercialNeteaseProductsGet**](#apiv1commercialneteaseproductsget) | **GET** /api/v1/commercial/netease-products | 获取/搜索商品列表|
+|[**apiV1CommercialNeteaseProductsGet**](#apiv1commercialneteaseproductsget) | **GET** /api/v1/commercial/netease-products | 分页查询产品列表|
+|[**apiV1CommercialNeteaseProductsIdGet**](#apiv1commercialneteaseproductsidget) | **GET** /api/v1/commercial/netease-products/{id} | 根据ID查询单个产品|
+|[**apiV1CommercialNeteaseProductsIdProjectPatch**](#apiv1commercialneteaseproductsidprojectpatch) | **PATCH** /api/v1/commercial/netease-products/{id}/project | 指派或清除项目关联|
+|[**apiV1CommercialNeteaseProductsIdPut**](#apiv1commercialneteaseproductsidput) | **PUT** /api/v1/commercial/netease-products/{id} | 更新产品信息（支持部分字段）|
+|[**apiV1CommercialNeteaseProductsIdStatusPatch**](#apiv1commercialneteaseproductsidstatuspatch) | **PATCH** /api/v1/commercial/netease-products/{id}/status | 修改产品状态|
 |[**apiV1CommercialNeteaseProductsProductIdOrdersGet**](#apiv1commercialneteaseproductsproductidordersget) | **GET** /api/v1/commercial/netease-products/{productId}/orders | 获取商品的所有订单|
+|[**apiV1CommercialProjectsGet**](#apiv1commercialprojectsget) | **GET** /api/v1/commercial/projects | 获取/筛选项目列表|
+|[**apiV1CommercialProjectsIdDelete**](#apiv1commercialprojectsiddelete) | **DELETE** /api/v1/commercial/projects/{id} | 软删除 Project|
+|[**apiV1CommercialProjectsIdGet**](#apiv1commercialprojectsidget) | **GET** /api/v1/commercial/projects/{id} | 获取单个Project信息|
+|[**apiV1CommercialProjectsIdPut**](#apiv1commercialprojectsidput) | **PUT** /api/v1/commercial/projects/{id} | 更新 Project 数据|
+|[**apiV1CommercialProjectsPost**](#apiv1commercialprojectspost) | **POST** /api/v1/commercial/projects | 新建 Project|
 |[**apiV1PathsGet**](#apiv1pathsget) | **GET** /api/v1/paths | 获取子目录|
 |[**apiV1RemoteSetsGet**](#apiv1remotesetsget) | **GET** /api/v1/remote-sets | 搜索 Set|
 |[**apiV1RemoteSetsIdDependenciesGet**](#apiv1remotesetsiddependenciesget) | **GET** /api/v1/remote-sets/{id}/dependencies | 获取依赖此 Set 的所有 Set|
@@ -388,7 +397,7 @@ No authorization required
 # **apiV1CommercialNeteaseProductsGet**
 > ApiV1CommercialNeteaseProductsGet200Response apiV1CommercialNeteaseProductsGet()
 
-分页查询网易商品信息，支持动态条件过滤。  ## 请求信息 - **URL**: `/api/netease-products` - **方法**: `GET` - **Content-Type**: `application/json`  ## 请求参数  | 参数名 | 类型 | 位置 | 必填 | 说明 | |--------|------|------|------|------| | search | string | query | 否 | 查询条件字符串，格式为 `字段名:值`（等值匹配）或 `字段名~:值`（模糊匹配），多个条件用英文逗号 `,` 分隔，条件之间为 AND 关系。 | | page | integer | query | 否 | 页码，从0开始，默认0 | | size | integer | query | 否 | 每页条数，默认20 | | sort | string | query | 否 | 排序字段，格式 `字段名,方向`，如 `id,desc`，默认按 `id,asc` |  > **注意**：`sort` 字段必须是实体类中存在的属性名，支持多个排序条件用逗号分隔（如 `createTimeMs,desc,id,asc`）。  ## search 参数详细说明  `search` 参数允许通过简单的字符串组合来构建动态查询条件。其语法规则如下：  - **基本格式**：`字段名:值` 或 `字段名~:值` - **操作符**：   - `:` ：等值查询，字段必须完全等于指定值。   - `~:` ：模糊查询，字段值包含指定子串（对应 SQL 的 `LIKE \'%值%\'`），仅对字符串类型字段有效。 - **多条件组合**：多个条件用英文逗号 `,` 分隔，逻辑关系为 **AND**。 - **字段名**：必须是实体类 `NeteaseProduct` 中定义的属性名（Java字段名），**区分大小写**。 - **值类型**：根据字段类型自动转换，支持的字段类型包括：   - 字符串（`String`）：直接使用   - 数值（`Long`/`Integer`）：转换为对应数字   - 布尔（`Boolean`）：支持 `true`/`false`   - 枚举（如 `NeteaseProductStatus`）：需使用枚举常量名称（如 `CREATED`）   - 日期时间：以毫秒时间戳表示的 `Long` 型字段（如 `updateTimeMs`）可直接传入数字  ### 支持的字段列表 以下列出常用可查询字段（完整字段列表请参考实体类 `NeteaseProduct`）：  | 字段名 | 类型 | 说明 | 支持操作符 | |--------|------|------|------------| | `id` | Long | 主键ID | `:` | | `itemId` | String | 商品ID（字符串） | `:`, `~:` | | `itemIdInt` | Long | 商品ID（整数） | `:` | | `itemName` | String | 商品名称 | `:`, `~:` | | `internalStatus` | 枚举 | 内部状态（CREATED, ONLINE, OFFLINE等） | `:` | | `status` | String | 外部状态 | `:`, `~:` | | `price` | Integer | 价格 | `:` | | `priceType` | String | 价格类型 | `:`, `~:` | | `isOriginal` | Boolean | 是否原创 | `:` | | `createTimeMs` | Long | 创建时间（毫秒时间戳） | `:` | | `updateTimeMs` | Long | 更新时间（毫秒时间戳） | `:` | | `onlineTimeMs` | Long | 上线时间（毫秒时间戳） | `:` | | `canManageServer` | Boolean | 能否管理服务器 | `:` | | `weakOffline` | Boolean | 是否弱下线 | `:` |  > **注意**：模糊查询 `~:` 仅对字符串类型字段有效，对其他类型使用会导致类型转换错误。  ## 响应格式  - **成功响应**：HTTP 状态码 `200 OK`，返回分页数据。 - **失败响应**：由全局异常处理器返回错误信息。  ### 成功响应示例 ```json {   \"content\": [     {       \"id\": 1001,       \"internalStatus\": \"CREATED\",       \"updateTimeMs\": 1700000000000,       \"itemId\": \"netease_001\",       \"itemName\": \"测试商品\",       \"price\": 2990,       \"isOriginal\": true,       \"createTimeMs\": 1699900000000,       \"status\": \"active\",       \"templates\": [         {           \"id\": 1,           \"name\": \"模板A\"         }       ]       // ... 其他字段     }   ],   \"pageable\": {     \"pageNumber\": 0,     \"pageSize\": 20,     \"sort\": {       \"sorted\": true,       \"unsorted\": false,       \"empty\": false     }   },   \"totalPages\": 5,   \"totalElements\": 100,   \"last\": false,   \"size\": 20,   \"number\": 0,   \"sort\": {     \"sorted\": true,     \"unsorted\": false,     \"empty\": false   },   \"numberOfElements\": 20,   \"first\": true,   \"empty\": false } ```  ## 请求示例  ### 1. 无条件查询（默认分页） ``` GET /api/netease-products ```  ### 2. 等值条件查询 查询内部状态为 `CREATED` 且 `isOriginal` 为 true 的商品： ``` GET /api/netease-products?search=internalStatus:CREATED,isOriginal:true ```  ### 3. 模糊查询 查询商品名称包含“测试”的商品： ``` GET /api/netease-products?search=itemName~:测试 ```  ### 4. 组合条件 + 分页 + 排序 查询价格等于 2990，且商品ID模糊包含“001”的商品，按创建时间降序排列，每页10条，查看第2页： ``` GET /api/netease-products?search=price:2990,itemId~:001&page=1&size=10&sort=createTimeMs,desc ```  ### 5. 时间范围查询（利用毫秒时间戳） 虽然当前实现不支持直接的范围操作符，但可以通过等值查询指定精确时间戳。如需范围查询，可扩展接口支持 `>`、`<` 操作符，或使用其他方式（如日期范围参数）。  ## 注意事项  - 字段名必须与实体类属性名完全一致，包括大小写。 - 枚举类型的值必须使用枚举常量名称，且区分大小写。 - 模糊查询 `~:` 仅对字符串字段生效，对数值/布尔/枚举字段使用会产生类型转换错误。 - 如果 `search` 参数中包含特殊字符（如逗号、冒号），需要进行 URL 编码。 - 当 `search` 参数格式错误或字段名不存在时，接口将返回 HTTP 400 错误。
+支持通过 search 参数进行动态字段过滤和模糊查询，返回分页结果。
 
 ### Example
 
@@ -401,11 +410,27 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsGet();
+let search: string; //查询条件字符串，格式：`字段:值`（等值查询）或 `字段~:值`（模糊查询），多个条件用逗号分隔。 例如：`itemName~:测试,internalStatus:CREATED,project.id:123`。  (optional) (default to undefined)
+let page: number; //页码，从0开始 (optional) (default to 0)
+let size: number; //每页条数 (optional) (default to 20)
+let sort: string; //排序字段，格式如 `id,desc` 或 `name,asc` (optional) (default to 'id,desc')
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsGet(
+    search,
+    page,
+    size,
+    sort
+);
 ```
 
 ### Parameters
-This endpoint does not have any parameters.
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] | 查询条件字符串，格式：&#x60;字段:值&#x60;（等值查询）或 &#x60;字段~:值&#x60;（模糊查询），多个条件用逗号分隔。 例如：&#x60;itemName~:测试,internalStatus:CREATED,project.id:123&#x60;。  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码，从0开始 | (optional) defaults to 0|
+| **size** | [**number**] | 每页条数 | (optional) defaults to 20|
+| **sort** | [**string**] | 排序字段，格式如 &#x60;id,desc&#x60; 或 &#x60;name,asc&#x60; | (optional) defaults to 'id,desc'|
 
 
 ### Return type
@@ -426,6 +451,230 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | 成功 |  -  |
+|**400** | 请求参数错误（如 search 格式不正确） |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsIdGet**
+> NeteaseProduct apiV1CommercialNeteaseProductsIdGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; //产品ID (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsIdGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] | 产品ID | defaults to undefined|
+
+
+### Return type
+
+**NeteaseProduct**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+|**404** | 产品不存在 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsIdProjectPatch**
+> NeteaseProductDto apiV1CommercialNeteaseProductsIdProjectPatch()
+
+专用于修改产品的 project 关联。若请求体中的 projectId 为 null，则清除当前关联。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ProjectAssignmentRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+let projectAssignmentRequest: ProjectAssignmentRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsIdProjectPatch(
+    id,
+    projectAssignmentRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **projectAssignmentRequest** | **ProjectAssignmentRequest**|  | |
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**NeteaseProductDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 操作成功，返回更新后的产品 |  -  |
+|**400** | 项目ID不存在 |  -  |
+|**404** | 产品不存在 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsIdPut**
+> NeteaseProductDto apiV1CommercialNeteaseProductsIdPut()
+
+可用于更新关联项目（通过 projectId 或 clearProject 清除）、修改内部状态（internalStatus）。 未提供的字段保持不变。 
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    NeteaseProductUpdateRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+let neteaseProductUpdateRequest: NeteaseProductUpdateRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsIdPut(
+    id,
+    neteaseProductUpdateRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **neteaseProductUpdateRequest** | **NeteaseProductUpdateRequest**|  | |
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**NeteaseProductDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 更新成功，返回最新产品信息 |  -  |
+|**400** | 请求参数错误（如项目ID不存在） |  -  |
+|**404** | 产品不存在 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsIdStatusPatch**
+> NeteaseProductDto apiV1CommercialNeteaseProductsIdStatusPatch()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    StatusChangeRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+let statusChangeRequest: StatusChangeRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsIdStatusPatch(
+    id,
+    statusChangeRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **statusChangeRequest** | **StatusChangeRequest**|  | |
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**NeteaseProductDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 状态更新成功 |  -  |
+|**400** | 无效的状态值 |  -  |
+|**404** | 产品不存在 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -489,6 +738,275 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialProjectsGet**
+> ApiV1CommercialProjectsGet200Response apiV1CommercialProjectsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; // (default to undefined)
+let page: number; // (default to undefined)
+let size: number; // (default to undefined)
+let sort: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialProjectsGet(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] |  | defaults to undefined|
+| **page** | [**number**] |  | defaults to undefined|
+| **size** | [**number**] |  | defaults to undefined|
+| **sort** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialProjectsGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialProjectsIdDelete**
+> object apiV1CommercialProjectsIdDelete()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialProjectsIdDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**204** | 删除成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialProjectsIdGet**
+> Project apiV1CommercialProjectsIdGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialProjectsIdGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**Project**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialProjectsIdPut**
+> Project apiV1CommercialProjectsIdPut()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CommercialProjectsIdPutRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1CommercialProjectsIdPutRequest: ApiV1CommercialProjectsIdPutRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialProjectsIdPut(
+    id,
+    apiV1CommercialProjectsIdPutRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CommercialProjectsIdPutRequest** | **ApiV1CommercialProjectsIdPutRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**Project**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialProjectsPost**
+> Project apiV1CommercialProjectsPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CommercialProjectsPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let apiV1CommercialProjectsPostRequest: ApiV1CommercialProjectsPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialProjectsPost(
+    apiV1CommercialProjectsPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CommercialProjectsPostRequest** | **ApiV1CommercialProjectsPostRequest**|  | |
+
+
+### Return type
+
+**Project**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**201** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

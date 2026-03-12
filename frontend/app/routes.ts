@@ -23,10 +23,20 @@ export default [
       route("/:lang?/templates/:uuid", "routes/templates/templates-detail.tsx"),
 
       // 商业化
+
       // 订单列表
       route("/:lang?/commercial/orders", "pages/orders/page.tsx"),
+
       // 全局参数管理
       route("/:lang?/commercial/global-params", "pages/checkout-param/page.tsx"),
+
+      // Projects
+      route("/:lang?/commercial/projects", "pages/commercial/projects/page.tsx"),
+
+      // Netease Products
+      route("/:lang?/commercial/netease-products", "pages/commercial/netease-products/page.tsx"),
+      // Netease Product Details
+      route("/:lang?/commercial/netease-products/:id", "pages/commercial/netease-products/[id]/page.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.commercial.dto.netease;
 
+import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProductStatus;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import jakarta.persistence.*;
@@ -60,5 +61,5 @@ public class NeteaseProductDto {
     private String weakOfflineReason;
     private String orderPayload;
     private String statPayload;
-    private Set<Template> templates;
+    private Project project;
 }

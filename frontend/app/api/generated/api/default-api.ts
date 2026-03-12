@@ -34,6 +34,12 @@ import type { ApiV1CommercialNeteaseProductsGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialProjectsGet200Response } from '../model';
+// @ts-ignore
+import type { ApiV1CommercialProjectsIdPutRequest } from '../model';
+// @ts-ignore
+import type { ApiV1CommercialProjectsPostRequest } from '../model';
+// @ts-ignore
 import type { ApiV1PathsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { ApiV1RemoteSetsGet200Response } from '../model';
@@ -57,6 +63,20 @@ import type { ApiV1TemplatesIdTransferPatchRequest } from '../model';
 import type { ApiV1UserinfoCreatorsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { CheckoutCalculateContext } from '../model';
+// @ts-ignore
+import type { ErrorResponse } from '../model';
+// @ts-ignore
+import type { NeteaseProduct } from '../model';
+// @ts-ignore
+import type { NeteaseProductDto } from '../model';
+// @ts-ignore
+import type { NeteaseProductUpdateRequest } from '../model';
+// @ts-ignore
+import type { Project } from '../model';
+// @ts-ignore
+import type { ProjectAssignmentRequest } from '../model';
+// @ts-ignore
+import type { StatusChangeRequest } from '../model';
 // @ts-ignore
 import type { Template } from '../model';
 // @ts-ignore
@@ -307,13 +327,67 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 分页查询网易商品信息，支持动态条件过滤。  ## 请求信息 - **URL**: `/api/netease-products` - **方法**: `GET` - **Content-Type**: `application/json`  ## 请求参数  | 参数名 | 类型 | 位置 | 必填 | 说明 | |--------|------|------|------|------| | search | string | query | 否 | 查询条件字符串，格式为 `字段名:值`（等值匹配）或 `字段名~:值`（模糊匹配），多个条件用英文逗号 `,` 分隔，条件之间为 AND 关系。 | | page | integer | query | 否 | 页码，从0开始，默认0 | | size | integer | query | 否 | 每页条数，默认20 | | sort | string | query | 否 | 排序字段，格式 `字段名,方向`，如 `id,desc`，默认按 `id,asc` |  > **注意**：`sort` 字段必须是实体类中存在的属性名，支持多个排序条件用逗号分隔（如 `createTimeMs,desc,id,asc`）。  ## search 参数详细说明  `search` 参数允许通过简单的字符串组合来构建动态查询条件。其语法规则如下：  - **基本格式**：`字段名:值` 或 `字段名~:值` - **操作符**：   - `:` ：等值查询，字段必须完全等于指定值。   - `~:` ：模糊查询，字段值包含指定子串（对应 SQL 的 `LIKE \'%值%\'`），仅对字符串类型字段有效。 - **多条件组合**：多个条件用英文逗号 `,` 分隔，逻辑关系为 **AND**。 - **字段名**：必须是实体类 `NeteaseProduct` 中定义的属性名（Java字段名），**区分大小写**。 - **值类型**：根据字段类型自动转换，支持的字段类型包括：   - 字符串（`String`）：直接使用   - 数值（`Long`/`Integer`）：转换为对应数字   - 布尔（`Boolean`）：支持 `true`/`false`   - 枚举（如 `NeteaseProductStatus`）：需使用枚举常量名称（如 `CREATED`）   - 日期时间：以毫秒时间戳表示的 `Long` 型字段（如 `updateTimeMs`）可直接传入数字  ### 支持的字段列表 以下列出常用可查询字段（完整字段列表请参考实体类 `NeteaseProduct`）：  | 字段名 | 类型 | 说明 | 支持操作符 | |--------|------|------|------------| | `id` | Long | 主键ID | `:` | | `itemId` | String | 商品ID（字符串） | `:`, `~:` | | `itemIdInt` | Long | 商品ID（整数） | `:` | | `itemName` | String | 商品名称 | `:`, `~:` | | `internalStatus` | 枚举 | 内部状态（CREATED, ONLINE, OFFLINE等） | `:` | | `status` | String | 外部状态 | `:`, `~:` | | `price` | Integer | 价格 | `:` | | `priceType` | String | 价格类型 | `:`, `~:` | | `isOriginal` | Boolean | 是否原创 | `:` | | `createTimeMs` | Long | 创建时间（毫秒时间戳） | `:` | | `updateTimeMs` | Long | 更新时间（毫秒时间戳） | `:` | | `onlineTimeMs` | Long | 上线时间（毫秒时间戳） | `:` | | `canManageServer` | Boolean | 能否管理服务器 | `:` | | `weakOffline` | Boolean | 是否弱下线 | `:` |  > **注意**：模糊查询 `~:` 仅对字符串类型字段有效，对其他类型使用会导致类型转换错误。  ## 响应格式  - **成功响应**：HTTP 状态码 `200 OK`，返回分页数据。 - **失败响应**：由全局异常处理器返回错误信息。  ### 成功响应示例 ```json {   \"content\": [     {       \"id\": 1001,       \"internalStatus\": \"CREATED\",       \"updateTimeMs\": 1700000000000,       \"itemId\": \"netease_001\",       \"itemName\": \"测试商品\",       \"price\": 2990,       \"isOriginal\": true,       \"createTimeMs\": 1699900000000,       \"status\": \"active\",       \"templates\": [         {           \"id\": 1,           \"name\": \"模板A\"         }       ]       // ... 其他字段     }   ],   \"pageable\": {     \"pageNumber\": 0,     \"pageSize\": 20,     \"sort\": {       \"sorted\": true,       \"unsorted\": false,       \"empty\": false     }   },   \"totalPages\": 5,   \"totalElements\": 100,   \"last\": false,   \"size\": 20,   \"number\": 0,   \"sort\": {     \"sorted\": true,     \"unsorted\": false,     \"empty\": false   },   \"numberOfElements\": 20,   \"first\": true,   \"empty\": false } ```  ## 请求示例  ### 1. 无条件查询（默认分页） ``` GET /api/netease-products ```  ### 2. 等值条件查询 查询内部状态为 `CREATED` 且 `isOriginal` 为 true 的商品： ``` GET /api/netease-products?search=internalStatus:CREATED,isOriginal:true ```  ### 3. 模糊查询 查询商品名称包含“测试”的商品： ``` GET /api/netease-products?search=itemName~:测试 ```  ### 4. 组合条件 + 分页 + 排序 查询价格等于 2990，且商品ID模糊包含“001”的商品，按创建时间降序排列，每页10条，查看第2页： ``` GET /api/netease-products?search=price:2990,itemId~:001&page=1&size=10&sort=createTimeMs,desc ```  ### 5. 时间范围查询（利用毫秒时间戳） 虽然当前实现不支持直接的范围操作符，但可以通过等值查询指定精确时间戳。如需范围查询，可扩展接口支持 `>`、`<` 操作符，或使用其他方式（如日期范围参数）。  ## 注意事项  - 字段名必须与实体类属性名完全一致，包括大小写。 - 枚举类型的值必须使用枚举常量名称，且区分大小写。 - 模糊查询 `~:` 仅对字符串字段生效，对数值/布尔/枚举字段使用会产生类型转换错误。 - 如果 `search` 参数中包含特殊字符（如逗号、冒号），需要进行 URL 编码。 - 当 `search` 参数格式错误或字段名不存在时，接口将返回 HTTP 400 错误。
-         * @summary 获取/搜索商品列表
+         * 支持通过 search 参数进行动态字段过滤和模糊查询，返回分页结果。
+         * @summary 分页查询产品列表
+         * @param {string} [search] 查询条件字符串，格式：&#x60;字段:值&#x60;（等值查询）或 &#x60;字段~:值&#x60;（模糊查询），多个条件用逗号分隔。 例如：&#x60;itemName~:测试,internalStatus:CREATED,project.id:123&#x60;。 
+         * @param {number} [page] 页码，从0开始
+         * @param {number} [size] 每页条数
+         * @param {string} [sort] 排序字段，格式如 &#x60;id,desc&#x60; 或 &#x60;name,asc&#x60;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialNeteaseProductsGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1CommercialNeteaseProductsGet: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/commercial/netease-products`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 根据ID查询单个产品
+         * @param {number} id 产品ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseProductsIdGet', 'id', id)
+            const localVarPath = `/api/v1/commercial/netease-products/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -330,6 +404,117 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 专用于修改产品的 project 关联。若请求体中的 projectId 为 null，则清除当前关联。
+         * @summary 指派或清除项目关联
+         * @param {number} id 
+         * @param {ProjectAssignmentRequest} [projectAssignmentRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdProjectPatch: async (id: number, projectAssignmentRequest?: ProjectAssignmentRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseProductsIdProjectPatch', 'id', id)
+            const localVarPath = `/api/v1/commercial/netease-products/{id}/project`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(projectAssignmentRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 可用于更新关联项目（通过 projectId 或 clearProject 清除）、修改内部状态（internalStatus）。 未提供的字段保持不变。 
+         * @summary 更新产品信息（支持部分字段）
+         * @param {number} id 
+         * @param {NeteaseProductUpdateRequest} [neteaseProductUpdateRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdPut: async (id: number, neteaseProductUpdateRequest?: NeteaseProductUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseProductsIdPut', 'id', id)
+            const localVarPath = `/api/v1/commercial/netease-products/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(neteaseProductUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 修改产品状态
+         * @param {number} id 
+         * @param {StatusChangeRequest} [statusChangeRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdStatusPatch: async (id: number, statusChangeRequest?: StatusChangeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseProductsIdStatusPatch', 'id', id)
+            const localVarPath = `/api/v1/commercial/netease-products/{id}/status`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(statusChangeRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -384,6 +569,202 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取/筛选项目列表
+         * @param {string} search 
+         * @param {number} page 
+         * @param {number} size 
+         * @param {string} sort 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsGet: async (search: string, page: number, size: number, sort: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'search' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsGet', 'search', search)
+            // verify required parameter 'page' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsGet', 'page', page)
+            // verify required parameter 'size' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsGet', 'size', size)
+            // verify required parameter 'sort' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsGet', 'sort', sort)
+            const localVarPath = `/api/v1/commercial/projects`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 软删除 Project
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsIdDelete: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsIdDelete', 'id', id)
+            const localVarPath = `/api/v1/commercial/projects/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取单个Project信息
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsIdGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsIdGet', 'id', id)
+            const localVarPath = `/api/v1/commercial/projects/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 更新 Project 数据
+         * @param {string} id 
+         * @param {ApiV1CommercialProjectsIdPutRequest} [apiV1CommercialProjectsIdPutRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsIdPut: async (id: string, apiV1CommercialProjectsIdPutRequest?: ApiV1CommercialProjectsIdPutRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsIdPut', 'id', id)
+            const localVarPath = `/api/v1/commercial/projects/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CommercialProjectsIdPutRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 新建 Project
+         * @param {ApiV1CommercialProjectsPostRequest} [apiV1CommercialProjectsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsPost: async (apiV1CommercialProjectsPostRequest?: ApiV1CommercialProjectsPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/projects`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CommercialProjectsPostRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1233,15 +1614,74 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 分页查询网易商品信息，支持动态条件过滤。  ## 请求信息 - **URL**: `/api/netease-products` - **方法**: `GET` - **Content-Type**: `application/json`  ## 请求参数  | 参数名 | 类型 | 位置 | 必填 | 说明 | |--------|------|------|------|------| | search | string | query | 否 | 查询条件字符串，格式为 `字段名:值`（等值匹配）或 `字段名~:值`（模糊匹配），多个条件用英文逗号 `,` 分隔，条件之间为 AND 关系。 | | page | integer | query | 否 | 页码，从0开始，默认0 | | size | integer | query | 否 | 每页条数，默认20 | | sort | string | query | 否 | 排序字段，格式 `字段名,方向`，如 `id,desc`，默认按 `id,asc` |  > **注意**：`sort` 字段必须是实体类中存在的属性名，支持多个排序条件用逗号分隔（如 `createTimeMs,desc,id,asc`）。  ## search 参数详细说明  `search` 参数允许通过简单的字符串组合来构建动态查询条件。其语法规则如下：  - **基本格式**：`字段名:值` 或 `字段名~:值` - **操作符**：   - `:` ：等值查询，字段必须完全等于指定值。   - `~:` ：模糊查询，字段值包含指定子串（对应 SQL 的 `LIKE \'%值%\'`），仅对字符串类型字段有效。 - **多条件组合**：多个条件用英文逗号 `,` 分隔，逻辑关系为 **AND**。 - **字段名**：必须是实体类 `NeteaseProduct` 中定义的属性名（Java字段名），**区分大小写**。 - **值类型**：根据字段类型自动转换，支持的字段类型包括：   - 字符串（`String`）：直接使用   - 数值（`Long`/`Integer`）：转换为对应数字   - 布尔（`Boolean`）：支持 `true`/`false`   - 枚举（如 `NeteaseProductStatus`）：需使用枚举常量名称（如 `CREATED`）   - 日期时间：以毫秒时间戳表示的 `Long` 型字段（如 `updateTimeMs`）可直接传入数字  ### 支持的字段列表 以下列出常用可查询字段（完整字段列表请参考实体类 `NeteaseProduct`）：  | 字段名 | 类型 | 说明 | 支持操作符 | |--------|------|------|------------| | `id` | Long | 主键ID | `:` | | `itemId` | String | 商品ID（字符串） | `:`, `~:` | | `itemIdInt` | Long | 商品ID（整数） | `:` | | `itemName` | String | 商品名称 | `:`, `~:` | | `internalStatus` | 枚举 | 内部状态（CREATED, ONLINE, OFFLINE等） | `:` | | `status` | String | 外部状态 | `:`, `~:` | | `price` | Integer | 价格 | `:` | | `priceType` | String | 价格类型 | `:`, `~:` | | `isOriginal` | Boolean | 是否原创 | `:` | | `createTimeMs` | Long | 创建时间（毫秒时间戳） | `:` | | `updateTimeMs` | Long | 更新时间（毫秒时间戳） | `:` | | `onlineTimeMs` | Long | 上线时间（毫秒时间戳） | `:` | | `canManageServer` | Boolean | 能否管理服务器 | `:` | | `weakOffline` | Boolean | 是否弱下线 | `:` |  > **注意**：模糊查询 `~:` 仅对字符串类型字段有效，对其他类型使用会导致类型转换错误。  ## 响应格式  - **成功响应**：HTTP 状态码 `200 OK`，返回分页数据。 - **失败响应**：由全局异常处理器返回错误信息。  ### 成功响应示例 ```json {   \"content\": [     {       \"id\": 1001,       \"internalStatus\": \"CREATED\",       \"updateTimeMs\": 1700000000000,       \"itemId\": \"netease_001\",       \"itemName\": \"测试商品\",       \"price\": 2990,       \"isOriginal\": true,       \"createTimeMs\": 1699900000000,       \"status\": \"active\",       \"templates\": [         {           \"id\": 1,           \"name\": \"模板A\"         }       ]       // ... 其他字段     }   ],   \"pageable\": {     \"pageNumber\": 0,     \"pageSize\": 20,     \"sort\": {       \"sorted\": true,       \"unsorted\": false,       \"empty\": false     }   },   \"totalPages\": 5,   \"totalElements\": 100,   \"last\": false,   \"size\": 20,   \"number\": 0,   \"sort\": {     \"sorted\": true,     \"unsorted\": false,     \"empty\": false   },   \"numberOfElements\": 20,   \"first\": true,   \"empty\": false } ```  ## 请求示例  ### 1. 无条件查询（默认分页） ``` GET /api/netease-products ```  ### 2. 等值条件查询 查询内部状态为 `CREATED` 且 `isOriginal` 为 true 的商品： ``` GET /api/netease-products?search=internalStatus:CREATED,isOriginal:true ```  ### 3. 模糊查询 查询商品名称包含“测试”的商品： ``` GET /api/netease-products?search=itemName~:测试 ```  ### 4. 组合条件 + 分页 + 排序 查询价格等于 2990，且商品ID模糊包含“001”的商品，按创建时间降序排列，每页10条，查看第2页： ``` GET /api/netease-products?search=price:2990,itemId~:001&page=1&size=10&sort=createTimeMs,desc ```  ### 5. 时间范围查询（利用毫秒时间戳） 虽然当前实现不支持直接的范围操作符，但可以通过等值查询指定精确时间戳。如需范围查询，可扩展接口支持 `>`、`<` 操作符，或使用其他方式（如日期范围参数）。  ## 注意事项  - 字段名必须与实体类属性名完全一致，包括大小写。 - 枚举类型的值必须使用枚举常量名称，且区分大小写。 - 模糊查询 `~:` 仅对字符串字段生效，对数值/布尔/枚举字段使用会产生类型转换错误。 - 如果 `search` 参数中包含特殊字符（如逗号、冒号），需要进行 URL 编码。 - 当 `search` 参数格式错误或字段名不存在时，接口将返回 HTTP 400 错误。
-         * @summary 获取/搜索商品列表
+         * 支持通过 search 参数进行动态字段过滤和模糊查询，返回分页结果。
+         * @summary 分页查询产品列表
+         * @param {string} [search] 查询条件字符串，格式：&#x60;字段:值&#x60;（等值查询）或 &#x60;字段~:值&#x60;（模糊查询），多个条件用逗号分隔。 例如：&#x60;itemName~:测试,internalStatus:CREATED,project.id:123&#x60;。 
+         * @param {number} [page] 页码，从0开始
+         * @param {number} [size] 每页条数
+         * @param {string} [sort] 排序字段，格式如 &#x60;id,desc&#x60; 或 &#x60;name,asc&#x60;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1CommercialNeteaseProductsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialNeteaseProductsGet200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsGet(options);
+        async apiV1CommercialNeteaseProductsGet(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialNeteaseProductsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsGet(search, page, size, sort, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 根据ID查询单个产品
+         * @param {number} id 产品ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseProductsIdGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NeteaseProduct>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsIdGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 专用于修改产品的 project 关联。若请求体中的 projectId 为 null，则清除当前关联。
+         * @summary 指派或清除项目关联
+         * @param {number} id 
+         * @param {ProjectAssignmentRequest} [projectAssignmentRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseProductsIdProjectPatch(id: number, projectAssignmentRequest?: ProjectAssignmentRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NeteaseProductDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsIdProjectPatch(id, projectAssignmentRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsIdProjectPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 可用于更新关联项目（通过 projectId 或 clearProject 清除）、修改内部状态（internalStatus）。 未提供的字段保持不变。 
+         * @summary 更新产品信息（支持部分字段）
+         * @param {number} id 
+         * @param {NeteaseProductUpdateRequest} [neteaseProductUpdateRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseProductsIdPut(id: number, neteaseProductUpdateRequest?: NeteaseProductUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NeteaseProductDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsIdPut(id, neteaseProductUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsIdPut']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 修改产品状态
+         * @param {number} id 
+         * @param {StatusChangeRequest} [statusChangeRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseProductsIdStatusPatch(id: number, statusChangeRequest?: StatusChangeRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NeteaseProductDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsIdStatusPatch(id, statusChangeRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsIdStatusPatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1259,6 +1699,75 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsProductIdOrdersGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取/筛选项目列表
+         * @param {string} search 
+         * @param {number} page 
+         * @param {number} size 
+         * @param {string} sort 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsGet(search: string, page: number, size: number, sort: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialProjectsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsGet(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 软删除 Project
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsIdDelete(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取单个Project信息
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsIdGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Project>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsIdGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 更新 Project 数据
+         * @param {string} id 
+         * @param {ApiV1CommercialProjectsIdPutRequest} [apiV1CommercialProjectsIdPutRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsIdPut(id: string, apiV1CommercialProjectsIdPutRequest?: ApiV1CommercialProjectsIdPutRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Project>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsIdPut(id, apiV1CommercialProjectsIdPutRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsIdPut']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 新建 Project
+         * @param {ApiV1CommercialProjectsPostRequest} [apiV1CommercialProjectsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest?: ApiV1CommercialProjectsPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Project>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1596,13 +2105,60 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1CommercialNeteaseOrdersGet(search, page, size, sort, options).then((request) => request(axios, basePath));
         },
         /**
-         * 分页查询网易商品信息，支持动态条件过滤。  ## 请求信息 - **URL**: `/api/netease-products` - **方法**: `GET` - **Content-Type**: `application/json`  ## 请求参数  | 参数名 | 类型 | 位置 | 必填 | 说明 | |--------|------|------|------|------| | search | string | query | 否 | 查询条件字符串，格式为 `字段名:值`（等值匹配）或 `字段名~:值`（模糊匹配），多个条件用英文逗号 `,` 分隔，条件之间为 AND 关系。 | | page | integer | query | 否 | 页码，从0开始，默认0 | | size | integer | query | 否 | 每页条数，默认20 | | sort | string | query | 否 | 排序字段，格式 `字段名,方向`，如 `id,desc`，默认按 `id,asc` |  > **注意**：`sort` 字段必须是实体类中存在的属性名，支持多个排序条件用逗号分隔（如 `createTimeMs,desc,id,asc`）。  ## search 参数详细说明  `search` 参数允许通过简单的字符串组合来构建动态查询条件。其语法规则如下：  - **基本格式**：`字段名:值` 或 `字段名~:值` - **操作符**：   - `:` ：等值查询，字段必须完全等于指定值。   - `~:` ：模糊查询，字段值包含指定子串（对应 SQL 的 `LIKE \'%值%\'`），仅对字符串类型字段有效。 - **多条件组合**：多个条件用英文逗号 `,` 分隔，逻辑关系为 **AND**。 - **字段名**：必须是实体类 `NeteaseProduct` 中定义的属性名（Java字段名），**区分大小写**。 - **值类型**：根据字段类型自动转换，支持的字段类型包括：   - 字符串（`String`）：直接使用   - 数值（`Long`/`Integer`）：转换为对应数字   - 布尔（`Boolean`）：支持 `true`/`false`   - 枚举（如 `NeteaseProductStatus`）：需使用枚举常量名称（如 `CREATED`）   - 日期时间：以毫秒时间戳表示的 `Long` 型字段（如 `updateTimeMs`）可直接传入数字  ### 支持的字段列表 以下列出常用可查询字段（完整字段列表请参考实体类 `NeteaseProduct`）：  | 字段名 | 类型 | 说明 | 支持操作符 | |--------|------|------|------------| | `id` | Long | 主键ID | `:` | | `itemId` | String | 商品ID（字符串） | `:`, `~:` | | `itemIdInt` | Long | 商品ID（整数） | `:` | | `itemName` | String | 商品名称 | `:`, `~:` | | `internalStatus` | 枚举 | 内部状态（CREATED, ONLINE, OFFLINE等） | `:` | | `status` | String | 外部状态 | `:`, `~:` | | `price` | Integer | 价格 | `:` | | `priceType` | String | 价格类型 | `:`, `~:` | | `isOriginal` | Boolean | 是否原创 | `:` | | `createTimeMs` | Long | 创建时间（毫秒时间戳） | `:` | | `updateTimeMs` | Long | 更新时间（毫秒时间戳） | `:` | | `onlineTimeMs` | Long | 上线时间（毫秒时间戳） | `:` | | `canManageServer` | Boolean | 能否管理服务器 | `:` | | `weakOffline` | Boolean | 是否弱下线 | `:` |  > **注意**：模糊查询 `~:` 仅对字符串类型字段有效，对其他类型使用会导致类型转换错误。  ## 响应格式  - **成功响应**：HTTP 状态码 `200 OK`，返回分页数据。 - **失败响应**：由全局异常处理器返回错误信息。  ### 成功响应示例 ```json {   \"content\": [     {       \"id\": 1001,       \"internalStatus\": \"CREATED\",       \"updateTimeMs\": 1700000000000,       \"itemId\": \"netease_001\",       \"itemName\": \"测试商品\",       \"price\": 2990,       \"isOriginal\": true,       \"createTimeMs\": 1699900000000,       \"status\": \"active\",       \"templates\": [         {           \"id\": 1,           \"name\": \"模板A\"         }       ]       // ... 其他字段     }   ],   \"pageable\": {     \"pageNumber\": 0,     \"pageSize\": 20,     \"sort\": {       \"sorted\": true,       \"unsorted\": false,       \"empty\": false     }   },   \"totalPages\": 5,   \"totalElements\": 100,   \"last\": false,   \"size\": 20,   \"number\": 0,   \"sort\": {     \"sorted\": true,     \"unsorted\": false,     \"empty\": false   },   \"numberOfElements\": 20,   \"first\": true,   \"empty\": false } ```  ## 请求示例  ### 1. 无条件查询（默认分页） ``` GET /api/netease-products ```  ### 2. 等值条件查询 查询内部状态为 `CREATED` 且 `isOriginal` 为 true 的商品： ``` GET /api/netease-products?search=internalStatus:CREATED,isOriginal:true ```  ### 3. 模糊查询 查询商品名称包含“测试”的商品： ``` GET /api/netease-products?search=itemName~:测试 ```  ### 4. 组合条件 + 分页 + 排序 查询价格等于 2990，且商品ID模糊包含“001”的商品，按创建时间降序排列，每页10条，查看第2页： ``` GET /api/netease-products?search=price:2990,itemId~:001&page=1&size=10&sort=createTimeMs,desc ```  ### 5. 时间范围查询（利用毫秒时间戳） 虽然当前实现不支持直接的范围操作符，但可以通过等值查询指定精确时间戳。如需范围查询，可扩展接口支持 `>`、`<` 操作符，或使用其他方式（如日期范围参数）。  ## 注意事项  - 字段名必须与实体类属性名完全一致，包括大小写。 - 枚举类型的值必须使用枚举常量名称，且区分大小写。 - 模糊查询 `~:` 仅对字符串字段生效，对数值/布尔/枚举字段使用会产生类型转换错误。 - 如果 `search` 参数中包含特殊字符（如逗号、冒号），需要进行 URL 编码。 - 当 `search` 参数格式错误或字段名不存在时，接口将返回 HTTP 400 错误。
-         * @summary 获取/搜索商品列表
+         * 支持通过 search 参数进行动态字段过滤和模糊查询，返回分页结果。
+         * @summary 分页查询产品列表
+         * @param {string} [search] 查询条件字符串，格式：&#x60;字段:值&#x60;（等值查询）或 &#x60;字段~:值&#x60;（模糊查询），多个条件用逗号分隔。 例如：&#x60;itemName~:测试,internalStatus:CREATED,project.id:123&#x60;。 
+         * @param {number} [page] 页码，从0开始
+         * @param {number} [size] 每页条数
+         * @param {string} [sort] 排序字段，格式如 &#x60;id,desc&#x60; 或 &#x60;name,asc&#x60;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialNeteaseProductsGet(options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseProductsGet200Response> {
-            return localVarFp.apiV1CommercialNeteaseProductsGet(options).then((request) => request(axios, basePath));
+        apiV1CommercialNeteaseProductsGet(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseProductsGet200Response> {
+            return localVarFp.apiV1CommercialNeteaseProductsGet(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 根据ID查询单个产品
+         * @param {number} id 产品ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<NeteaseProduct> {
+            return localVarFp.apiV1CommercialNeteaseProductsIdGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 专用于修改产品的 project 关联。若请求体中的 projectId 为 null，则清除当前关联。
+         * @summary 指派或清除项目关联
+         * @param {number} id 
+         * @param {ProjectAssignmentRequest} [projectAssignmentRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdProjectPatch(id: number, projectAssignmentRequest?: ProjectAssignmentRequest, options?: RawAxiosRequestConfig): AxiosPromise<NeteaseProductDto> {
+            return localVarFp.apiV1CommercialNeteaseProductsIdProjectPatch(id, projectAssignmentRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 可用于更新关联项目（通过 projectId 或 clearProject 清除）、修改内部状态（internalStatus）。 未提供的字段保持不变。 
+         * @summary 更新产品信息（支持部分字段）
+         * @param {number} id 
+         * @param {NeteaseProductUpdateRequest} [neteaseProductUpdateRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdPut(id: number, neteaseProductUpdateRequest?: NeteaseProductUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<NeteaseProductDto> {
+            return localVarFp.apiV1CommercialNeteaseProductsIdPut(id, neteaseProductUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 修改产品状态
+         * @param {number} id 
+         * @param {StatusChangeRequest} [statusChangeRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdStatusPatch(id: number, statusChangeRequest?: StatusChangeRequest, options?: RawAxiosRequestConfig): AxiosPromise<NeteaseProductDto> {
+            return localVarFp.apiV1CommercialNeteaseProductsIdStatusPatch(id, statusChangeRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1617,6 +2173,60 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         apiV1CommercialNeteaseProductsProductIdOrdersGet(productId: string, search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response> {
             return localVarFp.apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取/筛选项目列表
+         * @param {string} search 
+         * @param {number} page 
+         * @param {number} size 
+         * @param {string} sort 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsGet(search: string, page: number, size: number, sort: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialProjectsGet200Response> {
+            return localVarFp.apiV1CommercialProjectsGet(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 软删除 Project
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsIdDelete(id: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialProjectsIdDelete(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取单个Project信息
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsIdGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Project> {
+            return localVarFp.apiV1CommercialProjectsIdGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 更新 Project 数据
+         * @param {string} id 
+         * @param {ApiV1CommercialProjectsIdPutRequest} [apiV1CommercialProjectsIdPutRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsIdPut(id: string, apiV1CommercialProjectsIdPutRequest?: ApiV1CommercialProjectsIdPutRequest, options?: RawAxiosRequestConfig): AxiosPromise<Project> {
+            return localVarFp.apiV1CommercialProjectsIdPut(id, apiV1CommercialProjectsIdPutRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 新建 Project
+         * @param {ApiV1CommercialProjectsPostRequest} [apiV1CommercialProjectsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest?: ApiV1CommercialProjectsPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<Project> {
+            return localVarFp.apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1907,13 +2517,64 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 分页查询网易商品信息，支持动态条件过滤。  ## 请求信息 - **URL**: `/api/netease-products` - **方法**: `GET` - **Content-Type**: `application/json`  ## 请求参数  | 参数名 | 类型 | 位置 | 必填 | 说明 | |--------|------|------|------|------| | search | string | query | 否 | 查询条件字符串，格式为 `字段名:值`（等值匹配）或 `字段名~:值`（模糊匹配），多个条件用英文逗号 `,` 分隔，条件之间为 AND 关系。 | | page | integer | query | 否 | 页码，从0开始，默认0 | | size | integer | query | 否 | 每页条数，默认20 | | sort | string | query | 否 | 排序字段，格式 `字段名,方向`，如 `id,desc`，默认按 `id,asc` |  > **注意**：`sort` 字段必须是实体类中存在的属性名，支持多个排序条件用逗号分隔（如 `createTimeMs,desc,id,asc`）。  ## search 参数详细说明  `search` 参数允许通过简单的字符串组合来构建动态查询条件。其语法规则如下：  - **基本格式**：`字段名:值` 或 `字段名~:值` - **操作符**：   - `:` ：等值查询，字段必须完全等于指定值。   - `~:` ：模糊查询，字段值包含指定子串（对应 SQL 的 `LIKE \'%值%\'`），仅对字符串类型字段有效。 - **多条件组合**：多个条件用英文逗号 `,` 分隔，逻辑关系为 **AND**。 - **字段名**：必须是实体类 `NeteaseProduct` 中定义的属性名（Java字段名），**区分大小写**。 - **值类型**：根据字段类型自动转换，支持的字段类型包括：   - 字符串（`String`）：直接使用   - 数值（`Long`/`Integer`）：转换为对应数字   - 布尔（`Boolean`）：支持 `true`/`false`   - 枚举（如 `NeteaseProductStatus`）：需使用枚举常量名称（如 `CREATED`）   - 日期时间：以毫秒时间戳表示的 `Long` 型字段（如 `updateTimeMs`）可直接传入数字  ### 支持的字段列表 以下列出常用可查询字段（完整字段列表请参考实体类 `NeteaseProduct`）：  | 字段名 | 类型 | 说明 | 支持操作符 | |--------|------|------|------------| | `id` | Long | 主键ID | `:` | | `itemId` | String | 商品ID（字符串） | `:`, `~:` | | `itemIdInt` | Long | 商品ID（整数） | `:` | | `itemName` | String | 商品名称 | `:`, `~:` | | `internalStatus` | 枚举 | 内部状态（CREATED, ONLINE, OFFLINE等） | `:` | | `status` | String | 外部状态 | `:`, `~:` | | `price` | Integer | 价格 | `:` | | `priceType` | String | 价格类型 | `:`, `~:` | | `isOriginal` | Boolean | 是否原创 | `:` | | `createTimeMs` | Long | 创建时间（毫秒时间戳） | `:` | | `updateTimeMs` | Long | 更新时间（毫秒时间戳） | `:` | | `onlineTimeMs` | Long | 上线时间（毫秒时间戳） | `:` | | `canManageServer` | Boolean | 能否管理服务器 | `:` | | `weakOffline` | Boolean | 是否弱下线 | `:` |  > **注意**：模糊查询 `~:` 仅对字符串类型字段有效，对其他类型使用会导致类型转换错误。  ## 响应格式  - **成功响应**：HTTP 状态码 `200 OK`，返回分页数据。 - **失败响应**：由全局异常处理器返回错误信息。  ### 成功响应示例 ```json {   \"content\": [     {       \"id\": 1001,       \"internalStatus\": \"CREATED\",       \"updateTimeMs\": 1700000000000,       \"itemId\": \"netease_001\",       \"itemName\": \"测试商品\",       \"price\": 2990,       \"isOriginal\": true,       \"createTimeMs\": 1699900000000,       \"status\": \"active\",       \"templates\": [         {           \"id\": 1,           \"name\": \"模板A\"         }       ]       // ... 其他字段     }   ],   \"pageable\": {     \"pageNumber\": 0,     \"pageSize\": 20,     \"sort\": {       \"sorted\": true,       \"unsorted\": false,       \"empty\": false     }   },   \"totalPages\": 5,   \"totalElements\": 100,   \"last\": false,   \"size\": 20,   \"number\": 0,   \"sort\": {     \"sorted\": true,     \"unsorted\": false,     \"empty\": false   },   \"numberOfElements\": 20,   \"first\": true,   \"empty\": false } ```  ## 请求示例  ### 1. 无条件查询（默认分页） ``` GET /api/netease-products ```  ### 2. 等值条件查询 查询内部状态为 `CREATED` 且 `isOriginal` 为 true 的商品： ``` GET /api/netease-products?search=internalStatus:CREATED,isOriginal:true ```  ### 3. 模糊查询 查询商品名称包含“测试”的商品： ``` GET /api/netease-products?search=itemName~:测试 ```  ### 4. 组合条件 + 分页 + 排序 查询价格等于 2990，且商品ID模糊包含“001”的商品，按创建时间降序排列，每页10条，查看第2页： ``` GET /api/netease-products?search=price:2990,itemId~:001&page=1&size=10&sort=createTimeMs,desc ```  ### 5. 时间范围查询（利用毫秒时间戳） 虽然当前实现不支持直接的范围操作符，但可以通过等值查询指定精确时间戳。如需范围查询，可扩展接口支持 `>`、`<` 操作符，或使用其他方式（如日期范围参数）。  ## 注意事项  - 字段名必须与实体类属性名完全一致，包括大小写。 - 枚举类型的值必须使用枚举常量名称，且区分大小写。 - 模糊查询 `~:` 仅对字符串字段生效，对数值/布尔/枚举字段使用会产生类型转换错误。 - 如果 `search` 参数中包含特殊字符（如逗号、冒号），需要进行 URL 编码。 - 当 `search` 参数格式错误或字段名不存在时，接口将返回 HTTP 400 错误。
-     * @summary 获取/搜索商品列表
+     * 支持通过 search 参数进行动态字段过滤和模糊查询，返回分页结果。
+     * @summary 分页查询产品列表
+     * @param {string} [search] 查询条件字符串，格式：&#x60;字段:值&#x60;（等值查询）或 &#x60;字段~:值&#x60;（模糊查询），多个条件用逗号分隔。 例如：&#x60;itemName~:测试,internalStatus:CREATED,project.id:123&#x60;。 
+     * @param {number} [page] 页码，从0开始
+     * @param {number} [size] 每页条数
+     * @param {string} [sort] 排序字段，格式如 &#x60;id,desc&#x60; 或 &#x60;name,asc&#x60;
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiV1CommercialNeteaseProductsGet(options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsGet(options).then((request) => request(this.axios, this.basePath));
+    public apiV1CommercialNeteaseProductsGet(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsGet(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 根据ID查询单个产品
+     * @param {number} id 产品ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseProductsIdGet(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsIdGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 专用于修改产品的 project 关联。若请求体中的 projectId 为 null，则清除当前关联。
+     * @summary 指派或清除项目关联
+     * @param {number} id 
+     * @param {ProjectAssignmentRequest} [projectAssignmentRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseProductsIdProjectPatch(id: number, projectAssignmentRequest?: ProjectAssignmentRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsIdProjectPatch(id, projectAssignmentRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 可用于更新关联项目（通过 projectId 或 clearProject 清除）、修改内部状态（internalStatus）。 未提供的字段保持不变。 
+     * @summary 更新产品信息（支持部分字段）
+     * @param {number} id 
+     * @param {NeteaseProductUpdateRequest} [neteaseProductUpdateRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseProductsIdPut(id: number, neteaseProductUpdateRequest?: NeteaseProductUpdateRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsIdPut(id, neteaseProductUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 修改产品状态
+     * @param {number} id 
+     * @param {StatusChangeRequest} [statusChangeRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseProductsIdStatusPatch(id: number, statusChangeRequest?: StatusChangeRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsIdStatusPatch(id, statusChangeRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1929,6 +2590,65 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1CommercialNeteaseProductsProductIdOrdersGet(productId: string, search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取/筛选项目列表
+     * @param {string} search 
+     * @param {number} page 
+     * @param {number} size 
+     * @param {string} sort 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsGet(search: string, page: number, size: number, sort: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsGet(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 软删除 Project
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsIdDelete(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsIdDelete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取单个Project信息
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsIdGet(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsIdGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 更新 Project 数据
+     * @param {string} id 
+     * @param {ApiV1CommercialProjectsIdPutRequest} [apiV1CommercialProjectsIdPutRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsIdPut(id: string, apiV1CommercialProjectsIdPutRequest?: ApiV1CommercialProjectsIdPutRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsIdPut(id, apiV1CommercialProjectsIdPutRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 新建 Project
+     * @param {ApiV1CommercialProjectsPostRequest} [apiV1CommercialProjectsPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest?: ApiV1CommercialProjectsPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

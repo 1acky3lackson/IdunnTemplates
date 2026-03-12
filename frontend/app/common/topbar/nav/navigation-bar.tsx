@@ -31,6 +31,24 @@ export function NavigationBar() {
         { title: items.resize, href: "/docs/utilities/resize", description: items.resizeDesc },
     ]
 
+    const commercialComponents = [
+        {
+            title: items.commercial.projects.title,
+            href: "/commercial/projects",
+            description: items.commercial.projects.desc
+        },
+        {
+            title: items.commercial.neteaseProducts.title,
+            href: "/commercial/netease-products",
+            description: items.commercial.neteaseProducts.desc
+        },
+        {
+            title: items.commercial.neteaseOrders.title,
+            href: "/commercial/orders",
+            description: items.commercial.neteaseOrders.desc
+        }
+    ]
+
     return (
         <NavigationMenu>
             <NavigationMenuList>
@@ -112,7 +130,7 @@ export function NavigationBar() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* BRUSHES */}
+                {/* Utils */}
                 <NavigationMenuItem>
                     <NavigationMenuTrigger className="bg-transparent">{menus.utilities}</NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -120,6 +138,24 @@ export function NavigationBar() {
                             {utilComponents.map((component, index) => (
                                 <ListItem
                                     key={`navbar-brush-${component.title}-${index}`}
+                                    title={component.title}
+                                    href={component.href}
+                                >
+                                    {component.description}
+                                </ListItem>
+                            ))}
+                        </ul>
+                    </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Commercial */}
+                <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-transparent">{menus.commercial}</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                        <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
+                            {commercialComponents.map((component, index) => (
+                                <ListItem
+                                    key={`navbar-commercial-${component.title}-${index}`}
                                     title={component.title}
                                     href={component.href}
                                 >

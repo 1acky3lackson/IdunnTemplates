@@ -15,25 +15,25 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { ApiV1CommercialNeteaseProductsGet200ResponsePageable } from './api-v1-commercial-netease-products-get200-response-pageable';
+import type { ApiV1RemoteSetsGet200ResponsePageable } from './api-v1-remote-sets-get200-response-pageable';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { ApiV1CommercialNeteaseProductsGet200ResponsePageableSort } from './api-v1-commercial-netease-products-get200-response-pageable-sort';
+import type { ApiV1RemoteSetsGet200ResponsePageableSort } from './api-v1-remote-sets-get200-response-pageable-sort';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { NeteaseProduct } from './netease-product';
 
 export interface ApiV1CommercialNeteaseProductsGet200Response {
     'content': Array<NeteaseProduct>;
-    'pageable': ApiV1CommercialNeteaseProductsGet200ResponsePageable;
+    'pageable': ApiV1RemoteSetsGet200ResponsePageable;
     'last': boolean;
     'totalElements': number;
     'totalPages': number;
-    'first': boolean;
-    'numberOfElements': number;
     'size': number;
     'number': number;
-    'sort': ApiV1CommercialNeteaseProductsGet200ResponsePageableSort;
+    'sort': ApiV1RemoteSetsGet200ResponsePageableSort;
+    'first': boolean;
+    'numberOfElements': number;
     'empty': boolean;
 }
 

@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **number** |  | [default to undefined]
 **internalStatus** | **string** |  | [default to undefined]
-**updateTimeMs** | [**Null**](Null.md) |  | [default to undefined]
+**updateTimeMs** | **number** |  | [default to undefined]
 **neUserLogId** | **number** |  | [default to undefined]
 **applyReviewTime** | **string** |  | [default to undefined]
 **applyReviewTimeMs** | **number** |  | [default to undefined]
@@ -56,7 +56,7 @@ Name | Type | Description | Notes
 **weakOfflineReason** | **string** |  | [default to undefined]
 **orderPayload** | **string** |  | [default to undefined]
 **statPayload** | **string** |  | [default to undefined]
-**templates** | **Array&lt;string&gt;** |  | [default to undefined]
+**project** | [**Project**](Project.md) |  | [default to undefined]
 
 ## Example
 
@@ -115,7 +115,7 @@ const instance: NeteaseProduct = {
     weakOfflineReason,
     orderPayload,
     statPayload,
-    templates,
+    project,
 };
 ```
 
