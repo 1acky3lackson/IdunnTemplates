@@ -1,5 +1,7 @@
 package com.jackyblackson.idunntemplates.backend.commercial.entity.netease;
 
+import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.World;
 import jakarta.persistence.*;
 import lombok.Data;
 

@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.commercial.entity.netease;
 
+import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -168,11 +169,7 @@ public class NeteaseProduct {
     @Column(name = "stat_payload", columnDefinition = "text")
     private String statPayload;
 
-    @ManyToMany
-    @JoinTable(
-            name = "commercial_netease_product_template_relation",  // 中间表名
-            joinColumns = @JoinColumn(name = "product_id"),         // 当前实体在中间表的外键列
-            inverseJoinColumns = @JoinColumn(name = "template_id")  // 关联实体在中间表的外键列
-    )
-    private Set<Template> templates;
+    @ManyToOne(fetch = FetchType.LAZY)  // 默认关联查询为 LAZY 提升性能
+    @JoinColumn(name = "project_id")    // 指定外键列名
+    private Project project;
 }

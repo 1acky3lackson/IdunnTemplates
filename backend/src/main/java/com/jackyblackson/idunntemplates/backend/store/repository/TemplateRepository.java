@@ -24,12 +24,4 @@ public interface TemplateRepository extends
     Page<Template> findByPathStartingWith(String path, Pageable pageable);
 
     List<Template> findByLastVersionAtIsNull();
-
-    // 新增：根据 Template 获取所有关联的 NeteaseProduct
-    @Query("SELECT p FROM NeteaseProduct p JOIN p.templates t WHERE t.id = :templateId")
-    List<NeteaseProduct> findNeteaseProductsByTemplateId(@Param("templateId") UUID templateId);
-
-    // 若需要直接传入 Template 对象
-    @Query("SELECT p FROM NeteaseProduct p JOIN p.templates t WHERE t = :template")
-    List<NeteaseProduct> findNeteaseProductsByTemplate(@Param("template") Template template);
 }

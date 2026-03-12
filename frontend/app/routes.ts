@@ -21,7 +21,12 @@ export default [
       route("/:lang?/templates", "routes/templates/templates.tsx"),
       // 模板详情
       route("/:lang?/templates/:uuid", "routes/templates/templates-detail.tsx"),
-    ]),
 
+      // 商业化
+      // 订单列表
+      route("/:lang?/commercial/orders", "pages/orders/page.tsx"),
+      // 全局参数管理
+      route("/:lang?/commercial/global-params", "pages/checkout-param/page.tsx"),
+    ]),
   ]),
 ] satisfies RouteConfig;

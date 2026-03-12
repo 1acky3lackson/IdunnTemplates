@@ -7,6 +7,12 @@ All URIs are relative to *http://localhost*
 |[**apiAuthLoginPost**](#apiauthloginpost) | **POST** /api/auth/login | Yggdrasil 登录|
 |[**apiAuthLogoutPost**](#apiauthlogoutpost) | **POST** /api/auth/logout | 查看个人信息 / 验证登录 Copy|
 |[**apiAuthMeGet**](#apiauthmeget) | **GET** /api/auth/me | 查看个人信息 / 验证登录|
+|[**apiV1CommercialGlobalContextsCurrentGet**](#apiv1commercialglobalcontextscurrentget) | **GET** /api/v1/commercial/global-contexts/current | 获取当前激活的结算参数|
+|[**apiV1CommercialGlobalContextsGet**](#apiv1commercialglobalcontextsget) | **GET** /api/v1/commercial/global-contexts | 获取全部修改历史记录|
+|[**apiV1CommercialGlobalContextsPost**](#apiv1commercialglobalcontextspost) | **POST** /api/v1/commercial/global-contexts | 更新结算参数|
+|[**apiV1CommercialNeteaseOrdersGet**](#apiv1commercialneteaseordersget) | **GET** /api/v1/commercial/netease-orders | 获取/筛选订单列表|
+|[**apiV1CommercialNeteaseProductsGet**](#apiv1commercialneteaseproductsget) | **GET** /api/v1/commercial/netease-products | 获取/搜索商品列表|
+|[**apiV1CommercialNeteaseProductsProductIdOrdersGet**](#apiv1commercialneteaseproductsproductidordersget) | **GET** /api/v1/commercial/netease-products/{productId}/orders | 获取商品的所有订单|
 |[**apiV1PathsGet**](#apiv1pathsget) | **GET** /api/v1/paths | 获取子目录|
 |[**apiV1RemoteSetsGet**](#apiv1remotesetsget) | **GET** /api/v1/remote-sets | 搜索 Set|
 |[**apiV1RemoteSetsIdDependenciesGet**](#apiv1remotesetsiddependenciesget) | **GET** /api/v1/remote-sets/{id}/dependencies | 获取依赖此 Set 的所有 Set|
@@ -161,6 +167,313 @@ const { status, data } = await apiInstance.apiAuthMeGet(
 ### Return type
 
 **ApiAuthMeGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialGlobalContextsCurrentGet**
+> CheckoutCalculateContext apiV1CommercialGlobalContextsCurrentGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialGlobalContextsCurrentGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**CheckoutCalculateContext**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialGlobalContextsGet**
+> Array<CheckoutCalculateContext> apiV1CommercialGlobalContextsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialGlobalContextsGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**Array<CheckoutCalculateContext>**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialGlobalContextsPost**
+> CheckoutCalculateContext apiV1CommercialGlobalContextsPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CommercialGlobalContextsPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let apiV1CommercialGlobalContextsPostRequest: ApiV1CommercialGlobalContextsPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialGlobalContextsPost(
+    apiV1CommercialGlobalContextsPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CommercialGlobalContextsPostRequest** | **ApiV1CommercialGlobalContextsPostRequest**|  | |
+
+
+### Return type
+
+**CheckoutCalculateContext**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseOrdersGet**
+> ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response apiV1CommercialNeteaseOrdersGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; // (optional) (default to undefined)
+let page: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+let sort: string; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseOrdersGet(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+| **sort** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsGet**
+> ApiV1CommercialNeteaseProductsGet200Response apiV1CommercialNeteaseProductsGet()
+
+分页查询网易商品信息，支持动态条件过滤。  ## 请求信息 - **URL**: `/api/netease-products` - **方法**: `GET` - **Content-Type**: `application/json`  ## 请求参数  | 参数名 | 类型 | 位置 | 必填 | 说明 | |--------|------|------|------|------| | search | string | query | 否 | 查询条件字符串，格式为 `字段名:值`（等值匹配）或 `字段名~:值`（模糊匹配），多个条件用英文逗号 `,` 分隔，条件之间为 AND 关系。 | | page | integer | query | 否 | 页码，从0开始，默认0 | | size | integer | query | 否 | 每页条数，默认20 | | sort | string | query | 否 | 排序字段，格式 `字段名,方向`，如 `id,desc`，默认按 `id,asc` |  > **注意**：`sort` 字段必须是实体类中存在的属性名，支持多个排序条件用逗号分隔（如 `createTimeMs,desc,id,asc`）。  ## search 参数详细说明  `search` 参数允许通过简单的字符串组合来构建动态查询条件。其语法规则如下：  - **基本格式**：`字段名:值` 或 `字段名~:值` - **操作符**：   - `:` ：等值查询，字段必须完全等于指定值。   - `~:` ：模糊查询，字段值包含指定子串（对应 SQL 的 `LIKE \'%值%\'`），仅对字符串类型字段有效。 - **多条件组合**：多个条件用英文逗号 `,` 分隔，逻辑关系为 **AND**。 - **字段名**：必须是实体类 `NeteaseProduct` 中定义的属性名（Java字段名），**区分大小写**。 - **值类型**：根据字段类型自动转换，支持的字段类型包括：   - 字符串（`String`）：直接使用   - 数值（`Long`/`Integer`）：转换为对应数字   - 布尔（`Boolean`）：支持 `true`/`false`   - 枚举（如 `NeteaseProductStatus`）：需使用枚举常量名称（如 `CREATED`）   - 日期时间：以毫秒时间戳表示的 `Long` 型字段（如 `updateTimeMs`）可直接传入数字  ### 支持的字段列表 以下列出常用可查询字段（完整字段列表请参考实体类 `NeteaseProduct`）：  | 字段名 | 类型 | 说明 | 支持操作符 | |--------|------|------|------------| | `id` | Long | 主键ID | `:` | | `itemId` | String | 商品ID（字符串） | `:`, `~:` | | `itemIdInt` | Long | 商品ID（整数） | `:` | | `itemName` | String | 商品名称 | `:`, `~:` | | `internalStatus` | 枚举 | 内部状态（CREATED, ONLINE, OFFLINE等） | `:` | | `status` | String | 外部状态 | `:`, `~:` | | `price` | Integer | 价格 | `:` | | `priceType` | String | 价格类型 | `:`, `~:` | | `isOriginal` | Boolean | 是否原创 | `:` | | `createTimeMs` | Long | 创建时间（毫秒时间戳） | `:` | | `updateTimeMs` | Long | 更新时间（毫秒时间戳） | `:` | | `onlineTimeMs` | Long | 上线时间（毫秒时间戳） | `:` | | `canManageServer` | Boolean | 能否管理服务器 | `:` | | `weakOffline` | Boolean | 是否弱下线 | `:` |  > **注意**：模糊查询 `~:` 仅对字符串类型字段有效，对其他类型使用会导致类型转换错误。  ## 响应格式  - **成功响应**：HTTP 状态码 `200 OK`，返回分页数据。 - **失败响应**：由全局异常处理器返回错误信息。  ### 成功响应示例 ```json {   \"content\": [     {       \"id\": 1001,       \"internalStatus\": \"CREATED\",       \"updateTimeMs\": 1700000000000,       \"itemId\": \"netease_001\",       \"itemName\": \"测试商品\",       \"price\": 2990,       \"isOriginal\": true,       \"createTimeMs\": 1699900000000,       \"status\": \"active\",       \"templates\": [         {           \"id\": 1,           \"name\": \"模板A\"         }       ]       // ... 其他字段     }   ],   \"pageable\": {     \"pageNumber\": 0,     \"pageSize\": 20,     \"sort\": {       \"sorted\": true,       \"unsorted\": false,       \"empty\": false     }   },   \"totalPages\": 5,   \"totalElements\": 100,   \"last\": false,   \"size\": 20,   \"number\": 0,   \"sort\": {     \"sorted\": true,     \"unsorted\": false,     \"empty\": false   },   \"numberOfElements\": 20,   \"first\": true,   \"empty\": false } ```  ## 请求示例  ### 1. 无条件查询（默认分页） ``` GET /api/netease-products ```  ### 2. 等值条件查询 查询内部状态为 `CREATED` 且 `isOriginal` 为 true 的商品： ``` GET /api/netease-products?search=internalStatus:CREATED,isOriginal:true ```  ### 3. 模糊查询 查询商品名称包含“测试”的商品： ``` GET /api/netease-products?search=itemName~:测试 ```  ### 4. 组合条件 + 分页 + 排序 查询价格等于 2990，且商品ID模糊包含“001”的商品，按创建时间降序排列，每页10条，查看第2页： ``` GET /api/netease-products?search=price:2990,itemId~:001&page=1&size=10&sort=createTimeMs,desc ```  ### 5. 时间范围查询（利用毫秒时间戳） 虽然当前实现不支持直接的范围操作符，但可以通过等值查询指定精确时间戳。如需范围查询，可扩展接口支持 `>`、`<` 操作符，或使用其他方式（如日期范围参数）。  ## 注意事项  - 字段名必须与实体类属性名完全一致，包括大小写。 - 枚举类型的值必须使用枚举常量名称，且区分大小写。 - 模糊查询 `~:` 仅对字符串字段生效，对数值/布尔/枚举字段使用会产生类型转换错误。 - 如果 `search` 参数中包含特殊字符（如逗号、冒号），需要进行 URL 编码。 - 当 `search` 参数格式错误或字段名不存在时，接口将返回 HTTP 400 错误。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**ApiV1CommercialNeteaseProductsGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsProductIdOrdersGet**
+> ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response apiV1CommercialNeteaseProductsProductIdOrdersGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let productId: string; // (default to undefined)
+let search: string; // (optional) (default to undefined)
+let page: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+let sort: string; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsProductIdOrdersGet(
+    productId,
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **productId** | [**string**] |  | defaults to undefined|
+| **search** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+| **sort** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response**
 
 ### Authorization
 

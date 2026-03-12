@@ -32,9 +32,6 @@ public class NePeProductLogConverter {
         // 设置更新时间
         syncFromLog(product, log);
 
-        // 初始化关联的 templates 为空集合（因为日志中没有这个关联信息）
-        product.setTemplates(new HashSet<>());
-
         return product;
     }
 

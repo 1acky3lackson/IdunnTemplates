@@ -21,19 +21,19 @@ import type { ApiV1CommercialNeteaseProductsGet200ResponsePageable } from './api
 import type { ApiV1CommercialNeteaseProductsGet200ResponsePageableSort } from './api-v1-commercial-netease-products-get200-response-pageable-sort';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Template } from './template';
+import type { NeteaseOrder } from './netease-order';
 
-export interface TemplatePagenable {
-    'content': Array<Template>;
+export interface ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response {
+    'content': Array<NeteaseOrder>;
     'pageable': ApiV1CommercialNeteaseProductsGet200ResponsePageable;
-    'totalPages': number;
-    'totalElements': number;
     'last': boolean;
+    'totalElements': number;
+    'totalPages': number;
+    'first': boolean;
+    'numberOfElements': number;
     'size': number;
     'number': number;
     'sort': ApiV1CommercialNeteaseProductsGet200ResponsePageableSort;
-    'numberOfElements': number;
-    'first': boolean;
     'empty': boolean;
 }
 
