@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 **name** | **string** |  | [default to undefined]
 **metadata** | [**TemplateMetadata**](TemplateMetadata.md) |  | [default to undefined]
 **locked** | **boolean** |  | [default to undefined]
-**latestVersion** | **string** |  | [default to undefined]
+**latestVersion** | **any** |  | [default to undefined]
 **usePermissionNode** | **string** |  | [default to undefined]
 **colorSchemes** | **Array&lt;string&gt;** |  | [default to undefined]
 **latestVersions** | [**Array&lt;TemplateLatestVersionsInner&gt;**](TemplateLatestVersionsInner.md) | 最多10个 | [default to undefined]

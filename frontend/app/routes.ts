@@ -32,6 +32,8 @@ export default [
 
       // Projects
       route("/:lang?/commercial/projects", "pages/commercial/projects/page.tsx"),
+      // Project DEtails
+      route("/:lang?/commercial/projects/:id", "pages/commercial/projects/[id]/page.tsx"),
 
       // Netease Products
       route("/:lang?/commercial/netease-products", "pages/commercial/netease-products/page.tsx"),

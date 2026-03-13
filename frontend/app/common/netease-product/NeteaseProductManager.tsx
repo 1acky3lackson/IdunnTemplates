@@ -46,8 +46,8 @@ import { Card, CardContent } from '@/components/ui/card';
 
 // 自定义工具
 
-import { useWaterfall, WaterfallProvider } from '../util/waterfall-provider';
-import type { PageResponse, ProjectApi } from '../project/ProjectManager';
+import { useWaterfall, WaterfallProvider, type PageResponse } from '../util/waterfall-provider';
+import type { ProjectApi } from '../project/ProjectManager';
 import type { Schema, SearchParam } from '../util/search-test-utils';
 import type { Project } from '~/api/generated';
 import { Link } from 'react-router';
@@ -321,7 +321,7 @@ function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectD
                 ? { name: { value: searchTerm, fuzzy: true } }
                 : {};
             const page = await projectApi.fetchProjects(0, criteria);
-            setProjects(page.content);
+            setProjects(page.content.filter(p => p !== null));
         } catch (error) {
             console.error('Failed to load projects', error);
         } finally {

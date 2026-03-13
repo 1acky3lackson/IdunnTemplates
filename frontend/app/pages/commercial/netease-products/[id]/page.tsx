@@ -189,7 +189,7 @@ function SalesDashboard({ orderPayload }: { orderPayload: string }) {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <DashboardCard label="总订单数" value={payload.count} />
-          <DashboardCard label="总钻石" value={payload.total_diamonds} />
+          <DashboardCard label="销售额（100钻石=1元）" value={payload.total_diamonds / 100} />
           <DashboardCard label="总积分" value={payload.total_points} />
           <DashboardCard
             label="订单列表"
@@ -247,7 +247,7 @@ function StatCharts({ statPayload }: { statPayload: string }) {
     DAU: item.DAU,
     下载量: item.download_num,
     购买数: item.cnt_buy,
-    钻石: item.diamond,
+    钻石: item.diamond / 100,
   }));
 
   return (
@@ -260,13 +260,14 @@ function StatCharts({ statPayload }: { statPayload: string }) {
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
-            <YAxis />
+            <YAxis yAxisId="left" />
+            <YAxis yAxisId="right" orientation="right" />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="DAU" stroke="#8884d8" />
-            <Line type="monotone" dataKey="下载量" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="购买数" stroke="#ffc658" />
-            <Line type="monotone" dataKey="钻石" stroke="#ff7300" />
+            <Line type="monotone" dataKey="DAU" stroke="#8884d8" yAxisId="left" />
+            <Line type="monotone" dataKey="下载量" stroke="#82ca9d" yAxisId="right" />
+            <Line type="monotone" dataKey="购买数" stroke="#ffc658" yAxisId="left" />
+            <Line type="monotone" dataKey="钻石" stroke="#ff7300" name="销售额（100钻石=1元）" yAxisId="left" />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

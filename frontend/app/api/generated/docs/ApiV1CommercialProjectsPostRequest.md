@@ -23,7 +23,7 @@ Name | Type | Description | Notes
 **tpYaw** | **number** |  | [default to undefined]
 **tpPitch** | **number** |  | [default to undefined]
 **parentProjectId** | **number** |  | [optional] [default to undefined]
-**world** | [**World**](World.md) |  | [default to undefined]
+**world** | **object** |  | [default to undefined]
 
 ## Example
 

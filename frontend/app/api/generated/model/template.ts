@@ -26,7 +26,7 @@ export interface Template {
     'name': string;
     'metadata': TemplateMetadata;
     'locked': boolean;
-    'latestVersion': string;
+    'latestVersion': any | null;
     'usePermissionNode': string;
     'colorSchemes': Array<string>;
     /**

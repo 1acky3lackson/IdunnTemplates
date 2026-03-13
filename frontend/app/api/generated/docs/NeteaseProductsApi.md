@@ -66,8 +66,8 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 成功 |  -  |
-|**400** | 请求参数错误（如 search 格式不正确） |  -  |
+|**200** |  |  -  |
+|**400** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -118,8 +118,8 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 成功 |  -  |
-|**404** | 产品不存在 |  -  |
+|**200** |  |  -  |
+|**404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -174,9 +174,9 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 操作成功，返回更新后的产品 |  -  |
-|**400** | 项目ID不存在 |  -  |
-|**404** | 产品不存在 |  -  |
+|**200** |  |  -  |
+|**400** |  |  -  |
+|**404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -231,9 +231,9 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功，返回最新产品信息 |  -  |
-|**400** | 请求参数错误（如项目ID不存在） |  -  |
-|**404** | 产品不存在 |  -  |
+|**200** |  |  -  |
+|**400** |  |  -  |
+|**404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -288,9 +288,9 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 状态更新成功 |  -  |
-|**400** | 无效的状态值 |  -  |
-|**404** | 产品不存在 |  -  |
+|**200** |  |  -  |
+|**400** |  |  -  |
+|**404** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

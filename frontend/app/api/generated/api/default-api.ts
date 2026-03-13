@@ -40,6 +40,8 @@ import type { ApiV1CommercialProjectsIdPutRequest } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialProjectsPostRequest } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest } from '../model';
+// @ts-ignore
 import type { ApiV1PathsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { ApiV1RemoteSetsGet200Response } from '../model';
@@ -64,6 +66,10 @@ import type { ApiV1UserinfoCreatorsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { CheckoutCalculateContext } from '../model';
 // @ts-ignore
+import type { ContributionAddRequest } from '../model';
+// @ts-ignore
+import type { ContributionDeleteRequest } from '../model';
+// @ts-ignore
 import type { ErrorResponse } from '../model';
 // @ts-ignore
 import type { NeteaseProduct } from '../model';
@@ -76,6 +82,8 @@ import type { Project } from '../model';
 // @ts-ignore
 import type { ProjectAssignmentRequest } from '../model';
 // @ts-ignore
+import type { RecalculatePreviewResponse } from '../model';
+// @ts-ignore
 import type { StatusChangeRequest } from '../model';
 // @ts-ignore
 import type { Template } from '../model';
@@ -83,6 +91,8 @@ import type { Template } from '../model';
 import type { TemplatePagenable } from '../model';
 // @ts-ignore
 import type { TemplateVersionPagenable } from '../model';
+// @ts-ignore
+import type { UserProjectContribution } from '../model';
 /**
  * DefaultApi - axios parameter creator
  */
@@ -765,6 +775,195 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(apiV1CommercialProjectsPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 软删除指定的贡献记录，填写删除原因。删除后系统会自动重算该记录所属角色的其他剩余有效记录的占比。
+         * @summary 软删除贡献记录
+         * @param {number} projectId 项目ID
+         * @param {number} contributionId 要删除的贡献记录ID
+         * @param {ContributionDeleteRequest} [contributionDeleteRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsContributionIdDelete: async (projectId: number, contributionId: number, contributionDeleteRequest?: ContributionDeleteRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdDelete', 'projectId', projectId)
+            // verify required parameter 'contributionId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdDelete', 'contributionId', contributionId)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/{contributionId}`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)))
+                .replace(`{${"contributionId"}}`, encodeURIComponent(String(contributionId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(contributionDeleteRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 更新贡献值
+         * @param {string} projectId 
+         * @param {string} contributionId 
+         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsContributionIdPatch: async (projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdPatch', 'projectId', projectId)
+            // verify required parameter 'contributionId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdPatch', 'contributionId', contributionId)
+            // verify required parameter 'apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdPatch', 'apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest', apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/{contributionId}`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)))
+                .replace(`{${"contributionId"}}`, encodeURIComponent(String(contributionId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 获取指定项目及其可能存在的父项目下，所有未被软删除的贡献记录列表。
+         * @summary 获取项目贡献列表
+         * @param {number} projectId 项目ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsGet', 'projectId', projectId)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
+         * @summary 添加项目贡献记录
+         * @param {number} projectId 项目ID
+         * @param {ContributionAddRequest} [contributionAddRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsPost: async (projectId: number, contributionAddRequest?: ContributionAddRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsPost', 'projectId', projectId)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(contributionAddRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
+         * @summary 预览重算结果
+         * @param {number} projectId 项目ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet', 'projectId', projectId)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/preview-recalculate`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1771,6 +1970,76 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 软删除指定的贡献记录，填写删除原因。删除后系统会自动重算该记录所属角色的其他剩余有效记录的占比。
+         * @summary 软删除贡献记录
+         * @param {number} projectId 项目ID
+         * @param {number} contributionId 要删除的贡献记录ID
+         * @param {ContributionDeleteRequest} [contributionDeleteRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(projectId: number, contributionId: number, contributionDeleteRequest?: ContributionDeleteRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(projectId, contributionId, contributionDeleteRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsContributionIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 更新贡献值
+         * @param {string} projectId 
+         * @param {string} contributionId 
+         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId, contributionId, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 获取指定项目及其可能存在的父项目下，所有未被软删除的贡献记录列表。
+         * @summary 获取项目贡献列表
+         * @param {number} projectId 项目ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsProjectIdContributionsGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<UserProjectContribution>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsGet(projectId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
+         * @summary 添加项目贡献记录
+         * @param {number} projectId 项目ID
+         * @param {ContributionAddRequest} [contributionAddRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsProjectIdContributionsPost(projectId: number, contributionAddRequest?: ContributionAddRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsPost(projectId, contributionAddRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
+         * @summary 预览重算结果
+         * @param {number} projectId 项目ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: RecalculatePreviewResponse; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 
          * @summary 获取子目录
          * @param {string} [path] 路径
@@ -2229,6 +2498,61 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest, options).then((request) => request(axios, basePath));
         },
         /**
+         * 软删除指定的贡献记录，填写删除原因。删除后系统会自动重算该记录所属角色的其他剩余有效记录的占比。
+         * @summary 软删除贡献记录
+         * @param {number} projectId 项目ID
+         * @param {number} contributionId 要删除的贡献记录ID
+         * @param {ContributionDeleteRequest} [contributionDeleteRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(projectId: number, contributionId: number, contributionDeleteRequest?: ContributionDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(projectId, contributionId, contributionDeleteRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 更新贡献值
+         * @param {string} projectId 
+         * @param {string} contributionId 
+         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId, contributionId, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 获取指定项目及其可能存在的父项目下，所有未被软删除的贡献记录列表。
+         * @summary 获取项目贡献列表
+         * @param {number} projectId 项目ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<UserProjectContribution>> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsGet(projectId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
+         * @summary 添加项目贡献记录
+         * @param {number} projectId 项目ID
+         * @param {ContributionAddRequest} [contributionAddRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsPost(projectId: number, contributionAddRequest?: ContributionAddRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsPost(projectId, contributionAddRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
+         * @summary 预览重算结果
+         * @param {number} projectId 项目ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: RecalculatePreviewResponse; }> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @summary 获取子目录
          * @param {string} [path] 路径
@@ -2649,6 +2973,66 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest?: ApiV1CommercialProjectsPostRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialProjectsPost(apiV1CommercialProjectsPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 软删除指定的贡献记录，填写删除原因。删除后系统会自动重算该记录所属角色的其他剩余有效记录的占比。
+     * @summary 软删除贡献记录
+     * @param {number} projectId 项目ID
+     * @param {number} contributionId 要删除的贡献记录ID
+     * @param {ContributionDeleteRequest} [contributionDeleteRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(projectId: number, contributionId: number, contributionDeleteRequest?: ContributionDeleteRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(projectId, contributionId, contributionDeleteRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 更新贡献值
+     * @param {string} projectId 
+     * @param {string} contributionId 
+     * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId, contributionId, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 获取指定项目及其可能存在的父项目下，所有未被软删除的贡献记录列表。
+     * @summary 获取项目贡献列表
+     * @param {number} projectId 项目ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsProjectIdContributionsGet(projectId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
+     * @summary 添加项目贡献记录
+     * @param {number} projectId 项目ID
+     * @param {ContributionAddRequest} [contributionAddRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsProjectIdContributionsPost(projectId: number, contributionAddRequest?: ContributionAddRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsPost(projectId, contributionAddRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
+     * @summary 预览重算结果
+     * @param {number} projectId 项目ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

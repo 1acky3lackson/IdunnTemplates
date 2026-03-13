@@ -35,17 +35,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Schema, SearchParam } from '../util/search-test-utils';
-import { useWaterfall, useWaterfallCachedComponents, WaterfallProvider } from '../util/waterfall-provider';
+import { useWaterfall, useWaterfallCachedComponents, WaterfallProvider, type PageResponse } from '../util/waterfall-provider';
 import type { Project } from '~/api/generated';
+import { Link } from 'react-router';
 
 // ---------- 类型定义 ----------
-
-export interface PageResponse<T> {
-  content: T[];
-  last: boolean;
-  totalElements: number;
-  number: number;
-}
 
 export const projectSchema = {
   name: { search: { fuzzy: true }, sort: true },
@@ -224,7 +218,7 @@ function ProjectCard({ project, api }: { project: Project; api: ProjectApi }) {
   return (
     <Card className="cursor-pointer hover:shadow-lg transition-shadow">
       <CardHeader>
-        <CardTitle>{project.displayName}</CardTitle>
+        <CardTitle><Link to={`./${project.id}`}>{project.displayName}</Link></CardTitle>
       </CardHeader>
       <CardContent onClick={() => setEditOpen(true)}>
         <p className="text-sm text-muted-foreground">名称: {project.name}</p>
@@ -301,7 +295,7 @@ function ProjectForm({ project, onSubmit }: ProjectFormProps) {
       pathName: project?.pathName || '',
       kind: project?.kind || '',
       modelKind: project?.modelKind || '',
-      worldId: project?.world === null ? undefined : project?.world.id,
+      worldId: (project && project?.world === null ? undefined : project?.world?.id),
       minX: project?.minX,
       minY: project?.minY,
       minZ: project?.minZ,
@@ -309,10 +303,6 @@ function ProjectForm({ project, onSubmit }: ProjectFormProps) {
       maxY: project?.maxY,
       maxZ: project?.maxZ,
       tpX: project?.tpX,
-      tpY: project?.tpY,
-      tpZ: project?.tpZ,
-      tpYaw: project?.tpYaw,
-      tpPitch: project?.tpPitch,
       parentProjectId: project?.parentProjectId || undefined,
     },
   });

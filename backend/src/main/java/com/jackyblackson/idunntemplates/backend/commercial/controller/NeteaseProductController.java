@@ -197,7 +197,8 @@ public class NeteaseProductController {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             for (SearchCriteria criteria : criteriaList) {
-                Path<?> path = root.get(criteria.getField());
+                Path<?> path = resolvePath(root, criteria.getField());
+                if (path == null) continue; // 无法解析的字段忽略
                 Object value = convertValue(path.getJavaType(), criteria.getValue());
 
                 switch (criteria.getOperator()) {
@@ -209,13 +210,24 @@ public class NeteaseProductController {
                             predicates.add(criteriaBuilder.like((Path<String>) path, "%" + value + "%"));
                         }
                         break;
-                    // 可以扩展其他操作符，如 GT, LT, IN 等
                     default:
                         // ignore
                 }
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    /**
+     * 解析字段路径（支持点号嵌套），例如 "project.id" 会返回 root.get("project").get("id")。
+     */
+    private Path<?> resolvePath(Path<?> root, String fieldPath) {
+        String[] parts = fieldPath.split("\\.");
+        Path<?> path = root;
+        for (String part : parts) {
+            path = path.get(part);
+        }
+        return path;
     }
 
     /**

@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **tpZ** | **number** |  | [optional] [default to undefined]
 **tpYaw** | **number** |  | [optional] [default to undefined]
 **tpPitch** | **number** |  | [optional] [default to undefined]
-**world** | [**World**](World.md) |  | [default to undefined]
+**world** | **object** |  | [default to undefined]
 
 ## Example
 
