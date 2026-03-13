@@ -33,6 +33,8 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     // Source: https://mvnrepository.com/artifact/com.github.usefulness/webp-imageio
     implementation group: 'com.github.usefulness', name: 'webp-imageio', version: '0.10.2'
 }

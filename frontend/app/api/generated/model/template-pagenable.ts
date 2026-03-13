@@ -15,23 +15,23 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { ApiV1CommercialNeteaseProductsProductIdOrdersGet200ResponsePageable } from './api-v1-commercial-netease-products-product-id-orders-get200-response-pageable';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { ApiV1CommercialNeteaseProductsProductIdOrdersGet200ResponsePageableSort } from './api-v1-commercial-netease-products-product-id-orders-get200-response-pageable-sort';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { Template } from './template';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { TemplateVersionPagenablePageable } from './template-version-pagenable-pageable';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { TemplateVersionPagenablePageableSort } from './template-version-pagenable-pageable-sort';
 
 export interface TemplatePagenable {
     'content': Array<Template>;
-    'pageable': TemplateVersionPagenablePageable;
+    'pageable': ApiV1CommercialNeteaseProductsProductIdOrdersGet200ResponsePageable;
     'totalPages': number;
     'totalElements': number;
     'last': boolean;
     'size': number;
     'number': number;
-    'sort': TemplateVersionPagenablePageableSort;
+    'sort': ApiV1CommercialNeteaseProductsProductIdOrdersGet200ResponsePageableSort;
     'numberOfElements': number;
     'first': boolean;
     'empty': boolean;

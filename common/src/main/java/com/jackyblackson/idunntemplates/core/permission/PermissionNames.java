@@ -43,4 +43,10 @@ public class PermissionNames {
             public static final String saveToNamespace$N = "idunn.brush.preset.save.";
         }
     }
+
+    public static class Commercial {
+        public static class Products {
+
+        }
+    }
 }

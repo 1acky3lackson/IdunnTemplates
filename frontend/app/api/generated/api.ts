@@ -16,5 +16,6 @@
 
 export * from './api/default-api';
 export * from './api/idunn-api';
+export * from './api/netease-products-api';
 export * from './api/schem-api';
 

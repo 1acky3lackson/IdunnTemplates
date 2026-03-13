@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: com-stats
+  datasource:
+    url: ${RDS_DSN:jdbc:postgresql://localhost:5432/com_stats}
+    username: ${RDS_USER:postgres}
+    password: ${RDS_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+app:
+  crawler:
+    interval-ms: 3600000
+    ne:
+      comp-product-span: 10
+      pe-product-span: 10
+      pe-product-order-days: 7
+      pe-product-stat-days: 7
+      pe-product-comment-span: 10
+      pe-product-feedback-span: 10
+      interval-ms: 1000
+      users:
+        "12345":
+          name: "TestUser"
+          headers:
+            "Authorization": "Bearer token"
+            "User-Agent": "Mozilla/5.0"
