@@ -34,5 +34,6 @@ export interface ApiV1CommercialProjectsPostRequest {
     'tpPitch': number;
     'parentProjectId'?: number | null;
     'world': object | null;
+    'parentProject': object | null;
 }
 

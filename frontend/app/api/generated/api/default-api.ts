@@ -42,6 +42,8 @@ import type { ApiV1CommercialProjectsPostRequest } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialProjectsProjectIdContributionsGroupedGet200Response } from '../model';
+// @ts-ignore
 import type { ApiV1PathsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { ApiV1RemoteSetsGet200Response } from '../model';
@@ -900,6 +902,40 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 对于 BUILDER，将返回父项目的结果 对于 MODIFIER 和 UPLOADER，将返回本项目的结果
+         * @summary 获取生效的最终结果
+         * @param {number} projectId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsGroupedGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsGroupedGet', 'projectId', projectId)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/grouped`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
          * @summary 添加项目贡献记录
          * @param {number} projectId 项目ID
@@ -938,15 +974,15 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
-         * @summary 预览重算结果
+         * @summary 重算结果
          * @param {number} projectId 项目ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1CommercialProjectsProjectIdContributionsRecalculateGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
-            assertParamExists('apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet', 'projectId', projectId)
-            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/preview-recalculate`
+            assertParamExists('apiV1CommercialProjectsProjectIdContributionsRecalculateGet', 'projectId', projectId)
+            const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/recalculate`
                 .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2013,6 +2049,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 对于 BUILDER，将返回父项目的结果 对于 MODIFIER 和 UPLOADER，将返回本项目的结果
+         * @summary 获取生效的最终结果
+         * @param {number} projectId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialProjectsProjectIdContributionsGroupedGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsGroupedGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
          * @summary 添加项目贡献记录
          * @param {number} projectId 项目ID
@@ -2028,15 +2077,15 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
-         * @summary 预览重算结果
+         * @summary 重算结果
          * @param {number} projectId 项目ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: RecalculatePreviewResponse; }>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId, options);
+        async apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: RecalculatePreviewResponse; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsRecalculateGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2532,6 +2581,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1CommercialProjectsProjectIdContributionsGet(projectId, options).then((request) => request(axios, basePath));
         },
         /**
+         * 对于 BUILDER，将返回父项目的结果 对于 MODIFIER 和 UPLOADER，将返回本项目的结果
+         * @summary 获取生效的最终结果
+         * @param {number} projectId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialProjectsProjectIdContributionsGroupedGet200Response> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
          * @summary 添加项目贡献记录
          * @param {number} projectId 项目ID
@@ -2544,13 +2603,13 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
-         * @summary 预览重算结果
+         * @summary 重算结果
          * @param {number} projectId 项目ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: RecalculatePreviewResponse; }> {
-            return localVarFp.apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId, options).then((request) => request(axios, basePath));
+        apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: RecalculatePreviewResponse; }> {
+            return localVarFp.apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3013,6 +3072,17 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * 对于 BUILDER，将返回父项目的结果 对于 MODIFIER 和 UPLOADER，将返回本项目的结果
+     * @summary 获取生效的最终结果
+     * @param {number} projectId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * 添加一条新的贡献记录，系统会自动汇总该记录所属角色（Role）的所有有效分数，并重新计算和更新该角色的所有人占比（contributeRatio）。
      * @summary 添加项目贡献记录
      * @param {number} projectId 项目ID
@@ -3026,13 +3096,13 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 重新计算该项目下所有角色分别对应的 contributeRatio，返回计算过程的数据供前端展示，**不会写入数据库**。
-     * @summary 预览重算结果
+     * @summary 重算结果
      * @param {number} projectId 项目ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId: number, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsPreviewRecalculateGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    public apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

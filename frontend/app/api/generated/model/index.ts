@@ -12,6 +12,7 @@ export * from './api-v1-commercial-projects-get200-response-pageable';
 export * from './api-v1-commercial-projects-id-put-request';
 export * from './api-v1-commercial-projects-post-request';
 export * from './api-v1-commercial-projects-project-id-contributions-contribution-id-patch-request';
+export * from './api-v1-commercial-projects-project-id-contributions-grouped-get200-response';
 export * from './api-v1-paths-get200-response-inner';
 export * from './api-v1-remote-sets-get200-response';
 export * from './api-v1-remote-sets-get200-response-content-inner';

@@ -24,6 +24,7 @@ Name | Type | Description | Notes
 **tpPitch** | **number** |  | [default to undefined]
 **parentProjectId** | **number** |  | [optional] [default to undefined]
 **world** | **object** |  | [default to undefined]
+**parentProject** | **object** |  | [default to undefined]
 
 ## Example
 
@@ -50,6 +51,7 @@ const instance: ApiV1CommercialProjectsPostRequest = {
     tpPitch,
     parentProjectId,
     world,
+    parentProject,
 };
 ```
 

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserProjectContributionService {
@@ -23,67 +22,61 @@ public class UserProjectContributionService {
     private ProjectRepository projectRepository;
 
     /**
-     * 获取 Project 及其可能存在的 ParentProject 的 ID 列表
-     */
-    private List<Long> getRelevantProjectIds(Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
-
-        List<Long> ids = new ArrayList<>();
-        ids.add(project.getId());
-        if (project.getParentProject() != null) {
-            ids.add(project.getParentProject().getId());
-        }
-        return ids;
-    }
-
-    /**
-     * 1) 获取该项目及其父项目下所有未删除的记录
+     * 获取当前项目下的所有活跃贡献记录（不分角色，仅本项目）
      */
     public List<UserProjectContribution> getAllActiveContributions(Long projectId) {
-        List<Long> projectIds = getRelevantProjectIds(projectId);
-        return contributionRepository.findByProjectIdInAndDeleteTimeMsIsNull(projectIds);
+        return contributionRepository.findByProjectIdAndDeleteTimeMsIsNull(projectId);
     }
 
     /**
-     * 2) 添加新记录，并重新计算保存该 Role 的占比
+     * 添加新记录，并根据角色自动重算对应范围内的占比
      */
     @Transactional
     public void addContributionAndRecalculate(Long projectId, ContributionDto.AddRequest request, String username) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+        // 确定记录归属的项目
+        Project targetProject;
+        if (request.getRole() == UserProjectContribution.RoleType.BUILDER) {
+            // BUILDER 必须关联到父项目
+            Project currentProject = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+            if (currentProject.getParentProject() == null) {
+                throw new IllegalStateException("Cannot add BUILDER to a project without parent project.");
+            }
+            targetProject = currentProject.getParentProject();
+        } else {
+            // MODIFIER 或 UPLOADER 关联到当前项目
+            targetProject = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+        }
 
-        // 插入新记录
+        // 创建新记录
         UserProjectContribution newRecord = new UserProjectContribution();
-        newRecord.setProject(project);
+        newRecord.setProject(targetProject);
         newRecord.setUsername(request.getUsername());
         newRecord.setRole(request.getRole());
         newRecord.setContributePoints(request.getContributePoints());
         newRecord.setComment(request.getComment());
         newRecord.setCreateUsername(username);
-        // 注意：你的实体类中 createTimeMs 定义为 String 类型
         newRecord.setCreateTimeMs(String.valueOf(System.currentTimeMillis()));
 
         contributionRepository.save(newRecord);
 
-        // 重新计算并保存该 Role 的占比
-        recalculateAndSaveRatiosForRole(projectId, request.getRole());
+        // 重算该角色在目标项目下的占比
+        recalculateAndSaveRatiosForRole(targetProject.getId(), request.getRole());
     }
 
     /**
-     * 内部方法：为特定 Role 重新计算并保存 ContributeRatio
+     * 为指定项目下的特定角色重新计算并保存贡献占比
      */
     private void recalculateAndSaveRatiosForRole(Long projectId, UserProjectContribution.RoleType role) {
-        List<Long> projectIds = getRelevantProjectIds(projectId);
+        // 仅查询该项目下该角色的活跃记录
         List<UserProjectContribution> records = contributionRepository
-                .findByProjectIdInAndRoleAndDeleteTimeMsIsNull(projectIds, role);
+                .findByProjectIdAndRoleAndDeleteTimeMsIsNull(projectId, role);
 
-        // 统计总分
         int totalPoints = records.stream()
                 .mapToInt(c -> c.getContributePoints() != null ? c.getContributePoints() : 0)
                 .sum();
 
-        // 计算并更新占比
         for (UserProjectContribution record : records) {
             if (totalPoints == 0) {
                 record.setContributeRatio(0.0);
@@ -93,33 +86,26 @@ public class UserProjectContributionService {
             }
         }
 
-        // 批量保存
         contributionRepository.saveAll(records);
     }
 
     /**
-     * 3) 重新计算所有 Role 的占比，并返回计算过程数据（不落库，仅供预览）
+     * 预览重新计算所有角色的占比（按角色分组，BUILDER 取父项目，其他取本项目）
      */
-    public Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> previewRecalculation(Long projectId) {
-        List<Long> projectIds = getRelevantProjectIds(projectId);
-        List<UserProjectContribution> allRecords = contributionRepository
-                .findByProjectIdInAndDeleteTimeMsIsNull(projectIds);
-
-        // 按 Role 分组
-        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> groupedByRole = allRecords.stream()
-                .collect(Collectors.groupingBy(UserProjectContribution::getRole));
+    public Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> recalculate(Long projectId) {
+        // 获取按角色分组的贡献记录（使用新规则）
+        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> grouped = getContributionsGroupedByRole(projectId);
 
         Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> result = new EnumMap<>(UserProjectContribution.RoleType.class);
 
-        // 遍历所有可能的 Role 保证数据完整
         for (UserProjectContribution.RoleType role : UserProjectContribution.RoleType.values()) {
-            List<UserProjectContribution> records = groupedByRole.getOrDefault(role, new ArrayList<>());
+            List<UserProjectContribution> records = grouped.getOrDefault(role, new ArrayList<>());
 
             int totalPoints = records.stream()
                     .mapToInt(c -> c.getContributePoints() != null ? c.getContributePoints() : 0)
                     .sum();
 
-            // 模拟计算占比写入对象中（不调用 save）
+            // 模拟计算占比（不保存到数据库）
             records.forEach(record -> {
                 if (totalPoints == 0) {
                     record.setContributeRatio(0.0);
@@ -141,7 +127,7 @@ public class UserProjectContributionService {
     }
 
     /**
-     * 4) 软删除记录（并在删除后自动重算该 Role 的占比以保证一致性）
+     * 软删除记录，并自动重算对应角色的占比
      */
     @Transactional
     public void softDeleteContribution(Long recordId, String deleteReason, String username) {
@@ -149,7 +135,7 @@ public class UserProjectContributionService {
                 .orElseThrow(() -> new EntityNotFoundException("Contribution not found: " + recordId));
 
         if (record.getDeleteTimeMs() != null) {
-            return; // 已经删除了
+            return; // 已经删除
         }
 
         record.setDeleteTimeMs(System.currentTimeMillis());
@@ -158,32 +144,60 @@ public class UserProjectContributionService {
 
         contributionRepository.save(record);
 
-        // 删除后，剩下的记录占比加起来就不等于 1 了，因此需要触发重算
+        // 删除后重算该角色在记录所属项目下的占比
         recalculateAndSaveRatiosForRole(record.getProject().getId(), record.getRole());
     }
 
     /**
-     * 5) 修改分数并重新计算该 Role 的占比
+     * 修改分数，并自动重算对应角色的占比
      */
     @Transactional
     public void updateContributionPointsAndRecalculate(Long recordId, Integer newPoints, String username) {
         UserProjectContribution record = contributionRepository.findById(recordId)
                 .orElseThrow(() -> new EntityNotFoundException("Contribution not found: " + recordId));
 
-        // 验证没有被标记为删除
         if (record.getDeleteTimeMs() != null) {
             throw new IllegalStateException("Cannot update a deleted contribution record.");
         }
 
-        // 更新分数
         record.setContributePoints(newPoints);
-
-        // 如果你的实体类有记录最后更新人的需求，可以在这里 set
+        // 如有需要可记录更新人
         // record.setUpdateUsername(username);
 
         contributionRepository.save(record);
 
-        // 复用之前的逻辑：重新计算并保存该 Role 的占比
+        // 重算该角色在记录所属项目下的占比
         recalculateAndSaveRatiosForRole(record.getProject().getId(), record.getRole());
+    }
+
+    /**
+     * 新方法：获取按角色分组的贡献记录（BUILDER 来自父项目，其他来自本项目）
+     */
+    public Map<UserProjectContribution.RoleType, List<UserProjectContribution>> getContributionsGroupedByRole(Long projectId) {
+        Project currentProject = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+
+        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> result = new EnumMap<>(UserProjectContribution.RoleType.class);
+
+        // 处理 MODIFIER 和 UPLOADER：来自当前项目
+        for (UserProjectContribution.RoleType role : Arrays.asList(
+                UserProjectContribution.RoleType.MODIFIER,
+                UserProjectContribution.RoleType.UPLOADER)) {
+            List<UserProjectContribution> list = contributionRepository
+                    .findByProjectIdAndRoleAndDeleteTimeMsIsNull(projectId, role);
+            result.put(role, list);
+        }
+
+        // 处理 BUILDER：来自父项目（如果存在）
+        if (currentProject.getParentProject() != null) {
+            Long parentId = currentProject.getParentProject().getId();
+            List<UserProjectContribution> builders = contributionRepository
+                    .findByProjectIdAndRoleAndDeleteTimeMsIsNull(parentId, UserProjectContribution.RoleType.BUILDER);
+            result.put(UserProjectContribution.RoleType.BUILDER, builders);
+        } else {
+            result.put(UserProjectContribution.RoleType.BUILDER, new ArrayList<>());
+        }
+
+        return result;
     }
 }

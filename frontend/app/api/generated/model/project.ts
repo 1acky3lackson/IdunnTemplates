@@ -38,7 +38,8 @@ export interface Project {
     'tpPitch': number;
     'parentProjectId'?: number | null;
     'createTimeMs': number;
-    'deleteTimeMs'?: number | null;
+    'deleteTimeMs': number | null;
     'world': World | null;
+    'parentProject': Project | null;
 }
 

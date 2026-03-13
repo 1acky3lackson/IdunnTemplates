@@ -6,7 +6,6 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserP
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -51,14 +50,14 @@ public class UserProjectContributionController {
     /**
      * 3) 预览重新计算的过程（不写入数据库），供前端展示
      */
-    @GetMapping("/preview-recalculate")
+    @GetMapping("/recalculate")
     @AuthRequired
-    public ResponseEntity<Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse>> previewRecalculation(
+    public ResponseEntity<Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse>> recalculation(
             @PathVariable Long projectId,
             UserContext userContext
     ) {
         Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> result =
-                contributionService.previewRecalculation(projectId);
+                contributionService.recalculate(projectId);
         return ResponseEntity.ok(result);
     }
 
@@ -95,5 +94,21 @@ public class UserProjectContributionController {
                 userContext.getUsername()
         );
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 获取按角色分组的贡献记录
+     * - BUILDER 来自父项目（如果存在）
+     * - MODIFIER 和 UPLOADER 来自当前项目
+     */
+    @GetMapping("/grouped")
+    @AuthRequired
+    public ResponseEntity<Map<UserProjectContribution.RoleType, List<UserProjectContribution>>> getContributionsGroupedByRole(
+            @PathVariable Long projectId,
+            UserContext userContext
+    ) {
+        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> grouped =
+                contributionService.getContributionsGroupedByRole(projectId);
+        return ResponseEntity.ok(grouped);
     }
 }

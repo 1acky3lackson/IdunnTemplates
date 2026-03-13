@@ -33,5 +33,6 @@ export interface ApiV1CommercialProjectsIdPutRequest {
     'tpYaw'?: number | null;
     'tpPitch'?: number | null;
     'world': object | null;
+    'parentProject': object | null;
 }
 

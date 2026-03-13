@@ -25,8 +25,9 @@ Name | Type | Description | Notes
 **tpPitch** | **number** |  | [default to undefined]
 **parentProjectId** | **number** |  | [optional] [default to undefined]
 **createTimeMs** | **number** |  | [default to undefined]
-**deleteTimeMs** | **number** |  | [optional] [default to undefined]
+**deleteTimeMs** | **number** |  | [default to undefined]
 **world** | [**World**](World.md) |  | [default to undefined]
+**parentProject** | [**Project**](Project.md) |  | [default to undefined]
 
 ## Example
 
@@ -56,6 +57,7 @@ const instance: Project = {
     createTimeMs,
     deleteTimeMs,
     world,
+    parentProject,
 };
 ```
 

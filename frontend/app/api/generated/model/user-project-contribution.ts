@@ -15,6 +15,9 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Project } from './project';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { RoleType } from './role-type';
 
 /**
@@ -45,7 +48,7 @@ export interface UserProjectContribution {
     /**
      * 删除时间戳(毫秒)，null表示未删除
      */
-    'deleteTimeMs'?: number;
+    'deleteTimeMs'?: number | null;
     /**
      * 删除原因
      */
@@ -62,6 +65,7 @@ export interface UserProjectContribution {
      * 创建时间戳(字符串格式)
      */
     'createTimeMs'?: string;
+    'project': Project;
 }
 
 

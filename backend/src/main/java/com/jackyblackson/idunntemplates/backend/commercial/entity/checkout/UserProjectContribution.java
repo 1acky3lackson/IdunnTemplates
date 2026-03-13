@@ -37,7 +37,7 @@ public class UserProjectContribution {
     @Column(name = "contribute_ratio")
     private Double contributeRatio;
 
-    @ManyToOne(fetch = FetchType.LAZY)  // 默认关联查询为 LAZY 提升性能
+    @ManyToOne(fetch = FetchType.EAGER)  // 默认关联查询为 LAZY 提升性能
     @JoinColumn(name = "project_id")    // 指定外键列名
     private Project project;
 

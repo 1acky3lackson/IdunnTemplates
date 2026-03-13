@@ -14,4 +14,6 @@ public interface UserProjectContributionRepository extends JpaRepository<UserPro
 
     // 2. 查询指定项目（及其父项目）下，特定 Role 的所有未删除记录
     List<UserProjectContribution> findByProjectIdInAndRoleAndDeleteTimeMsIsNull(List<Long> projectIds, UserProjectContribution.RoleType role);
+    List<UserProjectContribution> findByProjectIdAndDeleteTimeMsIsNull(Long projectId);
+    List<UserProjectContribution> findByProjectIdAndRoleAndDeleteTimeMsIsNull(Long projectId, UserProjectContribution.RoleType role);
 }

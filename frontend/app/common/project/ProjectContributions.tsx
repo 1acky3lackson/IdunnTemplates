@@ -60,6 +60,9 @@ enum RoleType {
     UPLOADER = 'UPLOADER',
 }
 
+// 分组数据的类型：记录每个角色对应的贡献列表
+type GroupedContributions = Record<RoleType, any[]>;
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 // ========== 表单验证 Schema ==========
@@ -79,6 +82,7 @@ const deleteSchema = z.object({
 });
 
 // ========== 饼图子组件 ==========
+// ========== 饼图子组件 ==========
 function RolePieChart({ title, data }: { title: string, data: any[] }) {
     return (
         <Card>
@@ -87,7 +91,7 @@ function RolePieChart({ title, data }: { title: string, data: any[] }) {
             </CardHeader>
             <CardContent>
                 {data.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={220}>
+                    <ResponsiveContainer width="100%" height={280}>
                         <PieChart>
                             <Pie
                                 data={data}
@@ -95,14 +99,21 @@ function RolePieChart({ title, data }: { title: string, data: any[] }) {
                                 nameKey="username"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={60}
-                                labelLine={false}
-                                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                                outerRadius={80}
                             >
                                 {data.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
+                            <Tooltip 
+                                formatter={((value: number) => `${(value * 100).toFixed(2)}%`) as any}
+                            />
+                            <Legend 
+                                verticalAlign="bottom"
+                                height={36}
+                                layout="horizontal"
+                                wrapperStyle={{ paddingTop: '10px' }}
+                            />
                         </PieChart>
                     </ResponsiveContainer>
                 ) : (
@@ -115,17 +126,132 @@ function RolePieChart({ title, data }: { title: string, data: any[] }) {
     );
 }
 
+// ========== 贡献表格子组件（复用） ==========
+function ContributionTable({
+    title,
+    data,
+    bgGray = false,
+    onRefresh,
+}: {
+    title: string,
+    data: any[],
+    bgGray?: boolean,
+    onRefresh: () => void,
+}) {
+    if (data.length === 0) {
+        return (
+            <Card className={bgGray ? 'bg-gray-50' : ''}>
+                <CardHeader className="py-3">
+                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                </CardHeader>
+                <CardContent className="py-2">
+                    <div className="text-sm text-muted-foreground text-center py-4">
+                        暂无记录
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        // <div className="">
+        <div className={(bgGray ? 'bg-gray-200' : '') + " rounded-lg p-4 border"}>
+
+            <div className="pb-3">
+                <h3 className="text-lg font-semibold underline underline-offset-4">{title}</h3>
+            </div>
+            <div className="p-0">
+                <div className=" overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>ID</TableHead>
+                                <TableHead>用户名</TableHead>
+                                <TableHead>角色</TableHead>
+                                <TableHead>分数</TableHead>
+                                <TableHead>占比</TableHead>
+                                <TableHead>添加人</TableHead>
+                                <TableHead>备注</TableHead>
+                                <TableHead>操作</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {data.map((record) => (
+                                <TableRow key={record.id}>
+                                    <TableCell>{record.id}</TableCell>
+                                    <TableCell className="font-medium">{record.username}</TableCell>
+                                    <TableCell>{record.role}</TableCell>
+                                    <TableCell>{record.contributePoints}</TableCell>
+                                    <TableCell>
+                                        {record.contributeRatio != null
+                                            ? `${(record.contributeRatio * 100).toFixed(2)}%`
+                                            : '-'}
+                                    </TableCell>
+                                    <TableCell>{record.createUsername}</TableCell>
+                                    <TableCell>{record.comment || '-'}</TableCell>
+                                    <TableCell>
+                                        <div className="flex gap-2">
+                                            <EditContributionDialog
+                                                record={record}
+                                                onRefresh={onRefresh}
+                                            />
+                                            <DeleteContributionDialog
+                                                record={record}
+                                                onRefresh={onRefresh}
+                                            />
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+        </div>
+        // </div>
+    );
+}
+
 // ========== 主组件 ==========
 export function ProjectContributions({ projectId }: { projectId: number }) {
-    const [contributions, setContributions] = useState<any[]>([]);
+    const [project, setProject] = useState<any>(null);               // 当前项目详情
+    const [contributions, setContributions] = useState<any[]>([]);   // 本项目数据（列表用）
+    const [groupedData, setGroupedData] = useState<GroupedContributions>({
+        [RoleType.BUILDER]: [],
+        [RoleType.MODIFIER]: [],
+        [RoleType.UPLOADER]: [],
+    });
     const [loading, setLoading] = useState(true);
 
+    // 加载项目详情
+    const loadProject = async () => {
+        const res = await IDUNN_API.apiV1CommercialProjectsIdGet(projectId);
+        setProject(res.data);
+    };
+
+    // 加载本项目数据（用于列表）
+    const loadProjectContributions = async () => {
+        const res = await IDUNN_API.apiV1CommercialProjectsProjectIdContributionsGet(projectId);
+        setContributions(res.data || []);
+    };
+
+    // 加载分组数据（用于饼图）
+    const loadGroupedContributions = async () => {
+        const res = await IDUNN_API.apiV1CommercialProjectsProjectIdContributionsGroupedGet(projectId);
+        setGroupedData(prev => ({
+            ...prev,
+            ...(res.data || {}),
+        }));
+    };
+
     const loadData = async () => {
-        // debugger;
         setLoading(true);
         try {
-            const res = await IDUNN_API.apiV1CommercialProjectsProjectIdContributionsGet(projectId);
-            setContributions(() => res.data || []);
+            await Promise.all([
+                loadProject(),
+                loadProjectContributions(),
+                loadGroupedContributions(),
+            ]);
         } catch (error) {
             console.error("加载贡献数据失败", error);
         } finally {
@@ -139,89 +265,70 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
         }
     }, [projectId]);
 
-    // 对数据进行分组用于图表展示
-    const { builders, modifiers, uploaders } = useMemo(() => {
-        return {
-            builders: contributions.filter(c => c.role === RoleType.BUILDER),
-            modifiers: contributions.filter(c => c.role === RoleType.MODIFIER),
-            uploaders: contributions.filter(c => c.role === RoleType.UPLOADER),
-        };
-    }, [contributions]);
+    // 从 groupedData 中提取饼图所需的数据
+    const buildersForPie = groupedData[RoleType.BUILDER] || [];
+    const modifiersForPie = groupedData[RoleType.MODIFIER] || [];
+    const uploadersForPie = groupedData[RoleType.UPLOADER] || [];
+
+    // 从 contributions 中提取本项目各角色的数据
+    const localBuilders = contributions.filter(c => c.role === RoleType.BUILDER);
+    const localModifiers = contributions.filter(c => c.role === RoleType.MODIFIER);
+    const localUploaders = contributions.filter(c => c.role === RoleType.UPLOADER);
 
     if (loading) return <Skeleton className="h-96 w-full mt-6" />;
 
     return (
         <div className="space-y-6 mt-6">
-            <h2 className="text-2xl font-bold tracking-tight">项目贡献看板</h2>
-
-            {/* 1. 三个饼状图面板 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <RolePieChart title="BUILDER (建筑师) 占比" data={builders} />
-                <RolePieChart title="MODIFIER (修改者) 占比" data={modifiers} />
-                <RolePieChart title="UPLOADER (上传者) 占比" data={uploaders} />
+            <div className="flex flex-row justify-between align-middle">
+                <h2 className="text-2xl font-bold tracking-tight">项目贡献看板</h2>
+                {/* 添加记录按钮 */}
             </div>
 
-            {/* 2. 数据表格面板 */}
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>贡献明细</CardTitle>
+
+            {/* 1. 三个饼状图面板，使用 groupedData */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <RolePieChart title="BUILDER (建筑师) 占比" data={buildersForPie} />
+                <RolePieChart title="MODIFIER (修改者) 占比" data={modifiersForPie} />
+                <RolePieChart title="UPLOADER (上传者) 占比" data={uploadersForPie} />
+            </div>
+
+            {/* 2. 垂直排列的四个表格 */}
+            <div className="space-y-4">
+                <div className='flex flex-row justify-between align-middle'>
+                    <h3 className="text-lg font-semibold">本项目贡献明细</h3>
                     <AddContributionDialog projectId={projectId} onRefresh={loadData} />
-                </CardHeader>
-                <CardContent>
-                    <div className="border rounded-lg overflow-hidden">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>ID</TableHead>
-                                    <TableHead>用户名</TableHead>
-                                    <TableHead>角色 (Role)</TableHead>
-                                    <TableHead>分数 (Points)</TableHead>
-                                    <TableHead>占比 (Ratio)</TableHead>
-                                    <TableHead>备注</TableHead>
-                                    <TableHead>操作</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {contributions.map((record) => (
-                                    <TableRow key={record.id}>
-                                        <TableCell>{record.id}</TableCell>
-                                        <TableCell className="font-medium">{record.username}</TableCell>
-                                        <TableCell>{record.role}</TableCell>
-                                        <TableCell>{record.contributePoints}</TableCell>
-                                        <TableCell>
-                                            {record.contributeRatio != null 
-                                                ? `${(record.contributeRatio * 100).toFixed(2)}%` 
-                                                : '-'}
-                                        </TableCell>
-                                        <TableCell>{record.comment || '-'}</TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-2">
-                                                <EditContributionDialog 
-                                                    projectId={projectId} 
-                                                    record={record} 
-                                                    onRefresh={loadData} 
-                                                />
-                                                <DeleteContributionDialog 
-                                                    projectId={projectId} 
-                                                    recordId={record.id} 
-                                                    onRefresh={loadData} 
-                                                />
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {contributions.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center text-muted-foreground h-24">
-                                            暂无贡献记录
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
+                
+
+                {/* 本项目 BUILDER 表格（灰色背景） */}
+                <ContributionTable
+                    title="BUILDER (本项目)"
+                    data={localBuilders}
+                    bgGray={true}
+                    onRefresh={loadData}
+                />
+
+                {/* 本项目 MODIFIER 表格 */}
+                <ContributionTable
+                    title="MODIFIER"
+                    data={localModifiers}
+                    onRefresh={loadData}
+                />
+
+                {/* 本项目 UPLOADER 表格 */}
+                <ContributionTable
+                    title="UPLOADER"
+                    data={localUploaders}
+                    onRefresh={loadData}
+                />
+
+                {/* 父项目 BUILDER 表格（始终显示，数据来自 groupedData） */}
+                <ContributionTable
+                    title="父项目 BUILDER（实际计算时使用父项目的 BUILDER 记录）"
+                    data={groupedData[RoleType.BUILDER] || []}
+                    onRefresh={loadData}
+                />
+            </div>
         </div>
     );
 }
@@ -288,8 +395,8 @@ function AddContributionDialog({ projectId, onRefresh }: { projectId: number, on
     );
 }
 
-// ========== 操作弹窗：修改分数 ==========
-function EditContributionDialog({ projectId, record, onRefresh }: { projectId: number, record: any, onRefresh: () => void }) {
+// ========== 操作弹窗：修改分数（使用记录自身的项目ID） ==========
+function EditContributionDialog({ record, onRefresh }: { record: any, onRefresh: () => void }) {
     const [open, setOpen] = useState(false);
     const form = useForm<z.infer<typeof editSchema>>({
         resolver: zodResolver(editSchema) as any,
@@ -302,10 +409,15 @@ function EditContributionDialog({ projectId, record, onRefresh }: { projectId: n
 
     const onSubmit = async (values: z.infer<typeof editSchema>) => {
         try {
-            // 注意：API 要求第二个参数 contributionId 是字符串格式，使用 String() 转换
+            // 使用记录所属的项目ID，确保路径正确
+            const targetProjectId = record.project?.id;
+            if (!targetProjectId) {
+                console.error('记录缺少 project 信息');
+                return;
+            }
             await IDUNN_API.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(
-                String(projectId), 
-                String(record.id), 
+                String(targetProjectId),
+                String(record.id),
                 {
                     ...values,
                     comment: record.comment
@@ -341,8 +453,8 @@ function EditContributionDialog({ projectId, record, onRefresh }: { projectId: n
     );
 }
 
-// ========== 操作弹窗：软删除记录 ==========
-function DeleteContributionDialog({ projectId, recordId, onRefresh }: { projectId: number, recordId: number, onRefresh: () => void }) {
+// ========== 操作弹窗：软删除记录（使用记录自身的项目ID） ==========
+function DeleteContributionDialog({ record, onRefresh }: { record: any, onRefresh: () => void }) {
     const [open, setOpen] = useState(false);
     const form = useForm<z.infer<typeof deleteSchema>>({
         resolver: zodResolver(deleteSchema),
@@ -351,9 +463,14 @@ function DeleteContributionDialog({ projectId, recordId, onRefresh }: { projectI
 
     const onSubmit = async (values: z.infer<typeof deleteSchema>) => {
         try {
+            const targetProjectId = record.project?.id;
+            if (!targetProjectId) {
+                console.error('记录缺少 project 信息');
+                return;
+            }
             await IDUNN_API.apiV1CommercialProjectsProjectIdContributionsContributionIdDelete(
-                projectId, 
-                recordId, 
+                targetProjectId,
+                record.id,
                 values
             );
             setOpen(false);

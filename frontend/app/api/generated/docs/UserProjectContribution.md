@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **deleteUsername** | **string** | 执行删除操作的用户名 | [optional] [default to undefined]
 **createUsername** | **string** | 创建该记录的用户名 | [optional] [default to undefined]
 **createTimeMs** | **string** | 创建时间戳(字符串格式) | [optional] [default to undefined]
+**project** | [**Project**](Project.md) |  | [default to undefined]
 
 ## Example
 
@@ -35,6 +36,7 @@ const instance: UserProjectContribution = {
     deleteUsername,
     createUsername,
     createTimeMs,
+    project,
 };
 ```
 

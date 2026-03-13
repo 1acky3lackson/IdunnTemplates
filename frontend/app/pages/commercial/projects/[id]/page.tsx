@@ -194,6 +194,7 @@ export default function ProjectDetail({
     const projectId = loaderData.id;
 
     const [project, setProject] = useState<Project | null>(null);
+    const [parentProject, setParentProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -205,6 +206,12 @@ export default function ProjectDetail({
             .then((data) => {
                 setProject(data);
                 setError(null);
+                return data.parentProjectId;
+            }).then((parentId) => {
+                if (!parentId) return;
+                projectApi.getProject(parentId).then((data) => {
+                    setParentProject(data);
+                })
             })
             .catch((err) => {
                 setError(err.message || '加载项目失败');
@@ -256,7 +263,11 @@ export default function ProjectDetail({
                         <InfoItem label="世界名称" value={project.world?.displayName} />
                         <InfoItem label="描述" value={project.description} />
                         <InfoItem label="创建时间" value={formatTime(project.createTimeMs)} />
-                        <InfoItem label="父项目ID" value={project.parentProjectId} />
+                        <InfoItem label="父项目ID" value={
+                            project.parentProjectId
+                            ? <Link to={`/commercial/projects/${project.parentProjectId}`} className='font-bold hover:underline underline-offset-2'>{`[${parentProject?.id}]: ${parentProject?.displayName}`}</Link>
+                            : '无父项目'
+                        } />
                     </div>
                 </CardContent>
             </Card>

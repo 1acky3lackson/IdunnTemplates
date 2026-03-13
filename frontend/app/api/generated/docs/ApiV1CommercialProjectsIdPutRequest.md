@@ -23,6 +23,7 @@ Name | Type | Description | Notes
 **tpYaw** | **number** |  | [optional] [default to undefined]
 **tpPitch** | **number** |  | [optional] [default to undefined]
 **world** | **object** |  | [default to undefined]
+**parentProject** | **object** |  | [default to undefined]
 
 ## Example
 
@@ -48,6 +49,7 @@ const instance: ApiV1CommercialProjectsIdPutRequest = {
     tpYaw,
     tpPitch,
     world,
+    parentProject,
 };
 ```
 
