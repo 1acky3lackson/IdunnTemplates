@@ -94,7 +94,7 @@ public class Project implements Serializable {
     @Column(name = "tp_pitch")
     private Double tpPitch;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_project_id", foreignKey = @ForeignKey(name = "fk_projects_projects_parent_project_id"))
     private Project parentProject;
 
