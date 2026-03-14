@@ -5,9 +5,12 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.World;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.WorldRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.UserProjectContributionRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.domain.Template;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
@@ -41,6 +44,8 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     private final WorldRepository worldRepository;
     private final LuckyPermAuthService authService;
+    private final UserProjectContributionService userProjectContributionService;
+    private final UserProjectContributionRepository userProjectContributionRepository;
 
     // ---------- 查询接口 ----------
 
@@ -59,9 +64,15 @@ public class ProjectController {
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user
     ) {
+        boolean canListAll = authService.checkPermission(user, PermissionNames.Commercial.Project.listAll);
 
         Specification<Project> spec = buildSpecification(search);
-        Page<Project> page = projectRepository.findAll(spec, pageable);
+        Page<Project> page = null;
+        if (canListAll) {
+            page = projectRepository.findAll(spec, pageable);
+        } else {
+            page = userProjectContributionService.getUserParticipatedProjects(user.getUsername(), spec, pageable);
+        }
         Page<ProjectDto> dtoPage = page.map(this::convertToDto);
 
         return ResponseEntity.ok(dtoPage);
@@ -74,7 +85,14 @@ public class ProjectController {
      * @return 项目DTO，若不存在返回404
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectDto> getProject(@PathVariable Long id) {
+    @AuthRequired
+    @Transactional
+    public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, UserContext user) {
+        boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(), id);
+        boolean checkAll = authService.checkPermission(user, PermissionNames.Commercial.Project.listAll);
+        if (!isContributor && !checkAll) {
+            return ResponseEntity.status(406).build();
+        }
         return projectRepository.findById(id)
                 .map(this::convertToDto)
                 .map(ResponseEntity::ok)
@@ -91,7 +109,11 @@ public class ProjectController {
      */
     @PostMapping
     @Transactional
-    public ResponseEntity<ProjectDto> createProject(@RequestBody ProjectCreateRequest request) {
+    @AuthRequired
+    public ResponseEntity<ProjectDto> createProject(@RequestBody ProjectCreateRequest request, UserContext user) {
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Project.create)) {
+            return ResponseEntity.status(406).build();
+        }
         Project project = new Project();
         updateProjectFromRequest(project, request);
 
@@ -113,8 +135,14 @@ public class ProjectController {
      */
     @PutMapping("/{id}")
     @Transactional
+    @AuthRequired
     public ResponseEntity<ProjectDto> updateProject(@PathVariable Long id,
-                                                    @RequestBody ProjectCreateRequest request) {
+                                                    @RequestBody ProjectCreateRequest request,
+                                                    UserContext user
+    ) {
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Project.modify)) {
+            return ResponseEntity.status(406).build();
+        }
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
 
@@ -135,7 +163,11 @@ public class ProjectController {
      */
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+    @AuthRequired
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id, UserContext user) {
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Project.delete)) {
+            return ResponseEntity.status(406).build();
+        }
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
 

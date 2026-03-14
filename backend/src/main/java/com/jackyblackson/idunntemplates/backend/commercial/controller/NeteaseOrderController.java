@@ -1,9 +1,15 @@
 package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
+import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.netease.NeteaseOrderDto;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
+import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
@@ -29,6 +35,9 @@ import java.util.Optional;
 public class NeteaseOrderController {
 
     private final NeteaseOrderRepository orderRepository;
+    private final UserProjectContributionService userProjectContributionService;
+    private final NeteaseProductRepository neteaseProductRepository;
+    private final LuckyPermAuthService luckyPermAuthService;
 
     /**
      * 查询指定商品下的订单列表，支持分页和动态筛选。
@@ -40,11 +49,23 @@ public class NeteaseOrderController {
      * @return 分页结果
      */
     @GetMapping("/netease-products/{productId}/orders")
+    @AuthRequired
     public ResponseEntity<Page<NeteaseOrderDto>> listByProduct(
             @PathVariable Long productId,
             @RequestParam(required = false) String search,
-            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-
+            @PageableDefault(size = 20, sort = "shipTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
+            UserContext user
+    ) {
+        var productOptional = neteaseProductRepository.findById(productId);
+        if(productOptional.isEmpty()) return ResponseEntity.ok(Page.empty());
+        var product = productOptional.get();
+        if (product.getProject() == null) {
+            return ResponseEntity.ok(Page.empty());
+        }
+        boolean participated = userProjectContributionService.isUserParticipant(user.getUsername(), product.getProject().getId());
+        if (!participated && !luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)) {
+            return ResponseEntity.ok(Page.empty());
+        }
         // 构建查询条件：强制加上 product.id = productId，再合并其他筛选条件
         Specification<NeteaseOrder> spec = buildSpecification(search)
                 .and((root, query, cb) -> cb.equal(root.get("product").get("id"), productId));
@@ -62,9 +83,16 @@ public class NeteaseOrderController {
      * @return 分页结果
      */
     @GetMapping("/netease-orders")
+    @AuthRequired
     public ResponseEntity<Page<NeteaseOrderDto>> listAll(
             @RequestParam(required = false) String search,
-            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "shipTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
+            UserContext user
+    ) {
+
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)) {
+            return ResponseEntity.ok(Page.empty());
+        }
 
         Specification<NeteaseOrder> spec = buildSpecification(search);
         Page<NeteaseOrder> page = orderRepository.findAll(spec, pageable);
@@ -79,8 +107,28 @@ public class NeteaseOrderController {
      * @return 订单信息，若不存在返回404
      */
     @GetMapping("/netease-orders/{id}")
-    public ResponseEntity<NeteaseOrderDto> getById(@PathVariable Long id) {
+    @AuthRequired
+    public ResponseEntity<NeteaseOrderDto> getById(@PathVariable Long id, UserContext user) {
+        boolean listAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll);
         Optional<NeteaseOrder> optional = orderRepository.findById(id);
+        if (optional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!listAll) {
+            var order = optional.get();
+            var product = order.getProduct();
+            if (product == null) {
+                return ResponseEntity.status(406).build();
+            }
+            var project = product.getProject();
+            if (project == null) {
+                return ResponseEntity.status(406).build();
+            }
+            boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(), project.getId());
+            if (!isContributor) {
+                return ResponseEntity.status(406).build();
+            }
+        }
         return optional.map(order -> ResponseEntity.ok(convertToDto(order)))
                 .orElse(ResponseEntity.notFound().build());
     }

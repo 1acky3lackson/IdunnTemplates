@@ -72,6 +72,10 @@ apiClient.interceptors.response.use(
                     toast.error("拒绝访问");
                     console.error("拒绝访问");
                     break;
+                case 406:
+                    toast.error("您无权限查看此模块，如有疑问请联系管理员");
+                    console.error("无权限");
+                    break;
                 case 500:
                     toast.error("服务器内部错误");
                     console.error("服务器内部错误");

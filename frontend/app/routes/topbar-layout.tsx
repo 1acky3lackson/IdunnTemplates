@@ -7,7 +7,7 @@ export default function RootLayout() {
     return (
         <AuthProvider>
             <TopBar />
-            <main className="max-w-6xl w-full px-0 md:px-4 mx-auto my-4">
+            <main className="max-w-7xl w-full px-0 md:px-4 mx-auto my-4">
                 <Outlet />
                 <Footer />
             </main>
