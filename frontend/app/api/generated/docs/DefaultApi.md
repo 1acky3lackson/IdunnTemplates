@@ -45,6 +45,10 @@ All URIs are relative to *http://localhost*
 |[**apiV1TemplatesIdVersionsGet**](#apiv1templatesidversionsget) | **GET** /api/v1/templates/{id}/versions | 模板版本列表/复杂检索|
 |[**apiV1TemplatesThumbnailPost**](#apiv1templatesthumbnailpost) | **POST** /api/v1/templates/thumbnail | 上传缩略图|
 |[**apiV1UserinfoCreatorsGet**](#apiv1userinfocreatorsget) | **GET** /api/v1/userinfo/creators | 获取所有模板作者的用户信息|
+|[**getMyBalance**](#getmybalance) | **GET** /api/v1/commercial/balance | 获取当前用户账户金额|
+|[**listBalanceCheckoutDetails**](#listbalancecheckoutdetails) | **GET** /api/v1/commercial/balance/checkout-details | List Checkout Details|
+|[**listBalanceRecords**](#listbalancerecords) | **GET** /api/v1/commercial/balance/records | 获取/筛选流水记录|
+|[**listUserBalances**](#listuserbalances) | **GET** /api/v1/commercial/balance/users | 获取/筛选用户账户列表|
 
 # **apiAuthLoginPost**
 > ApiAuthLoginPost200Response apiAuthLoginPost()
@@ -94,7 +98,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -145,7 +149,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -196,12 +200,12 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1CommercialGlobalContextsCurrentGet**
-> CheckoutCalculateContext apiV1CommercialGlobalContextsCurrentGet()
+> ApiV1CommercialGlobalContextsCurrentGet200Response apiV1CommercialGlobalContextsCurrentGet()
 
 
 
@@ -225,7 +229,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-**CheckoutCalculateContext**
+**ApiV1CommercialGlobalContextsCurrentGet200Response**
 
 ### Authorization
 
@@ -240,12 +244,12 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1CommercialGlobalContextsGet**
-> Array<CheckoutCalculateContext> apiV1CommercialGlobalContextsGet()
+> Array<ApiV1CommercialGlobalContextsGet200ResponseInner> apiV1CommercialGlobalContextsGet()
 
 
 
@@ -269,7 +273,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-**Array<CheckoutCalculateContext>**
+**Array<ApiV1CommercialGlobalContextsGet200ResponseInner>**
 
 ### Authorization
 
@@ -284,7 +288,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -336,7 +340,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -396,7 +400,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -456,8 +460,8 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
-|**400** |  |  -  |
+|**200** | 成功 |  -  |
+|**400** | 请求参数错误（如 search 格式不正确） |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -508,8 +512,8 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
-|**404** |  |  -  |
+|**200** | 成功 |  -  |
+|**404** | 产品不存在 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -564,9 +568,9 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
-|**400** |  |  -  |
-|**404** |  |  -  |
+|**200** | 操作成功，返回更新后的产品 |  -  |
+|**400** | 项目ID不存在 |  -  |
+|**404** | 产品不存在 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -621,9 +625,9 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
-|**400** |  |  -  |
-|**404** |  |  -  |
+|**200** | 更新成功，返回最新产品信息 |  -  |
+|**400** | 请求参数错误（如项目ID不存在） |  -  |
+|**404** | 产品不存在 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -678,9 +682,9 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
-|**400** |  |  -  |
-|**404** |  |  -  |
+|**200** | 状态更新成功 |  -  |
+|**400** | 无效的状态值 |  -  |
+|**404** | 产品不存在 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -743,7 +747,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -803,7 +807,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -854,7 +858,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**204** |  |  -  |
+|**204** | 删除成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -905,7 +909,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -960,7 +964,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1012,7 +1016,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**201** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1070,12 +1074,12 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功软删除并完成剩余数据占比重算 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiV1CommercialProjectsProjectIdContributionsContributionIdPatch**
-> object apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest)
+> object apiV1CommercialProjectsProjectIdContributionsContributionIdPatch()
 
 
 
@@ -1093,7 +1097,7 @@ const apiInstance = new DefaultApi(configuration);
 
 let projectId: string; // (default to undefined)
 let contributionId: string; // (default to undefined)
-let apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest; //
+let apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest; // (optional)
 
 const { status, data } = await apiInstance.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(
     projectId,
@@ -1128,7 +1132,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1179,7 +1183,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功获取贡献列表 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1230,7 +1234,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1285,7 +1289,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功添加并完成占比重算 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1336,7 +1340,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功获取重算预览数据 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1387,7 +1391,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1447,7 +1451,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1498,7 +1502,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1549,7 +1553,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1600,7 +1604,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1651,7 +1655,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1706,7 +1710,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1758,7 +1762,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1857,7 +1861,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1914,7 +1918,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1965,7 +1969,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2020,7 +2024,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2077,7 +2081,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2132,7 +2136,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2207,7 +2211,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2258,7 +2262,7 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2302,7 +2306,231 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getMyBalance**
+> BalanceInfo getMyBalance()
+
+Retrieves the balance information for the currently authenticated user. Requires authentication.
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.getMyBalance();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**BalanceInfo**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Successful retrieval of the user\&#39;s balance information. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listBalanceCheckoutDetails**
+> PageCheckoutDetailDto listBalanceCheckoutDetails()
+
+Searches checkout details with dynamic conditions and pagination. Requires authentication.
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; //Dynamic search query string. Format: `field:value` (exact match) or `field~:value` (fuzzy match for strings). Multiple conditions can be separated by commas.  (optional) (default to undefined)
+let page: number; //Zero-based page index (0..N). Default is 0. (optional) (default to 0)
+let size: number; //The size of the page to be returned. Default is 20. (optional) (default to 20)
+let sort: string; //Sorting criteria in the format `property,asc|desc`. Default is `id,desc`. (optional) (default to 'id,desc')
+
+const { status, data } = await apiInstance.listBalanceCheckoutDetails(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] | Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas.  | (optional) defaults to undefined|
+| **page** | [**number**] | Zero-based page index (0..N). Default is 0. | (optional) defaults to 0|
+| **size** | [**number**] | The size of the page to be returned. Default is 20. | (optional) defaults to 20|
+| **sort** | [**string**] | Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;. | (optional) defaults to 'id,desc'|
+
+
+### Return type
+
+**PageCheckoutDetailDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Successful retrieval of the checkout details page. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listBalanceRecords**
+> PageUserBalanceRecordDto listBalanceRecords()
+
+Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; //Dynamic search query string. Format: `field:value` (exact match) or `field~:value` (fuzzy match for strings). Multiple conditions can be separated by commas.  (optional) (default to undefined)
+let page: number; //Zero-based page index (0..N). Default is 0. (optional) (default to 0)
+let size: number; //The size of the page to be returned. Default is 20. (optional) (default to 20)
+let sort: string; //Sorting criteria in the format `property,asc|desc`. Default is `createTimeMs,desc`. (optional) (default to 'createTimeMs,desc')
+
+const { status, data } = await apiInstance.listBalanceRecords(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] | Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas.  | (optional) defaults to undefined|
+| **page** | [**number**] | Zero-based page index (0..N). Default is 0. | (optional) defaults to 0|
+| **size** | [**number**] | The size of the page to be returned. Default is 20. | (optional) defaults to 20|
+| **sort** | [**string**] | Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;createTimeMs,desc&#x60;. | (optional) defaults to 'createTimeMs,desc'|
+
+
+### Return type
+
+**PageUserBalanceRecordDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Successful retrieval of the balance records page. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listUserBalances**
+> PageBalanceInfo listUserBalances()
+
+Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; //Dynamic search query string. Format: `username:value` (exact match) or `username~:value` (fuzzy match). Examples: `username:player1`, `username~:player`  (optional) (default to undefined)
+let page: number; //Zero-based page index (0..N). Default is 0. (optional) (default to 0)
+let size: number; //The size of the page to be returned. Default is 20. (optional) (default to 20)
+let sort: string; //Sorting criteria in the format `property,asc|desc`. Default is `username,asc`. (optional) (default to 'username,asc')
+
+const { status, data } = await apiInstance.listUserBalances(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] | Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60;  | (optional) defaults to undefined|
+| **page** | [**number**] | Zero-based page index (0..N). Default is 0. | (optional) defaults to 0|
+| **size** | [**number**] | The size of the page to be returned. Default is 20. | (optional) defaults to 20|
+| **sort** | [**string**] | Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;username,asc&#x60;. | (optional) defaults to 'username,asc'|
+
+
+### Return type
+
+**PageBalanceInfo**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Successful retrieval of the paginated list of user balances. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

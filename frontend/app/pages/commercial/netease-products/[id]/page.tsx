@@ -24,6 +24,7 @@ import {
 } from 'recharts';
 import type { NeteaseProduct } from '~/api/generated';
 import type { Route } from './+types/page';
+import { OrderDisplay } from '~/common/netease-order/OrderDisplay';
 
 // 从生成的 API 导入产品类型（假设为 NeteaseProduct）
 
@@ -125,6 +126,15 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
       {product.statPayload && (
         <StatCharts statPayload={product.statPayload} />
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>产品订单列表</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <OrderDisplay pageSize={10} forceSearch={{ productName: product.itemName }} />
+        </CardContent>
+      </Card>
 
       {/* 所有其他字段展示 */}
       <OtherFields product={product} />

@@ -17,6 +17,10 @@ export default [
     layout("routes/topbar-layout.tsx", [
       // 首页
       route("/:lang?", "routes/home.tsx"), 
+
+      // ME page
+      route("/:lang?/me", "pages/me/page.tsx"),
+
       // 模板列表
       route("/:lang?/templates", "routes/templates/templates.tsx"),
       // 模板详情
@@ -29,6 +33,8 @@ export default [
 
       // 全局参数管理
       route("/:lang?/commercial/global-params", "pages/checkout-param/page.tsx"),
+      // 结账单管理
+      route("/:lang?/commercial/checkout", "pages/checkout-details/page.tsx"),
 
       // Projects
       route("/:lang?/commercial/projects", "pages/commercial/projects/page.tsx"),
@@ -39,6 +45,11 @@ export default [
       route("/:lang?/commercial/netease-products", "pages/commercial/netease-products/page.tsx"),
       // Netease Product Details
       route("/:lang?/commercial/netease-products/:id", "pages/commercial/netease-products/[id]/page.tsx"),
+
+      // Balance List
+      route("/:lang?/commercial/balances", "pages/commercial/balances/page.tsx"),
+      // Balance Transaction List
+      route("/:lang?/commercial/balances/transactions", "pages/commercial/balances/transactions/page.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

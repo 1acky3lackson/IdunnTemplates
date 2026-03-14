@@ -13,6 +13,12 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Project } from './project';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { World } from './world';
 
 export interface ApiV1CommercialProjectsPostRequest {
     'name': string;
@@ -33,7 +39,7 @@ export interface ApiV1CommercialProjectsPostRequest {
     'tpYaw': number;
     'tpPitch': number;
     'parentProjectId'?: number | null;
-    'world': object | null;
-    'parentProject': object | null;
+    'world': World | null;
+    'parentProject': Project | null;
 }
 

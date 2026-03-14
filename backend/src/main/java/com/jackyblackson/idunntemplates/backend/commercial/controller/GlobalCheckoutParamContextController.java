@@ -60,6 +60,7 @@ public class GlobalCheckoutParamContextController {
         newConfig.setTemplateDefectParam(request.getTemplateDefectParam());
         newConfig.setPlacerRatio(request.getPlacerRatio());
         newConfig.setUploaderRatio(request.getUploaderRatio());
+        newConfig.setReleaseDelayDays(request.getReleaseDelayDays());
 
         GlobalCheckoutParamContext updated = service.updateConfig(
                 newConfig,

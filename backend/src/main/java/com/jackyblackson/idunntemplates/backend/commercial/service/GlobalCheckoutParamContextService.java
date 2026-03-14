@@ -92,6 +92,9 @@ public class GlobalCheckoutParamContextService {
             if (newConfig.getUploaderRatio() != null) {
                 newEntity.setUploaderRatio(newConfig.getUploaderRatio());
             }
+            if (newConfig.getReleaseDelayDays() != null) {
+                newEntity.setReleaseDelayDays(newConfig.getReleaseDelayDays());
+            }
             // 显式设置创建时间戳为当前时间（更精确）
             newEntity.setCreateTimeMs(System.currentTimeMillis());
 

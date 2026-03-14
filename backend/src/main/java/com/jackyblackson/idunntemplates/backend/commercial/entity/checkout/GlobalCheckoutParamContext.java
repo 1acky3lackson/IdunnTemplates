@@ -47,6 +47,9 @@ public class GlobalCheckoutParamContext {
     @Column(name = "create_username")
     String createUsername = "system";
 
+    @Column(name = "release_delay_days")
+    private Integer releaseDelayDays = 3;  // 冻结天数，默认可能为 0
+
     @Column (name = "create_time_ms")
     Long createTimeMs = System.currentTimeMillis();
 

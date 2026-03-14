@@ -13,6 +13,12 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Project } from './project';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { World } from './world';
 
 export interface ApiV1CommercialProjectsIdPutRequest {
     'name'?: string | null;
@@ -32,7 +38,7 @@ export interface ApiV1CommercialProjectsIdPutRequest {
     'tpZ'?: number | null;
     'tpYaw'?: number | null;
     'tpPitch'?: number | null;
-    'world': object | null;
-    'parentProject': object | null;
+    'world': World | null;
+    'parentProject': Project | null;
 }
 

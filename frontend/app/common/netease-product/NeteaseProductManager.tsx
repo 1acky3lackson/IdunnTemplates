@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useInView } from 'react-intersection-observer';
+import { Link } from 'react-router'; // React Router v7 / v6
 
 // Shadcn UI 组件
 import { Button } from '@/components/ui/button';
@@ -23,14 +23,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -44,17 +36,16 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 
-// 自定义工具
-
-import { useWaterfall, WaterfallProvider, type PageResponse } from '../util/waterfall-provider';
+// 自定义工具与组件
 import type { ProjectApi } from '../project/ProjectManager';
 import type { Schema, SearchParam } from '../util/search-test-utils';
 import type { Project } from '~/api/generated';
-import { Link } from 'react-router';
 import NeteasePointType from '../util/NeteasePointType';
+import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
+import { DEFAULT_PRODUCT_API, DEFAULT_PROJECT_API } from './default-api';
 
 // ---------- 类型定义 ----------
-// 产品状态枚举（应与后端一致）
+
 export enum NeteaseProductStatus {
     CREATED = 'CREATED',
     CONVERTED = 'CONVERTED',
@@ -62,25 +53,21 @@ export enum NeteaseProductStatus {
     REJECTED = 'REJECTED',
 }
 
-// 产品实体（基于后端 NeteaseProduct，选取部分常用字段）
 export interface NeteaseProduct {
     id: number;
     itemId: string;
     itemName: string;
     internalStatus: NeteaseProductStatus;
-    project?: Project;                // 关联的项目对象（懒加载，可能为空）
-    projectId?: number;               // 方便前端展示
+    project?: Project;
+    projectId?: number;
     price?: number;
     priceType?: string;
     createTimeMs?: number;
     updateTimeMs?: number;
-    // 其他字段可根据需要添加
 }
 
-// 分页响应（复用 Project 的分页类型，但指定内容为 NeteaseProduct）
 export type ProductPageResponse = PageResponse<NeteaseProduct>;
 
-// 产品搜索 schema（用于构建 search 字符串）
 export const productSchema = {
     itemId: { search: { fuzzy: true } },
     itemName: { search: { fuzzy: true } },
@@ -91,7 +78,6 @@ export const productSchema = {
 
 type ProductSearchParams = SearchParam<typeof productSchema>;
 
-// 产品 API 接口
 export interface ProductApi {
     fetchProducts: (page: number, criteria: ProductSearchParams) => Promise<ProductPageResponse>;
     updateProduct: (id: number, data: Partial<NeteaseProduct>) => Promise<NeteaseProduct>;
@@ -101,198 +87,156 @@ export interface ProductApi {
 const statusFormSchema = z.object({
     internalStatus: z.nativeEnum(NeteaseProductStatus),
 });
-
 type StatusFormValues = z.infer<typeof statusFormSchema>;
+
+// ---------- 状态标签颜色映射工具 ----------
+const statusColor = (status: NeteaseProductStatus) => {
+    switch (status) {
+        case NeteaseProductStatus.CREATED: return 'bg-gray-500';
+        case NeteaseProductStatus.CONVERTED: return 'bg-blue-500';
+        case NeteaseProductStatus.ONLINE: return 'bg-green-500';
+        case NeteaseProductStatus.REJECTED: return 'bg-red-500';
+        default: return 'bg-gray-500';
+    }
+};
+
+// ---------- 辅助转换函数 ----------
+// 将 GenericCrudTable 产生的 "itemName~:测试,internalStatus:ONLINE" 转回旧 API 需要的 Criteria 对象
+const parseSearchStringToCriteria = (search: string): ProductSearchParams => {
+    const criteria: any = {};
+    if (!search) return criteria;
+
+    search.split(',').forEach(part => {
+        const [fieldWithOp, value] = part.split(':');
+        if (!fieldWithOp || !value) return;
+
+        if (fieldWithOp.endsWith('~')) {
+            const field = fieldWithOp.slice(0, -1);
+            criteria[field] = { value, fuzzy: true };
+        } else {
+            criteria[fieldWithOp] = value;
+        }
+    });
+    return criteria as ProductSearchParams;
+};
 
 // ---------- 主页面组件 ----------
 interface NeteaseProductManagerPageProps {
-    productApi: ProductApi;
-    projectApi: ProjectApi; // 用于获取项目列表（下拉选择）
+    productApi?: ProductApi;
+    projectApi?: ProjectApi;
+    forceSearch?: Record<string, string>;
+    title?: string;
 }
 
-export function NeteaseProductManagerPage({ productApi, projectApi }: NeteaseProductManagerPageProps) {
-    const fetchData = useCallback(
-        async (page: number, criteria: ProductSearchParams) => {
-            return productApi.fetchProducts(page, criteria);
-        },
-        [productApi]
-    );
+export function NeteaseProductManagerPage({
+    productApi = DEFAULT_PRODUCT_API,
+    projectApi = DEFAULT_PROJECT_API,
+    forceSearch,
+    title
+}: NeteaseProductManagerPageProps
+) {
+    // 使用一个计数器来强制刷新表格。
+    // 当我们把它作为 fetchTableData 的依赖项时，只要它改变，fetchTableData 引用就会改变，触发 GenericCrudTable 内部的 useEffect 重新请求。
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const triggerRefresh = useCallback(() => setRefreshTrigger(prev => prev + 1), []);
+
+    // 适配层：将 GenericCrudTable 的传参转换为旧接口所需的结构
+    const fetchTableData = useCallback(async (page: number, size: number, search: string, sort: string) => {
+        const criteria = parseSearchStringToCriteria(search);
+
+        // 排序处理
+        if (sort) {
+            const [field, direction] = sort.split(',');
+            criteria.sort = { [field]: direction };
+        } else {
+            criteria.sort = { id: 'desc' }; // 默认排序
+        }
+
+        // 注意：如果你后端的 API 支持传入 size (pageSize)，请在 fetchProducts 接口中扩展。
+        // 如果旧接口仅支持 page 和 criteria，你可能需要去稍微改一下 productApi 的定义。
+        return await productApi.fetchProducts(page, criteria);
+    }, [productApi, refreshTrigger]); // refreshTrigger 变化会导致这里重新生成，进而刷新表格
 
     return (
-        <WaterfallProvider
-            initialCriteria={{}}
-            fetchData={fetchData}
-            getId={(item: NeteaseProduct) => item.id}
-        >
-            <div className="container mx-auto p-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">网易产品管理</h1>
-                    {/* 这里可以添加其他操作，如批量关联等 */}
-                </div>
-                <ProductTable projectApi={projectApi} productApi={productApi} />
-            </div>
-        </WaterfallProvider>
-    );
-}
+        <div className="container mx-auto p-4 space-y-4">
+            {
+                title &&
+                (<div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold">{title}</h1>
+                </div>)
+            }
 
-// ---------- 产品表格组件（使用 Waterfall 上下文）----------
-function ProductTable({ productApi, projectApi }: { productApi: ProductApi; projectApi: ProjectApi }) {
-    const { items, loading, hasMore, loadMore, search, error } = useWaterfall<NeteaseProduct, ProductSearchParams>();
-
-    // 搜索输入状态
-    const [searchInputs, setSearchInputs] = useState({
-        itemName: '',
-        itemId: '',
-        internalStatus: '',
-        projectId: '',
-    });
-
-    // 构建搜索条件
-    const buildCriteria = useCallback((): ProductSearchParams => {
-        const criteria: ProductSearchParams = {};
-        if (searchInputs.itemName) criteria.itemName = { value: searchInputs.itemName, fuzzy: true };
-        if (searchInputs.itemId) criteria.itemId = { value: searchInputs.itemId, fuzzy: true };
-        if (searchInputs.internalStatus) criteria.internalStatus = searchInputs.internalStatus;
-        if (searchInputs.projectId) criteria['project.id'] = searchInputs.projectId;
-        // 默认按 id 降序
-        criteria.sort = { id: 'desc' };
-        return criteria;
-    }, [searchInputs]);
-
-    const handleSearch = () => {
-        search(buildCriteria());
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') handleSearch();
-    };
-
-    // 无限滚动哨兵
-    const { ref: sentinelRef, inView } = useInView({ threshold: 0.1, rootMargin: '100px' });
-
-    useEffect(() => {
-        if (inView && !loading && hasMore) {
-            loadMore();
-        }
-    }, [inView, loading, hasMore, loadMore]);
-
-    // 状态标签颜色映射
-    const statusColor = (status: NeteaseProductStatus) => {
-        switch (status) {
-            case NeteaseProductStatus.CREATED: return 'bg-gray-500';
-            case NeteaseProductStatus.CONVERTED: return 'bg-blue-500';
-            case NeteaseProductStatus.ONLINE: return 'bg-green-500';
-            case NeteaseProductStatus.REJECTED: return 'bg-red-500';
-            default: return 'bg-gray-500';
-        }
-    };
-
-    return (
-        <div className="space-y-4">
-            {/* 搜索栏 */}
-            <div className="flex flex-wrap gap-2 mb-4">
-                <Input
-                    placeholder="产品名称（模糊）"
-                    value={searchInputs.itemName}
-                    onChange={(e) => setSearchInputs(prev => ({ ...prev, itemName: e.target.value }))}
-                    onKeyDown={handleKeyDown}
-                    className="w-48"
-                />
-                <Input
-                    placeholder="物品ID"
-                    value={searchInputs.itemId}
-                    onChange={(e) => setSearchInputs(prev => ({ ...prev, itemId: e.target.value }))}
-                    onKeyDown={handleKeyDown}
-                    className="w-32"
-                />
-                <Input
-                    placeholder="状态"
-                    value={searchInputs.internalStatus}
-                    onChange={(e) => setSearchInputs(prev => ({ ...prev, internalStatus: e.target.value }))}
-                    onKeyDown={handleKeyDown}
-                    className="w-32"
-                />
-                <Input
-                    placeholder="项目ID"
-                    value={searchInputs.projectId}
-                    onChange={(e) => setSearchInputs(prev => ({ ...prev, projectId: e.target.value }))}
-                    onKeyDown={handleKeyDown}
-                    className="w-32"
-                />
-                <Button onClick={handleSearch}>搜索</Button>
-            </div>
-
-            {/* 表格 */}
-            <div className="border rounded-lg overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>物品ID</TableHead>
-                            <TableHead>名称</TableHead>
-                            <TableHead>状态</TableHead>
-                            <TableHead>项目</TableHead>
-                            <TableHead>价格</TableHead>
-                            <TableHead>操作</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {items.map((product) => (
-                            <TableRow key={product.id}>
-
-                                <TableCell>{product.id}</TableCell>
-                                <TableCell>{product.itemId}</TableCell>
-                                <TableCell className="font-bold hover:text-accent transition-all duration-300"><Link to={`./${product.id}`}>{product.itemName}</Link></TableCell>
-                                <TableCell>
-                                    <Badge className={statusColor(product.internalStatus)}>
-                                        {product.internalStatus}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="font-bold hover:text-accent transition-all duration-300">
-                                    <Link to={`/commercial/projects`}>
-                                        {
-                                            product.project
-                                                ? ("[" + (product.project?.id || product.projectId || '-') + "] " + (product.project?.displayName || '未知项目名称'))
-                                                : "---"
-                                        }
-                                    </Link>
-                                </TableCell>
-                                <TableCell className="inline-flex align-middle gap-1 my-auto">{product.price ?? '-'} <NeteasePointType point={product.priceType} /></TableCell>
-                                <TableCell>
-                                    <div className="flex gap-2">
-                                        <AssignProjectDialog product={product} projectApi={projectApi} productApi={productApi} />
-                                        <ChangeStatusDialog product={product} productApi={productApi} />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        {loading && (
-                            <>
-                                {Array.from({ length: 3 }).map((_, i) => (
-                                    <TableRow key={`skeleton-${i}`}>
-                                        <TableCell colSpan={8}>
-                                            <Skeleton className="h-8 w-full" />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            {/* 滚动加载哨兵 */}
-            {hasMore && <div ref={sentinelRef} className="h-4" />}
-
-            {!hasMore && items.length > 0 && (
-                <p className="text-center text-muted-foreground">没有更多产品了</p>
-            )}
-
-            {error && (
-                <div className="p-4 text-red-500 bg-red-50 rounded">
-                    加载失败: {error.message}
-                </div>
-            )}
+            <GenericCrudTable<NeteaseProduct>
+                getRowId={(row) => row.id}
+                list={fetchTableData}
+                // 搜索栏配置，和后端的约定以及前面的解析函数完美对应
+                searchFields={[
+                    { key: 'itemName', label: '产品名称', fuzzy: true },
+                    { key: 'itemId', label: '物品ID', fuzzy: true },
+                    { key: 'internalStatus', label: '状态', fuzzy: false },
+                    { key: 'project.id', label: '项目ID', fuzzy: false },
+                ]}
+                forcedSearchValues={forceSearch}
+                // 表格列渲染配置
+                schema={{
+                    'id': { title: 'ID', sortable: true },
+                    'itemId': { title: '物品ID' },
+                    'itemName': {
+                        title: '名称',
+                        render: (val, row) => (
+                            <Link to={`/commercial/netease-products/${row.id}`} className="font-bold hover:text-accent transition-all duration-300">
+                                {val}
+                            </Link>
+                        )
+                    },
+                    'internalStatus': {
+                        title: '状态',
+                        filterable: true,
+                        render: (val: NeteaseProductStatus) => (
+                            <Badge className={statusColor(val)}>
+                                {val}
+                            </Badge>
+                        )
+                    },
+                    'project': { // 这里直接拿 project 对象来渲染，不涉及深度索引取值，在 render 里自己解构即可
+                        title: '项目',
+                        filterable: true,
+                        render: (_, row) => (
+                            <Link to={`/commercial/projects`} className="font-bold hover:text-accent transition-all duration-300">
+                                {row.project
+                                    ? `[${row.project.id || row.projectId || '-'}] ${row.project.displayName || '未知项目名称'}`
+                                    : "---"}
+                            </Link>
+                        )
+                    },
+                    'price': {
+                        title: '价格',
+                        filterable: true,
+                        sortable: true,
+                        render: (val, row) => (
+                            <span className="inline-flex align-middle gap-1 my-auto">
+                                {val ?? '-'} <NeteasePointType point={row.priceType} />
+                            </span>
+                        )
+                    }
+                }}
+                // 自定义行操作列
+                rowActions={(row) => (
+                    <div className="flex gap-2">
+                        <AssignProjectDialog
+                            product={row}
+                            projectApi={projectApi}
+                            productApi={productApi}
+                            onSuccess={triggerRefresh}
+                        />
+                        <ChangeStatusDialog
+                            product={row}
+                            productApi={productApi}
+                            onSuccess={triggerRefresh}
+                        />
+                    </div>
+                )}
+            />
         </div>
     );
 }
@@ -302,26 +246,22 @@ interface AssignProjectDialogProps {
     product: NeteaseProduct;
     projectApi: ProjectApi;
     productApi: ProductApi;
+    onSuccess: () => void; // 替换了原本的 context.refresh
 }
 
-function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectDialogProps) {
+function AssignProjectDialog({ product, projectApi, productApi, onSuccess }: AssignProjectDialogProps) {
     const [open, setOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [projectSearch, setProjectSearch] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
     const [loadingProjects, setLoadingProjects] = useState(false);
-    const { refresh } = useWaterfall<NeteaseProduct, ProductSearchParams>();
 
-    // 加载项目列表（支持搜索）
     const loadProjects = useCallback(async (searchTerm: string) => {
         setLoadingProjects(true);
         try {
-            // 构建项目搜索条件（参考 ProjectManagerPage 的搜索格式）
-            const criteria = searchTerm
-                ? { name: { value: searchTerm, fuzzy: true } }
-                : {};
+            const criteria = searchTerm ? { name: { value: searchTerm, fuzzy: true } } : {};
             const page = await projectApi.fetchProjects(0, criteria);
-            setProjects(page.content.filter(p => p !== null));
+            setProjects(page.content.filter((p): p is Project => p !== null));
         } catch (error) {
             console.error('Failed to load projects', error);
         } finally {
@@ -329,19 +269,13 @@ function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectD
         }
     }, [projectApi]);
 
-    // 打开对话框时加载初始项目列表
     useEffect(() => {
-        if (open) {
-            loadProjects('');
-        }
+        if (open) loadProjects('');
     }, [open, loadProjects]);
 
-    // 防抖搜索
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (open) {
-                loadProjects(projectSearch);
-            }
+            if (open) loadProjects(projectSearch);
         }, 300);
         return () => clearTimeout(timer);
     }, [projectSearch, open, loadProjects]);
@@ -351,9 +285,9 @@ function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectD
         try {
             await productApi.updateProduct(product.id, { projectId: selectedProject.id });
             setOpen(false);
-            await refresh(); // 刷新产品列表
+            onSuccess(); // 触发上层组件表格刷新
         } catch (error) {
-            // 错误处理
+            console.error('Update failed', error);
         }
     };
 
@@ -367,13 +301,11 @@ function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectD
                     <DialogTitle>关联项目 - {product.itemName}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                    {/* 项目搜索 */}
                     <Input
                         placeholder="搜索项目名称..."
                         value={projectSearch}
                         onChange={(e) => setProjectSearch(e.target.value)}
                     />
-                    {/* 项目下拉列表 */}
                     <ScrollArea className="h-60 border rounded-md p-2">
                         {loadingProjects ? (
                             <div className="flex justify-center p-4">
@@ -394,15 +326,11 @@ function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectD
                             </div>
                         )}
                     </ScrollArea>
-                    {/* 选中项目的详细信息 */}
                     {selectedProject && (
                         <Card>
-                            <CardContent className="p-4 space-y-2">
+                            <CardContent className="p-4 space-y-2 text-sm">
                                 <p><strong>项目名称：</strong>{selectedProject.displayName}</p>
                                 <p><strong>内部名称：</strong>{selectedProject.name}</p>
-                                <p><strong>类型：</strong>{selectedProject.kind}</p>
-                                {selectedProject.world && <p><strong>世界ID：</strong>{selectedProject.world.id}</p>}
-                                {selectedProject.description && <p><strong>描述：</strong>{selectedProject.description}</p>}
                             </CardContent>
                         </Card>
                     )}
@@ -417,9 +345,17 @@ function AssignProjectDialog({ product, projectApi, productApi }: AssignProjectD
 }
 
 // ---------- 修改状态对话框 ----------
-function ChangeStatusDialog({ product, productApi }: { product: NeteaseProduct; productApi: ProductApi }) {
+function ChangeStatusDialog({
+    product,
+    productApi,
+    onSuccess
+}: {
+    product: NeteaseProduct;
+    productApi: ProductApi;
+    onSuccess: () => void;
+}) {
     const [open, setOpen] = useState(false);
-    const { refresh } = useWaterfall<NeteaseProduct, ProductSearchParams>();
+
     const form = useForm<StatusFormValues>({
         resolver: zodResolver(statusFormSchema),
         defaultValues: {
@@ -431,9 +367,9 @@ function ChangeStatusDialog({ product, productApi }: { product: NeteaseProduct; 
         try {
             await productApi.updateProduct(product.id, { internalStatus: values.internalStatus });
             setOpen(false);
-            await refresh();
+            onSuccess(); // 触发上层组件表格刷新
         } catch (error) {
-            // 错误处理
+            console.error('Failed to change status', error);
         }
     };
 
@@ -473,7 +409,7 @@ function ChangeStatusDialog({ product, productApi }: { product: NeteaseProduct; 
                             )}
                         />
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setOpen(false)}>取消</Button>
+                            <Button variant="outline" type="button" onClick={() => setOpen(false)}>取消</Button>
                             <Button type="submit">保存</Button>
                         </DialogFooter>
                     </form>

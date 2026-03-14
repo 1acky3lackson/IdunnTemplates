@@ -21,6 +21,7 @@ export interface CheckoutCalculateContext {
     'templateDefectParam': number;
     'placerRatio': number;
     'uploaderRatio': number;
+    'releaseDelayDays': number;
     'createUsername': string;
     'createTimeMs': number;
     'disableTimeMs': number | null;

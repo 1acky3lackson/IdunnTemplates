@@ -23,8 +23,8 @@ Name | Type | Description | Notes
 **tpYaw** | **number** |  | [default to undefined]
 **tpPitch** | **number** |  | [default to undefined]
 **parentProjectId** | **number** |  | [optional] [default to undefined]
-**world** | **object** |  | [default to undefined]
-**parentProject** | **object** |  | [default to undefined]
+**world** | [**World**](World.md) |  | [default to undefined]
+**parentProject** | [**Project**](Project.md) |  | [default to undefined]
 
 ## Example
 

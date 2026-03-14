@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **templateDefectParam** | **number** |  | [default to undefined]
 **placerRatio** | **number** |  | [default to undefined]
 **uploaderRatio** | **number** |  | [default to undefined]
+**releaseDelayDays** | **number** |  | [default to undefined]
 **createUsername** | **string** |  | [default to undefined]
 **createTimeMs** | **number** |  | [default to undefined]
 **disableTimeMs** | **number** |  | [default to undefined]
@@ -29,6 +30,7 @@ const instance: CheckoutCalculateContext = {
     templateDefectParam,
     placerRatio,
     uploaderRatio,
+    releaseDelayDays,
     createUsername,
     createTimeMs,
     disableTimeMs,

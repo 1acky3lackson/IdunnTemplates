@@ -28,6 +28,10 @@ import type { ApiAuthLoginPostRequest } from '../model';
 // @ts-ignore
 import type { ApiAuthMeGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialGlobalContextsCurrentGet200Response } from '../model';
+// @ts-ignore
+import type { ApiV1CommercialGlobalContextsGet200ResponseInner } from '../model';
+// @ts-ignore
 import type { ApiV1CommercialGlobalContextsPostRequest } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialNeteaseProductsGet200Response } from '../model';
@@ -66,6 +70,8 @@ import type { ApiV1TemplatesIdTransferPatchRequest } from '../model';
 // @ts-ignore
 import type { ApiV1UserinfoCreatorsGet200ResponseInner } from '../model';
 // @ts-ignore
+import type { BalanceInfo } from '../model';
+// @ts-ignore
 import type { CheckoutCalculateContext } from '../model';
 // @ts-ignore
 import type { ContributionAddRequest } from '../model';
@@ -79,6 +85,12 @@ import type { NeteaseProduct } from '../model';
 import type { NeteaseProductDto } from '../model';
 // @ts-ignore
 import type { NeteaseProductUpdateRequest } from '../model';
+// @ts-ignore
+import type { PageBalanceInfo } from '../model';
+// @ts-ignore
+import type { PageCheckoutDetailDto } from '../model';
+// @ts-ignore
+import type { PageUserBalanceRecordDto } from '../model';
 // @ts-ignore
 import type { Project } from '../model';
 // @ts-ignore
@@ -829,17 +841,15 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @summary 更新贡献值
          * @param {string} projectId 
          * @param {string} contributionId 
-         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} [apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialProjectsProjectIdContributionsContributionIdPatch: async (projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiV1CommercialProjectsProjectIdContributionsContributionIdPatch: async (projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest?: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdPatch', 'projectId', projectId)
             // verify required parameter 'contributionId' is not null or undefined
             assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdPatch', 'contributionId', contributionId)
-            // verify required parameter 'apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest' is not null or undefined
-            assertParamExists('apiV1CommercialProjectsProjectIdContributionsContributionIdPatch', 'apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest', apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest)
             const localVarPath = `/api/v1/commercial/projects/{projectId}/contributions/{contributionId}`
                 .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)))
                 .replace(`{${"contributionId"}}`, encodeURIComponent(String(contributionId)));
@@ -1747,6 +1757,186 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Retrieves the balance information for the currently authenticated user. Requires authentication.
+         * @summary 获取当前用户账户金额
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMyBalance: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/balance`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+         * @summary List Checkout Details
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listBalanceCheckoutDetails: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/balance/checkout-details`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
+         * @summary 获取/筛选流水记录
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;createTimeMs,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listBalanceRecords: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/balance/records`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
+         * @summary 获取/筛选用户账户列表
+         * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;username,asc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listUserBalances: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/balance/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -1801,7 +1991,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1CommercialGlobalContextsCurrentGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckoutCalculateContext>> {
+        async apiV1CommercialGlobalContextsCurrentGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialGlobalContextsCurrentGet200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialGlobalContextsCurrentGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialGlobalContextsCurrentGet']?.[localVarOperationServerIndex]?.url;
@@ -1813,7 +2003,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1CommercialGlobalContextsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CheckoutCalculateContext>>> {
+        async apiV1CommercialGlobalContextsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ApiV1CommercialGlobalContextsGet200ResponseInner>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialGlobalContextsGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialGlobalContextsGet']?.[localVarOperationServerIndex]?.url;
@@ -2025,11 +2215,11 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @summary 更新贡献值
          * @param {string} projectId 
          * @param {string} contributionId 
-         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} [apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest?: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId, contributionId, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch']?.[localVarOperationServerIndex]?.url;
@@ -2342,6 +2532,66 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1UserinfoCreatorsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * Retrieves the balance information for the currently authenticated user. Requires authentication.
+         * @summary 获取当前用户账户金额
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMyBalance(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BalanceInfo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMyBalance(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getMyBalance']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+         * @summary List Checkout Details
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listBalanceCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageCheckoutDetailDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listBalanceCheckoutDetails(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listBalanceCheckoutDetails']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
+         * @summary 获取/筛选流水记录
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;createTimeMs,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listBalanceRecords(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageUserBalanceRecordDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listBalanceRecords(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listBalanceRecords']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
+         * @summary 获取/筛选用户账户列表
+         * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;username,asc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listUserBalances(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageBalanceInfo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listUserBalances(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listUserBalances']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -2387,7 +2637,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialGlobalContextsCurrentGet(options?: RawAxiosRequestConfig): AxiosPromise<CheckoutCalculateContext> {
+        apiV1CommercialGlobalContextsCurrentGet(options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialGlobalContextsCurrentGet200Response> {
             return localVarFp.apiV1CommercialGlobalContextsCurrentGet(options).then((request) => request(axios, basePath));
         },
         /**
@@ -2396,7 +2646,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialGlobalContextsGet(options?: RawAxiosRequestConfig): AxiosPromise<Array<CheckoutCalculateContext>> {
+        apiV1CommercialGlobalContextsGet(options?: RawAxiosRequestConfig): AxiosPromise<Array<ApiV1CommercialGlobalContextsGet200ResponseInner>> {
             return localVarFp.apiV1CommercialGlobalContextsGet(options).then((request) => request(axios, basePath));
         },
         /**
@@ -2563,11 +2813,11 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @summary 更新贡献值
          * @param {string} projectId 
          * @param {string} contributionId 
-         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+         * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} [apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+        apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest?: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
             return localVarFp.apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId, contributionId, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2814,6 +3064,54 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         apiV1UserinfoCreatorsGet(options?: RawAxiosRequestConfig): AxiosPromise<Array<ApiV1UserinfoCreatorsGet200ResponseInner>> {
             return localVarFp.apiV1UserinfoCreatorsGet(options).then((request) => request(axios, basePath));
         },
+        /**
+         * Retrieves the balance information for the currently authenticated user. Requires authentication.
+         * @summary 获取当前用户账户金额
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMyBalance(options?: RawAxiosRequestConfig): AxiosPromise<BalanceInfo> {
+            return localVarFp.getMyBalance(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+         * @summary List Checkout Details
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listBalanceCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageCheckoutDetailDto> {
+            return localVarFp.listBalanceCheckoutDetails(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
+         * @summary 获取/筛选流水记录
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;createTimeMs,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listBalanceRecords(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageUserBalanceRecordDto> {
+            return localVarFp.listBalanceRecords(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
+         * @summary 获取/筛选用户账户列表
+         * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;username,asc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listUserBalances(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageBalanceInfo> {
+            return localVarFp.listUserBalances(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -3052,11 +3350,11 @@ export class DefaultApi extends BaseAPI {
      * @summary 更新贡献值
      * @param {string} projectId 
      * @param {string} contributionId 
-     * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest 
+     * @param {ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest} [apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig) {
+    public apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId: string, contributionId: string, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest?: ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsContributionIdPatch(projectId, contributionId, apiV1CommercialProjectsProjectIdContributionsContributionIdPatchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -3323,6 +3621,58 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1UserinfoCreatorsGet(options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1UserinfoCreatorsGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieves the balance information for the currently authenticated user. Requires authentication.
+     * @summary 获取当前用户账户金额
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getMyBalance(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getMyBalance(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+     * @summary List Checkout Details
+     * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+     * @param {number} [page] Zero-based page index (0..N). Default is 0.
+     * @param {number} [size] The size of the page to be returned. Default is 20.
+     * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public listBalanceCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).listBalanceCheckoutDetails(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
+     * @summary 获取/筛选流水记录
+     * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+     * @param {number} [page] Zero-based page index (0..N). Default is 0.
+     * @param {number} [size] The size of the page to be returned. Default is 20.
+     * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;createTimeMs,desc&#x60;.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public listBalanceRecords(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).listBalanceRecords(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
+     * @summary 获取/筛选用户账户列表
+     * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
+     * @param {number} [page] Zero-based page index (0..N). Default is 0.
+     * @param {number} [size] The size of the page to be returned. Default is 20.
+     * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;username,asc&#x60;.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public listUserBalances(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).listUserBalances(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

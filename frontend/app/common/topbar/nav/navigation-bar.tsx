@@ -10,6 +10,7 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { ArrowLeftRight, Calculator, Coins, FolderKanban, Landmark, PackageSearch, Parentheses } from "lucide-react";
 
 export function NavigationBar() {
     // 使用 Intlayer 获取内容
@@ -33,20 +34,47 @@ export function NavigationBar() {
 
     const commercialComponents = [
         {
+            icon: <Landmark />,
+            title: items.commercial.balances.title,
+            href: "/commercial/balances",
+            description: items.commercial.balances.desc
+        },
+        {
+            icon: <Calculator />,
+            title: items.commercial.checkout.title,
+            href: "/commercial/checkout",
+            description: items.commercial.checkout.desc
+        },
+        {
+            icon: <ArrowLeftRight />,
+            title: items.commercial.transactions.title,
+            href: "/commercial/balances/transactions",
+            description: items.commercial.transactions.desc
+        },
+        {
+            icon: <Parentheses />,
+            title: items.commercial.globalParams.title,
+            href: "/commercial/global-params",
+            description: items.commercial.globalParams.desc
+        },
+        {
+            icon: <FolderKanban />,
             title: items.commercial.projects.title,
             href: "/commercial/projects",
             description: items.commercial.projects.desc
         },
         {
+            icon: <PackageSearch />,
             title: items.commercial.neteaseProducts.title,
             href: "/commercial/netease-products",
             description: items.commercial.neteaseProducts.desc
         },
         {
+            icon: <Coins />,
             title: items.commercial.neteaseOrders.title,
             href: "/commercial/orders",
             description: items.commercial.neteaseOrders.desc
-        }
+        },
     ]
 
     return (
@@ -154,13 +182,16 @@ export function NavigationBar() {
                     <NavigationMenuContent>
                         <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
                             {commercialComponents.map((component, index) => (
-                                <ListItem
-                                    key={`navbar-commercial-${component.title}-${index}`}
-                                    title={component.title}
-                                    href={component.href}
-                                >
-                                    {component.description}
-                                </ListItem>
+                                <div className="flex flex-row gap-1 align-middle items-center">
+                                    <div>{component.icon}</div>
+                                    <ListItem
+                                        key={`navbar-commercial-${component.title}-${index}`}
+                                        title={component.title}
+                                        href={component.href}
+                                    >
+                                        {component.description}
+                                    </ListItem>
+                                </div>
                             ))}
                         </ul>
                     </NavigationMenuContent>

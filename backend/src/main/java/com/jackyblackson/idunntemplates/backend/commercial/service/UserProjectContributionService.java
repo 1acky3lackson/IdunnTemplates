@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates.backend.commercial.service;
 
 import com.jackyblackson.idunntemplates.backend.commercial.dto.checkout.ContributionDto;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.UserProjectContributionRepository;
@@ -35,7 +36,7 @@ public class UserProjectContributionService {
     public void addContributionAndRecalculate(Long projectId, ContributionDto.AddRequest request, String username) {
         // 确定记录归属的项目
         Project targetProject;
-        if (request.getRole() == UserProjectContribution.RoleType.BUILDER) {
+        if (request.getRole() == CommercialRoleType.BUILDER) {
             // BUILDER 必须关联到父项目
             Project currentProject = projectRepository.findById(projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
@@ -68,7 +69,7 @@ public class UserProjectContributionService {
     /**
      * 为指定项目下的特定角色重新计算并保存贡献占比
      */
-    private void recalculateAndSaveRatiosForRole(Long projectId, UserProjectContribution.RoleType role) {
+    private void recalculateAndSaveRatiosForRole(Long projectId, CommercialRoleType role) {
         // 仅查询该项目下该角色的活跃记录
         List<UserProjectContribution> records = contributionRepository
                 .findByProjectIdAndRoleAndDeleteTimeMsIsNull(projectId, role);
@@ -92,13 +93,13 @@ public class UserProjectContributionService {
     /**
      * 预览重新计算所有角色的占比（按角色分组，BUILDER 取父项目，其他取本项目）
      */
-    public Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> recalculate(Long projectId) {
+    public Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse> recalculate(Long projectId) {
         // 获取按角色分组的贡献记录（使用新规则）
-        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> grouped = getContributionsGroupedByRole(projectId);
+        Map<CommercialRoleType, List<UserProjectContribution>> grouped = getContributionsGroupedByRole(projectId);
 
-        Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> result = new EnumMap<>(UserProjectContribution.RoleType.class);
+        Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse> result = new EnumMap<>(CommercialRoleType.class);
 
-        for (UserProjectContribution.RoleType role : UserProjectContribution.RoleType.values()) {
+        for (CommercialRoleType role : CommercialRoleType.values()) {
             List<UserProjectContribution> records = grouped.getOrDefault(role, new ArrayList<>());
 
             int totalPoints = records.stream()
@@ -173,16 +174,16 @@ public class UserProjectContributionService {
     /**
      * 新方法：获取按角色分组的贡献记录（BUILDER 来自父项目，其他来自本项目）
      */
-    public Map<UserProjectContribution.RoleType, List<UserProjectContribution>> getContributionsGroupedByRole(Long projectId) {
+    public Map<CommercialRoleType, List<UserProjectContribution>> getContributionsGroupedByRole(Long projectId) {
         Project currentProject = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
 
-        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> result = new EnumMap<>(UserProjectContribution.RoleType.class);
+        Map<CommercialRoleType, List<UserProjectContribution>> result = new EnumMap<>(CommercialRoleType.class);
 
         // 处理 MODIFIER 和 UPLOADER：来自当前项目
-        for (UserProjectContribution.RoleType role : Arrays.asList(
-                UserProjectContribution.RoleType.MODIFIER,
-                UserProjectContribution.RoleType.UPLOADER)) {
+        for (CommercialRoleType role : Arrays.asList(
+                CommercialRoleType.MODIFIER,
+                CommercialRoleType.UPLOADER)) {
             List<UserProjectContribution> list = contributionRepository
                     .findByProjectIdAndRoleAndDeleteTimeMsIsNull(projectId, role);
             result.put(role, list);
@@ -192,10 +193,10 @@ public class UserProjectContributionService {
         if (currentProject.getParentProject() != null) {
             Long parentId = currentProject.getParentProject().getId();
             List<UserProjectContribution> builders = contributionRepository
-                    .findByProjectIdAndRoleAndDeleteTimeMsIsNull(parentId, UserProjectContribution.RoleType.BUILDER);
-            result.put(UserProjectContribution.RoleType.BUILDER, builders);
+                    .findByProjectIdAndRoleAndDeleteTimeMsIsNull(parentId, CommercialRoleType.BUILDER);
+            result.put(CommercialRoleType.BUILDER, builders);
         } else {
-            result.put(UserProjectContribution.RoleType.BUILDER, new ArrayList<>());
+            result.put(CommercialRoleType.BUILDER, new ArrayList<>());
         }
 
         return result;

@@ -18,6 +18,7 @@ export default function App() {
             templateDefectParam: newConfig.templateDefectParam,
             placerRatio: newConfig.placerRatio,
             uploaderRatio: newConfig.uploaderRatio,
+            releaseDelayDays: newConfig.releaseDelayDays || 7,
             updateReason: reason
         }
     )
