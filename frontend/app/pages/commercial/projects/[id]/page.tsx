@@ -198,6 +198,8 @@ export default function ProjectDetail({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    document.title = `太学工程详情 - ${project?.displayName || "未知项目"}`;
+
     // 加载项目信息
     useEffect(() => {
         if (!projectId) return;

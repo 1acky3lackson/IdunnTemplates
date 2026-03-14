@@ -3,9 +3,13 @@ package com.jackyblackson.idunntemplates.backend.commercial.repository.chekout;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface UserProjectContributionRepository extends JpaRepository<UserProjectContribution, Long> {
@@ -17,4 +21,10 @@ public interface UserProjectContributionRepository extends JpaRepository<UserPro
     List<UserProjectContribution> findByProjectIdInAndRoleAndDeleteTimeMsIsNull(List<Long> projectIds, CommercialRoleType role);
     List<UserProjectContribution> findByProjectIdAndDeleteTimeMsIsNull(Long projectId);
     List<UserProjectContribution> findByProjectIdAndRoleAndDeleteTimeMsIsNull(Long projectId, CommercialRoleType role);
+
+    boolean existsByUsernameAndProjectIdInAndRoleInAndDeleteTimeMsIsNull(
+            String username,
+            Collection<Long> projectIds,
+            Collection<CommercialRoleType> roles
+    );
 }

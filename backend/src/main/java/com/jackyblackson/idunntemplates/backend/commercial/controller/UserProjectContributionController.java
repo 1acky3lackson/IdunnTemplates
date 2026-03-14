@@ -6,6 +6,8 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.Comme
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class UserProjectContributionController {
 
     private final UserProjectContributionService contributionService;
+    private final LuckyPermAuthService luckyPermAuthService;
 
     /**
      * 1) 获取当前项目及其父项目下所有未删除的 Contribution 列表
@@ -44,6 +47,9 @@ public class UserProjectContributionController {
             @Valid @RequestBody ContributionDto.AddRequest request,
             UserContext userContext
     ) {
+        if (!luckyPermAuthService.checkPermission(userContext, PermissionNames.Commercial.Project.Contribution.add)) {
+            return ResponseEntity.status(406).build();
+        }
         contributionService.addContributionAndRecalculate(projectId, request, userContext.getUsername());
         return ResponseEntity.ok().build();
     }
@@ -57,6 +63,9 @@ public class UserProjectContributionController {
             @PathVariable Long projectId,
             UserContext userContext
     ) {
+        if (!luckyPermAuthService.checkPermission(userContext, PermissionNames.Commercial.Project.Contribution.recalculate)) {
+            return ResponseEntity.status(406).build();
+        }
         Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse> result =
                 contributionService.recalculate(projectId);
         return ResponseEntity.ok(result);
@@ -74,6 +83,9 @@ public class UserProjectContributionController {
             @Valid @RequestBody ContributionDto.DeleteRequest request,
             UserContext userContext
     ) {
+        if (!luckyPermAuthService.checkPermission(userContext, PermissionNames.Commercial.Project.Contribution.delete)) {
+            return ResponseEntity.status(406).build();
+        }
         contributionService.softDeleteContribution(contributionId, request.getDeleteReason(), userContext.getUsername());
         return ResponseEntity.ok().build();
     }
@@ -89,6 +101,9 @@ public class UserProjectContributionController {
             @Valid @RequestBody ContributionDto.UpdateRequest request,
             UserContext userContext
     ) {
+        if (!luckyPermAuthService.checkPermission(userContext, PermissionNames.Commercial.Project.Contribution.modify)) {
+            return ResponseEntity.status(406).build();
+        }
         contributionService.updateContributionPointsAndRecalculate(
                 contributionId,
                 request.getContributePoints(),

@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.service;
 
+import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.core.utils.NullGettable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -28,6 +29,14 @@ public class LuckyPermAuthService {
                                 @Value("${app.service.idunn-auth-base-url}") String baseUrl) {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
+    }
+
+    public boolean checkPermission(UserContext user, String permission) {
+        return checkPermission(
+                user.getUuid(),
+                user.getUsername(),
+                permission
+        );
     }
 
     /**
@@ -66,6 +75,14 @@ public class LuckyPermAuthService {
             // 根据业务需求，这里可以选择抛出异常或者返回 false (Fail-Closed)
         }
         return false;
+    }
+
+    public Map<String, Boolean> batchCheckPermissions(UserContext user, List<String> permission) {
+        return batchCheckPermissions(
+                user.getUuid(),
+                user.getUsername(),
+                permission
+        );
     }
 
     /**

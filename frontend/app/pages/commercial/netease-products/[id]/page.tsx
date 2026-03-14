@@ -24,7 +24,8 @@ import {
 } from 'recharts';
 import type { NeteaseProduct } from '~/api/generated';
 import type { Route } from './+types/page';
-import { OrderDisplay } from '~/common/netease-order/OrderDisplay';
+import { OrderDisplay, type FetchOrders } from '~/common/netease-order/OrderDisplay';
+import { Link } from 'react-router';
 
 // 从生成的 API 导入产品类型（假设为 NeteaseProduct）
 
@@ -39,6 +40,7 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
 }
 
 
+
 /**
  * 产品详情页面
  * 路由参数：id
@@ -49,12 +51,15 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  document.title = `网易商品详情 - [${id}]: ${product?.itemName || "未找到项目"}`;
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     IDUNN_API.apiV1CommercialNeteaseProductsIdGet(id)
       .then((response) => {
         setProduct(response.data);
+        
         setError(null);
       })
       .catch((err) => {
@@ -78,6 +83,18 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
       </div>
     );
   }
+
+  const fetchOrdersProject: FetchOrders = async (page, size, search, sort) => {
+    // 直接调用生成的 API，假设后端已经支持解析 search 和 sort 字符串
+    const response = await IDUNN_API.apiV1CommercialNeteaseProductsProductIdOrdersGet(
+      String(id),
+      search,
+      page,
+      size,
+      sort
+    );
+    return response.data;
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -111,8 +128,8 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
               label="更新时间"
               value={formatTime(deepNullToUndefined(product.updateTimeMs))}
             />
-            <InfoItem label="项目ID" value={product.project?.id} />
-            <InfoItem label="项目名称" value={product.project?.displayName} />
+            <InfoItem label="项目ID" value={(product.project && product.project !== null) ? <Link className='font-bold inline-block' to={`/commercial/projects/${product.project?.id}`}>【{product.project?.id}】</Link> : '未关联项目'} />
+            <InfoItem label="项目名称" value={(product.project && product.project !== null) ? <Link className='font-bold inline-block' to={`/commercial/projects/${product.project?.id}`}>【{product.project?.displayName}】</Link> : '未关联项目'} />
           </div>
         </CardContent>
       </Card>
@@ -132,7 +149,11 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
           <CardTitle>产品订单列表</CardTitle>
         </CardHeader>
         <CardContent>
-          <OrderDisplay pageSize={10} forceSearch={{ productName: product.itemName }} />
+          <OrderDisplay
+            pageSize={10}
+            forceSearch={{ productName: product.itemName }}
+            fetchOrders={fetchOrdersProject}
+          />
         </CardContent>
       </Card>
 

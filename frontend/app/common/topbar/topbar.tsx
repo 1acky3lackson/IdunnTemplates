@@ -49,7 +49,7 @@ export default function TopBar() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="mx-auto flex h-16 max-w-6xl items-center justify-between md:px-4 px-0">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between md:px-4 px-0">
                 {/* Left: Logo */}
                 <div className="flex items-center">
                     <Link to="/" className="flex items-center gap-2">
@@ -118,32 +118,6 @@ export default function TopBar() {
                     </Button>
                 </div>
             </div>
-
-            {/* Mobile Menu (Collapsible) */}
-            {isMobileMenuOpen && (
-                <div className="border-b bg-background md:hidden">
-                    <div className="container py-4 space-y-4 px-7">
-                        {/* Re-using NavigationBar structure or creating a simpler vertical list for mobile */}
-                        {/* Since NavigationBar uses NavigationMenu which might be tricky in mobile stack, 
-                            we can wrap it or just show it. NavigationMenu usually works best on desktop.
-                            For mobile, we might want a simple list. For now, let's try to render the NavigationBar 
-                            but typically Shadcn NavigationMenu is horizontal. 
-                            Let's create a simple vertical placeholder for mobile links to be safe. */}
-
-                        <nav className="flex flex-col space-y-4">
-                            <a href="/" className="text-sm font-medium transition-colors hover:text-primary">
-                                Getting Started
-                            </a>
-                            <a href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
-                                Components
-                            </a>
-                            <a href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
-                                Documentation
-                            </a>
-                        </nav>
-                    </div>
-                </div>
-            )}
         </header>
     )
 }

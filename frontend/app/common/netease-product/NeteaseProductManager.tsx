@@ -172,7 +172,7 @@ export function NeteaseProductManagerPage({
                 // 搜索栏配置，和后端的约定以及前面的解析函数完美对应
                 searchFields={[
                     { key: 'itemName', label: '产品名称', fuzzy: true },
-                    { key: 'itemId', label: '物品ID', fuzzy: true },
+                    { key: 'itemId', label: '商品ID', fuzzy: true },
                     { key: 'internalStatus', label: '状态', fuzzy: false },
                     { key: 'project.id', label: '项目ID', fuzzy: false },
                 ]}
@@ -180,7 +180,10 @@ export function NeteaseProductManagerPage({
                 // 表格列渲染配置
                 schema={{
                     'id': { title: 'ID', sortable: true },
-                    'itemId': { title: '物品ID' },
+                    'itemId': {
+                        title: '商品ID',
+                        render: (val) => String(val).substring(0, 6) + '...'
+                    },
                     'itemName': {
                         title: '名称',
                         render: (val, row) => (

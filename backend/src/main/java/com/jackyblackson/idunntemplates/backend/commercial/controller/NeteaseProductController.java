@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
+import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.netease.NeteaseProductDto;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProduct;
@@ -7,6 +8,9 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.Neteas
 import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.ProductPermissionService;
+import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import jakarta.persistence.Column;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -36,6 +40,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class NeteaseProductController {
 
+    private final LuckyPermAuthService luckyPermAuthService;
     private NeteaseProductRepository repository;
     private final ProductPermissionService permissionService;  // 注入权限服务
     private final ProjectRepository projectRepository;  // 新增依赖，用于指定项目
@@ -51,8 +56,16 @@ public class NeteaseProductController {
      */
     @PutMapping("/{id}")
     @Transactional
+    @AuthRequired
     public ResponseEntity<NeteaseProductDto> update(@PathVariable Long id,
-                                                    @RequestBody NeteaseProductUpdateRequest request) {
+                                                    @RequestBody NeteaseProductUpdateRequest request,
+                                                    UserContext user
+    ) {
+
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.modify)) {
+            return ResponseEntity.status(406).build();
+        }
+
         NeteaseProduct product = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -83,8 +96,14 @@ public class NeteaseProductController {
      */
     @PatchMapping("/{id}/project")
     @Transactional
+    @AuthRequired
     public ResponseEntity<NeteaseProductDto> assignProject(@PathVariable Long id,
-                                                           @RequestBody ProjectAssignmentRequest request) {
+                                                           @RequestBody ProjectAssignmentRequest request,
+                                                           UserContext user
+    ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.bindProject)) {
+            return ResponseEntity.status(406).build();
+        }
         NeteaseProduct product = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -105,8 +124,14 @@ public class NeteaseProductController {
      */
     @PatchMapping("/{id}/status")
     @Transactional
+    @AuthRequired
     public ResponseEntity<NeteaseProductDto> changeStatus(@PathVariable Long id,
-                                                          @RequestBody StatusChangeRequest request) {
+                                                          @RequestBody StatusChangeRequest request,
+                                                          UserContext user
+    ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.changeStatus)) {
+            return ResponseEntity.status(406).build();
+        }
         NeteaseProduct product = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -155,6 +180,7 @@ public class NeteaseProductController {
      * @return 分页结果
      */
     @GetMapping
+    @AuthRequired
     public ResponseEntity<Page<NeteaseProductDto>> list(
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -174,6 +200,7 @@ public class NeteaseProductController {
      * @return 商品信息，若不存在返回404
      */
     @GetMapping("/{id}")
+    @AuthRequired
     public ResponseEntity<NeteaseProductDto> getById(@PathVariable Long id) {
         Optional<NeteaseProduct> optional = repository.findById(id);
         return optional.map(entity -> ResponseEntity.ok(permissionService.toDto(entity)))

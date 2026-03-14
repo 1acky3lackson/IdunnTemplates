@@ -58,6 +58,7 @@ const api: ProjectApi = {
  * 直接渲染 ProjectManagerPage，并传入 api 实现
  */
 export default function ProjectsRoute() {
+  document.title = `太学工程列表`;
   return (
     <div className="p-6">
       <ProjectManagerPage api={api} />

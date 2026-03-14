@@ -32,29 +32,15 @@ public class NeteaseProductSyncService {
      */
     @Transactional
     public List<NeteaseProduct> syncAll() {
-        log.info("开始同步所有最新的商品记录");
+        log.info("开始同步所有最新的商品记录...");
 
-        // 获取所有爬虫记录
-        List<NePeProductLog> allLogs = nePeProductLogRepository.findAll();
-        if (allLogs.isEmpty()) {
+        // 直接从数据库获取去重后的最新记录，极大减少内存消耗和网络 I/O
+        List<NePeProductLog> latestLogs = nePeProductLogRepository.findLatestRecordsGroupedByItemId();
+
+        if (latestLogs.isEmpty()) {
             log.info("没有找到爬虫记录");
             return Collections.emptyList();
         }
-
-        // 按 item_id 分组，并取每组中 id 最大的记录（最新版本）
-        Map<String, NePeProductLog> latestLogsMap = allLogs.stream()
-                .filter(log -> log.getItemId() != null) // 过滤掉 itemId 为空的记录
-                .collect(Collectors.toMap(
-                        NePeProductLog::getItemId,  // key: itemId
-                        log -> log,                  // value: log本身
-                        (existing, replacement) -> {  // 当 key 冲突时（同一个 itemId），保留 id 较大的
-                            return existing.getId() > replacement.getId() ? existing : replacement;
-                        }
-                ));
-
-        List<NePeProductLog> latestLogs = latestLogsMap.values().stream()
-                .sorted((a, b) -> a.getItemId().compareTo(b.getItemId())) // 按 itemId 排序，便于查看
-                .collect(Collectors.toList());
 
         log.info("找到 {} 个唯一的商品记录（按 item_id 去重后）", latestLogs.size());
 

@@ -7,9 +7,17 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserP
 import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.UserProjectContributionRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -200,5 +208,80 @@ public class UserProjectContributionService {
         }
 
         return result;
+    }
+
+    public Page<Project> getUserParticipatedProjects(String username, Specification<Project> spec, Pageable pageable) {
+        Specification<Project> participantSpec = (root, query, cb) -> {
+            // 1. 引用贡献表
+            Root<UserProjectContribution> contributionRoot = query.from(UserProjectContribution.class);
+
+            // 2. 基本条件：用户名匹配且贡献记录未删除
+            Predicate userMatches = cb.equal(contributionRoot.get("username"), username);
+            Predicate contributionNotDeleted = cb.isNull(contributionRoot.get("deleteTimeMs"));
+
+            // 3. 核心逻辑：符合以下条件之一即视为参与 (对应 isUserParticipant 的逻辑)
+
+            // 条件 A：本项目直接参与 (MODIFIER, UPLOADER, BUILDER)
+            // 注意：你刚才的代码在 direct 检查里也加了 BUILDER，这里保持一致
+            Predicate isDirectParticipant = cb.and(
+                    cb.equal(contributionRoot.get("project"), root),
+                    contributionRoot.get("role").in(
+                            CommercialRoleType.MODIFIER,
+                            CommercialRoleType.UPLOADER,
+                            CommercialRoleType.BUILDER
+                    )
+            );
+
+            // 条件 B：通过父项目参与 (父项目的 BUILDER)
+            // 逻辑：contribution 的 project 等于 root 的 parentProject，且角色是 BUILDER
+            Predicate isParentBuilder = cb.and(
+                    cb.equal(contributionRoot.get("project"), root.get("parentProject")),
+                    cb.equal(contributionRoot.get("role"), CommercialRoleType.BUILDER)
+            );
+
+            // 4. 合并参与条件
+            Predicate hasParticipation = cb.or(isDirectParticipant, isParentBuilder);
+
+            // 5. 应用 DISTINCT 避免分页总数统计错误
+            query.distinct(true);
+
+            return cb.and(userMatches, contributionNotDeleted, hasParticipation);
+        };
+
+        // 合并外部传入的 spec（如名称搜索等）
+        Specification<Project> combinedSpec = Specification.where(spec).and(participantSpec);
+
+        return projectRepository.findAll(combinedSpec, pageable);
+    }
+
+    /**
+     * 判断用户是否参与了该项目
+     * 参与标准：
+     * 1. 在本项目中是 MODIFIER 或 UPLOADER
+     * 2. 如果项目有父项目，在父项目中是 BUILDER
+     */
+    public boolean isUserParticipant(String username, Long projectId) {
+        Project currentProject = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+
+        // 1. 检查本项目角色 (MODIFIER, UPLOADER)
+        boolean isDirectParticipant = contributionRepository.existsByUsernameAndProjectIdInAndRoleInAndDeleteTimeMsIsNull(
+                username,
+                Collections.singletonList(projectId),
+                Arrays.asList(CommercialRoleType.MODIFIER, CommercialRoleType.UPLOADER, CommercialRoleType.BUILDER)
+        );
+
+        if (isDirectParticipant) return true;
+
+        // 2. 检查父项目角色 (BUILDER)
+        if (currentProject.getParentProject() != null) {
+            return contributionRepository.existsByUsernameAndProjectIdInAndRoleInAndDeleteTimeMsIsNull(
+                    username,
+                    Collections.singletonList(currentProject.getParentProject().getId()),
+                    Collections.singletonList(CommercialRoleType.BUILDER)
+            );
+        }
+
+        return false;
     }
 }

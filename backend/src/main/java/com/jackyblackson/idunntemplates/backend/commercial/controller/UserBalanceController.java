@@ -14,6 +14,8 @@ import com.jackyblackson.idunntemplates.backend.commercial.service.BalanceServic
 import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutDetailService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserBalanceService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,7 @@ public class UserBalanceController {
     private final UserBalanceRecordRepository userBalanceRecordRepository;
     private final UserBalanceService userBalanceService;
     private final CheckoutDetailService checkoutDetailService;
+    private final LuckyPermAuthService luckyPermAuthService;
 
     // 辅助方法：将 CheckoutDetail 转换为 DTO
     private CheckoutDetailController.CheckoutDetailDto toCheckoutDetailDto(CheckoutDetail detail) {
@@ -96,7 +99,9 @@ public class UserBalanceController {
             @PageableDefault(size = 20, sort = "username", direction = Sort.Direction.ASC) Pageable pageable,
             UserContext user
     ) {
-
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.list)) {
+            return ResponseEntity.status(406).build();
+        }
         // 构建查询条件，筛选 UserBalance 表
         Specification<UserBalance> spec = buildUserBalanceSpecification(search);
         Page<UserBalance> page = userBalanceRepository.findAll(spec, pageable);
@@ -115,10 +120,17 @@ public class UserBalanceController {
             UserContext user
     ) {
 
+        boolean checkoutAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.checkoutAll);
+
         Specification<CheckoutDetail> spec = buildCheckoutDetailSpecification(search);
         Page<CheckoutDetail> page = checkoutDetailRepository.findAll(spec, pageable);
 
         Page<CheckoutDetailController.CheckoutDetailDto> dtoPage = page.map(this::toCheckoutDetailDto);
+
+        if (!checkoutAll) {
+            dtoPage = dtoPage.map(dto -> dto.getUsername().equals(user.getUsername()) ? dto : null);
+        }
+
         return ResponseEntity.ok(dtoPage);
     }
 
@@ -130,11 +142,17 @@ public class UserBalanceController {
             @PageableDefault(size = 20, sort = "createTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user
     ) {
+        boolean checkoutAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.transactionAll);
 
         Specification<UserBalanceRecord> spec = buildBalanceRecordSpecification(search);
         Page<UserBalanceRecord> page = userBalanceRecordRepository.findAll(spec, pageable);
 
         Page<UserBalanceRecordDto> dtoPage = page.map(this::toUserBalanceRecordDto);
+
+        if (!checkoutAll) {
+            dtoPage = dtoPage.map(dto -> dto.getUsername().equals(user.getUsername()) ? dto : null);
+        }
+
         return ResponseEntity.ok(dtoPage);
     }
 

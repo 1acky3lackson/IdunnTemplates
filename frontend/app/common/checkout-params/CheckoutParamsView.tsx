@@ -52,12 +52,10 @@ export function GlobalParamManager({
   const loadData = async () => {
     setLoading(true);
     try {
-      const [currentData, historyData] = await Promise.all([
-        fetchCurrentConfig(),
-        fetchHistoryConfigs(),
+      await Promise.allSettled([
+        fetchCurrentConfig().then(data => setCurrent(data)),
+        fetchHistoryConfigs().then(data => setHistory(data)),
       ]);
-      setCurrent(currentData);
-      setHistory(historyData);
     } catch (error) {
       toast.error('加载失败', {
         description: error instanceof Error ? error.message : '未知错误',
@@ -165,57 +163,60 @@ export function GlobalParamManager({
       </Card>
 
       {/* 历史记录表格 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>历史配置记录</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>太学比例</TableHead>
-                <TableHead>商务处比例</TableHead>
-                <TableHead>模板衰减参数</TableHead>
-                <TableHead>放置者比例</TableHead>
-                <TableHead>上传者比例</TableHead>
-                <TableHead>收益释放延迟 (天)</TableHead>
-                <TableHead>创建人</TableHead>
-                <TableHead>创建时间</TableHead>
-                <TableHead>禁用时间</TableHead>
-                <TableHead>禁用原因</TableHead>
-                <TableHead>操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {history.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.taixueRatio}</TableCell>
-                  <TableCell>{item.commercialRatio}</TableCell>
-                  <TableCell>{item.templateDefectParam}</TableCell>
-                  <TableCell>{item.placerRatio}</TableCell>
-                  <TableCell>{item.uploaderRatio}</TableCell>
-                  <TableCell>{item.releaseDelayDays}</TableCell>
-                  <TableCell>{item.createUsername}</TableCell>
-                  <TableCell>{formatTime(item.createTimeMs)}</TableCell>
-                  <TableCell>
-                    {item.disableTimeMs ? formatTime(item.disableTimeMs) : '-'}
-                  </TableCell>
-                  <TableCell>{item.disableReason || '-'}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateClick(item)}
-                    >
-                      据此更新
-                    </Button>
-                  </TableCell>
+      {
+        history.length > 0 &&
+        <Card>
+          <CardHeader>
+            <CardTitle>历史配置记录</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>太学比例</TableHead>
+                  <TableHead>商务处比例</TableHead>
+                  <TableHead>模板衰减参数</TableHead>
+                  <TableHead>放置者比例</TableHead>
+                  <TableHead>上传者比例</TableHead>
+                  <TableHead>收益释放延迟 (天)</TableHead>
+                  <TableHead>创建人</TableHead>
+                  <TableHead>创建时间</TableHead>
+                  <TableHead>禁用时间</TableHead>
+                  <TableHead>禁用原因</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {history.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.taixueRatio}</TableCell>
+                    <TableCell>{item.commercialRatio}</TableCell>
+                    <TableCell>{item.templateDefectParam}</TableCell>
+                    <TableCell>{item.placerRatio}</TableCell>
+                    <TableCell>{item.uploaderRatio}</TableCell>
+                    <TableCell>{item.releaseDelayDays}</TableCell>
+                    <TableCell>{item.createUsername}</TableCell>
+                    <TableCell>{formatTime(item.createTimeMs)}</TableCell>
+                    <TableCell>
+                      {item.disableTimeMs ? formatTime(item.disableTimeMs) : '-'}
+                    </TableCell>
+                    <TableCell>{item.disableReason || '-'}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdateClick(item)}
+                      >
+                        据此更新
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      }
 
       {/* 更新对话框 */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

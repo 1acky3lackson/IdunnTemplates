@@ -21,6 +21,7 @@ import { IDUNN_API } from '~/api';
 export default function NeteaseProductsRoute() {
   // 实现 ProductApi
   
+  document.title = `网易商品列表`;
 
   return (
     <div className="p-6">
