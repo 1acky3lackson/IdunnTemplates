@@ -40,7 +40,7 @@ const formatTime = (ms?: number | null) => {
 // 金额格式化工具 (假设后端传来的直接是元或者具体数值)
 const formatMoney = (amount?: number | null) => {
   if (amount === undefined || amount === null) return '-';
-  return `¥${amount.toFixed(2)}`;
+  return `¥${amount.toFixed(4)}`;
 };
 
 // ---------- 主页面组件 ----------
@@ -58,7 +58,7 @@ export default function CheckoutDetails({
   // 适配 GenericCrudTable 的接口
   const fetchCheckoutDetails = async (page: number, size: number, search: string, sort: string) => {
     // 调用由 OpenAPI 生成的 API 客户端
-    const response = await IDUNN_API.listCheckoutDetails(
+    const response = await IDUNN_API.listBalanceCheckoutDetails(
       search || undefined,
       page,
       size,
@@ -189,10 +189,6 @@ function CheckoutDetailDialog({
             <div>
               <span className="text-muted-foreground block mb-1">关联订单 ID</span>
               <div className="font-medium font-mono">{detail.orderId || '-'}</div>
-            </div>
-            <div>
-              <span className="text-muted-foreground block mb-1">提现单 ID</span>
-              <div className="font-medium font-mono">{detail.withdrawId || '-'}</div>
             </div>
             <div>
               <span className="text-muted-foreground block mb-1">目标用户 / 角色</span>

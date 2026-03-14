@@ -11,14 +11,15 @@ import { useTheme } from "@/components/theme/theme-provider"
 import { LocaleSwitcher } from "../i18n/locale-switcher"
 import { useAuth } from "../auth/auth-provider"
 import { is } from "zod/v4/locales"
-import { Link } from "react-router"
+import { Link, useNavigate } from "react-router"
 import { useIntlayer } from "react-intlayer"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "~/components/ui/hover-card"
 
 export default function TopBar() {
-    const { siteTitle, login, logout: logoutBtn } = useIntlayer("topbar");
+    const { siteTitle, login, logout: logoutBtn, meBtn } = useIntlayer("topbar");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
     const { theme } = useTheme()
+    const nav = useNavigate();
 
     const { isAuthenticated, user, login: loginFunc, logout } = useAuth();
     const toggleMobileMenu = () => {
@@ -87,7 +88,8 @@ export default function TopBar() {
                                     </div>
                                 </HoverCardTrigger>
                                 <HoverCardContent className="flex w-64 flex-col gap-0.5">
-                                    <Button onClick={logout}>{logoutBtn}</Button>
+                                    <Button variant="default" onClick={() => nav("/me")}>{meBtn}</Button>
+                                    <Button onClick={logout} variant="link">{logoutBtn}</Button>
                                 </HoverCardContent>
                             </HoverCard>
 

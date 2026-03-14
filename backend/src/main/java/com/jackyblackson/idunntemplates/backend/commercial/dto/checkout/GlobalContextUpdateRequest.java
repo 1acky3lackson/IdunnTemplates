@@ -10,6 +10,7 @@ public class GlobalContextUpdateRequest {
     private Double templateDefectParam;
     private Double placerRatio;
     private Double uploaderRatio;
+    private Integer releaseDelayDays;
 
     @NotBlank(message = "更新原因不能为空")
     private String updateReason;

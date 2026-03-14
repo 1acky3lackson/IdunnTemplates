@@ -1759,7 +1759,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
-         * @summary Get Current User Balance
+         * @summary 获取当前用户账户金额
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1788,8 +1788,58 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+         * @summary List Checkout Details
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listBalanceCheckoutDetails: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/balance/checkout-details`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-         * @summary List Balance Records
+         * @summary 获取/筛选流水记录
          * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -1838,58 +1888,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
-         * @summary List Checkout Details
-         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. Examples: &#x60;username:player1&#x60;, &#x60;status:CREATED&#x60;, &#x60;order.id:1001&#x60;, &#x60;username~:player&#x60; 
-         * @param {number} [page] Zero-based page index (0..N). Default is 0.
-         * @param {number} [size] The size of the page to be returned. Default is 20.
-         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listCheckoutDetails: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/commercial/profits`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (search !== undefined) {
-                localVarQueryParameter['search'] = search;
-            }
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-            if (sort !== undefined) {
-                localVarQueryParameter['sort'] = sort;
-            }
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-         * @summary List User Balances
+         * @summary 获取/筛选用户账户列表
          * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -2534,7 +2534,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
-         * @summary Get Current User Balance
+         * @summary 获取当前用户账户金额
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2545,8 +2545,24 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+         * @summary List Checkout Details
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listBalanceCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageCheckoutDetailDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listBalanceCheckoutDetails(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listBalanceCheckoutDetails']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-         * @summary List Balance Records
+         * @summary 获取/筛选流水记录
          * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -2561,24 +2577,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
-         * @summary List Checkout Details
-         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. Examples: &#x60;username:player1&#x60;, &#x60;status:CREATED&#x60;, &#x60;order.id:1001&#x60;, &#x60;username~:player&#x60; 
-         * @param {number} [page] Zero-based page index (0..N). Default is 0.
-         * @param {number} [size] The size of the page to be returned. Default is 20.
-         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async listCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageCheckoutDetailDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listCheckoutDetails(search, page, size, sort, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listCheckoutDetails']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
          * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-         * @summary List User Balances
+         * @summary 获取/筛选用户账户列表
          * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -3066,7 +3066,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
-         * @summary Get Current User Balance
+         * @summary 获取当前用户账户金额
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3074,8 +3074,21 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getMyBalance(options).then((request) => request(axios, basePath));
         },
         /**
+         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+         * @summary List Checkout Details
+         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+         * @param {number} [page] Zero-based page index (0..N). Default is 0.
+         * @param {number} [size] The size of the page to be returned. Default is 20.
+         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listBalanceCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageCheckoutDetailDto> {
+            return localVarFp.listBalanceCheckoutDetails(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-         * @summary List Balance Records
+         * @summary 获取/筛选流水记录
          * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -3087,21 +3100,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.listBalanceRecords(search, page, size, sort, options).then((request) => request(axios, basePath));
         },
         /**
-         * Searches checkout details with dynamic conditions and pagination. Requires authentication.
-         * @summary List Checkout Details
-         * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. Examples: &#x60;username:player1&#x60;, &#x60;status:CREATED&#x60;, &#x60;order.id:1001&#x60;, &#x60;username~:player&#x60; 
-         * @param {number} [page] Zero-based page index (0..N). Default is 0.
-         * @param {number} [size] The size of the page to be returned. Default is 20.
-         * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageCheckoutDetailDto> {
-            return localVarFp.listCheckoutDetails(search, page, size, sort, options).then((request) => request(axios, basePath));
-        },
-        /**
          * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-         * @summary List User Balances
+         * @summary 获取/筛选用户账户列表
          * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -3625,7 +3625,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * Retrieves the balance information for the currently authenticated user. Requires authentication.
-     * @summary Get Current User Balance
+     * @summary 获取当前用户账户金额
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -3634,8 +3634,22 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * Searches checkout details with dynamic conditions and pagination. Requires authentication.
+     * @summary List Checkout Details
+     * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
+     * @param {number} [page] Zero-based page index (0..N). Default is 0.
+     * @param {number} [size] The size of the page to be returned. Default is 20.
+     * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public listBalanceCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).listBalanceCheckoutDetails(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-     * @summary List Balance Records
+     * @summary 获取/筛选流水记录
      * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
      * @param {number} [page] Zero-based page index (0..N). Default is 0.
      * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -3648,22 +3662,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * Searches checkout details with dynamic conditions and pagination. Requires authentication.
-     * @summary List Checkout Details
-     * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. Examples: &#x60;username:player1&#x60;, &#x60;status:CREATED&#x60;, &#x60;order.id:1001&#x60;, &#x60;username~:player&#x60; 
-     * @param {number} [page] Zero-based page index (0..N). Default is 0.
-     * @param {number} [size] The size of the page to be returned. Default is 20.
-     * @param {string} [sort] Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public listCheckoutDetails(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).listCheckoutDetails(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-     * @summary List User Balances
+     * @summary 获取/筛选用户账户列表
      * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
      * @param {number} [page] Zero-based page index (0..N). Default is 0.
      * @param {number} [size] The size of the page to be returned. Default is 20.

@@ -19,6 +19,11 @@ const topbarContent = {
             [Locales.CHINESE]:              "登出",
             [Locales.CHINESE_TRADITIONAL]:  "登出",
         }),
+        meBtn: t({
+            [Locales.ENGLISH]:              "My Status",
+            [Locales.CHINESE]:              "我的",
+            [Locales.CHINESE_TRADITIONAL]:  "我的",
+        })
     },
 } satisfies Dictionary;
 

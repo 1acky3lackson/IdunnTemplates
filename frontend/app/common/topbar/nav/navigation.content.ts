@@ -62,6 +62,54 @@ const navigationContent = {
             resize: t({ [Locales.ENGLISH]: "Resize Player", [Locales.CHINESE]: "缩放玩家大小", [Locales.CHINESE_TRADITIONAL]: "調整大小工具" }),
             resizeDesc: t({ [Locales.ENGLISH]: "Resize player models easily.", [Locales.CHINESE]: "轻松调整玩家模型的大小。", [Locales.CHINESE_TRADITIONAL]: "輕鬆調整玩家模型的大小。" }),
             commercial: {
+                balances: {
+                    title: t({
+                        [Locales.ENGLISH]: "User Balances",
+                        [Locales.CHINESE]: "用户账户",
+                        [Locales.CHINESE_TRADITIONAL]: "用戶賬戶"
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "View user accounts and various balances",
+                        [Locales.CHINESE]: "查看用户的账户、各类余额等",
+                        [Locales.CHINESE_TRADITIONAL]: "查看用戶的賬戶、各類餘額等"
+                    }),
+                },
+                checkout: {
+                    title: t({
+                        [Locales.ENGLISH]: "Checkout Records",
+                        [Locales.CHINESE]: "结算记录",
+                        [Locales.CHINESE_TRADITIONAL]: "結算記錄"
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "View records of NetEase order settlements to user earnings",
+                        [Locales.CHINESE]: "查看网易订单结算到用户收益的记录",
+                        [Locales.CHINESE_TRADITIONAL]: "查看網易訂單結算到用戶收益的記錄"
+                    }),
+                },
+                transactions: {
+                    title: t({
+                        [Locales.ENGLISH]: "Account Transactions",
+                        [Locales.CHINESE]: "账户流水",
+                        [Locales.CHINESE_TRADITIONAL]: "賬戶流水"
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "View the list of user account transactions",
+                        [Locales.CHINESE]: "查看用户账户的流水信息列表",
+                        [Locales.CHINESE_TRADITIONAL]: "查看用戶賬戶的流水信息列表"
+                    }),
+                },
+                globalParams: {
+                    title: t({
+                        [Locales.ENGLISH]: "Global Settlement Parameters",
+                        [Locales.CHINESE]: "全局结算参数",
+                        [Locales.CHINESE_TRADITIONAL]: "全局結算參數"
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "View or modify global settlement parameters",
+                        [Locales.CHINESE]: "查看或修改全局的结算参数",
+                        [Locales.CHINESE_TRADITIONAL]: "查看或修改全局的結算參數"
+                    }),
+                },
                 projects: {
                     title: t({
                         [Locales.ENGLISH]: "Taixue Projects",

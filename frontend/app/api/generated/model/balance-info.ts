@@ -18,18 +18,9 @@ export interface BalanceInfo {
     /**
      * The username associated with the balance.
      */
-    'username'?: string;
-    /**
-     * The current available balance.
-     */
-    'balance'?: number;
-    /**
-     * The frozen or pending balance.
-     */
-    'frozen'?: number;
-    /**
-     * The total amount withdrawn.
-     */
-    'withdrawn'?: number;
+    'username': string;
+    'availableBalance': number;
+    'frozenBalance': number;
+    'pendingBalance': number;
 }
 

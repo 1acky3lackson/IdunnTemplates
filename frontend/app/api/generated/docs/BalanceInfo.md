@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**username** | **string** | The username associated with the balance. | [optional] [default to undefined]
-**balance** | **number** | The current available balance. | [optional] [default to undefined]
-**frozen** | **number** | The frozen or pending balance. | [optional] [default to undefined]
-**withdrawn** | **number** | The total amount withdrawn. | [optional] [default to undefined]
+**username** | **string** | The username associated with the balance. | [default to undefined]
+**availableBalance** | **number** |  | [default to undefined]
+**frozenBalance** | **number** |  | [default to undefined]
+**pendingBalance** | **number** |  | [default to undefined]
 
 ## Example
 
@@ -17,9 +17,9 @@ import { BalanceInfo } from './api';
 
 const instance: BalanceInfo = {
     username,
-    balance,
-    frozen,
-    withdrawn,
+    availableBalance,
+    frozenBalance,
+    pendingBalance,
 };
 ```
 

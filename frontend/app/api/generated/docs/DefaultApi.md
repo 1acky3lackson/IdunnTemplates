@@ -45,10 +45,10 @@ All URIs are relative to *http://localhost*
 |[**apiV1TemplatesIdVersionsGet**](#apiv1templatesidversionsget) | **GET** /api/v1/templates/{id}/versions | 模板版本列表/复杂检索|
 |[**apiV1TemplatesThumbnailPost**](#apiv1templatesthumbnailpost) | **POST** /api/v1/templates/thumbnail | 上传缩略图|
 |[**apiV1UserinfoCreatorsGet**](#apiv1userinfocreatorsget) | **GET** /api/v1/userinfo/creators | 获取所有模板作者的用户信息|
-|[**getMyBalance**](#getmybalance) | **GET** /api/v1/commercial/balance | Get Current User Balance|
-|[**listBalanceRecords**](#listbalancerecords) | **GET** /api/v1/commercial/balance/records | List Balance Records|
-|[**listCheckoutDetails**](#listcheckoutdetails) | **GET** /api/v1/commercial/profits | List Checkout Details|
-|[**listUserBalances**](#listuserbalances) | **GET** /api/v1/commercial/balance/users | List User Balances|
+|[**getMyBalance**](#getmybalance) | **GET** /api/v1/commercial/balance | 获取当前用户账户金额|
+|[**listBalanceCheckoutDetails**](#listbalancecheckoutdetails) | **GET** /api/v1/commercial/balance/checkout-details | List Checkout Details|
+|[**listBalanceRecords**](#listbalancerecords) | **GET** /api/v1/commercial/balance/records | 获取/筛选流水记录|
+|[**listUserBalances**](#listuserbalances) | **GET** /api/v1/commercial/balance/users | 获取/筛选用户账户列表|
 
 # **apiAuthLoginPost**
 > ApiAuthLoginPost200Response apiAuthLoginPost()
@@ -2354,6 +2354,66 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **listBalanceCheckoutDetails**
+> PageCheckoutDetailDto listBalanceCheckoutDetails()
+
+Searches checkout details with dynamic conditions and pagination. Requires authentication.
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; //Dynamic search query string. Format: `field:value` (exact match) or `field~:value` (fuzzy match for strings). Multiple conditions can be separated by commas.  (optional) (default to undefined)
+let page: number; //Zero-based page index (0..N). Default is 0. (optional) (default to 0)
+let size: number; //The size of the page to be returned. Default is 20. (optional) (default to 20)
+let sort: string; //Sorting criteria in the format `property,asc|desc`. Default is `id,desc`. (optional) (default to 'id,desc')
+
+const { status, data } = await apiInstance.listBalanceCheckoutDetails(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] | Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas.  | (optional) defaults to undefined|
+| **page** | [**number**] | Zero-based page index (0..N). Default is 0. | (optional) defaults to 0|
+| **size** | [**number**] | The size of the page to be returned. Default is 20. | (optional) defaults to 20|
+| **sort** | [**string**] | Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;. | (optional) defaults to 'id,desc'|
+
+
+### Return type
+
+**PageCheckoutDetailDto**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Successful retrieval of the checkout details page. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **listBalanceRecords**
 > PageUserBalanceRecordDto listBalanceRecords()
 
@@ -2411,66 +2471,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Successful retrieval of the balance records page. |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **listCheckoutDetails**
-> PageCheckoutDetailDto listCheckoutDetails()
-
-Searches checkout details with dynamic conditions and pagination. Requires authentication.
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let search: string; //Dynamic search query string. Format: `field:value` (exact match) or `field~:value` (fuzzy match for strings). Multiple conditions can be separated by commas. Examples: `username:player1`, `status:CREATED`, `order.id:1001`, `username~:player`  (optional) (default to undefined)
-let page: number; //Zero-based page index (0..N). Default is 0. (optional) (default to 0)
-let size: number; //The size of the page to be returned. Default is 20. (optional) (default to 20)
-let sort: string; //Sorting criteria in the format `property,asc|desc`. Default is `id,desc`. (optional) (default to 'id,desc')
-
-const { status, data } = await apiInstance.listCheckoutDetails(
-    search,
-    page,
-    size,
-    sort
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **search** | [**string**] | Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. Examples: &#x60;username:player1&#x60;, &#x60;status:CREATED&#x60;, &#x60;order.id:1001&#x60;, &#x60;username~:player&#x60;  | (optional) defaults to undefined|
-| **page** | [**number**] | Zero-based page index (0..N). Default is 0. | (optional) defaults to 0|
-| **size** | [**number**] | The size of the page to be returned. Default is 20. | (optional) defaults to 20|
-| **sort** | [**string**] | Sorting criteria in the format &#x60;property,asc|desc&#x60;. Default is &#x60;id,desc&#x60;. | (optional) defaults to 'id,desc'|
-
-
-### Return type
-
-**PageCheckoutDetailDto**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | Successful retrieval of the checkout details page. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
