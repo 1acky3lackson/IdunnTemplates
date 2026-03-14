@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.commercial.dto.checkout;
 
+import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
 import lombok.Data;
 import java.util.List;
@@ -8,7 +9,7 @@ public class ContributionDto {
 
     @Data
     public static class AddRequest {
-        private UserProjectContribution.RoleType role;
+        private CommercialRoleType role;
         private String username;
         private Integer contributePoints;
         private String comment;
@@ -21,7 +22,7 @@ public class ContributionDto {
 
     @Data
     public static class RecalculatePreviewResponse {
-        private UserProjectContribution.RoleType role;
+        private CommercialRoleType role;
         private Integer totalPoints;
         // 包含重新计算了 ratio 但未保存到数据库的记录列表，供前端展示
         private List<UserProjectContribution> contributions;

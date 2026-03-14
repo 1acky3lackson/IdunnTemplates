@@ -11,7 +11,7 @@ const navigationContent = {
         logoDescription: t({
             [Locales.ENGLISH]: "Modern template management platform for Minecraft Servers.",
             [Locales.CHINESE]: "专为 Minecraft 服务器打造的现代化模板管理平台。",
-            [Locales.CHINESE_TRADITIONAL]   : "專為 Minecraft 伺服器打造的現代化模板管理平台。",
+            [Locales.CHINESE_TRADITIONAL]: "專為 Minecraft 伺服器打造的現代化模板管理平台。",
         }),
         menus: {
             templates: t({ [Locales.ENGLISH]: "Templates", [Locales.CHINESE]: "模板", [Locales.CHINESE_TRADITIONAL]: "模板" }),
@@ -20,10 +20,10 @@ const navigationContent = {
             brushes: t({ [Locales.ENGLISH]: "Brushes", [Locales.CHINESE]: "笔刷", [Locales.CHINESE_TRADITIONAL]: "筆刷" }),
             utilities: t({ [Locales.ENGLISH]: "Utilities", [Locales.CHINESE]: "工具", [Locales.CHINESE_TRADITIONAL]: "工具" }),
             commercial: t({
-                        [Locales.ENGLISH]: "",
-                        [Locales.CHINESE]: "商业化",
-                        [Locales.CHINESE_TRADITIONAL]: ""
-                    }),
+                [Locales.ENGLISH]: "Commercial",
+                [Locales.CHINESE]: "商业化",
+                [Locales.CHINESE_TRADITIONAL]: "商业化"
+            }),
         },
         items: {
             searchTemplates: t({ [Locales.ENGLISH]: "Search Templates", [Locales.CHINESE]: "搜索模板", [Locales.CHINESE_TRADITIONAL]: "搜尋模板" }),
@@ -62,41 +62,40 @@ const navigationContent = {
             resize: t({ [Locales.ENGLISH]: "Resize Player", [Locales.CHINESE]: "缩放玩家大小", [Locales.CHINESE_TRADITIONAL]: "調整大小工具" }),
             resizeDesc: t({ [Locales.ENGLISH]: "Resize player models easily.", [Locales.CHINESE]: "轻松调整玩家模型的大小。", [Locales.CHINESE_TRADITIONAL]: "輕鬆調整玩家模型的大小。" }),
             commercial: {
-                
                 projects: {
                     title: t({
-                        [Locales.ENGLISH]: "",
+                        [Locales.ENGLISH]: "Taixue Projects",
                         [Locales.CHINESE]: "太学工程",
-                        [Locales.CHINESE_TRADITIONAL]: ""
+                        [Locales.CHINESE_TRADITIONAL]: "太學工程"
                     }),
                     desc: t({
-                        [Locales.ENGLISH]: "",
+                        [Locales.ENGLISH]: "View the list of projects for commercialization",
                         [Locales.CHINESE]: "查看用于商业化的工程列表",
-                        [Locales.CHINESE_TRADITIONAL]: ""
+                        [Locales.CHINESE_TRADITIONAL]: "查看用於商業化的工程列表"
                     }),
                 },
                 neteaseProducts: {
                     title: t({
-                        [Locales.ENGLISH]: "",
+                        [Locales.ENGLISH]: "Netease Products",
                         [Locales.CHINESE]: "网易上架商品",
-                        [Locales.CHINESE_TRADITIONAL]: ""
+                        [Locales.CHINESE_TRADITIONAL]: "網易上架商品"
                     }),
                     desc: t({
-                        [Locales.ENGLISH]: "",
+                        [Locales.ENGLISH]: "View all our products listed on the Netease Mall",
                         [Locales.CHINESE]: "查看我们上架到网易商城的所有商品",
-                        [Locales.CHINESE_TRADITIONAL]: ""
+                        [Locales.CHINESE_TRADITIONAL]: "查看我們上架到網易商城的所有商品"
                     }),
                 },
                 neteaseOrders: {
                     title: t({
-                        [Locales.ENGLISH]: "",
+                        [Locales.ENGLISH]: "Netease Sales Orders",
                         [Locales.CHINESE]: "网易销售订单",
-                        [Locales.CHINESE_TRADITIONAL]: ""
+                        [Locales.CHINESE_TRADITIONAL]: "網易銷售訂單"
                     }),
                     desc: t({
-                        [Locales.ENGLISH]: "",
+                        [Locales.ENGLISH]: "View all orders for products in the Netease Mall",
                         [Locales.CHINESE]: "查看网易商城中商品的全部订单",
-                        [Locales.CHINESE_TRADITIONAL]: ""
+                        [Locales.CHINESE_TRADITIONAL]: "查看網易商城中商品的全部訂單"
                     }),
                 }
             }

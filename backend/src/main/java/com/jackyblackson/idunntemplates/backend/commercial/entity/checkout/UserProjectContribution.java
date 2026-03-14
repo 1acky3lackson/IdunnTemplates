@@ -11,12 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserProjectContribution {
 
-    public static enum RoleType {
-        BUILDER,
-        MODIFIER,
-        UPLOADER
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -26,7 +20,7 @@ public class UserProjectContribution {
     private String username;
 
     @Column(name = "role")
-    private RoleType role;
+    private CommercialRoleType role;
 
     @Column(name = "comment")
     private String comment;

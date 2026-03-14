@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.backend.commercial.repository.netease;
 
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProduct;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,4 +20,6 @@ public interface NeteaseOrderRepository extends
      * 根据 appOrderId 列表查询已存在的订单
      */
     List<NeteaseOrder> findByAppOrderIdIn(List<String> appOrderIds);
+
+    List<NeteaseOrder> findByInternalStatusOrderByIdDesc(NeteaseOrderStatus internalStatus);
 }

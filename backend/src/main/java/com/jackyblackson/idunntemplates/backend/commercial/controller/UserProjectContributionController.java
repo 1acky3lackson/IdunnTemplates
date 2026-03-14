@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.checkout.ContributionDto;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
@@ -52,11 +53,11 @@ public class UserProjectContributionController {
      */
     @GetMapping("/recalculate")
     @AuthRequired
-    public ResponseEntity<Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse>> recalculation(
+    public ResponseEntity<Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse>> recalculation(
             @PathVariable Long projectId,
             UserContext userContext
     ) {
-        Map<UserProjectContribution.RoleType, ContributionDto.RecalculatePreviewResponse> result =
+        Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse> result =
                 contributionService.recalculate(projectId);
         return ResponseEntity.ok(result);
     }
@@ -103,11 +104,11 @@ public class UserProjectContributionController {
      */
     @GetMapping("/grouped")
     @AuthRequired
-    public ResponseEntity<Map<UserProjectContribution.RoleType, List<UserProjectContribution>>> getContributionsGroupedByRole(
+    public ResponseEntity<Map<CommercialRoleType, List<UserProjectContribution>>> getContributionsGroupedByRole(
             @PathVariable Long projectId,
             UserContext userContext
     ) {
-        Map<UserProjectContribution.RoleType, List<UserProjectContribution>> grouped =
+        Map<CommercialRoleType, List<UserProjectContribution>> grouped =
                 contributionService.getContributionsGroupedByRole(projectId);
         return ResponseEntity.ok(grouped);
     }
