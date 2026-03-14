@@ -13,19 +13,14 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { CheckoutDetailDto } from './checkout-detail-dto';
 
-export interface CheckoutCalculateContext {
-    'id': number;
-    'taixueRatio': number;
-    'commercialRatio': number;
-    'templateDefectParam': number;
-    'placerRatio': number;
-    'uploaderRatio': number;
-    'releaseDelayDays': number;
-    'createUsername': string;
-    'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+export interface PageCheckoutDetailDto {
+    'content'?: Array<CheckoutDetailDto>;
+    'last'?: boolean;
+    'totalElements'?: number;
+    'number'?: number;
 }
 

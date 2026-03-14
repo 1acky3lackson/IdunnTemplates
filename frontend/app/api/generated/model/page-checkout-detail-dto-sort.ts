@@ -14,18 +14,9 @@
 
 
 
-export interface CheckoutCalculateContext {
-    'id': number;
-    'taixueRatio': number;
-    'commercialRatio': number;
-    'templateDefectParam': number;
-    'placerRatio': number;
-    'uploaderRatio': number;
-    'releaseDelayDays': number;
-    'createUsername': string;
-    'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+export interface PageCheckoutDetailDtoSort {
+    'empty'?: boolean;
+    'sorted'?: boolean;
+    'unsorted'?: boolean;
 }
 

@@ -300,11 +300,18 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
                 </div>
                 
 
-                {/* 本项目 BUILDER 表格（灰色背景） */}
+                {/* 本项目 BUILDER 表格（灰色背景）
                 <ContributionTable
                     title="BUILDER (本项目)"
                     data={localBuilders}
                     bgGray={true}
+                    onRefresh={loadData}
+                /> */}
+
+                {/* 父项目 BUILDER 表格（始终显示，数据来自 groupedData） */}
+                <ContributionTable
+                    title="父项目 BUILDER（实际计算时使用父项目的 BUILDER 记录）"
+                    data={groupedData[RoleType.BUILDER] || []}
                     onRefresh={loadData}
                 />
 
@@ -321,13 +328,7 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
                     data={localUploaders}
                     onRefresh={loadData}
                 />
-
-                {/* 父项目 BUILDER 表格（始终显示，数据来自 groupedData） */}
-                <ContributionTable
-                    title="父项目 BUILDER（实际计算时使用父项目的 BUILDER 记录）"
-                    data={groupedData[RoleType.BUILDER] || []}
-                    onRefresh={loadData}
-                />
+                
             </div>
         </div>
     );

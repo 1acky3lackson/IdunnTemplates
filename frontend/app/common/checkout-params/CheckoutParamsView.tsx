@@ -15,6 +15,7 @@ export interface GlobalCheckoutParam {
   templateDefectParam: number;
   placerRatio: number;
   uploaderRatio: number;
+  releaseDelayDays: number;
   createUsername: string;
   createTimeMs: number;
   disableTimeMs?: number | null;
@@ -78,6 +79,7 @@ export function GlobalParamManager({
       templateDefectParam: config.templateDefectParam,
       placerRatio: config.placerRatio,
       uploaderRatio: config.uploaderRatio,
+      releaseDelayDays: config.releaseDelayDays,
     });
     setUpdateReason('');
     setOperator('');
@@ -88,6 +90,11 @@ export function GlobalParamManager({
   const handleSubmitUpdate = async () => {
     if (!updateReason.trim()) {
       toast.info('更新原因不能为空');
+      return;
+    }
+
+    if (selectedConfig.releaseDelayDays === undefined || selectedConfig.releaseDelayDays % 1 !== 0) {
+      toast.info('延迟天数必须是整数');
       return;
     }
 
@@ -139,6 +146,10 @@ export function GlobalParamManager({
                 {current.uploaderRatio}
               </div>
               <div>
+                <span className="font-medium">收益释放延迟天数：</span>
+                {current.releaseDelayDays}
+              </div>
+              <div>
                 <span className="font-medium">创建人：</span>
                 {current.createUsername}
               </div>
@@ -167,6 +178,7 @@ export function GlobalParamManager({
                 <TableHead>模板衰减参数</TableHead>
                 <TableHead>放置者比例</TableHead>
                 <TableHead>上传者比例</TableHead>
+                <TableHead>收益释放延迟 (天)</TableHead>
                 <TableHead>创建人</TableHead>
                 <TableHead>创建时间</TableHead>
                 <TableHead>禁用时间</TableHead>
@@ -182,6 +194,7 @@ export function GlobalParamManager({
                   <TableCell>{item.templateDefectParam}</TableCell>
                   <TableCell>{item.placerRatio}</TableCell>
                   <TableCell>{item.uploaderRatio}</TableCell>
+                  <TableCell>{item.releaseDelayDays}</TableCell>
                   <TableCell>{item.createUsername}</TableCell>
                   <TableCell>{formatTime(item.createTimeMs)}</TableCell>
                   <TableCell>
@@ -282,6 +295,24 @@ export function GlobalParamManager({
                   setSelectedConfig({
                     ...selectedConfig,
                     placerRatio: parseFloat(e.target.value),
+                  })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="placerRatio" className="text-right">
+                收益释放延迟天数
+              </Label>
+              <Input
+                id="releaseDelayDays"
+                type="number"
+                step="0.01"
+                value={selectedConfig.releaseDelayDays ?? ''}
+                onChange={(e) =>
+                  setSelectedConfig({
+                    ...selectedConfig,
+                    releaseDelayDays: parseInt(e.target.value),
                   })
                 }
                 className="col-span-3"

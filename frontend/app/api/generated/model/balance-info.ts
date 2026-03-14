@@ -14,18 +14,22 @@
 
 
 
-export interface CheckoutCalculateContext {
-    'id': number;
-    'taixueRatio': number;
-    'commercialRatio': number;
-    'templateDefectParam': number;
-    'placerRatio': number;
-    'uploaderRatio': number;
-    'releaseDelayDays': number;
-    'createUsername': string;
-    'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+export interface BalanceInfo {
+    /**
+     * The username associated with the balance.
+     */
+    'username'?: string;
+    /**
+     * The current available balance.
+     */
+    'balance'?: number;
+    /**
+     * The frozen or pending balance.
+     */
+    'frozen'?: number;
+    /**
+     * The total amount withdrawn.
+     */
+    'withdrawn'?: number;
 }
 

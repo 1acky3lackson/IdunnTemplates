@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **templateDefectParam** | **number** |  | [optional] [default to undefined]
 **placerRatio** | **number** |  | [optional] [default to undefined]
 **uploaderRatio** | **number** |  | [optional] [default to undefined]
+**releaseDelayDays** | **number** |  | [default to undefined]
 **updateReason** | **string** |  | [default to undefined]
 
 ## Example
@@ -23,6 +24,7 @@ const instance: ApiV1CommercialGlobalContextsPostRequest = {
     templateDefectParam,
     placerRatio,
     uploaderRatio,
+    releaseDelayDays,
     updateReason,
 };
 ```

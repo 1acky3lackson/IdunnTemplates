@@ -1,4 +1,4 @@
-# CheckoutCalculateContext
+# ApiV1CommercialGlobalContextsGet200ResponseInner
 
 
 ## Properties
@@ -11,27 +11,27 @@ Name | Type | Description | Notes
 **templateDefectParam** | **number** |  | [default to undefined]
 **placerRatio** | **number** |  | [default to undefined]
 **uploaderRatio** | **number** |  | [default to undefined]
-**releaseDelayDays** | **number** |  | [default to undefined]
 **createUsername** | **string** |  | [default to undefined]
+**releaseDelayDays** | **number** |  | [default to undefined]
 **createTimeMs** | **number** |  | [default to undefined]
-**disableTimeMs** | **number** |  | [default to undefined]
-**disableReason** | **string** |  | [default to undefined]
+**disableTimeMs** | [**Null**](Null.md) |  | [default to undefined]
+**disableReason** | [**Null**](Null.md) |  | [default to undefined]
 **disabled** | **boolean** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { CheckoutCalculateContext } from './api';
+import { ApiV1CommercialGlobalContextsGet200ResponseInner } from './api';
 
-const instance: CheckoutCalculateContext = {
+const instance: ApiV1CommercialGlobalContextsGet200ResponseInner = {
     id,
     taixueRatio,
     commercialRatio,
     templateDefectParam,
     placerRatio,
     uploaderRatio,
-    releaseDelayDays,
     createUsername,
+    releaseDelayDays,
     createTimeMs,
     disableTimeMs,
     disableReason,

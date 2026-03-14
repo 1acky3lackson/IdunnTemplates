@@ -13,19 +13,22 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Null } from './null';
 
-export interface CheckoutCalculateContext {
+export interface ApiV1CommercialGlobalContextsGet200ResponseInner {
     'id': number;
     'taixueRatio': number;
     'commercialRatio': number;
     'templateDefectParam': number;
     'placerRatio': number;
     'uploaderRatio': number;
-    'releaseDelayDays': number;
     'createUsername': string;
+    'releaseDelayDays': number;
     'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+    'disableTimeMs': Null;
+    'disableReason': Null;
+    'disabled': boolean | null;
 }
 

@@ -20,6 +20,7 @@ export interface ApiV1CommercialGlobalContextsPostRequest {
     'templateDefectParam'?: number | null;
     'placerRatio'?: number | null;
     'uploaderRatio'?: number | null;
+    'releaseDelayDays': number;
     'updateReason': string;
 }
 

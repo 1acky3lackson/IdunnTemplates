@@ -13,19 +13,14 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { BalanceInfo } from './balance-info';
 
-export interface CheckoutCalculateContext {
-    'id': number;
-    'taixueRatio': number;
-    'commercialRatio': number;
-    'templateDefectParam': number;
-    'placerRatio': number;
-    'uploaderRatio': number;
-    'releaseDelayDays': number;
-    'createUsername': string;
-    'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+export interface PageBalanceInfo {
+    'content'?: Array<BalanceInfo>;
+    'last'?: boolean;
+    'totalElements'?: number;
+    'number'?: number;
 }
 

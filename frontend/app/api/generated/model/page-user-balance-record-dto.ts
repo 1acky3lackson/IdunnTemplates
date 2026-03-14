@@ -13,19 +13,14 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { UserBalanceRecordDto } from './user-balance-record-dto';
 
-export interface CheckoutCalculateContext {
-    'id': number;
-    'taixueRatio': number;
-    'commercialRatio': number;
-    'templateDefectParam': number;
-    'placerRatio': number;
-    'uploaderRatio': number;
-    'releaseDelayDays': number;
-    'createUsername': string;
-    'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+export interface PageUserBalanceRecordDto {
+    'content'?: Array<UserBalanceRecordDto>;
+    'last'?: boolean;
+    'totalElements'?: number;
+    'number'?: number;
 }
 

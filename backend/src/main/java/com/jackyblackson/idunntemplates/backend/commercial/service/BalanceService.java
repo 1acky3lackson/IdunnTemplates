@@ -42,6 +42,6 @@ public class BalanceService {
         if (frozenBalance == null) frozenBalance = BigDecimal.ZERO;
         if (pendingBalance == null) pendingBalance = BigDecimal.ZERO;
 
-        return new BalanceInfo(availableBalance, frozenBalance, pendingBalance);
+        return new BalanceInfo(username, availableBalance, frozenBalance, pendingBalance);
     }
 }

@@ -13,6 +13,7 @@ import { IDUNN_API } from '~/api';
 import type { NeteaseOrder } from '~/api/generated';
 import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
 import { Link } from 'react-router';
+import CheckoutDetails from '../checkout-details/CheckoutDetails';
 
 // ---------- 辅助工具 ----------
 
@@ -63,11 +64,13 @@ export const fetchOrdersDefault: FetchOrders = async (page, size, search, sort) 
 interface OrderDisplayProps {
   fetchOrders?: FetchOrders;
   pageSize?: number;
+  forceSearch?: Record<string, string>
 }
 
 export function OrderDisplay({
   fetchOrders = fetchOrdersDefault,
   pageSize = 20,
+  forceSearch,
 }: OrderDisplayProps) {
   
   // 详情弹窗的状态管理
@@ -79,6 +82,7 @@ export function OrderDisplay({
         getRowId={(row) => row.id}
         list={fetchOrders}
         pageSize={pageSize}
+        forcedSearchValues={forceSearch}
         
         // 配置搜索字段 (基于你原先的 placeholder 需求)
         searchFields={[
@@ -91,23 +95,28 @@ export function OrderDisplay({
         
         // 配置表格列
         schema={{
-          'id': { title: 'ID', sortable: true },
-          'orderId': { title: '订单编号', sortable: true },
+          'id': { title: 'ID' },
+          'appOrderId': { title: '订单编号' },
           'productName': { 
             title: '产品名称',
+            filterable: true,
             render: (val, row) => <Link to={`/commercial/netease-products/${row.productId}`}><span className="font-medium">{val || '-'}</span></Link>
           },
           'appUid': { title: '用户ID' },
           'point': { 
-             title: '价格', 
-             sortable: true
+             title: '价格',
+             filterable: true,
+             sortable: true,
+             render: (val, row) => `${val} ${row.pointType}`
           },
-          'pointType': {
-            title: "货币",
-            sortable: true
-          },
+          // 'pointType': {
+          //   title: "货币",
+          //   filterable: true,
+          //   sortable: true
+          // },
           'internalStatus': {
              title: '状态',
+             filterable: true,
              render: (val: string) => (
                <Badge className={orderStatusColor(val)}>
                  {orderStatusText(val)}
@@ -195,9 +204,7 @@ function OrderDetailsDialog({
           {order && (
             <div className="col-span-2">
               <span className="text-muted-foreground block mb-1">备注信息</span>
-              <div className="bg-muted p-3 rounded-md">
-                {JSON.stringify(order)}
-              </div>
+              <CheckoutDetails forceSearch={{orderId: String(order.id)}} pageSize={5} />
             </div>
           )}
         </div>

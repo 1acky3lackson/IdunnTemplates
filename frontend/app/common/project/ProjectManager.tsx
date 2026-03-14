@@ -161,10 +161,12 @@ export function ProjectManagerPage({ api }: ProjectManagerPageProps) {
           'pathName': { title: '项目路径' },
           'kind': { 
             title: '类型',
+            filterable: true,
             render: (val) => <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded-md text-xs">{val}</span> 
           },
           'world.id': { 
             title: '世界ID',
+            filterable: true,
             render: (val) => val ? val : <span className="text-gray-400">-</span>
           },
         }}

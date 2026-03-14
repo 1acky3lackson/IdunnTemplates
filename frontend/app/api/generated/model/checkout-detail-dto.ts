@@ -14,18 +14,19 @@
 
 
 
-export interface CheckoutCalculateContext {
-    'id': number;
-    'taixueRatio': number;
-    'commercialRatio': number;
-    'templateDefectParam': number;
-    'placerRatio': number;
-    'uploaderRatio': number;
-    'releaseDelayDays': number;
-    'createUsername': string;
-    'createTimeMs': number;
-    'disableTimeMs': number | null;
-    'disableReason': string | null;
-    'disabled': boolean;
+export interface CheckoutDetailDto {
+    'id'?: number;
+    'orderId'?: number;
+    'status'?: string;
+    'role'?: string;
+    'username'?: string;
+    'ratio'?: number;
+    'netProfit'?: number;
+    'actualProfit'?: number;
+    'createTimeMs'?: number;
+    'confirmTimeMs'?: number;
+    'releaseTimeMs'?: number;
+    'finishTimeMs'?: number;
+    'refundTimeMs'?: number;
 }
 

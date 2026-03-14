@@ -29,6 +29,8 @@ export default [
 
       // 全局参数管理
       route("/:lang?/commercial/global-params", "pages/checkout-param/page.tsx"),
+      // 结账单管理
+      route("/:lang?/commercial/checkout", "pages/checkout-details/page.tsx"),
 
       // Projects
       route("/:lang?/commercial/projects", "pages/commercial/projects/page.tsx"),
