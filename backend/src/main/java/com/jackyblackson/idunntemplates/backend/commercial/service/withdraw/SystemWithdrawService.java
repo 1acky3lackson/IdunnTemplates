@@ -6,7 +6,6 @@ import com.jackyblackson.idunntemplates.backend.commercial.dto.withdraw.SystemWi
 import com.jackyblackson.idunntemplates.backend.commercial.entity.withdraw.SystemWithdraw;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.withdraw.SystemWithdrawRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserBalanceService;
-import com.jackyblackson.idunntemplates.backend.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +51,7 @@ public class SystemWithdrawService {
 
     public SystemWithdrawDto getWithdrawalById(Long id) {
         return systemWithdrawRepository.findById(id).map(this::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("提现记录未找到: " + id));
+                .orElseThrow(() -> new IllegalStateException("提现记录未找到: " + id));
     }
 
     @Transactional
@@ -78,7 +77,7 @@ public class SystemWithdrawService {
     @Transactional
     public SystemWithdrawDto updateWithdrawalStatus(Long id, SystemWithdrawStatusUpdateRequest request, String currentUser, boolean isAdmin) {
         SystemWithdraw withdraw = systemWithdrawRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("提现记录未找到: " + id));
+                .orElseThrow(() -> new IllegalStateException("提现记录未找到: " + id));
 
         SystemWithdraw.Status currentStatus = withdraw.getStatus();
         SystemWithdraw.Status targetStatus;

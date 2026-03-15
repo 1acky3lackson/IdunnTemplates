@@ -14,22 +14,10 @@
 
 
 
-export interface SystemWithdraw {
+export interface ApiV1CommercialWithdrawalsPostRequest {
     /**
-     * ID 编号
+     * 提现金额
      */
-    'id': number;
-    'username': string;
     'amount': number;
-    'status': string;
-    'rejectReason': string | null;
-    'errorReason': string | null;
-    'transferProof': string | null;
-    'createTimeMs': number;
-    'approveTimeMs': number | null;
-    'rejectTimeMs': number | null;
-    'paidTimeMs': number | null;
-    'finishTimeMs': number | null;
-    'errorTimeMs': number | null;
 }
 

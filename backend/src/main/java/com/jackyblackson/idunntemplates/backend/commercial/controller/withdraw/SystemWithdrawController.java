@@ -1,11 +1,11 @@
 package com.jackyblackson.idunntemplates.backend.commercial.controller.withdraw;
 
-import com.jackyblackson.idunntemplates.backend.auth.AuthRequired;
-import com.jackyblackson.idunntemplates.backend.auth.UserContext;
+import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.withdraw.SystemWithdrawCreateRequest;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.withdraw.SystemWithdrawDto;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.withdraw.SystemWithdrawStatusUpdateRequest;
 import com.jackyblackson.idunntemplates.backend.commercial.service.withdraw.SystemWithdrawService;
+import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class SystemWithdrawController {
             UserContext user
     ) {
         if (!authService.checkPermission(user, PermissionNames.Commercial.SystemWithdraw.listAll)) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(406).build();
         }
         return ResponseEntity.ok(systemWithdrawService.getAllWithdrawals(pageable));
     }
@@ -56,7 +56,7 @@ public class SystemWithdrawController {
         // 只有所有者或者具有管理权限的人可以查看
         if (!withdraw.getUsername().equals(user.getUsername()) &&
                 !authService.checkPermission(user, PermissionNames.Commercial.SystemWithdraw.listAll)) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(406).build();
         }
 
         return ResponseEntity.ok(withdraw);

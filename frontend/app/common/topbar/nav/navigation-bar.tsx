@@ -74,7 +74,7 @@ export function NavigationBar() {
                 {
                     icon: <Coins className="w-4 h-4" />,
                     title: items.commercial.systemWithdraw.title,
-                    href: "/commercial/system-withdraws",
+                    href: "/commercial/withdraws",
                     desc: items.commercial.systemWithdraw.desc
                 },
             ]
