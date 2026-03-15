@@ -71,6 +71,12 @@ export function NavigationBar() {
                     href: "/commercial/netease-withdraws",
                     desc: items.commercial.neteaseWithdraw.desc
                 },
+                {
+                    icon: <Coins className="w-4 h-4" />,
+                    title: items.commercial.systemWithdraw.title,
+                    href: "/commercial/system-withdraws",
+                    desc: items.commercial.systemWithdraw.desc
+                },
             ]
         }
     };

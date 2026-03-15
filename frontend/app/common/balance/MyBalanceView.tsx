@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { IDUNN_API } from '~/api';
 import type { BalanceInfo } from '~/api/generated';
 import { UserTransactionRecordList } from './BalanceTables';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router';
 
 // ---------- 辅助格式化工具 ----------
 const formatMoney = (amount?: number | null) => {
@@ -62,15 +64,24 @@ export function MyBalanceView() {
               <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col h-[calc(100%-48px)]">
             {loading ? (
               <Skeleton className="h-8 w-32 mt-1" />
             ) : (
-              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                {formatMoney(balanceInfo?.availableBalance)}
+              <div className="flex-1 flex flex-col">
+                  <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatMoney(balanceInfo?.availableBalance)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 mb-4">可随时申请提现的金额</p>
+                  <Button
+                    className="w-full mt-auto"
+                    variant="default"
+                    onClick={() => window.location.href = '/me/system-withdraws'}
+                  >
+                    申请提现 / 查看记录
+                  </Button>
               </div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">可随时申请提现的金额</p>
           </CardContent>
         </Card>
 
