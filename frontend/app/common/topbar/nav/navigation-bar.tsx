@@ -65,6 +65,12 @@ export function NavigationBar() {
                 { icon: <FolderKanban className="w-4 h-4" />, title: items.commercial.projects.title, href: "/commercial/projects", desc: items.commercial.projects.desc },
                 { icon: <PackageSearch className="w-4 h-4" />, title: items.commercial.neteaseProducts.title, href: "/commercial/netease-products", desc: items.commercial.neteaseProducts.desc },
                 { icon: <Coins className="w-4 h-4" />, title: items.commercial.neteaseOrders.title, href: "/commercial/orders", desc: items.commercial.neteaseOrders.desc },
+                {
+                    icon: <Coins className="w-4 h-4" />,
+                    title: items.commercial.neteaseWithdraw.title,
+                    href: "/commercial/netease-withdraws",
+                    desc: items.commercial.neteaseWithdraw.desc
+                },
             ]
         }
     };

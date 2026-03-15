@@ -38,6 +38,8 @@ import type { ApiV1CommercialNeteaseProductsGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response } from '../model';
+// @ts-ignore
 import type { ApiV1CommercialProjectsGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialProjectsIdPutRequest } from '../model';
@@ -80,11 +82,17 @@ import type { ContributionDeleteRequest } from '../model';
 // @ts-ignore
 import type { ErrorResponse } from '../model';
 // @ts-ignore
+import type { ListWithdraws200Response } from '../model';
+// @ts-ignore
 import type { NeteaseProduct } from '../model';
 // @ts-ignore
 import type { NeteaseProductDto } from '../model';
 // @ts-ignore
 import type { NeteaseProductUpdateRequest } from '../model';
+// @ts-ignore
+import type { NeteaseWithdraw } from '../model';
+// @ts-ignore
+import type { NeteaseWithdrawInput } from '../model';
 // @ts-ignore
 import type { PageBalanceInfo } from '../model';
 // @ts-ignore
@@ -586,6 +594,55 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (sort !== undefined) {
                 localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+         * @summary 查询提现记录使用详情
+         * @param {number} withdrawId 提现记录的 ID
+         * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet: async (withdrawId: number, search?: string, page?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'withdrawId' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet', 'withdrawId', withdrawId)
+            const localVarPath = `/api/v1/commercial/netease-withdraws/{withdrawId}/allocations`
+                .replace(`{${"withdrawId"}}`, encodeURIComponent(String(withdrawId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -1758,6 +1815,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 创建一条新的提现记录。系统将根据传入的原始金额和实际提现金额自动计算手续费比例（Ratio）。
+         * @summary 添加提现记录
+         * @param {NeteaseWithdrawInput} [neteaseWithdrawInput] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createWithdraw: async (neteaseWithdrawInput?: NeteaseWithdrawInput, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/netease-withdraws`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(neteaseWithdrawInput, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
          * @summary 获取当前用户账户金额
          * @param {*} [options] Override http request option.
@@ -1899,6 +1989,56 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          */
         listUserBalances: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/commercial/balance/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 获取所有提现记录列表。支持通过 search 参数进行动态过滤（例如按用户名、金额或比例筛选），支持标准分页参数。
+         * @summary 分页查询提现记录
+         * @param {string} [search] 动态查询条件。格式：字段:值（精确），字段~:值（模糊）。多个条件用逗号分隔。示例：username:admin,originalValue:100.00
+         * @param {number} [page] 页码（从 0 开始）
+         * @param {number} [size] 每页条数
+         * @param {string} [sort] 排序字段及方向。格式：字段,asc|desc。默认：saveTimeMs,desc
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listWithdraws: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/netease-withdraws`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2124,6 +2264,22 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsProductIdOrdersGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+         * @summary 查询提现记录使用详情
+         * @param {number} withdrawId 提现记录的 ID
+         * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId: number, search?: string, page?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId, search, page, size, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2533,6 +2689,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 创建一条新的提现记录。系统将根据传入的原始金额和实际提现金额自动计算手续费比例（Ratio）。
+         * @summary 添加提现记录
+         * @param {NeteaseWithdrawInput} [neteaseWithdrawInput] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createWithdraw(neteaseWithdrawInput?: NeteaseWithdrawInput, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NeteaseWithdraw>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createWithdraw(neteaseWithdrawInput, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.createWithdraw']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
          * @summary 获取当前用户账户金额
          * @param {*} [options] Override http request option.
@@ -2590,6 +2759,22 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.listUserBalances(search, page, size, sort, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.listUserBalances']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 获取所有提现记录列表。支持通过 search 参数进行动态过滤（例如按用户名、金额或比例筛选），支持标准分页参数。
+         * @summary 分页查询提现记录
+         * @param {string} [search] 动态查询条件。格式：字段:值（精确），字段~:值（模糊）。多个条件用逗号分隔。示例：username:admin,originalValue:100.00
+         * @param {number} [page] 页码（从 0 开始）
+         * @param {number} [size] 每页条数
+         * @param {string} [sort] 排序字段及方向。格式：字段,asc|desc。默认：saveTimeMs,desc
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listWithdraws(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListWithdraws200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listWithdraws(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.listWithdraws']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2741,6 +2926,19 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         apiV1CommercialNeteaseProductsProductIdOrdersGet(productId: string, search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response> {
             return localVarFp.apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+         * @summary 查询提现记录使用详情
+         * @param {number} withdrawId 提现记录的 ID
+         * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId: number, search?: string, page?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response> {
+            return localVarFp.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId, search, page, size, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3065,6 +3263,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1UserinfoCreatorsGet(options).then((request) => request(axios, basePath));
         },
         /**
+         * 创建一条新的提现记录。系统将根据传入的原始金额和实际提现金额自动计算手续费比例（Ratio）。
+         * @summary 添加提现记录
+         * @param {NeteaseWithdrawInput} [neteaseWithdrawInput] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createWithdraw(neteaseWithdrawInput?: NeteaseWithdrawInput, options?: RawAxiosRequestConfig): AxiosPromise<NeteaseWithdraw> {
+            return localVarFp.createWithdraw(neteaseWithdrawInput, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
          * @summary 获取当前用户账户金额
          * @param {*} [options] Override http request option.
@@ -3111,6 +3319,19 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         listUserBalances(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageBalanceInfo> {
             return localVarFp.listUserBalances(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 获取所有提现记录列表。支持通过 search 参数进行动态过滤（例如按用户名、金额或比例筛选），支持标准分页参数。
+         * @summary 分页查询提现记录
+         * @param {string} [search] 动态查询条件。格式：字段:值（精确），字段~:值（模糊）。多个条件用逗号分隔。示例：username:admin,originalValue:100.00
+         * @param {number} [page] 页码（从 0 开始）
+         * @param {number} [size] 每页条数
+         * @param {string} [sort] 排序字段及方向。格式：字段,asc|desc。默认：saveTimeMs,desc
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listWithdraws(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<ListWithdraws200Response> {
+            return localVarFp.listWithdraws(search, page, size, sort, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3271,6 +3492,20 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1CommercialNeteaseProductsProductIdOrdersGet(productId: string, search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+     * @summary 查询提现记录使用详情
+     * @param {number} withdrawId 提现记录的 ID
+     * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId: number, search?: string, page?: number, size?: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId, search, page, size, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3624,6 +3859,17 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * 创建一条新的提现记录。系统将根据传入的原始金额和实际提现金额自动计算手续费比例（Ratio）。
+     * @summary 添加提现记录
+     * @param {NeteaseWithdrawInput} [neteaseWithdrawInput] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public createWithdraw(neteaseWithdrawInput?: NeteaseWithdrawInput, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).createWithdraw(neteaseWithdrawInput, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Retrieves the balance information for the currently authenticated user. Requires authentication.
      * @summary 获取当前用户账户金额
      * @param {*} [options] Override http request option.
@@ -3673,6 +3919,20 @@ export class DefaultApi extends BaseAPI {
      */
     public listUserBalances(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).listUserBalances(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 获取所有提现记录列表。支持通过 search 参数进行动态过滤（例如按用户名、金额或比例筛选），支持标准分页参数。
+     * @summary 分页查询提现记录
+     * @param {string} [search] 动态查询条件。格式：字段:值（精确），字段~:值（模糊）。多个条件用逗号分隔。示例：username:admin,originalValue:100.00
+     * @param {number} [page] 页码（从 0 开始）
+     * @param {number} [size] 每页条数
+     * @param {string} [sort] 排序字段及方向。格式：字段,asc|desc。默认：saveTimeMs,desc
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public listWithdraws(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).listWithdraws(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

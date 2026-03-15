@@ -145,7 +145,19 @@ const navigationContent = {
                         [Locales.CHINESE]: "查看网易商城中商品的全部订单",
                         [Locales.CHINESE_TRADITIONAL]: "查看網易商城中商品的全部訂單"
                     }),
-                }
+                },
+                neteaseWithdraw: {
+                    title: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "网易提现记录",
+                        [Locales.CHINESE_TRADITIONAL]: "網易銷售訂單"
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "",
+                        [Locales.CHINESE]: "查看网易提现记录及其使用情况",
+                        [Locales.CHINESE_TRADITIONAL]: ""
+                    }),
+                },
             }
         }
     },

@@ -318,7 +318,7 @@ export function GenericCrudTable<T>({
                   </TableHead>
                 );
               })}
-              {hasActionsColumn && <TableHead className="text-right">操作</TableHead>}
+              {hasActionsColumn && <TableHead>操作</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -347,8 +347,8 @@ export function GenericCrudTable<T>({
                     const isForced = key in forcedSearchValues;
 
                     return (
-                      <TableCell key={key} className="group relative">
-                        <div className="flex items-center gap-1.5 min-h-[1.5rem]">
+                      <TableCell key={key} className="group relative min-w-2 mx-auto">
+                        <div className="flex items-center gap-1.5 min-h-6">
                           <div>{col.render ? col.render(rawValue, row) : (rawValue as React.ReactNode)}</div>
                           
                           {col.filterable && isFilterableVal && !isForced && (
