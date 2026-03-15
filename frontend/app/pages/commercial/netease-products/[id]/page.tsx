@@ -151,7 +151,6 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
         <CardContent>
           <OrderDisplay
             pageSize={10}
-            forceSearch={{ productName: product.itemName }}
             fetchOrders={fetchOrdersProject}
           />
         </CardContent>
