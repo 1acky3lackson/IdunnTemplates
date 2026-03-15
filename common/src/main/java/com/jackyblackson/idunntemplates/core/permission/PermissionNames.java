@@ -89,5 +89,10 @@ public class PermissionNames {
             public static final String create =             "taixue.commercial.withdraw.create";
             public static final String allocation =         "taixue.commercial.withdraw.allocation";
         }
+
+        public static class SystemWithdraw {
+            public static final String listAll =            "taixue.commercial.system-withdraw.list.all";
+            public static final String manage =             "taixue.commercial.system-withdraw.manage";
+        }
     }
 }
