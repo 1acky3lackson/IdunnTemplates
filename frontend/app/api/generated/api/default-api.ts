@@ -50,6 +50,12 @@ import type { ApiV1CommercialProjectsProjectIdContributionsContributionIdPatchRe
 // @ts-ignore
 import type { ApiV1CommercialProjectsProjectIdContributionsGroupedGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialWithdrawalsGet200Response } from '../model';
+// @ts-ignore
+import type { ApiV1CommercialWithdrawalsIdStatusPatchRequest } from '../model';
+// @ts-ignore
+import type { ApiV1CommercialWithdrawalsPostRequest } from '../model';
+// @ts-ignore
 import type { ApiV1PathsGet200ResponseInner } from '../model';
 // @ts-ignore
 import type { ApiV1RemoteSetsGet200Response } from '../model';
@@ -107,6 +113,8 @@ import type { ProjectAssignmentRequest } from '../model';
 import type { RecalculatePreviewResponse } from '../model';
 // @ts-ignore
 import type { StatusChangeRequest } from '../model';
+// @ts-ignore
+import type { SystemWithdraw } from '../model';
 // @ts-ignore
 import type { Template } from '../model';
 // @ts-ignore
@@ -1067,6 +1075,200 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 提现记录列表
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsGet: async (page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/withdrawals`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取单个记录的详细信息
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsIdGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialWithdrawalsIdGet', 'id', id)
+            const localVarPath = `/api/v1/commercial/withdrawals/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 修改提现申请状态
+         * @param {string} id 
+         * @param {ApiV1CommercialWithdrawalsIdStatusPatchRequest} [apiV1CommercialWithdrawalsIdStatusPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsIdStatusPatch: async (id: string, apiV1CommercialWithdrawalsIdStatusPatchRequest?: ApiV1CommercialWithdrawalsIdStatusPatchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialWithdrawalsIdStatusPatch', 'id', id)
+            const localVarPath = `/api/v1/commercial/withdrawals/{id}/status`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CommercialWithdrawalsIdStatusPatchRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 查看我的提现记录
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsMeGet: async (page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/withdrawals/me`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 提出提现申请
+         * @param {ApiV1CommercialWithdrawalsPostRequest} [apiV1CommercialWithdrawalsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsPost: async (apiV1CommercialWithdrawalsPostRequest?: ApiV1CommercialWithdrawalsPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/withdrawals`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CommercialWithdrawalsPostRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2436,6 +2638,76 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 提现记录列表
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialWithdrawalsGet(page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialWithdrawalsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialWithdrawalsGet(page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialWithdrawalsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取单个记录的详细信息
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialWithdrawalsIdGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemWithdraw>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialWithdrawalsIdGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialWithdrawalsIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 修改提现申请状态
+         * @param {string} id 
+         * @param {ApiV1CommercialWithdrawalsIdStatusPatchRequest} [apiV1CommercialWithdrawalsIdStatusPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialWithdrawalsIdStatusPatch(id: string, apiV1CommercialWithdrawalsIdStatusPatchRequest?: ApiV1CommercialWithdrawalsIdStatusPatchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialWithdrawalsIdStatusPatch(id, apiV1CommercialWithdrawalsIdStatusPatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialWithdrawalsIdStatusPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 查看我的提现记录
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialWithdrawalsMeGet(page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialWithdrawalsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialWithdrawalsMeGet(page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialWithdrawalsMeGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 提出提现申请
+         * @param {ApiV1CommercialWithdrawalsPostRequest} [apiV1CommercialWithdrawalsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialWithdrawalsPost(apiV1CommercialWithdrawalsPostRequest?: ApiV1CommercialWithdrawalsPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemWithdraw>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialWithdrawalsPost(apiV1CommercialWithdrawalsPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialWithdrawalsPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 获取子目录
          * @param {string} [path] 路径
          * @param {*} [options] Override http request option.
@@ -3061,6 +3333,61 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 提现记录列表
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsGet(page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialWithdrawalsGet200Response> {
+            return localVarFp.apiV1CommercialWithdrawalsGet(page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取单个记录的详细信息
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsIdGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<SystemWithdraw> {
+            return localVarFp.apiV1CommercialWithdrawalsIdGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 修改提现申请状态
+         * @param {string} id 
+         * @param {ApiV1CommercialWithdrawalsIdStatusPatchRequest} [apiV1CommercialWithdrawalsIdStatusPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsIdStatusPatch(id: string, apiV1CommercialWithdrawalsIdStatusPatchRequest?: ApiV1CommercialWithdrawalsIdStatusPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialWithdrawalsIdStatusPatch(id, apiV1CommercialWithdrawalsIdStatusPatchRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 查看我的提现记录
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsMeGet(page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialWithdrawalsGet200Response> {
+            return localVarFp.apiV1CommercialWithdrawalsMeGet(page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 提出提现申请
+         * @param {ApiV1CommercialWithdrawalsPostRequest} [apiV1CommercialWithdrawalsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialWithdrawalsPost(apiV1CommercialWithdrawalsPostRequest?: ApiV1CommercialWithdrawalsPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<SystemWithdraw> {
+            return localVarFp.apiV1CommercialWithdrawalsPost(apiV1CommercialWithdrawalsPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 获取子目录
          * @param {string} [path] 路径
          * @param {*} [options] Override http request option.
@@ -3636,6 +3963,66 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId: number, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialProjectsProjectIdContributionsRecalculateGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 提现记录列表
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sort] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialWithdrawalsGet(page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialWithdrawalsGet(page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取单个记录的详细信息
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialWithdrawalsIdGet(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialWithdrawalsIdGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 修改提现申请状态
+     * @param {string} id 
+     * @param {ApiV1CommercialWithdrawalsIdStatusPatchRequest} [apiV1CommercialWithdrawalsIdStatusPatchRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialWithdrawalsIdStatusPatch(id: string, apiV1CommercialWithdrawalsIdStatusPatchRequest?: ApiV1CommercialWithdrawalsIdStatusPatchRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialWithdrawalsIdStatusPatch(id, apiV1CommercialWithdrawalsIdStatusPatchRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 查看我的提现记录
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sort] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialWithdrawalsMeGet(page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialWithdrawalsMeGet(page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 提出提现申请
+     * @param {ApiV1CommercialWithdrawalsPostRequest} [apiV1CommercialWithdrawalsPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialWithdrawalsPost(apiV1CommercialWithdrawalsPostRequest?: ApiV1CommercialWithdrawalsPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialWithdrawalsPost(apiV1CommercialWithdrawalsPostRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

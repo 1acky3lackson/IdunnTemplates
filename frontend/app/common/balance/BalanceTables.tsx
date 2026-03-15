@@ -23,11 +23,8 @@ const formatTime = (ms?: number | null) => {
 
 const TransactionTypeBadge = ({ type }: { type: string }) => {
   switch (type) {
-    case 'DEPOSIT': return <Badge className="bg-blue-500">充值</Badge>;
-    case 'WITHDRAW': return <Badge className="bg-orange-500">提现</Badge>;
-    case 'PROFIT': return <Badge className="bg-emerald-500">收益分成</Badge>;
-    case 'CONSUME': return <Badge className="bg-red-500">消费</Badge>;
-    case 'REFUND': return <Badge className="bg-purple-500">退款</Badge>;
+    case 'EXPENSE': return <Badge className="bg-orange-500">支出</Badge>;
+    case 'INCOME': return <Badge className="bg-emerald-500">收入</Badge>;
     default: return <Badge className="bg-gray-400">{type}</Badge>;
   }
 };
@@ -132,11 +129,14 @@ export function UserTransactionRecordList({ forceSearch = {}, pageSize = 20 }: C
         'amount': { 
           title: '变动金额',
           sortable: true,
-          render: (val: number) => (
-            <span className={`font-bold ${val > 0 ? 'text-green-600' : val < 0 ? 'text-red-500' : 'text-gray-800'}`}>
-              {val > 0 ? '+' : ''}{formatMoney(val)}
+          render: (val: number, row) => {
+            const isIncome = row.type === "INCOME";
+            return (
+            <span className={`font-bold ${val === 0 ? 'text-gray-800' : isIncome ? 'text-green-600' : 'text-red-500' }`}>
+              {isIncome ? '+' : '-'}{formatMoney(val)}
             </span>
           )
+        }
         },
         'balanceBefore': { 
           title: '变动前余额',

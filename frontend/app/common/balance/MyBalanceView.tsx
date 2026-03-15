@@ -1,156 +1,241 @@
 import React, { useEffect, useState } from 'react';
-import { Wallet, Lock, Clock, ArrowRightLeft } from 'lucide-react';
+import { 
+  Wallet, Lock, Clock, ArrowRightLeft, 
+  PlusCircle, History, Landmark, Coins 
+} from 'lucide-react';
 
 // Shadcn UI
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
-// API 与子组件 (请根据实际路径调整)
+// API 与子组件
 import { IDUNN_API } from '~/api';
 import type { BalanceInfo } from '~/api/generated';
 import { UserTransactionRecordList } from './BalanceTables';
+import { WithdrawList } from '../system-withdraw/WithdrawList';
 
-// ---------- 辅助格式化工具 ----------
+// 格式化工具：统一使用 standard text
 const formatMoney = (amount?: number | null) => {
   if (amount === undefined || amount === null) return '¥0.00';
-  return `¥${amount.toFixed(2)}`; // 根据实际金额单位调整
+  return `¥${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export function MyBalanceView() {
   const [balanceInfo, setBalanceInfo] = useState<BalanceInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const fetchMyBalance = async () => {
+    try {
+      setLoading(true);
+      const res = await IDUNN_API.getMyBalance();
+      // @ts-ignore
+      setBalanceInfo(res.data);
+    } catch (err) {
+      toast.error('获取账户信息失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMyBalance = async () => {
-      try {
-        setLoading(true);
-        // 调用个人账户接口
-        const res = await IDUNN_API.getMyBalance();
-        // @ts-ignore
-        setBalanceInfo(res.data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('获取账户信息失败'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMyBalance();
-  }, []);
+  }, [refreshKey]);
+
+  const handleRequestWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("请输入有效的提现金额");
+      return;
+    }
+    if (amount > (balanceInfo?.availableBalance || 0)) {
+      toast.error("可用余额不足");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await IDUNN_API.apiV1CommercialWithdrawalsPost({ amount });
+      toast.success("提现申请已提交，请等待管理员审批");
+      setIsWithdrawOpen(false);
+      setWithdrawAmount('');
+      setRefreshKey(p => p + 1); 
+    } catch (e) {
+      toast.error("提现申请失败，请稍后重试");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4 space-y-8 animate-in fade-in duration-500">
+    <div className="container mx-auto p-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* 页面标题 */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">我的财务中心</h1>
-        <p className="text-muted-foreground mt-2">
-          查看您的账户余额与交易明细
-        </p>
+      {/* 头部：使用标准 shadcn 字体和间距 */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">财务中心</h1>
+          <p className="text-sm text-muted-foreground">
+            管理您的个人资产、提现记录及资金流向
+          </p>
+        </div>
+
+        <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
+          <DialogTrigger asChild>
+            <Button size="lg" className="shadow-sm">
+              <PlusCircle className="mr-2 h-4 w-4" /> 发起提现申请
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-100">
+            <DialogHeader>
+              <DialogTitle>申请提现</DialogTitle>
+              <DialogDescription>
+                资金将在审批通过后转入您的预留结算账户
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="amount">提现金额</Label>
+                  <span className="text-xs text-muted-foreground">
+                    可用: {formatMoney(balanceInfo?.availableBalance)}
+                  </span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-muted-foreground font-medium">¥</span>
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="0.00"
+                    className="pl-7 font-mono"
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="rounded-md border border-input bg-muted/50 p-3">
+                <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  提示：提交后将锁定对应余额。若审批拒绝，金额将自动退回您的账户。
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>取消</Button>
+              <Button onClick={handleRequestWithdraw} disabled={submitting || !withdrawAmount}>
+                {submitting ? "提交中..." : "确认提交"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* 顶部数据看板 (KPI Cards) */}
+      {/* 数据看板：使用标准 Card 样式，通过 opacity 区分主次 */}
       <div className="grid gap-4 md:grid-cols-3">
-        {/* 卡片 1: 账户可用余额 */}
-        <Card className="shadow-sm border-emerald-100 dark:border-emerald-900/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              账户可用余额
-            </CardTitle>
-            <div className="h-8 w-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center">
-              <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
+        {/* 可用余额：主卡片使用 primary 背景 */}
+        <Card className="relative overflow-hidden border-none bg-primary text-primary-foreground shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium opacity-90">可用余额</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-8 w-32 mt-1" />
+              <Skeleton className="h-9 w-32 bg-primary-foreground/20" />
             ) : (
-              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="text-3xl font-bold tracking-tighter">
                 {formatMoney(balanceInfo?.availableBalance)}
               </div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">可随时申请提现的金额</p>
+            <div className="mt-4 flex items-center text-xs opacity-70">
+              <Landmark className="mr-1 h-3 w-3" /> 账户可提现资产
+            </div>
           </CardContent>
+          <Wallet className="absolute -right-4 -bottom-4 h-24 w-24 opacity-10 rotate-12" />
         </Card>
 
-        {/* 卡片 2: 保留中 / 冻结金额 */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              保留中金额
-            </CardTitle>
-            <div className="h-8 w-8 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center">
-              <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            </div>
+        {/* 冻结金额：使用默认 Card 样式 */}
+        <Card>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">保留中金额</CardTitle>
+            <Lock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-8 w-24 mt-1" />
+              <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">
-                {formatMoney(balanceInfo?.frozenBalance)}
-              </div>
+              <div className="text-2xl font-bold">{formatMoney(balanceInfo?.frozenBalance)}</div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">因网易买家可能退款而保留中</p>
+            <p className="text-[10px] text-muted-foreground mt-1">因平台规则临时保留的风险金</p>
           </CardContent>
         </Card>
 
-        {/* 卡片 3: 待网易提现 */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              待网易提现 (预估)
-            </CardTitle>
-            <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
+        {/* 待提现：使用默认 Card 样式 */}
+        <Card>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">待提现 (预估)</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-8 w-24 mt-1" />
+              <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">
-                {formatMoney(balanceInfo?.pendingBalance)}
-              </div>
+              <div className="text-2xl font-bold">{formatMoney(balanceInfo?.pendingBalance)}</div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">网易尚未结算的预期收益</p>
+            <p className="text-[10px] text-muted-foreground mt-1">网易平台尚未结算的预期收益</p>
           </CardContent>
         </Card>
       </div>
 
-      {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-md text-sm font-medium">
-          {error.message}
+      {/* 底部：Tabs 使用系统默认样式，不强制颜色 */}
+      <Tabs defaultValue="withdrawals" className="w-full">
+        <div className="flex items-center justify-between mb-4">
+          <TabsList className="grid w-full max-w-100 grid-cols-2">
+            <TabsTrigger value="withdrawals">
+              <History className="w-4 h-4 mr-2" /> 提现记录
+            </TabsTrigger>
+            <TabsTrigger value="transactions">
+              <ArrowRightLeft className="w-4 h-4 mr-2" /> 交易流水
+            </TabsTrigger>
+          </TabsList>
         </div>
-      )}
 
-      {/* 底部交易流水明细 */}
-      {!loading && balanceInfo?.username && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 border-b pb-2">
-            <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-xl font-semibold tracking-tight">交易流水明细</h2>
-          </div>
-          
-          <div className="bg-card rounded-lg shadow-sm border p-4">
-            {/* 复用之前的交易明细组件，通过 forceSearch 锁定当前用户 */}
-            <UserTransactionRecordList 
-              forceSearch={{ username: balanceInfo.username }} 
-              pageSize={15} 
-            />
-          </div>
-        </div>
-      )}
-      
-      {/* 防止用户信息尚未加载时出现空表格区域 */}
-      {loading && (
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-100 w-full rounded-xl" />
-        </div>
-      )}
+        <TabsContent value="transactions" className="space-y-4">
+          {!loading && balanceInfo?.username ? (
+            <Card>
+              <CardContent className="pt-6">
+                <UserTransactionRecordList 
+                  forceSearch={{ username: balanceInfo.username }} 
+                  pageSize={10} 
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <Skeleton className="h-100 w-full" />
+          )}
+        </TabsContent>
 
+        <TabsContent value="withdrawals" className="space-y-4">
+          <Card>
+            <CardContent className="pt-6">
+              <WithdrawList mode="user" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

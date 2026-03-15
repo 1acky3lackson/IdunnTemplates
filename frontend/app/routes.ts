@@ -36,6 +36,9 @@ export default [
       // 结账单管理
       route("/:lang?/commercial/checkout", "pages/checkout-details/page.tsx"),
 
+      // Admin Withdraw Console
+      route("/:lang?/commercial/withdraws", "pages/commercial/system-withdraws/page.tsx"),
+
       // Projects
       route("/:lang?/commercial/projects", "pages/commercial/projects/page.tsx"),
       // Project DEtails

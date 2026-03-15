@@ -29,6 +29,11 @@ All URIs are relative to *http://localhost*
 |[**apiV1CommercialProjectsProjectIdContributionsGroupedGet**](#apiv1commercialprojectsprojectidcontributionsgroupedget) | **GET** /api/v1/commercial/projects/{projectId}/contributions/grouped | 获取生效的最终结果|
 |[**apiV1CommercialProjectsProjectIdContributionsPost**](#apiv1commercialprojectsprojectidcontributionspost) | **POST** /api/v1/commercial/projects/{projectId}/contributions | 添加项目贡献记录|
 |[**apiV1CommercialProjectsProjectIdContributionsRecalculateGet**](#apiv1commercialprojectsprojectidcontributionsrecalculateget) | **GET** /api/v1/commercial/projects/{projectId}/contributions/recalculate | 重算结果|
+|[**apiV1CommercialWithdrawalsGet**](#apiv1commercialwithdrawalsget) | **GET** /api/v1/commercial/withdrawals | 提现记录列表|
+|[**apiV1CommercialWithdrawalsIdGet**](#apiv1commercialwithdrawalsidget) | **GET** /api/v1/commercial/withdrawals/{id} | 获取单个记录的详细信息|
+|[**apiV1CommercialWithdrawalsIdStatusPatch**](#apiv1commercialwithdrawalsidstatuspatch) | **PATCH** /api/v1/commercial/withdrawals/{id}/status | 修改提现申请状态|
+|[**apiV1CommercialWithdrawalsMeGet**](#apiv1commercialwithdrawalsmeget) | **GET** /api/v1/commercial/withdrawals/me | 查看我的提现记录|
+|[**apiV1CommercialWithdrawalsPost**](#apiv1commercialwithdrawalspost) | **POST** /api/v1/commercial/withdrawals | 提出提现申请|
 |[**apiV1PathsGet**](#apiv1pathsget) | **GET** /api/v1/paths | 获取子目录|
 |[**apiV1RemoteSetsGet**](#apiv1remotesetsget) | **GET** /api/v1/remote-sets | 搜索 Set|
 |[**apiV1RemoteSetsIdDependenciesGet**](#apiv1remotesetsiddependenciesget) | **GET** /api/v1/remote-sets/{id}/dependencies | 获取依赖此 Set 的所有 Set|
@@ -1404,6 +1409,278 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | 成功获取重算预览数据 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialWithdrawalsGet**
+> ApiV1CommercialWithdrawalsGet200Response apiV1CommercialWithdrawalsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let page: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+let sort: string; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialWithdrawalsGet(
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **page** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+| **sort** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialWithdrawalsGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialWithdrawalsIdGet**
+> SystemWithdraw apiV1CommercialWithdrawalsIdGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialWithdrawalsIdGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**SystemWithdraw**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialWithdrawalsIdStatusPatch**
+> object apiV1CommercialWithdrawalsIdStatusPatch()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CommercialWithdrawalsIdStatusPatchRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1CommercialWithdrawalsIdStatusPatchRequest: ApiV1CommercialWithdrawalsIdStatusPatchRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialWithdrawalsIdStatusPatch(
+    id,
+    apiV1CommercialWithdrawalsIdStatusPatchRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CommercialWithdrawalsIdStatusPatchRequest** | **ApiV1CommercialWithdrawalsIdStatusPatchRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialWithdrawalsMeGet**
+> ApiV1CommercialWithdrawalsGet200Response apiV1CommercialWithdrawalsMeGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let page: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+let sort: string; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialWithdrawalsMeGet(
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **page** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+| **sort** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialWithdrawalsGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialWithdrawalsPost**
+> SystemWithdraw apiV1CommercialWithdrawalsPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CommercialWithdrawalsPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let apiV1CommercialWithdrawalsPostRequest: ApiV1CommercialWithdrawalsPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CommercialWithdrawalsPost(
+    apiV1CommercialWithdrawalsPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CommercialWithdrawalsPostRequest** | **ApiV1CommercialWithdrawalsPostRequest**|  | |
+
+
+### Return type
+
+**SystemWithdraw**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

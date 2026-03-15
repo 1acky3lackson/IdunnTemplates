@@ -158,6 +158,18 @@ const navigationContent = {
                         [Locales.CHINESE_TRADITIONAL]: ""
                     }),
                 },
+                systemWithdraw: {
+                    title: t({
+                        [Locales.ENGLISH]: "System Withdrawals",
+                        [Locales.CHINESE]: "系统提现管理",
+                        [Locales.CHINESE_TRADITIONAL]: "系統提現管理"
+                    }),
+                    desc: t({
+                        [Locales.ENGLISH]: "Manage system withdrawal requests",
+                        [Locales.CHINESE]: "管理和审批用户的系统提现请求",
+                        [Locales.CHINESE_TRADITIONAL]: "管理和審批用戶的系統提現請求"
+                    }),
+                },
             }
         }
     },
