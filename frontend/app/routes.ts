@@ -50,6 +50,9 @@ export default [
       route("/:lang?/commercial/balances", "pages/commercial/balances/page.tsx"),
       // Balance Transaction List
       route("/:lang?/commercial/balances/transactions", "pages/commercial/balances/transactions/page.tsx"),
+
+      // Netease Withdraw List
+      route("/:lang?/commercial/netease-withdraws", "pages/commercial/netease-withdraws/page.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

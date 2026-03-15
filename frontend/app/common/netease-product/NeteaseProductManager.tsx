@@ -43,6 +43,7 @@ import type { Project } from '~/api/generated';
 import NeteasePointType from '../util/NeteasePointType';
 import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
 import { DEFAULT_PRODUCT_API, DEFAULT_PROJECT_API } from './default-api';
+import { Copyable } from '../util/Copyable';
 
 // ---------- 类型定义 ----------
 
@@ -182,7 +183,7 @@ export function NeteaseProductManagerPage({
                     'id': { title: 'ID', sortable: true },
                     'itemId': {
                         title: '商品ID',
-                        render: (val) => String(val).substring(0, 6) + '...'
+                        render: (val) => <Copyable value={val}>{String(val).substring(0, 6) + '...'}</Copyable>
                     },
                     'itemName': {
                         title: '名称',
@@ -207,7 +208,7 @@ export function NeteaseProductManagerPage({
                         render: (_, row) => (
                             <Link to={`/commercial/projects`} className="font-bold hover:text-accent transition-all duration-300">
                                 {row.project
-                                    ? `[${row.project.id || row.projectId || '-'}] ${row.project.displayName || '未知项目名称'}`
+                                    ? <Copyable value={row.project.displayName}>{`[${row.project.id || row.projectId || '-'}] ${row.project.displayName.substring(0,8) || '未知项目名称'}...`}</Copyable>
                                     : "---"}
                             </Link>
                         )

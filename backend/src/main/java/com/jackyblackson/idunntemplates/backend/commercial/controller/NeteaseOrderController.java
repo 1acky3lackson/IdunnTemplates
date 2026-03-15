@@ -57,14 +57,14 @@ public class NeteaseOrderController {
             UserContext user
     ) {
         var productOptional = neteaseProductRepository.findById(productId);
-        if(productOptional.isEmpty()) return ResponseEntity.ok(Page.empty());
+        if(productOptional.isEmpty()) return ResponseEntity.notFound().build();
         var product = productOptional.get();
         if (product.getProject() == null) {
-            return ResponseEntity.ok(Page.empty());
+            return ResponseEntity.status(406).build();
         }
         boolean participated = userProjectContributionService.isUserParticipant(user.getUsername(), product.getProject().getId());
         if (!participated && !luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)) {
-            return ResponseEntity.ok(Page.empty());
+            return ResponseEntity.status(406).build();
         }
         // 构建查询条件：强制加上 product.id = productId，再合并其他筛选条件
         Specification<NeteaseOrder> spec = buildSpecification(search)

@@ -45,10 +45,12 @@ All URIs are relative to *http://localhost*
 |[**apiV1TemplatesIdVersionsGet**](#apiv1templatesidversionsget) | **GET** /api/v1/templates/{id}/versions | 模板版本列表/复杂检索|
 |[**apiV1TemplatesThumbnailPost**](#apiv1templatesthumbnailpost) | **POST** /api/v1/templates/thumbnail | 上传缩略图|
 |[**apiV1UserinfoCreatorsGet**](#apiv1userinfocreatorsget) | **GET** /api/v1/userinfo/creators | 获取所有模板作者的用户信息|
+|[**createWithdraw**](#createwithdraw) | **POST** /api/v1/commercial/netease-withdraws | 添加提现记录|
 |[**getMyBalance**](#getmybalance) | **GET** /api/v1/commercial/balance | 获取当前用户账户金额|
 |[**listBalanceCheckoutDetails**](#listbalancecheckoutdetails) | **GET** /api/v1/commercial/balance/checkout-details | List Checkout Details|
 |[**listBalanceRecords**](#listbalancerecords) | **GET** /api/v1/commercial/balance/records | 获取/筛选流水记录|
 |[**listUserBalances**](#listuserbalances) | **GET** /api/v1/commercial/balance/users | 获取/筛选用户账户列表|
+|[**listWithdraws**](#listwithdraws) | **GET** /api/v1/commercial/netease-withdraws | 分页查询提现记录|
 
 # **apiAuthLoginPost**
 > ApiAuthLoginPost200Response apiAuthLoginPost()
@@ -2310,6 +2312,60 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **createWithdraw**
+> NeteaseWithdraw createWithdraw()
+
+创建一条新的提现记录。系统将根据传入的原始金额和实际提现金额自动计算手续费比例（Ratio）。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    NeteaseWithdrawInput
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let neteaseWithdrawInput: NeteaseWithdrawInput; // (optional)
+
+const { status, data } = await apiInstance.createWithdraw(
+    neteaseWithdrawInput
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **neteaseWithdrawInput** | **NeteaseWithdrawInput**|  | |
+
+
+### Return type
+
+**NeteaseWithdraw**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 记录创建成功 |  -  |
+|**400** | 请求参数错误 |  -  |
+|**401** | 未授权或 Token 过期 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getMyBalance**
 > BalanceInfo getMyBalance()
 
@@ -2531,6 +2587,66 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Successful retrieval of the paginated list of user balances. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **listWithdraws**
+> ListWithdraws200Response listWithdraws()
+
+获取所有提现记录列表。支持通过 search 参数进行动态过滤（例如按用户名、金额或比例筛选），支持标准分页参数。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; //动态查询条件。格式：字段:值（精确），字段~:值（模糊）。多个条件用逗号分隔。示例：username:admin,originalValue:100.00 (optional) (default to undefined)
+let page: number; //页码（从 0 开始） (optional) (default to 0)
+let size: number; //每页条数 (optional) (default to 20)
+let sort: string; //排序字段及方向。格式：字段,asc|desc。默认：saveTimeMs,desc (optional) (default to 'saveTimeMs,desc')
+
+const { status, data } = await apiInstance.listWithdraws(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] | 动态查询条件。格式：字段:值（精确），字段~:值（模糊）。多个条件用逗号分隔。示例：username:admin,originalValue:100.00 | (optional) defaults to undefined|
+| **page** | [**number**] | 页码（从 0 开始） | (optional) defaults to 0|
+| **size** | [**number**] | 每页条数 | (optional) defaults to 20|
+| **sort** | [**string**] | 排序字段及方向。格式：字段,asc|desc。默认：saveTimeMs,desc | (optional) defaults to 'saveTimeMs,desc'|
+
+
+### Return type
+
+**ListWithdraws200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
