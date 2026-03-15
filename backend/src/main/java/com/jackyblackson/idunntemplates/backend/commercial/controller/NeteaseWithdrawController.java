@@ -6,9 +6,12 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.Neteas
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.CheckoutWithdrawAllocationRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseWithdrawService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ public class NeteaseWithdrawController {
 
     private final NeteaseWithdrawService withdrawService;
     private final CheckoutWithdrawAllocationRepository allocationRepository;
+    private final LuckyPermAuthService authService;
 
     /**
      * 分页获取提现记录，支持动态搜索
@@ -41,7 +45,10 @@ public class NeteaseWithdrawController {
             @PageableDefault(size = 20, sort = "saveTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user
     ) {
-        // 权限验证部分已留空
+        // auth
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Withdraw.list)) {
+            return ResponseEntity.status(406).build();
+        }
 
         Specification<NeteaseWithdraw> spec = buildSpecification(search);
         return ResponseEntity.ok(withdrawService.findAll(spec, pageable));
@@ -53,7 +60,10 @@ public class NeteaseWithdrawController {
     @PostMapping
     @AuthRequired
     public ResponseEntity<NeteaseWithdraw> create(@RequestBody NeteaseWithdraw withdraw, UserContext user) {
-        // 权限验证部分已留空
+        // auth
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Withdraw.create)) {
+            return ResponseEntity.status(406).build();
+        }
 
         withdraw.setUsername(user.getUsername());
         NeteaseWithdraw saved = withdrawService.create(withdraw);
@@ -160,25 +170,48 @@ public class NeteaseWithdrawController {
      */
     @GetMapping("/{withdrawId}/allocations")
     @AuthRequired
-    public ResponseEntity<Page<CheckoutWithdrawAllocation>> listAllocations(
+    public ResponseEntity<Page<CheckoutWithdrawAllocationDto>> listAllocations(
             @PathVariable Long withdrawId,
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "createTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user
     ) {
-        // 构建基础 Specification：限定 withdraw.id
-        Specification<CheckoutWithdrawAllocation> baseSpec = (root, query, cb) ->
+        // auth
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Withdraw.allocation)) {
+            return ResponseEntity.status(406).build();
+        }
+        // 1. 构建查询条件
+        Specification<CheckoutWithdrawAllocation> spec = (root, query, cb) ->
                 cb.equal(root.get("withdraw").get("id"), withdrawId);
 
-        // 解析 search 字符串并合并
-        Specification<CheckoutWithdrawAllocation> dynamicSpec = buildAllocationSpecification(search);
+        // 2. 查询数据库实体
+        Page<CheckoutWithdrawAllocation> page = allocationRepository.findAll(spec, pageable);
 
-        Page<CheckoutWithdrawAllocation> result = allocationRepository.findAll(
-                baseSpec.and(dynamicSpec),
-                pageable
-        );
+        // 3. 映射为 DTO
+        Page<CheckoutWithdrawAllocationDto> dtoPage = page.map(this::convertToDto);
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(dtoPage);
+    }
+
+    /**
+     * 转换逻辑：手动提取 ID
+     */
+    private CheckoutWithdrawAllocationDto convertToDto(CheckoutWithdrawAllocation entity) {
+        CheckoutWithdrawAllocationDto dto = new CheckoutWithdrawAllocationDto();
+        dto.setId(entity.getId());
+
+        // 关键点：只取关联对象的 ID，不会触发完整的懒加载代理序列化
+        if (entity.getCheckoutDetail() != null) {
+            dto.setCheckoutDetailId(entity.getCheckoutDetail().getId());
+        }
+        if (entity.getWithdraw() != null) {
+            dto.setWithdrawId(entity.getWithdraw().getId());
+        }
+
+        dto.setAllocatedOriginal(entity.getAllocatedOriginal());
+        dto.setActualAmount(entity.getActualAmount());
+        dto.setCreateTimeMs(entity.getCreateTimeMs());
+        return dto;
     }
 
     /**
@@ -213,5 +246,15 @@ public class NeteaseWithdrawController {
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    @Data
+    public static class CheckoutWithdrawAllocationDto {
+        private Long id;
+        private Long checkoutDetailId; // 只返回 ID
+        private Long withdrawId;       // 只返回 ID
+        private BigDecimal allocatedOriginal;
+        private BigDecimal actualAmount;
+        private Long createTimeMs;
     }
 }

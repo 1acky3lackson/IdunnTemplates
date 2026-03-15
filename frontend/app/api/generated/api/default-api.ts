@@ -38,6 +38,8 @@ import type { ApiV1CommercialNeteaseProductsGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response } from '../model';
+// @ts-ignore
 import type { ApiV1CommercialProjectsGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialProjectsIdPutRequest } from '../model';
@@ -592,6 +594,55 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (sort !== undefined) {
                 localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+         * @summary 查询提现记录使用详情
+         * @param {number} withdrawId 提现记录的 ID
+         * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet: async (withdrawId: number, search?: string, page?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'withdrawId' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet', 'withdrawId', withdrawId)
+            const localVarPath = `/api/v1/commercial/netease-withdraws/{withdrawId}/allocations`
+                .replace(`{${"withdrawId"}}`, encodeURIComponent(String(withdrawId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -2216,6 +2267,22 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+         * @summary 查询提现记录使用详情
+         * @param {number} withdrawId 提现记录的 ID
+         * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId: number, search?: string, page?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId, search, page, size, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 
          * @summary 获取/筛选项目列表
          * @param {string} search 
@@ -2861,6 +2928,19 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options).then((request) => request(axios, basePath));
         },
         /**
+         * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+         * @summary 查询提现记录使用详情
+         * @param {number} withdrawId 提现记录的 ID
+         * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId: number, search?: string, page?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response> {
+            return localVarFp.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId, search, page, size, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @summary 获取/筛选项目列表
          * @param {string} search 
@@ -3412,6 +3492,20 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1CommercialNeteaseProductsProductIdOrdersGet(productId: string, search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsProductIdOrdersGet(productId, search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+     * @summary 查询提现记录使用详情
+     * @param {number} withdrawId 提现记录的 ID
+     * @param {string} [search] 动态过滤。支持嵌套字段，如 checkoutDetail.id:100
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId: number, search?: string, page?: number, size?: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(withdrawId, search, page, size, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

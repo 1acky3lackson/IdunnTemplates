@@ -17,6 +17,7 @@ All URIs are relative to *http://localhost*
 |[**apiV1CommercialNeteaseProductsIdPut**](#apiv1commercialneteaseproductsidput) | **PUT** /api/v1/commercial/netease-products/{id} | 更新产品信息（支持部分字段）|
 |[**apiV1CommercialNeteaseProductsIdStatusPatch**](#apiv1commercialneteaseproductsidstatuspatch) | **PATCH** /api/v1/commercial/netease-products/{id}/status | 修改产品状态|
 |[**apiV1CommercialNeteaseProductsProductIdOrdersGet**](#apiv1commercialneteaseproductsproductidordersget) | **GET** /api/v1/commercial/netease-products/{productId}/orders | 获取商品的所有订单|
+|[**apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet**](#apiv1commercialneteasewithdrawswithdrawidallocationsget) | **GET** /api/v1/commercial/netease-withdraws/{withdrawId}/allocations | 查询提现记录使用详情|
 |[**apiV1CommercialProjectsGet**](#apiv1commercialprojectsget) | **GET** /api/v1/commercial/projects | 获取/筛选项目列表|
 |[**apiV1CommercialProjectsIdDelete**](#apiv1commercialprojectsiddelete) | **DELETE** /api/v1/commercial/projects/{id} | 软删除 Project|
 |[**apiV1CommercialProjectsIdGet**](#apiv1commercialprojectsidget) | **GET** /api/v1/commercial/projects/{id} | 获取单个Project信息|
@@ -735,6 +736,66 @@ const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsProduct
 ### Return type
 
 **ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet**
+> ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet()
+
+获取指定提现记录被分配到了哪些结账单（CheckoutDetail）中，包含扣除的原始金额和实际折算金额。
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let withdrawId: number; //提现记录的 ID (default to undefined)
+let search: string; //动态过滤。支持嵌套字段，如 checkoutDetail.id:100 (optional) (default to undefined)
+let page: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(
+    withdrawId,
+    search,
+    page,
+    size
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **withdrawId** | [**number**] | 提现记录的 ID | defaults to undefined|
+| **search** | [**string**] | 动态过滤。支持嵌套字段，如 checkoutDetail.id:100 | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response**
 
 ### Authorization
 

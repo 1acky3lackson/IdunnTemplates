@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.backend.commercial.entity.checkout;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseWithdraw;
 import jakarta.persistence.*;
 import lombok.Data;

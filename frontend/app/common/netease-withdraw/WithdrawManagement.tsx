@@ -22,6 +22,7 @@ import {
 import { IDUNN_API } from '~/api';
 import type { NeteaseWithdraw, NeteaseWithdrawInput } from '~/api/generated';
 import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
+import { useNavigate } from 'react-router';
 
 // ---------- API 封装 ----------
 
@@ -51,6 +52,8 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRefresh = () => setRefreshKey(prev => prev + 1);
+
+  const nav = useNavigate();
 
   return (
     <div className="space-y-4">
@@ -148,6 +151,12 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
             ) : '-'
           }
         }}
+
+        rowActions={(row) => (
+            <div>
+                <Button variant="outline" onClick={() => nav(`/commercial/netease-withdraws/${row.id}`)}>查看详情</Button>
+            </div>
+        )}
       />
 
       <CreateWithdrawDialog 

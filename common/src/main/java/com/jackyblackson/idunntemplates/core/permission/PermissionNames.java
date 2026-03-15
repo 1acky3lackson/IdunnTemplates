@@ -83,5 +83,11 @@ public class PermissionNames {
             public static final String checkoutAll =        "taixue.commercial.balance.checkout.all";
             public static final String transactionAll =     "taixue.commercial.balance.transaction.all";
         }
+
+        public static class Withdraw {
+            public static final String list =               "taixue.commercial.withdraw.list";
+            public static final String create =             "taixue.commercial.withdraw.create";
+            public static final String allocation =         "taixue.commercial.withdraw.allocation";
+        }
     }
 }
