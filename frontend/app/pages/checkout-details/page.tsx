@@ -1,17 +1,4 @@
-import React, { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-
 // 引入通用表格组件和 API 客户端
-import { IDUNN_API } from '~/api'; 
-import type { CheckoutDetailDto } from '~/api/generated';
-import { GenericCrudTable, type PageResponse } from '~/common/generic-crud-table/generic-crud-table';
 import CheckoutDetails from '~/common/checkout-details/CheckoutDetails';
 
 // ---------- 辅助工具 ----------

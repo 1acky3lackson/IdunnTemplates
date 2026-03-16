@@ -58,6 +58,7 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
   return (
     <div className="space-y-4">
       <GenericCrudTable<NeteaseWithdraw>
+        uid="newthdrw"
         key={refreshKey}
         getRowId={(row) => row.id!}
         list={fetchWithdraws}
@@ -205,7 +206,7 @@ function CreateWithdrawDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-primary" />
@@ -254,7 +255,7 @@ function CreateWithdrawDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 取消
             </Button>
-            <Button type="submit" disabled={loading} className="min-w-[80px]">
+            <Button type="submit" disabled={loading} className="min-w-20">
               {loading ? "提交中..." : "确认添加"}
             </Button>
           </DialogFooter>

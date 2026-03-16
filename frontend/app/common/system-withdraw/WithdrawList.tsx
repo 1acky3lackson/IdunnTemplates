@@ -94,6 +94,7 @@ export function WithdrawList({ mode }: { mode: 'user' | 'admin' }) {
   return (
     <div className="space-y-4">
       <GenericCrudTable<SystemWithdraw>
+        uid="syswthdrw"
         getRowId={(row) => row.id!}
         list={fetchData}
         pageSize={15}

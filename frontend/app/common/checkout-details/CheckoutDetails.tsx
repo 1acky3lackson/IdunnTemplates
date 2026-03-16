@@ -47,10 +47,12 @@ const formatMoney = (amount?: number | null) => {
 
 export default function CheckoutDetails({
     forceSearch,
-    pageSize = 20
+    pageSize = 20,
+    uid = 'chkout'
 }: { 
     forceSearch?: Record<string, string>,
-    pageSize?: number
+    pageSize?: number,
+    uid?: string,
 }) {
   // 详情弹窗的状态管理
   const [viewingDetail, setViewingDetail] = useState<CheckoutDetailDto | null>(null);
@@ -75,6 +77,7 @@ export default function CheckoutDetails({
       </div>
 
       <GenericCrudTable<CheckoutDetailDto>
+        uid={uid}
         getRowId={(row) => row.id!}
         list={fetchCheckoutDetails}
         pageSize={pageSize}

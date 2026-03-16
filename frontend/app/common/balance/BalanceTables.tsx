@@ -8,6 +8,7 @@ import { GenericCrudTable } from '../generic-crud-table/generic-crud-table';
 export interface CommonListProps {
   forceSearch?: Record<string, string>;
   pageSize?: number;
+  uid?: string;
 }
 
 // ---------- 辅助格式化工具 ----------
@@ -32,7 +33,7 @@ const TransactionTypeBadge = ({ type }: { type: string }) => {
 // ==========================================
 // 1. 用户账户余额列表组件
 // ==========================================
-export function UserBalanceList({ forceSearch = {}, pageSize = 20 }: CommonListProps) {
+export function UserBalanceList({ forceSearch = {}, pageSize = 20, uid = 'ublc' }: CommonListProps) {
   
   const fetchBalances = async (page: number, size: number, search: string, sort: string) => {
     const response = await IDUNN_API.listUserBalances(
@@ -47,6 +48,7 @@ export function UserBalanceList({ forceSearch = {}, pageSize = 20 }: CommonListP
 
   return (
     <GenericCrudTable<BalanceInfo>
+      uid={uid}
       // BalanceInfo 没有 id 字段，username 在系统中是唯一的
       getRowId={(row) => row.username!}
       list={fetchBalances}
@@ -85,7 +87,7 @@ export function UserBalanceList({ forceSearch = {}, pageSize = 20 }: CommonListP
 // ==========================================
 // 2. 用户交易流水记录组件
 // ==========================================
-export function UserTransactionRecordList({ forceSearch = {}, pageSize = 20 }: CommonListProps) {
+export function UserTransactionRecordList({ forceSearch = {}, pageSize = 20, uid = 'trsctn' }: CommonListProps) {
   
   const fetchRecords = async (page: number, size: number, search: string, sort: string) => {
     const response = await IDUNN_API.listBalanceRecords(
@@ -100,6 +102,7 @@ export function UserTransactionRecordList({ forceSearch = {}, pageSize = 20 }: C
 
   return (
     <GenericCrudTable<UserBalanceRecordDto>
+      uid={uid}
       getRowId={(row) => row.id!}
       list={fetchRecords}
       pageSize={pageSize}
@@ -153,7 +156,7 @@ export function UserTransactionRecordList({ forceSearch = {}, pageSize = 20 }: C
         },
         'description': { 
           title: '备注说明',
-          render: (val) => <span className="text-gray-600 text-sm max-w-[200px] truncate block" title={val}>{val || '-'}</span>
+          render: (val) => <span className="text-gray-600 text-sm max-w-50 truncate block" title={val}>{val || '-'}</span>
         },
         'createTimeMs': {
           title: '记录时间',

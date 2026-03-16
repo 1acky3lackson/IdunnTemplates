@@ -99,9 +99,10 @@ const parseSearchStringToCriteria = (search: string): ProjectSearchParams => {
 // ---------- 主页面组件 ----------
 interface ProjectManagerPageProps {
   api: ProjectApi;
+  uid?: string;
 }
 
-export function ProjectManagerPage({ api }: ProjectManagerPageProps) {
+export function ProjectManagerPage({ api, uid = "prjct" }: ProjectManagerPageProps) {
   // 控制表格强制刷新的触发器
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const triggerRefresh = useCallback(() => setRefreshTrigger(prev => prev + 1), []);
@@ -132,6 +133,7 @@ export function ProjectManagerPage({ api }: ProjectManagerPageProps) {
       </div>
 
       <GenericCrudTable<Project>
+        uid={uid}
         getRowId={(row) => row.id}
         list={fetchTableData}
         
