@@ -2,11 +2,13 @@ package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.netease.NeteaseProductDto;
+import com.jackyblackson.idunntemplates.backend.commercial.dto.netease.ProductOrderStatsDto;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProduct;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProductStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseProductStatService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.ProductPermissionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
@@ -41,11 +43,30 @@ import java.util.Optional;
 public class NeteaseProductController {
 
     private final LuckyPermAuthService luckyPermAuthService;
+    private final NeteaseProductStatService neteaseProductStatService;
     private NeteaseProductRepository repository;
     private final ProductPermissionService permissionService;  // 注入权限服务
     private final ProjectRepository projectRepository;  // 新增依赖，用于指定项目
 
-    // ... 原有的 list, getById, buildSpecification, parseSearch, convertValue 方法保持不变 ...
+    /**
+     * 获取指定商品的订单统计数据
+     *
+     * @param id 商品ID
+     * @return 订单统计数据 DTO
+     */
+    @GetMapping("/{id}/stats")
+    @AuthRequired
+    public ResponseEntity<ProductOrderStatsDto> getProductStats(@PathVariable Long id) {
+        // 1. 先校验商品是否存在，保持与 update/changeStatus 接口一致的 404 处理风格
+        if (!repository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        // 2. 调用 Service 进行计算
+        ProductOrderStatsDto stats = neteaseProductStatService.calculateProductStats(id);
+
+        return ResponseEntity.ok(stats);
+    }
 
     /**
      * 更新商品的部分字段（例如指定项目、修改状态）。

@@ -134,10 +134,8 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
         </CardContent>
       </Card>
 
-      {/* 销售数据看板 (orderPayload) */}
-      {product.orderPayload && (
-        <SalesDashboard orderPayload={product.orderPayload} />
-      )}
+      {/* 销售订单统计看板 (调用新API) */}
+      <OrderStatsDashboard productId={id} />
 
       {/* 统计数据图表 (statPayload) */}
       {product.statPayload && (
@@ -193,38 +191,138 @@ function getStatusVariant(
   }
 }
 
-// 销售看板组件
-function SalesDashboard({ orderPayload }: { orderPayload: string }) {
-  let data: any = null;
-  try {
-    data = JSON.parse(orderPayload);
-  } catch (e) {
+// 时间差格式化辅助函数：将毫秒格式化为易读的文本
+function formatDuration(ms?: number): string {
+  if (!ms || ms <= 0) return '0秒';
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}秒`;
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}分钟`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}小时 ${minutes % 60}分`;
+  
+  const days = Math.floor(hours / 24);
+  return `${days}天 ${hours % 24}小时`;
+}
+
+// 独立的订单统计看板组件（内部请求 API）
+function OrderStatsDashboard({ productId }: { productId: number }) {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    IDUNN_API.apiV1CommercialNeteaseProductsIdStatsGet(productId)
+      .then((res) => {
+        setStats(res.data);
+        setError(null);
+      })
+      .catch((err) => {
+        setError(err.message || '统计数据加载失败');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [productId]);
+
+  if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>销售数据看板</CardTitle>
+          <CardTitle>订单统计看板</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-red-500">orderPayload 解析失败</div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+          </div>
         </CardContent>
       </Card>
     );
   }
-  const payload = data.data || {};
+
+  if (error || !stats) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>订单统计看板</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-red-500 bg-red-50 p-4 rounded-lg">{error || '暂无数据'}</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>销售数据看板</CardTitle>
+        <CardTitle>订单统计看板</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <DashboardCard label="总订单数" value={payload.count} />
-          <DashboardCard label="销售额（100钻石=1元）" value={payload.total_diamonds / 100} />
-          <DashboardCard label="总积分" value={payload.total_points} />
-          <DashboardCard
-            label="订单列表"
-            value={payload.orders?.length ?? 0}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* 模块 1：订单数 (蓝色调) */}
+          <div className="flex flex-col justify-center rounded-xl border border-blue-100 bg-blue-50/50 p-6 dark:border-blue-900/50 dark:bg-blue-950/20">
+            <div className="text-sm font-medium text-blue-600/80 dark:text-blue-400/80 mb-2">
+              总订单数
+            </div>
+            <div className="text-4xl font-bold tracking-tight text-blue-700 dark:text-blue-400">
+              {stats.orderCount ?? 0}
+            </div>
+          </div>
+
+          {/* 模块 2：金额 (绿色调) */}
+          <div className="flex flex-col justify-center rounded-xl border border-emerald-100 bg-emerald-50/50 p-6 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+            <div className="text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80 mb-2">
+              总金额
+            </div>
+            <div className="text-4xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
+              ¥ {stats.totalAmount ?? 0}
+            </div>
+            <div className="mt-2 text-sm text-emerald-600/70 dark:text-emerald-400/70">
+              平均金额: ¥ {stats.averageAmount ? stats.averageAmount.toFixed(2) : '0.00'}
+            </div>
+          </div>
+
+          {/* 模块 3：下单间隔 (紫色调) */}
+          <div className="flex flex-col justify-center rounded-xl border border-violet-100 bg-violet-50/50 p-6 dark:border-violet-900/50 dark:bg-violet-950/20">
+            <div className="text-sm font-medium text-violet-600/80 dark:text-violet-400/80 mb-2">
+              平均下单间隔
+            </div>
+            <div className="text-4xl font-bold tracking-tight text-violet-700 dark:text-violet-400">
+              {formatDuration(stats.avgTimeDiffMs)}
+            </div>
+            
+            {/* 间隔数据的下级详细信息 */}
+            <div className="mt-4 flex items-center justify-between text-xs text-violet-600/70 dark:text-violet-400/70">
+              <div className="flex flex-col gap-1">
+                <span className="opacity-80">最短间隔</span>
+                <span className="font-medium text-violet-700 dark:text-violet-300">
+                  {formatDuration(stats.minTimeDiffMs)}
+                </span>
+              </div>
+              <div className="h-6 w-px bg-violet-200 dark:bg-violet-800/50"></div>
+              <div className="flex flex-col gap-1">
+                <span className="opacity-80">最长间隔</span>
+                <span className="font-medium text-violet-700 dark:text-violet-300">
+                  {formatDuration(stats.maxTimeDiffMs)}
+                </span>
+              </div>
+              <div className="h-6 w-px bg-violet-200 dark:bg-violet-800/50"></div>
+              <div className="flex flex-col gap-1">
+                <span className="opacity-80">中位间隔</span>
+                <span className="font-medium text-violet-700 dark:text-violet-300">
+                  {formatDuration(stats.medianTimeDiffMs)}
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </CardContent>
     </Card>
@@ -233,9 +331,9 @@ function SalesDashboard({ orderPayload }: { orderPayload: string }) {
 
 function DashboardCard({ label, value }: { label: string; value: any }) {
   return (
-    <div className="bg-muted p-4 rounded-lg text-center">
-      <div className="text-2xl font-bold">{value ?? 0}</div>
-      <div className="text-sm text-muted-foreground">{label}</div>
+    <div className="bg-muted p-4 rounded-lg text-center flex flex-col justify-center">
+      <div className="text-2xl font-bold wrap-break-word">{value ?? 0}</div>
+      <div className="text-sm text-muted-foreground mt-1">{label}</div>
     </div>
   );
 }

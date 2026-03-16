@@ -217,7 +217,7 @@ function LinkProductDialog({ projectId, productApi, onSuccess }: { projectId: nu
             <DialogTrigger asChild>
                 <Button variant="default" size="sm"><PlusCircle className="w-4 h-4 mr-2" />关联产品</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-150">
                 <DialogHeader><DialogTitle>关联已有产品至本项目</DialogTitle></DialogHeader>
                 <div className="relative mt-2">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -228,7 +228,7 @@ function LinkProductDialog({ projectId, productApi, onSuccess }: { projectId: nu
                         onChange={(e) => { setSearchQuery(e.target.value); loadProducts(true); }}
                     />
                 </div>
-                <ScrollArea className="h-[300px] mt-4 border rounded-md p-2">
+                <ScrollArea className="h-75 mt-4 border rounded-md p-2">
                     {items.map(item => (
                         <div 
                             key={item.id} 
