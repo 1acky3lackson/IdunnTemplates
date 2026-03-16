@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, useImperativeHandle, forwardRef } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
@@ -30,11 +31,10 @@ export interface SortState {
   direction: 'asc' | 'desc';
 }
 
-// 定义暴露给渲染函数的动作接口
 export interface TableActions {
-  refreshPage: () => void;   // 刷新当前页
-  refreshGlobal: () => void; // 回到第一页刷新（保留条件）
-  clearFilters: () => void;  // 清空所有条件并刷新
+  refreshPage: () => void;   
+  refreshGlobal: () => void; 
+  clearFilters: () => void;  
 }
 
 export interface ColumnSchema<T> {
@@ -44,7 +44,6 @@ export interface ColumnSchema<T> {
   render?: (value: any, row: T, actions: TableActions) => React.ReactNode; 
 }
 
-// 暴露给外部 Ref 的引用类型
 export interface GenericCrudTableHandle {
   refreshPage: () => void;
   refreshGlobal: () => void;
@@ -52,6 +51,7 @@ export interface GenericCrudTableHandle {
 }
 
 export interface GenericCrudTableProps<T> {
+  uid?: string;
   list: (page: number, size: number, search: string, sort: string) => Promise<PageResponse<T>>;
   create?: () => void; 
   modify?: (row: T, actions: TableActions) => void; 
@@ -84,9 +84,9 @@ function buildSearchString(activeValues: Record<string, string>, fields: SearchF
   return conditions.join(',');
 }
 
-// 使用 forwardRef 包裹组件
 const GenericCrudTableComponent = forwardRef(<T,>(
   {
+    uid,
     list,
     create,
     modify,
@@ -100,19 +100,83 @@ const GenericCrudTableComponent = forwardRef(<T,>(
   }: GenericCrudTableProps<T>,
   ref: React.ForwardedRef<GenericCrudTableHandle>
 ) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // --- URL 参数处理逻辑 ---
+  const getParamKey = (key: string) => uid ? `${uid}_${key}` : null;
+
+  // 从 URL 解析状态
+  const parseStateFromUrl = useCallback(() => {
+    if (!uid) return { page: 0, sortState: null, activeSearchValues: {} };
+    
+    const params = new URLSearchParams(location.search);
+    const page = parseInt(params.get(getParamKey('page')!) || '0', 10);
+    
+    const sortRaw = params.get(getParamKey('sort')!);
+    let sortState: SortState | null = null;
+    if (sortRaw && sortRaw.includes(',')) {
+      const [field, direction] = sortRaw.split(',');
+      sortState = { field, direction: direction as 'asc' | 'desc' };
+    }
+
+    const activeSearchValues: Record<string, string> = {};
+    searchFields.forEach(f => {
+      const val = params.get(getParamKey(`s_${f.key}`)!);
+      if (val) activeSearchValues[f.key] = val;
+    });
+
+    return { page, sortState, activeSearchValues };
+  }, [location.search, uid, searchFields]);
+
+  const urlState = useMemo(() => parseStateFromUrl(), [parseStateFromUrl]);
+
   // 状态管理
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   
-  const [page, setPage] = useState(0); 
-  const [sortState, setSortState] = useState<SortState | null>(null);
-  
-  const [draftSearchValues, setDraftSearchValues] = useState<Record<string, string>>({});
-  const [activeSearchValues, setActiveSearchValues] = useState<Record<string, string>>({});
+  // 核心状态由 URLState 驱动或作为初始值
+  const [page, setPage] = useState(urlState.page); 
+  const [sortState, setSortState] = useState<SortState | null>(urlState.sortState);
+  const [activeSearchValues, setActiveSearchValues] = useState<Record<string, string>>(urlState.activeSearchValues);
+  const [draftSearchValues, setDraftSearchValues] = useState<Record<string, string>>(urlState.activeSearchValues);
 
-  const [pageInput, setPageInput] = useState("1");
+  const [pageInput, setPageInput] = useState(String(page + 1));
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  // 当 URL 改变时，同步内部状态（处理浏览器前进后退）
+  useEffect(() => {
+    if (uid) {
+      setPage(urlState.page);
+      setSortState(urlState.sortState);
+      setActiveSearchValues(urlState.activeSearchValues);
+      setDraftSearchValues(urlState.activeSearchValues);
+    }
+  }, [urlState, uid]);
+
+  // 更新 URL 的统一函数
+  const updateUrl = useCallback((newPage: number, newSort: SortState | null, newSearch: Record<string, string>) => {
+    if (!uid) return;
+
+    const params = new URLSearchParams(location.search);
+    
+    // 设置分页
+    params.set(getParamKey('page')!, String(newPage));
+    
+    // 设置排序
+    const sortKey = getParamKey('sort')!;
+    if (newSort) params.set(sortKey, `${newSort.field},${newSort.direction}`);
+    else params.delete(sortKey);
+
+    // 设置搜索 (先清除旧的该 UID 下的搜索参数)
+    searchFields.forEach(f => params.delete(getParamKey(`s_${f.key}`)!));
+    Object.entries(newSearch).forEach(([k, v]) => {
+      if (v) params.set(getParamKey(`s_${k}`)!, v);
+    });
+
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+  }, [uid, location.pathname, location.search, navigate, searchFields]);
 
   // --- 引用缓存 ---
   const listRef = useRef(list);
@@ -130,7 +194,6 @@ const GenericCrudTableComponent = forwardRef(<T,>(
     return sortState ? `${sortState.field},${sortState.direction}` : "";
   }, [sortState]);
 
-  // --- 核心请求逻辑 ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -149,56 +212,74 @@ const GenericCrudTableComponent = forwardRef(<T,>(
     fetchData();
   }, [fetchData]);
 
-  // --- 暴露给外部的动作 ---
+  // --- 动作拦截：所有改变状态的操作改为触发 URL 更新 ---
   const tableActions: TableActions = useMemo(() => ({
     refreshPage: () => fetchData(),
-    refreshGlobal: () => setPage(0),
+    refreshGlobal: () => {
+      if (uid) updateUrl(0, sortState, activeSearchValues);
+      else setPage(0);
+    },
     clearFilters: () => {
-      setDraftSearchValues({});
-      setActiveSearchValues({});
-      setSortState(null);
-      setPage(0);
+      if (uid) updateUrl(0, null, {});
+      else {
+        setDraftSearchValues({});
+        setActiveSearchValues({});
+        setSortState(null);
+        setPage(0);
+      }
     }
-  }), [fetchData]);
+  }), [fetchData, uid, updateUrl, sortState, activeSearchValues]);
 
   useImperativeHandle(ref, () => tableActions);
 
-  // --- 内部处理逻辑 ---
   useEffect(() => {
     setPageInput(String(page + 1));
   }, [page]);
 
   const handleSearch = () => {
-    setActiveSearchValues(draftSearchValues);
-    setPage(0);
+    if (uid) updateUrl(0, sortState, draftSearchValues);
+    else {
+      setActiveSearchValues(draftSearchValues);
+      setPage(0);
+    }
   };
 
   const removeSearchFilter = (key: string) => {
-    const newActive = { ...activeSearchValues };
-    delete newActive[key];
-    setActiveSearchValues(newActive);
-    setDraftSearchValues(prev => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-    setPage(0);
+    const newSearch = { ...activeSearchValues };
+    delete newSearch[key];
+    if (uid) updateUrl(0, sortState, newSearch);
+    else {
+      setActiveSearchValues(newSearch);
+      setDraftSearchValues(newSearch);
+      setPage(0);
+    }
   };
 
   const handleSort = (fieldKey: string) => {
-    setSortState(prev => {
-      if (prev?.field === fieldKey) {
-        return prev.direction === 'asc' ? { field: fieldKey, direction: 'desc' } : null;
-      }
-      return { field: fieldKey, direction: 'asc' };
-    });
-    setPage(0);
+    let nextSort: SortState | null = null;
+    if (sortState?.field === fieldKey) {
+      if (sortState.direction === 'asc') nextSort = { field: fieldKey, direction: 'desc' };
+      else nextSort = null;
+    } else {
+      nextSort = { field: fieldKey, direction: 'asc' };
+    }
+
+    if (uid) updateUrl(0, nextSort, activeSearchValues);
+    else {
+      setSortState(nextSort);
+      setPage(0);
+    }
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    if (uid) updateUrl(nextPage, sortState, activeSearchValues);
+    else setPage(nextPage);
   };
 
   const handlePageSubmit = () => {
     const p = parseInt(pageInput, 10);
     if (!isNaN(p) && p > 0 && p <= totalPages) {
-      setPage(p - 1);
+      handlePageChange(p - 1);
     } else {
       setPageInput(String(page + 1));
     }
@@ -207,7 +288,7 @@ const GenericCrudTableComponent = forwardRef(<T,>(
   const columnsKeys = Object.keys(schema);
   const hasActionsColumn = Boolean(modify || deleteAction || rowActions);
   const activeKeys = Object.keys(activeSearchValues).filter(k => activeSearchValues[k]?.trim() !== '');
-  const hasActiveFilters = activeKeys.length > 0 || sortState !== null;
+  const hasActiveFilters = activeKeys.length > 0 || sortState !== null || page > 0;
 
   return (
     <div className="space-y-4">
@@ -248,6 +329,12 @@ const GenericCrudTableComponent = forwardRef(<T,>(
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 items-center min-h-7">
             <span className="text-xs text-muted-foreground mr-1">活动筛选:</span>
+            {page > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-md border border-slate-200 transition-colors hover:bg-slate-200">
+                <span className="font-medium">页码:</span> 第 {page + 1} 页
+                <X className="h-3 w-3 ml-1 cursor-pointer hover:text-slate-900" onClick={() => handlePageChange(0)} />
+              </span>
+            )}
             {activeKeys.map(key => {
               const label = searchFields.find(f => f.key === key)?.label || schema[key]?.title || key;
               return (
@@ -260,7 +347,10 @@ const GenericCrudTableComponent = forwardRef(<T,>(
             {sortState && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-xs rounded-md border border-amber-200 transition-colors hover:bg-amber-100">
                 <span className="font-medium">排序:</span> {schema[sortState.field]?.title || sortState.field} ({sortState.direction === 'asc' ? '升序' : '降序'})
-                <X className="h-3 w-3 ml-1 cursor-pointer hover:text-amber-900" onClick={() => setSortState(null)} />
+                <X className="h-3 w-3 ml-1 cursor-pointer hover:text-amber-900" onClick={() => {
+                   if(uid) updateUrl(page, null, activeSearchValues);
+                   else setSortState(null);
+                }} />
               </span>
             )}
           </div>
@@ -312,9 +402,13 @@ const GenericCrudTableComponent = forwardRef(<T,>(
                             <Button
                               variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={() => {
-                                setActiveSearchValues(prev => ({ ...prev, [key]: String(rawValue) }));
-                                setDraftSearchValues(prev => ({ ...prev, [key]: String(rawValue) }));
-                                setPage(0);
+                                const newSearch = { ...activeSearchValues, [key]: String(rawValue) };
+                                if (uid) updateUrl(0, sortState, newSearch);
+                                else {
+                                  setActiveSearchValues(newSearch);
+                                  setDraftSearchValues(newSearch);
+                                  setPage(0);
+                                }
                               }}
                             >
                               <Filter className="h-3.5 w-3.5 text-muted-foreground" />
@@ -341,13 +435,13 @@ const GenericCrudTableComponent = forwardRef(<T,>(
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">共 {total} 条数据</div>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0 || loading}>上一页</Button>
+          <Button variant="outline" size="sm" onClick={() => handlePageChange(Math.max(0, page - 1))} disabled={page === 0 || loading}>上一页</Button>
           <div className="flex items-center gap-2 text-sm font-medium">
             <span>第</span>
             <Input className="h-8 w-14 text-center px-1" value={pageInput} onChange={e => setPageInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePageSubmit()} onBlur={handlePageSubmit} />
             <span>页 / 共 {totalPages} 页</span>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={(page + 1) * pageSize >= total || loading}>下一页</Button>
+          <Button variant="outline" size="sm" onClick={() => handlePageChange(page + 1)} disabled={(page + 1) * pageSize >= total || loading}>下一页</Button>
         </div>
       </div>
     </div>
@@ -356,8 +450,5 @@ const GenericCrudTableComponent = forwardRef(<T,>(
   props: GenericCrudTableProps<T> & { ref?: React.ForwardedRef<GenericCrudTableHandle> }
 ) => React.ReactElement;;
 
-// 2. 导出
 export const GenericCrudTable = GenericCrudTableComponent;
-
-// 3. 设置 displayName
 (GenericCrudTable as any).displayName = "GenericCrudTable";

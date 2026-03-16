@@ -127,13 +127,15 @@ interface NeteaseProductManagerPageProps {
     projectApi?: ProjectApi;
     forceSearch?: Record<string, string>;
     title?: string;
+    uid?: string;
 }
 
 export function NeteaseProductManagerPage({
     productApi = DEFAULT_PRODUCT_API,
     projectApi = DEFAULT_PROJECT_API,
     forceSearch,
-    title
+    title,
+    uid = 'prdct',
 }: NeteaseProductManagerPageProps
 ) {
     // 使用一个计数器来强制刷新表格。
@@ -168,6 +170,7 @@ export function NeteaseProductManagerPage({
             }
 
             <GenericCrudTable<NeteaseProduct>
+                uid={uid}
                 getRowId={(row) => row.id}
                 list={fetchTableData}
                 // 搜索栏配置，和后端的约定以及前面的解析函数完美对应

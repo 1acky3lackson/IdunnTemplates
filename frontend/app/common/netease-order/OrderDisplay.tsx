@@ -64,13 +64,15 @@ export const fetchOrdersDefault: FetchOrders = async (page, size, search, sort) 
 interface OrderDisplayProps {
   fetchOrders?: FetchOrders;
   pageSize?: number;
-  forceSearch?: Record<string, string>
+  forceSearch?: Record<string, string>;
+  uid?: string;
 }
 
 export function OrderDisplay({
   fetchOrders = fetchOrdersDefault,
   pageSize = 20,
   forceSearch,
+  uid = "odr"
 }: OrderDisplayProps) {
   
   // 详情弹窗的状态管理
@@ -79,6 +81,7 @@ export function OrderDisplay({
   return (
     <div className="space-y-4">
       <GenericCrudTable<NeteaseOrder>
+        uid={uid}
         getRowId={(row) => row.id}
         list={fetchOrders}
         pageSize={pageSize}

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// 引入 API 和类型
+// 引入 API 和类型; 
 import { IDUNN_API } from '~/api';
 import type { NeteaseWithdraw, CheckoutWithdrawAllocation } from '~/api/generated';
 import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
@@ -37,7 +37,7 @@ interface CheckoutDetailInfo {
   finishTimeMs?: number;
 }
 
-export default function WithdrawDetailView({ id = "1" }: {id: string}) {
+export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: string; uid?: string}) {
   const withdrawId = Number(id);
   const [withdraw, setWithdraw] = useState<NeteaseWithdraw | null>(null);
   
@@ -161,7 +161,7 @@ export default function WithdrawDetailView({ id = "1" }: {id: string}) {
               <PieIcon className="w-5 h-5" /> 资金消耗比
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[250px]">
+          <CardContent className="h-62.5">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -204,6 +204,7 @@ export default function WithdrawDetailView({ id = "1" }: {id: string}) {
         </CardHeader>
         <CardContent>
           <GenericCrudTable<CheckoutWithdrawAllocation>
+            uid={uid}
             getRowId={(row) => row.id!}
             list={fetchAllocations}
             pageSize={10}
@@ -241,7 +242,7 @@ export default function WithdrawDetailView({ id = "1" }: {id: string}) {
 
       {/* 结账单详情对话框 */}
       <Dialog open={!!selectedDetail} onOpenChange={(open) => !open && setSelectedDetail(null)}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Search className="w-5 h-5 text-primary" />
