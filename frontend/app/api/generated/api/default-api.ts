@@ -36,6 +36,8 @@ import type { ApiV1CommercialGlobalContextsPostRequest } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialNeteaseProductsGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CommercialNeteaseProductsIdStatsGet200Response } from '../model';
+// @ts-ignore
 import type { ApiV1CommercialNeteaseProductsProductIdOrdersGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet200Response } from '../model';
@@ -518,6 +520,40 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(neteaseProductUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取工程统计数据
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdStatsGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CommercialNeteaseProductsIdStatsGet', 'id', id)
+            const localVarPath = `/api/v1/commercial/netease-products/{id}/stats`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2439,6 +2475,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 获取工程统计数据
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialNeteaseProductsIdStatsGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CommercialNeteaseProductsIdStatsGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialNeteaseProductsIdStatsGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialNeteaseProductsIdStatsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 修改产品状态
          * @param {number} id 
          * @param {StatusChangeRequest} [statusChangeRequest] 
@@ -3176,6 +3225,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 获取工程统计数据
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialNeteaseProductsIdStatsGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CommercialNeteaseProductsIdStatsGet200Response> {
+            return localVarFp.apiV1CommercialNeteaseProductsIdStatsGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 修改产品状态
          * @param {number} id 
          * @param {StatusChangeRequest} [statusChangeRequest] 
@@ -3792,6 +3851,17 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1CommercialNeteaseProductsIdPut(id: number, neteaseProductUpdateRequest?: NeteaseProductUpdateRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsIdPut(id, neteaseProductUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取工程统计数据
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialNeteaseProductsIdStatsGet(id: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialNeteaseProductsIdStatsGet(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

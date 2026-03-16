@@ -22,4 +22,6 @@ public interface NeteaseOrderRepository extends
     List<NeteaseOrder> findByAppOrderIdIn(List<String> appOrderIds);
 
     List<NeteaseOrder> findByInternalStatusOrderByIdDesc(NeteaseOrderStatus internalStatus);
+
+    List<NeteaseOrder> findByProductIdOrderByShipTimeMsAsc(Long productId);
 }

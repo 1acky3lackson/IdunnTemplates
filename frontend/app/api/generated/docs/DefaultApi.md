@@ -15,6 +15,7 @@ All URIs are relative to *http://localhost*
 |[**apiV1CommercialNeteaseProductsIdGet**](#apiv1commercialneteaseproductsidget) | **GET** /api/v1/commercial/netease-products/{id} | 根据ID查询单个产品|
 |[**apiV1CommercialNeteaseProductsIdProjectPatch**](#apiv1commercialneteaseproductsidprojectpatch) | **PATCH** /api/v1/commercial/netease-products/{id}/project | 指派或清除项目关联|
 |[**apiV1CommercialNeteaseProductsIdPut**](#apiv1commercialneteaseproductsidput) | **PUT** /api/v1/commercial/netease-products/{id} | 更新产品信息（支持部分字段）|
+|[**apiV1CommercialNeteaseProductsIdStatsGet**](#apiv1commercialneteaseproductsidstatsget) | **GET** /api/v1/commercial/netease-products/{id}/stats | 获取工程统计数据|
 |[**apiV1CommercialNeteaseProductsIdStatusPatch**](#apiv1commercialneteaseproductsidstatuspatch) | **PATCH** /api/v1/commercial/netease-products/{id}/status | 修改产品状态|
 |[**apiV1CommercialNeteaseProductsProductIdOrdersGet**](#apiv1commercialneteaseproductsproductidordersget) | **GET** /api/v1/commercial/netease-products/{productId}/orders | 获取商品的所有订单|
 |[**apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet**](#apiv1commercialneteasewithdrawswithdrawidallocationsget) | **GET** /api/v1/commercial/netease-withdraws/{withdrawId}/allocations | 查询提现记录使用详情|
@@ -636,6 +637,57 @@ No authorization required
 |**200** | 更新成功，返回最新产品信息 |  -  |
 |**400** | 请求参数错误（如项目ID不存在） |  -  |
 |**404** | 产品不存在 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialNeteaseProductsIdStatsGet**
+> ApiV1CommercialNeteaseProductsIdStatsGet200Response apiV1CommercialNeteaseProductsIdStatsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CommercialNeteaseProductsIdStatsGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**ApiV1CommercialNeteaseProductsIdStatsGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

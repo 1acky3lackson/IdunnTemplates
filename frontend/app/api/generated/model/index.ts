@@ -7,6 +7,7 @@ export * from './api-v1-commercial-global-contexts-current-get200-response';
 export * from './api-v1-commercial-global-contexts-get200-response-inner';
 export * from './api-v1-commercial-global-contexts-post-request';
 export * from './api-v1-commercial-netease-products-get200-response';
+export * from './api-v1-commercial-netease-products-id-stats-get200-response';
 export * from './api-v1-commercial-netease-products-product-id-orders-get200-response';
 export * from './api-v1-commercial-netease-products-product-id-orders-get200-response-pageable';
 export * from './api-v1-commercial-netease-products-product-id-orders-get200-response-pageable-sort';

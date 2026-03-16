@@ -68,7 +68,7 @@ app:
     # SQLite 数据库文件的绝对路径
     # 建议：Windows路径使用正斜杠 / 或双反斜杠 \\
     sqlite:
-      file-path: ${SQLITE_FILE:D:/dev/IdunnTemplates/plugin/run/idunn/data.db}
+      file-path: ${SQLITE_FILE:C:/Users/Jacky/Desktop/Dev/IdunnTemplates/plugin/run/idunn/data.db}
 
     # ===================================================================
     # PostgreSQL 数据库配置 (Production)
