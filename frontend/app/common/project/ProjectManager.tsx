@@ -33,6 +33,7 @@ import {
 import type { Schema, SearchParam } from '../util/search-test-utils';
 import type { Project } from '~/api/generated';
 import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
+import { Copyable } from '../util/Copyable';
 
 // ---------- 类型定义 ----------
 
@@ -140,8 +141,8 @@ export function ProjectManagerPage({ api }: ProjectManagerPageProps) {
 
         // 配置搜索字段
         searchFields={[
-          { key: 'name', label: '名称', fuzzy: true },
           { key: 'displayName', label: '显示名称', fuzzy: true },
+          { key: 'name', label: '名称', fuzzy: true },
           { key: 'kind', label: '类型', fuzzy: false },
           { key: 'world.id', label: '世界ID', fuzzy: false },
         ]}
@@ -157,8 +158,14 @@ export function ProjectManagerPage({ api }: ProjectManagerPageProps) {
               </Link>
             )
           },
-          'name': { title: '内部名称', sortable: true },
-          'pathName': { title: '项目路径' },
+          'name': {
+            title: '内部名称', sortable: true,
+            render: (val: string) => <Copyable value={val}>{val.substring(0, 16) + (val.length > 16 ? "..." : "")}</Copyable>
+          },
+          'pathName': {
+            title: '项目路径',
+            render: (val: string) => <Copyable value={val}>{val.substring(0, 16) + (val.length > 16 ? "..." : "")}</Copyable>
+          },
           'kind': { 
             title: '类型',
             filterable: true,
