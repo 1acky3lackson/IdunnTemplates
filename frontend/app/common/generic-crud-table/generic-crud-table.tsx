@@ -6,6 +6,7 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
+  type ReactNode,
 } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -59,7 +60,7 @@ export interface TableActions {
 }
 
 export interface ColumnSchema<T> {
-  title: string;
+  title: string | ReactNode;
   sortable?: boolean;
   filterable?: boolean;
   render?: (value: any, row: T, actions: TableActions) => React.ReactNode;
