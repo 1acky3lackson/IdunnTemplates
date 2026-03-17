@@ -7,6 +7,10 @@ All URIs are relative to *http://localhost*
 |[**apiAuthLoginPost**](#apiauthloginpost) | **POST** /api/auth/login | Yggdrasil 登录|
 |[**apiAuthLogoutPost**](#apiauthlogoutpost) | **POST** /api/auth/logout | 查看个人信息 / 验证登录 Copy|
 |[**apiAuthMeGet**](#apiauthmeget) | **GET** /api/auth/me | 查看个人信息 / 验证登录|
+|[**apiV1CommercialAdminCalculateCheckoutDetailGet**](#apiv1commercialadmincalculatecheckoutdetailget) | **GET** /api/v1/commercial/admin/calculate/checkout-detail | 触发结算单实际金额结算|
+|[**apiV1CommercialAdminCalculateOrderGet**](#apiv1commercialadmincalculateorderget) | **GET** /api/v1/commercial/admin/calculate/order | 触发订单收益分解计算|
+|[**apiV1CommercialAdminCalculateReleaseGet**](#apiv1commercialadmincalculatereleaseget) | **GET** /api/v1/commercial/admin/calculate/release | 触发计算释放冻结资金|
+|[**apiV1CommercialAdminGet**](#apiv1commercialadminget) | **GET** /api/v1/commercial/admin | 是否有管理员权限|
 |[**apiV1CommercialGlobalContextsCurrentGet**](#apiv1commercialglobalcontextscurrentget) | **GET** /api/v1/commercial/global-contexts/current | 获取当前激活的结算参数|
 |[**apiV1CommercialGlobalContextsGet**](#apiv1commercialglobalcontextsget) | **GET** /api/v1/commercial/global-contexts | 获取全部修改历史记录|
 |[**apiV1CommercialGlobalContextsPost**](#apiv1commercialglobalcontextspost) | **POST** /api/v1/commercial/global-contexts | 更新结算参数|
@@ -210,6 +214,183 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialAdminCalculateCheckoutDetailGet**
+> object apiV1CommercialAdminCalculateCheckoutDetailGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialAdminCalculateCheckoutDetailGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialAdminCalculateOrderGet**
+> object apiV1CommercialAdminCalculateOrderGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialAdminCalculateOrderGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialAdminCalculateReleaseGet**
+> object apiV1CommercialAdminCalculateReleaseGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialAdminCalculateReleaseGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialAdminGet**
+> object apiV1CommercialAdminGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialAdminGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+|**406** | 无权限 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

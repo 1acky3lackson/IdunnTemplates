@@ -1,17 +1,16 @@
 package com.jackyblackson.idunntemplates.backend.commercial.task;
 
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CheckoutDetail;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.CheckoutDetailRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
-import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutDetailService;
-import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseOrderSyncService;
-import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseOrderUpdateService;
-import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseProductSyncService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +29,7 @@ public class NeteaseSyncTask {
     private final NeteaseOrderUpdateService neteaseOrderUpdateService;
     private final CheckoutDetailRepository checkoutDetailRepository;
     private final CheckoutDetailService checkoutDetailService;
+    private final CheckoutCalculationService checkoutCalculationService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -49,24 +49,26 @@ public class NeteaseSyncTask {
             try {
                 log.debug("开始执行同步：同步网易PE产品记录...");
                 doCrawler();
+
+                checkoutCalculationService.processAllEnteredOrders();
+                checkoutCalculationService.processAllCreatedDetails();
+                // 查询所有 CREATED 的结账单
+                List<CheckoutDetail> createdDetails = checkoutDetailRepository.findByStatusOrderByCreateTimeMsAsc(CheckoutDetail.Status.CREATED);
+                for (CheckoutDetail detail : createdDetails) {
+                    boolean success = checkoutDetailService.checkoutCreated(detail);
+                    if (!success) {
+                        // 记录日志，等待下次处理
+                        log.info("余额不足以支付，等待下一次处理");
+                        break;
+                    }
+                }
+                // 释放冻结资金
+                checkoutDetailService.releaseConfirmedDetails();
             } finally {
                 // 无论成功还是异常，必须释放锁
                 isSyncing.set(false);
             }
 
-            neteaseOrderRepository.findByInternalStatusOrderByIdDesc(NeteaseOrderStatus.ENTERED).forEach(neteaseOrderUpdateService::checkoutEnterToCalculated);
-            // 查询所有 CREATED 的结账单
-            List<CheckoutDetail> createdDetails = checkoutDetailRepository.findByStatusOrderByCreateTimeMsAsc(CheckoutDetail.Status.CREATED);
-            for (CheckoutDetail detail : createdDetails) {
-                boolean success = checkoutDetailService.checkoutCreated(detail);
-                if (!success) {
-                    // 记录日志，等待下次处理
-                    log.info("余额不足以支付，等待下一次处理");
-                    break;
-                }
-            }
-            // 释放冻结资金
-            checkoutDetailService.releaseConfirmedDetails();
         } finally {
             isSyncing.set(false);
             // 执行完大规模结算后
@@ -78,6 +80,10 @@ public class NeteaseSyncTask {
             // this.restartSelf();
         }
     }
+
+
+
+
 
     protected void doCrawler() {
         // 确保你的 syncAll 里面是一个普通的 for 循环，绝对不能用 parallelStream()

@@ -45,6 +45,14 @@ public class PermissionNames {
     }
 
     public static class Commercial {
+
+        public static class Admin {
+            public static final String admin =                     "taixue.commercial.admin";
+            public static final String triggerCheckoutOrder =      "taixue.commercial.admin.trigger.order";
+            public static final String triggerCheckoutDetail =     "taixue.commercial.admin.trigger.checkout-detail";
+            public static final String triggerReleaseBalance =     "taixue.commercial.admin.trigger.release";
+        }
+
         public static class Project {
 
             public static final String listAll =            "taixue.commercial.project.list.all";

@@ -2,6 +2,8 @@ package com.jackyblackson.idunntemplates.backend.commercial.repository.chekout;
 
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CheckoutDetail;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -39,4 +41,6 @@ public interface CheckoutDetailRepository extends
     // 统计指定用户名和状态的 actual_profit 总和（用于 CONFIRMED）
     @Query("SELECT COALESCE(SUM(c.actualProfit), 0) FROM CheckoutDetail c WHERE c.username = :username AND c.status = :status")
     BigDecimal sumActualProfitByUsernameAndStatus(@Param("username") String username, @Param("status") CheckoutDetail.Status status);
+
+    Slice<CheckoutDetail> findByStatusOrderByCreateTimeMsAsc(CheckoutDetail.Status status, Pageable pageable);
 }
