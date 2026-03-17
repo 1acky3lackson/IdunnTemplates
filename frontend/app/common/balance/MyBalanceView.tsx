@@ -1,14 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Wallet, Lock, Clock, ArrowRightLeft, 
-  PlusCircle, History, Landmark, Coins 
-} from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import {
+  Wallet,
+  Lock,
+  Clock,
+  ArrowRightLeft,
+  PlusCircle,
+  History,
+  Landmark,
+  Coins,
+} from "lucide-react";
 
 // Shadcn UI
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -17,20 +29,22 @@ import {
   DialogTrigger,
   DialogFooter,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 // API 与子组件
-import { IDUNN_API } from '~/api';
-import type { BalanceInfo } from '~/api/generated';
-import { UserTransactionRecordList } from './BalanceTables';
-import { WithdrawList } from '../system-withdraw/WithdrawList';
+import { IDUNN_API } from "~/api";
+import type { BalanceInfo } from "~/api/generated";
+import { UserTransactionRecordList } from "./BalanceTables";
+import { WithdrawList } from "../system-withdraw/WithdrawList";
+import CheckoutDetails from "../checkout-details/CheckoutDetails";
+import { useAuth } from "../auth/auth-provider";
 
 // 格式化工具：统一使用 standard text
 const formatMoney = (amount?: number | null) => {
-  if (amount === undefined || amount === null) return '¥0.00';
+  if (amount === undefined || amount === null) return "¥0.00";
   return `¥${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
@@ -38,9 +52,16 @@ export function MyBalanceView() {
   const [balanceInfo, setBalanceInfo] = useState<BalanceInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const {
+    isAuthenticated,
+    user: authUser,
+    login: loginFunc,
+    logout,
+  } = useAuth();
 
   const fetchMyBalance = async () => {
     try {
@@ -49,7 +70,7 @@ export function MyBalanceView() {
       // @ts-ignore
       setBalanceInfo(res.data);
     } catch (err) {
-      toast.error('获取账户信息失败');
+      toast.error("获取账户信息失败");
     } finally {
       setLoading(false);
     }
@@ -75,8 +96,8 @@ export function MyBalanceView() {
       await IDUNN_API.apiV1CommercialWithdrawalsPost({ amount });
       toast.success("提现申请已提交，请等待管理员审批");
       setIsWithdrawOpen(false);
-      setWithdrawAmount('');
-      setRefreshKey(p => p + 1); 
+      setWithdrawAmount("");
+      setRefreshKey((p) => p + 1);
     } catch (e) {
       toast.error("提现申请失败，请稍后重试");
     } finally {
@@ -86,7 +107,6 @@ export function MyBalanceView() {
 
   return (
     <div className="container mx-auto p-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
       {/* 头部：使用标准 shadcn 字体和间距 */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
@@ -118,7 +138,9 @@ export function MyBalanceView() {
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground font-medium">¥</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground font-medium">
+                    ¥
+                  </span>
                   <Input
                     id="amount"
                     type="number"
@@ -136,8 +158,16 @@ export function MyBalanceView() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>取消</Button>
-              <Button onClick={handleRequestWithdraw} disabled={submitting || !withdrawAmount}>
+              <Button
+                variant="outline"
+                onClick={() => setIsWithdrawOpen(false)}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={handleRequestWithdraw}
+                disabled={submitting || !withdrawAmount}
+              >
                 {submitting ? "提交中..." : "确认提交"}
               </Button>
             </DialogFooter>
@@ -150,7 +180,9 @@ export function MyBalanceView() {
         {/* 可用余额：主卡片使用 primary 背景 */}
         <Card className="relative overflow-hidden border-none bg-primary text-primary-foreground shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium opacity-90">可用余额</CardTitle>
+            <CardTitle className="text-sm font-medium opacity-90">
+              可用余额
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -170,40 +202,58 @@ export function MyBalanceView() {
         {/* 冻结金额：使用默认 Card 样式 */}
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">保留中金额</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              保留中金额
+            </CardTitle>
             <Lock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {loading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">{formatMoney(balanceInfo?.frozenBalance)}</div>
+              <div className="text-2xl font-bold">
+                {formatMoney(balanceInfo?.frozenBalance)}
+              </div>
             )}
-            <p className="text-[10px] text-muted-foreground mt-1">因平台规则临时保留的风险金</p>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              因平台规则临时保留的风险金
+            </p>
           </CardContent>
         </Card>
 
         {/* 待提现：使用默认 Card 样式 */}
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">待提现 (预估)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              待提现 (预估)
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {loading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">{formatMoney(balanceInfo?.pendingBalance)}</div>
+              <div className="text-2xl font-bold">
+                {formatMoney(balanceInfo?.pendingBalance)}
+              </div>
             )}
-            <p className="text-[10px] text-muted-foreground mt-1">网易平台尚未结算的预期收益</p>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              网易平台尚未结算的预期收益
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* 底部：Tabs 使用系统默认样式，不强制颜色 */}
-      <Tabs defaultValue="withdrawals" className="w-full">
+      <Tabs defaultValue="checkout-details" className="w-full">
         <div className="flex items-center justify-between mb-4">
-          <TabsList className="grid w-full max-w-100 grid-cols-2">
+          <TabsList className="grid w-full max-w-100 grid-cols-3">
+            <TabsTrigger
+              value="checkout-details"
+              // className={authUser ? "" : "hidden"}
+            >
+              <History className="w-4 h-4 mr-2" /> 分成记录
+            </TabsTrigger>
             <TabsTrigger value="withdrawals">
               <History className="w-4 h-4 mr-2" /> 提现记录
             </TabsTrigger>
@@ -213,13 +263,19 @@ export function MyBalanceView() {
           </TabsList>
         </div>
 
+        <TabsContent value="checkout-details" className="space-y-4">
+          <CheckoutDetails
+            forceSearch={authUser ? { username: authUser.username } : undefined}
+          />
+        </TabsContent>
+
         <TabsContent value="transactions" className="space-y-4">
           {!loading && balanceInfo?.username ? (
             <Card>
               <CardContent className="pt-6">
-                <UserTransactionRecordList 
-                  forceSearch={{ username: balanceInfo.username }} 
-                  pageSize={10} 
+                <UserTransactionRecordList
+                  forceSearch={{ username: balanceInfo.username }}
+                  pageSize={10}
                 />
               </CardContent>
             </Card>

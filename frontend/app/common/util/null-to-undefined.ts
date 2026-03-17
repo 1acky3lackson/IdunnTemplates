@@ -1,10 +1,10 @@
 type NullToUndefined<T> = T extends null
   ? undefined
   : T extends (infer U)[]
-  ? NullToUndefined<U>[]
-  : T extends object
-  ? { [K in keyof T]: NullToUndefined<T[K]> }
-  : T;
+    ? NullToUndefined<U>[]
+    : T extends object
+      ? { [K in keyof T]: NullToUndefined<T[K]> }
+      : T;
 
 /**
  * 将对象（包括数组）中所有的 null 值转换为 undefined
@@ -19,19 +19,19 @@ export function deepNullToUndefined<T>(obj: T): NullToUndefined<T> {
 
   // 处理数组
   if (Array.isArray(obj)) {
-    return obj.map(item => deepNullToUndefined(item)) as NullToUndefined<T>;
+    return obj.map((item) => deepNullToUndefined(item)) as NullToUndefined<T>;
   }
 
   // 处理对象（排除函数、Date、RegExp 等特殊对象）
-  if (typeof obj === 'object' && obj !== null && obj.constructor === Object) {
+  if (typeof obj === "object" && obj !== null && obj.constructor === Object) {
     const result: Record<string, any> = {};
-    
+
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         result[key] = deepNullToUndefined((obj as Record<string, any>)[key]);
       }
     }
-    
+
     return result as NullToUndefined<T>;
   }
 
@@ -41,20 +41,20 @@ export function deepNullToUndefined<T>(obj: T): NullToUndefined<T> {
 
 // 使用示例
 const example = {
-  name: 'Alice',
+  name: "Alice",
   age: null,
   address: {
-    street: '123 Main St',
+    street: "123 Main St",
     city: null,
-    zip: 12345
+    zip: 12345,
   },
-  hobbies: ['reading', null, 'coding'],
+  hobbies: ["reading", null, "coding"],
   nullable: null,
   metadata: {
     created: new Date(),
-    tags: [null, 'important', null]
+    tags: [null, "important", null],
   },
-  special: /test/g
+  special: /test/g,
 };
 
 const result = deepNullToUndefined(example);

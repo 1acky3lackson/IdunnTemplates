@@ -1,11 +1,11 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface CopyableTextProps {
   value: string;
@@ -35,7 +35,7 @@ export function Copyable({ value, children, className }: CopyableTextProps) {
             onClick={handleCopy}
             className={cn(
               "cursor-pointer hover:text-primary transition-colors border-b border-dashed border-muted-foreground/50",
-              className
+              className,
             )}
           >
             {children}

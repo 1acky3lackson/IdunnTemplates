@@ -76,7 +76,7 @@ public class CommercialAdminController {
     @GetMapping("/sync/ne-order")
     @AuthRequired
     public ResponseEntity<Void> syncCrawlerNeProductOrderLog(UserContext user) {
-        if (!authService.checkPermission(user, PermissionNames.Commercial.Admin.triggerReleaseBalance)) {
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Admin.syncNeOrder)) {
             return ResponseEntity.status(406).build();
         }
         neteaseOrderSyncService.syncOrdersFromLogs();

@@ -35,7 +35,7 @@ export const neteaseOrderSchema = {
   refundInTimeMs: { sort: true },
 
   // 嵌套对象字段（对应 resolvePath 方法处理 "product.id"）
-  'product.id': { search: { fuzzy: false }, sort: true },
+  "product.id": { search: { fuzzy: false }, sort: true },
 } as const;
 
 /**

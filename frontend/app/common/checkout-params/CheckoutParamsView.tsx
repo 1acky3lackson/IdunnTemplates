@@ -1,11 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
-import { toast } from "sonner"
+import React, { useEffect, useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { toast } from "sonner";
 
 // 全局参数实体类型（与后端一致）
 export interface GlobalCheckoutParam {
@@ -44,21 +58,23 @@ export function GlobalParamManager({
   const [history, setHistory] = useState<GlobalCheckoutParam[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedConfig, setSelectedConfig] = useState<Partial<GlobalCheckoutParam>>({});
-  const [updateReason, setUpdateReason] = useState('');
-  const [operator, setOperator] = useState('');
+  const [selectedConfig, setSelectedConfig] = useState<
+    Partial<GlobalCheckoutParam>
+  >({});
+  const [updateReason, setUpdateReason] = useState("");
+  const [operator, setOperator] = useState("");
 
   // 加载数据
   const loadData = async () => {
     setLoading(true);
     try {
       await Promise.allSettled([
-        fetchCurrentConfig().then(data => setCurrent(data)),
-        fetchHistoryConfigs().then(data => setHistory(data)),
+        fetchCurrentConfig().then((data) => setCurrent(data)),
+        fetchHistoryConfigs().then((data) => setHistory(data)),
       ]);
     } catch (error) {
-      toast.error('加载失败', {
-        description: error instanceof Error ? error.message : '未知错误',
+      toast.error("加载失败", {
+        description: error instanceof Error ? error.message : "未知错误",
       });
     } finally {
       setLoading(false);
@@ -79,31 +95,34 @@ export function GlobalParamManager({
       uploaderRatio: config.uploaderRatio,
       releaseDelayDays: config.releaseDelayDays,
     });
-    setUpdateReason('');
-    setOperator('');
+    setUpdateReason("");
+    setOperator("");
     setDialogOpen(true);
   };
 
   // 提交更新
   const handleSubmitUpdate = async () => {
     if (!updateReason.trim()) {
-      toast.info('更新原因不能为空');
+      toast.info("更新原因不能为空");
       return;
     }
 
-    if (selectedConfig.releaseDelayDays === undefined || selectedConfig.releaseDelayDays % 1 !== 0) {
-      toast.info('延迟天数必须是整数');
+    if (
+      selectedConfig.releaseDelayDays === undefined ||
+      selectedConfig.releaseDelayDays % 1 !== 0
+    ) {
+      toast.info("延迟天数必须是整数");
       return;
     }
 
     try {
       await updateConfig(selectedConfig, updateReason);
-      toast.success('更新成功');
+      toast.success("更新成功");
       setDialogOpen(false);
       await loadData(); // 刷新数据
     } catch (error) {
-      toast.error('更新失败', {
-        description: error instanceof Error ? error.message : '未知错误',
+      toast.error("更新失败", {
+        description: error instanceof Error ? error.message : "未知错误",
       });
     }
   };
@@ -163,8 +182,7 @@ export function GlobalParamManager({
       </Card>
 
       {/* 历史记录表格 */}
-      {
-        history.length > 0 &&
+      {history.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>历史配置记录</CardTitle>
@@ -198,9 +216,11 @@ export function GlobalParamManager({
                     <TableCell>{item.createUsername}</TableCell>
                     <TableCell>{formatTime(item.createTimeMs)}</TableCell>
                     <TableCell>
-                      {item.disableTimeMs ? formatTime(item.disableTimeMs) : '-'}
+                      {item.disableTimeMs
+                        ? formatTime(item.disableTimeMs)
+                        : "-"}
                     </TableCell>
-                    <TableCell>{item.disableReason || '-'}</TableCell>
+                    <TableCell>{item.disableReason || "-"}</TableCell>
                     <TableCell>
                       <Button
                         variant="outline"
@@ -216,7 +236,7 @@ export function GlobalParamManager({
             </Table>
           </CardContent>
         </Card>
-      }
+      )}
 
       {/* 更新对话框 */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -237,7 +257,7 @@ export function GlobalParamManager({
                 id="taixueRatio"
                 type="number"
                 step="0.01"
-                value={selectedConfig.taixueRatio ?? ''}
+                value={selectedConfig.taixueRatio ?? ""}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,
@@ -255,7 +275,7 @@ export function GlobalParamManager({
                 id="commercialRatio"
                 type="number"
                 step="0.01"
-                value={selectedConfig.commercialRatio ?? ''}
+                value={selectedConfig.commercialRatio ?? ""}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,
@@ -273,7 +293,7 @@ export function GlobalParamManager({
                 id="templateDefectParam"
                 type="number"
                 step="0.01"
-                value={selectedConfig.templateDefectParam ?? ''}
+                value={selectedConfig.templateDefectParam ?? ""}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,
@@ -291,7 +311,7 @@ export function GlobalParamManager({
                 id="placerRatio"
                 type="number"
                 step="0.01"
-                value={selectedConfig.placerRatio ?? ''}
+                value={selectedConfig.placerRatio ?? ""}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,
@@ -309,7 +329,7 @@ export function GlobalParamManager({
                 id="releaseDelayDays"
                 type="number"
                 step="0.01"
-                value={selectedConfig.releaseDelayDays ?? ''}
+                value={selectedConfig.releaseDelayDays ?? ""}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,
@@ -327,7 +347,7 @@ export function GlobalParamManager({
                 id="uploaderRatio"
                 type="number"
                 step="0.01"
-                value={selectedConfig.uploaderRatio ?? ''}
+                value={selectedConfig.uploaderRatio ?? ""}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,

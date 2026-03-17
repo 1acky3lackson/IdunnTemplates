@@ -1,8 +1,11 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { renderSchematic, type SchematicHandles } from "@enginehub/schematicwebviewer";
-import { fetchFileToBase64 } from './fetchBase64';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  renderSchematic,
+  type SchematicHandles,
+} from "@enginehub/schematicwebviewer";
+import { fetchFileToBase64 } from "./fetchBase64";
 import { Loader2, AlertCircle } from "lucide-react";
 
 /**
@@ -17,7 +20,7 @@ export interface SchematicViewRenderOptions {
   orbit?: boolean;
   orbitSpeed?: number;
   antialias?: boolean;
-  backgroundColor?: number | 'transparent';
+  backgroundColor?: number | "transparent";
   debug?: boolean;
   disableAutoRender?: boolean;
 }
@@ -32,7 +35,7 @@ type SchematicViewerProps = {
 };
 
 const DEFAULT_OPTIONS: SchematicViewRenderOptions = {
-  getClientJarUrl: async () => '/minecraft/schem-display/mc-assets-latest.zip',
+  getClientJarUrl: async () => "/minecraft/schem-display/mc-assets-latest.zip",
   renderBars: false,
   renderArrow: false,
   orbit: true,
@@ -54,7 +57,7 @@ export default function JKSchematicViewer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<SchematicHandles | null>(null);
-  const fetchResult = useRef<string>('');
+  const fetchResult = useRef<string>("");
 
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -62,54 +65,60 @@ export default function JKSchematicViewer({
 
   // 1. 响应式监听 (取代 useResponsive)
   useEffect(() => {
-    const mql = window.matchMedia('(max-width: 768px)');
-    const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    const mql = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent | MediaQueryList) =>
+      setIsMobile(e.matches);
     handler(mql);
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
   }, []);
 
   // 2. 渲染核心逻辑
-  const drawSchematic = useCallback(async (base64Data: string) => {
-    if (!canvasRef.current || !base64Data) return;
+  const drawSchematic = useCallback(
+    async (base64Data: string) => {
+      if (!canvasRef.current || !base64Data) return;
 
-    try {
-      // 如果已有实例，先销毁
-      if (rendererRef.current) {
-        rendererRef.current.destroy();
-        rendererRef.current = null;
+      try {
+        // 如果已有实例，先销毁
+        if (rendererRef.current) {
+          rendererRef.current.destroy();
+          rendererRef.current = null;
+        }
+
+        // 处理容器尺寸
+        const container = containerRef.current;
+        if (container) {
+          const { width, height } = container.getBoundingClientRect();
+          canvasRef.current.width = width;
+          canvasRef.current.height = height;
+        }
+
+        // 合并配置
+        const mergedOptions: SchematicViewRenderOptions = {
+          ...DEFAULT_OPTIONS,
+          size: isMobile
+            ? { width: 300, height: 350 }
+            : { width: 500, height: 500 },
+          ...options,
+        };
+
+        rendererRef.current = await renderSchematic(
+          canvasRef.current,
+          base64Data,
+          mergedOptions,
+        );
+
+        setIsLoading(false);
+        onLoad?.();
+      } catch (error) {
+        console.error("Schematic 渲染失败:", error);
+        setIsError(true);
+        setIsLoading(false);
+        onError?.(error as Error);
       }
-
-      // 处理容器尺寸
-      const container = containerRef.current;
-      if (container) {
-        const { width, height } = container.getBoundingClientRect();
-        canvasRef.current.width = width;
-        canvasRef.current.height = height;
-      }
-
-      // 合并配置
-      const mergedOptions: SchematicViewRenderOptions = {
-        ...DEFAULT_OPTIONS,
-        size: isMobile ? { width: 300, height: 350 } : { width: 500, height: 500 },
-        ...options,
-      };
-
-      rendererRef.current = await renderSchematic(
-        canvasRef.current,
-        base64Data,
-        mergedOptions
-      );
-
-      setIsLoading(false);
-      onLoad?.();
-    } catch (error) {
-      console.error('Schematic 渲染失败:', error);
-      setIsError(true);
-      setIsLoading(false);
-      onError?.(error as Error);
-    }
-  }, [options, isMobile, onLoad, onError]);
+    },
+    [options, isMobile, onLoad, onError],
+  );
 
   // 3. 数据抓取与生命周期管理
   useEffect(() => {
@@ -122,12 +131,12 @@ export default function JKSchematicViewer({
       try {
         const { base64 } = await fetchFileToBase64(src);
         if (!isMounted) return;
-        
+
         fetchResult.current = base64;
         await drawSchematic(base64);
       } catch (error) {
         if (!isMounted) return;
-        console.error('Schematic 加载失败:', error);
+        console.error("Schematic 加载失败:", error);
         setIsError(true);
         setIsLoading(false);
         onError?.(error as Error);
@@ -156,7 +165,7 @@ export default function JKSchematicViewer({
     options?.renderBars,
     options?.renderArrow,
     options?.backgroundColor,
-    isMobile
+    isMobile,
   ]);
 
   return (
@@ -194,12 +203,12 @@ export default function JKSchematicViewer({
       <canvas
         ref={canvasRef}
         className={`transition-all duration-700 ease-in-out cursor-grab active:cursor-grabbing ${
-          isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        } ${isError ? 'hidden' : 'block'}`}
+          isLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        } ${isError ? "hidden" : "block"}`}
         style={{
-          width: '100%',
-          height: '100%',
-          display: isError ? 'none' : 'block',
+          width: "100%",
+          height: "100%",
+          display: isError ? "none" : "block",
         }}
       />
     </div>

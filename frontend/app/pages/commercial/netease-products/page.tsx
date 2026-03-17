@@ -1,5 +1,5 @@
 // routes/NeteaseProductsRoute.tsx
-import React from 'react';
+import React from "react";
 import {
   NeteaseProductManagerPage,
   type ProductApi,
@@ -7,25 +7,29 @@ import {
   type ProductPageResponse,
   type NeteaseProductStatus,
   productSchema,
-} from '~/common/netease-product/NeteaseProductManager';
-import { type ProjectApi, projectSchema } from '~/common/project/ProjectManager';
-import { buildSearchString, buildSortString } from '~/common/util/search-test-utils';
-import { deepNullToUndefined } from '~/common/util/null-to-undefined';
-import { IDUNN_API } from '~/api';
-
-
+} from "~/common/netease-product/NeteaseProductManager";
+import {
+  type ProjectApi,
+  projectSchema,
+} from "~/common/project/ProjectManager";
+import {
+  buildSearchString,
+  buildSortString,
+} from "~/common/util/search-test-utils";
+import { deepNullToUndefined } from "~/common/util/null-to-undefined";
+import { IDUNN_API } from "~/api";
 
 /**
  * 产品管理路由页面
  */
 export default function NeteaseProductsRoute() {
   // 实现 ProductApi
-  
+
   document.title = `网易商品列表`;
 
   return (
     <div className="p-6">
-      <NeteaseProductManagerPage title="管理网易上架商品"/>
+      <NeteaseProductManagerPage title="管理网易上架商品" />
     </div>
   );
 }

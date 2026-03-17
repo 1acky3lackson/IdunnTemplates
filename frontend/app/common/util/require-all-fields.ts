@@ -13,23 +13,23 @@ export function requireFields<T extends object>(
     errorMessage?: string;
     allowUndefined?: boolean; // 是否允许 undefined 值
     throwOnExtra?: boolean; // 是否在发现额外字段时抛出异常
-  }
+  },
 ): T {
   const {
     errorMessage,
     allowUndefined = false,
-    throwOnExtra = false
+    throwOnExtra = false,
   } = options || {};
 
   // 确定需要检查的字段
-  const fieldsToCheck = requiredFields || Object.keys(obj) as (keyof T)[];
-  
+  const fieldsToCheck = requiredFields || (Object.keys(obj) as (keyof T)[]);
+
   // 检查缺失字段
   const missingFields: string[] = [];
-  
+
   for (const field of fieldsToCheck) {
     const value = obj[field];
-    
+
     // 检查字段是否存在
     if (!Object.prototype.hasOwnProperty.call(obj, field)) {
       missingFields.push(String(field));
@@ -43,23 +43,20 @@ export function requireFields<T extends object>(
   // 如果指定了 throwOnExtra，检查是否有额外字段
   if (throwOnExtra) {
     const extraFields = Object.keys(obj).filter(
-      key => !fieldsToCheck.includes(key as keyof T)
+      (key) => !fieldsToCheck.includes(key as keyof T),
     );
-    
+
     if (extraFields.length > 0) {
       throw new Error(
-        `Unexpected extra fields: ${extraFields.map(f => `'${f}'`).join(', ')}`
+        `Unexpected extra fields: ${extraFields.map((f) => `'${f}'`).join(", ")}`,
       );
     }
   }
 
   // 如果有缺失字段，抛出异常
   if (missingFields.length > 0) {
-    const fieldList = missingFields.map(f => `'${f}'`).join(', ');
-    throw new Error(
-      errorMessage || 
-      `Missing required fields: ${fieldList}`
-    );
+    const fieldList = missingFields.map((f) => `'${f}'`).join(", ");
+    throw new Error(errorMessage || `Missing required fields: ${fieldList}`);
   }
 
   return obj as T;
@@ -74,22 +71,25 @@ export function requireFields<T extends object>(
  */
 export function requireAllFields<T extends object>(
   obj: Partial<T>,
-  errorMessage?: string
+  errorMessage?: string,
 ): Required<T> {
   const missingFields: string[] = [];
 
   // 检查每个字段是否存在且不为 undefined
   for (const key in obj) {
-    if (!Object.prototype.hasOwnProperty.call(obj, key) || obj[key] === undefined) {
+    if (
+      !Object.prototype.hasOwnProperty.call(obj, key) ||
+      obj[key] === undefined
+    ) {
       missingFields.push(key);
     }
   }
 
   if (missingFields.length > 0) {
-    const fieldList = missingFields.map(f => `'${f}'`).join(', ');
+    const fieldList = missingFields.map((f) => `'${f}'`).join(", ");
     throw new Error(
-      errorMessage || 
-      `Missing required fields: ${fieldList}. Expected all fields to be present and not undefined.`
+      errorMessage ||
+        `Missing required fields: ${fieldList}. Expected all fields to be present and not undefined.`,
     );
   }
 
@@ -101,11 +101,11 @@ export function requireAllFields<T extends object>(
  */
 export function requireAllFieldsStrict<T extends object>(
   obj: Partial<T>,
-  errorMessage?: string
+  errorMessage?: string,
 ): T {
   return requireFields(obj, undefined, {
     errorMessage,
     allowUndefined: false,
-    throwOnExtra: false
+    throwOnExtra: false,
   });
 }

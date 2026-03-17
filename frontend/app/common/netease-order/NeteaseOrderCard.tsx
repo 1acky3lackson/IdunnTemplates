@@ -26,7 +26,9 @@ function formatDateTime(isoString: string): string {
 }
 
 /** 针对 internalStatus 返回对应的 Badge 变体 */
-function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+function getStatusVariant(
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "ENTERED":
       return "default"; // 通常绿色
@@ -127,7 +129,6 @@ export function OrderCard({ data }: OrderCardProps) {
           <CardTitle className="text-base font-semibold truncate max-w-50 sm:max-w-xs">
             {productName}
           </CardTitle>
-          
 
           {/* 折叠状态下的快捷标签 */}
           {!expanded && (

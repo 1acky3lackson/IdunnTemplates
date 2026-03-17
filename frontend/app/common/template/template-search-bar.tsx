@@ -1,5 +1,11 @@
 import React from "react";
-import { Search, ChevronDown, FolderTree, FileType, GitBranch } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  FolderTree,
+  FileType,
+  GitBranch,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,13 +43,14 @@ export function TemplateSearchBar({
   };
 
   // 计算有多少个"高级筛选"处于激活状态 (用于 UI 提示)
-  const activeAdvancedFilters = [values.pathPrefix, values.nameLike].filter(Boolean).length;
+  const activeAdvancedFilters = [values.pathPrefix, values.nameLike].filter(
+    Boolean,
+  ).length;
 
   return (
     <div className={`flex items-center gap-2 flex-1 max-w-xl ${className}`}>
       {/* 组合输入框容器 */}
       <div className="relative flex flex-1 items-center">
-
         {/* 左侧：高级搜索展开按钮 */}
         <Popover>
           <PopoverTrigger asChild>
@@ -82,7 +89,9 @@ export function TemplateSearchBar({
                 onChange={(e) => updateValue("pathPrefix", e.target.value)}
                 className="h-8"
               />
-              <p className="text-[10px] text-muted-foreground">{searchBar.pathPrefixDesc}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {searchBar.pathPrefixDesc}
+              </p>
             </div>
             <Separator />
             {/* 2. Name Like 输入 */}
@@ -99,7 +108,9 @@ export function TemplateSearchBar({
                 onChange={(e) => updateValue("nameLike", e.target.value)}
                 className="h-8"
               />
-              <p className="text-[10px] text-muted-foreground">{searchBar.nameMatchDesc}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {searchBar.nameMatchDesc}
+              </p>
             </div>
             <Separator />
             {/* 3. Version message like 输入 */}
@@ -113,10 +124,14 @@ export function TemplateSearchBar({
               <Input
                 placeholder="e.g., 添加"
                 value={(values.versionMessageLike as string) || ""}
-                onChange={(e) => updateValue("versionMessageLike", e.target.value)}
+                onChange={(e) =>
+                  updateValue("versionMessageLike", e.target.value)
+                }
                 className="h-8"
               />
-              <p className="text-[10px] text-muted-foreground">{searchBar.commitMessageMatchDesc}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {searchBar.commitMessageMatchDesc}
+              </p>
             </div>
             <Separator />
             {/* 清除按钮 */}
@@ -125,12 +140,17 @@ export function TemplateSearchBar({
                 variant="ghost"
                 size="sm"
                 className="w-full h-7 text-xs text-muted-foreground"
-                onClick={() => onChange({ ...values, pathPrefix: undefined, nameLike: undefined })}
+                onClick={() =>
+                  onChange({
+                    ...values,
+                    pathPrefix: undefined,
+                    nameLike: undefined,
+                  })
+                }
               >
                 {searchBar.clearAdvanced}
               </Button>
             )}
-
           </PopoverContent>
         </Popover>
 

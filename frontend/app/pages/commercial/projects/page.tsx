@@ -1,13 +1,23 @@
 // routes/ProjectsRoute.tsx
-import React from 'react';
-import axios from 'axios';
-import { ProjectManagerPage, projectSchema, type ProjectApi } from '~/common/project/ProjectManager';
-import { buildSearchString, buildSortString } from '~/common/util/search-test-utils';
-import { IDUNN_API } from '~/api';
-import { requireAllFields, requireAllFieldsStrict } from '~/common/util/require-all-fields';
-import { deepNullToUndefined } from '~/common/util/null-to-undefined';
+import React from "react";
+import axios from "axios";
+import {
+  ProjectManagerPage,
+  projectSchema,
+  type ProjectApi,
+} from "~/common/project/ProjectManager";
+import {
+  buildSearchString,
+  buildSortString,
+} from "~/common/util/search-test-utils";
+import { IDUNN_API } from "~/api";
+import {
+  requireAllFields,
+  requireAllFieldsStrict,
+} from "~/common/util/require-all-fields";
+import { deepNullToUndefined } from "~/common/util/null-to-undefined";
 
-const API_BASE = '/api/v1';
+const API_BASE = "/api/v1";
 
 // 实现 ProjectApi 接口
 const api: ProjectApi = {
@@ -23,11 +33,11 @@ const api: ProjectApi = {
     const sort = criteria.sort ? buildSortString(criteria.sort) : undefined;
 
     const response = await IDUNN_API.apiV1CommercialProjectsGet(
-        buildSearchString(criteria, projectSchema),
-        page,
-        20,
-        buildSortString(criteria.sort)
-    )
+      buildSearchString(criteria, projectSchema),
+      page,
+      20,
+      buildSortString(criteria.sort),
+    );
     return response.data;
   },
 
@@ -35,9 +45,9 @@ const api: ProjectApi = {
    * 创建新项目
    */
   createProject: async (data) => {
-    const response = await IDUNN_API.apiV1CommercialProjectsPost(requireAllFields(
-        data
-    ))
+    const response = await IDUNN_API.apiV1CommercialProjectsPost(
+      requireAllFields(data),
+    );
     return response.data;
   },
 
@@ -46,9 +56,9 @@ const api: ProjectApi = {
    */
   updateProject: async (id, data) => {
     const response = await IDUNN_API.apiV1CommercialProjectsIdPut(
-        `${id}`,
-        data as any
-    )
+      `${id}`,
+      data as any,
+    );
     return response.data;
   },
 };
