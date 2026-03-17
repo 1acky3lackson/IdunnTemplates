@@ -22,9 +22,12 @@ public class CheckoutCalculationService {
 
     public void processAllEnteredOrders() {
         int pageSize = 20;
-        Pageable pageable = PageRequest.of(0, pageSize, Sort.by("id").descending());
+        int pageNumber = 0;
+
         int count = 0;
         while (true) {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("id").descending());
+            int calculated = 0;
             // 1. 始终查询第 0 页
             Page<NeteaseOrder> page = neteaseOrderRepository.findByInternalStatusOrderByIdDesc(
                     NeteaseOrderStatus.ENTERED,
@@ -32,7 +35,18 @@ public class CheckoutCalculationService {
             );
 
             // 2. 处理当前页数据
-            page.getContent().forEach(neteaseOrderUpdateService::checkoutEnterToCalculated);
+            for(NeteaseOrder order : page) {
+                boolean success = neteaseOrderUpdateService.checkoutEnterToCalculated(order);
+                if (success) {
+                    calculated ++;
+                }
+            }
+
+            if (calculated >= pageSize) {
+                pageNumber++;
+            } else {
+                pageNumber = 0;
+            }
 
             // 3. 如果没有下一页了，或者当前页没满（说明后面没数据了），则退出
             if (!page.hasNext()) {
@@ -41,8 +55,8 @@ public class CheckoutCalculationService {
 
             // 可选：如果担心死循环（比如 service 没能成功修改状态），可以加一个安全计数器
             count ++;
-            if (count > 200) {
-                log.warn("循环次数过多，大于2000");
+            if (count > 600) {
+                log.warn("循环次数过多，大于 12000");
                 break;
             }
         }

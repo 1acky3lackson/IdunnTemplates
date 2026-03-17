@@ -109,11 +109,11 @@ public class NeteaseOrderUpdateService {
     }
 
     @Transactional
-    public void checkoutEnterToCalculated(NeteaseOrder order) {
+    public boolean checkoutEnterToCalculated(NeteaseOrder order) {
         // 状态检查
         if (!order.getInternalStatus().equals(NeteaseOrderStatus.ENTERED)) {
             log.info("订单 {} 状态为 {}，不是 ENTERED，跳过结算", order.getId(), order.getInternalStatus());
-            return;
+            return false;
         }
 
         // 钻石类型和点数检查
@@ -122,13 +122,13 @@ public class NeteaseOrderUpdateService {
             orderRepository.save(order);
             log.info("订单 {} 非钻石或点数为零 (pointType={}, point={})，标记为 AFTER_N 并跳过结算",
                     order.getId(), order.getPointType(), order.getPoint());
-            return;
+            return false;
         }
 
         Project project = order.getProduct().getProject();
         if (project == null) {
             log.warn("订单 {} 关联的产品项目为空，跳过结算等待下次", order.getId());
-            return;
+            return false;
         }
 
         var contributors = userProjectContributionService.getContributionsGroupedByRole(project.getId());
@@ -136,7 +136,7 @@ public class NeteaseOrderUpdateService {
         if (contributors == null || params == null) {
             log.info("订单 {} 参与者或结算参数为空 (contributors={}, params={})，跳过结算等待下次",
                     order.getId(), contributors, params);
-            return;
+            return false;
         }
 
         // 检查各角色至少有一人
@@ -144,7 +144,7 @@ public class NeteaseOrderUpdateService {
                 !contributors.containsKey(CommercialRoleType.MODIFIER) || contributors.get(CommercialRoleType.MODIFIER).isEmpty() ||
                 !contributors.containsKey(CommercialRoleType.UPLOADER) || contributors.get(CommercialRoleType.UPLOADER).isEmpty()) {
             log.info("订单 {} 项目 {} 缺少 BUILDER/MODIFIER/UPLOADER 参与者，跳过结算", order.getId(), project.getId());
-            return;
+            return false;
         }
 
         // 1. 钻石转化为人民币，保留 8 位小数（确保是 MIN_UNIT 的整数倍）
@@ -269,5 +269,6 @@ public class NeteaseOrderUpdateService {
         log.info("订单 {} 结算拆分完成", order.getId());
         order.setInternalStatus(NeteaseOrderStatus.CALCULATED);
         orderRepository.save(order);
+        return true;
     }
 }
