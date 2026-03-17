@@ -47,10 +47,13 @@ public class PermissionNames {
     public static class Commercial {
 
         public static class Admin {
-            public static final String admin =                     "taixue.commercial.admin";
-            public static final String triggerCheckoutOrder =      "taixue.commercial.admin.trigger.order";
-            public static final String triggerCheckoutDetail =     "taixue.commercial.admin.trigger.checkout-detail";
-            public static final String triggerReleaseBalance =     "taixue.commercial.admin.trigger.release";
+            public static final String admin =                      "taixue.commercial.admin";
+            public static final String triggerCheckoutOrder =       "taixue.commercial.admin.trigger.order";
+            public static final String triggerCheckoutDetail =      "taixue.commercial.admin.trigger.checkout-detail";
+            public static final String triggerReleaseBalance =      "taixue.commercial.admin.trigger.release";
+
+            public static final String syncNeProduct =      "taixue.commercial.admin.sync.ne-product";
+            public static final String syncNeOrder =        "taixue.commercial.admin.sync.ne-order";
         }
 
         public static class Project {
