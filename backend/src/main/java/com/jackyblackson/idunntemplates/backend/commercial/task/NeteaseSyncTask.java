@@ -30,6 +30,7 @@ public class NeteaseSyncTask {
     private final CheckoutDetailRepository checkoutDetailRepository;
     private final CheckoutDetailService checkoutDetailService;
     private final CheckoutCalculationService checkoutCalculationService;
+    private final CrawlerSyncService crawlerSyncService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -48,20 +49,15 @@ public class NeteaseSyncTask {
 
             try {
                 log.debug("开始执行同步：同步网易PE产品记录...");
-                doCrawler();
-
+//                doCrawler();
+                // 同步产品
+                crawlerSyncService.syncAllWithPaging();
+                // 同步订单
+                orderSyncService.syncOrdersFromLogs();
+                // 计算分成
                 checkoutCalculationService.processAllEnteredOrders();
+                // 结算收益
                 checkoutCalculationService.processAllCreatedDetails();
-                // 查询所有 CREATED 的结账单
-                List<CheckoutDetail> createdDetails = checkoutDetailRepository.findByStatusOrderByCreateTimeMsAsc(CheckoutDetail.Status.CREATED);
-                for (CheckoutDetail detail : createdDetails) {
-                    boolean success = checkoutDetailService.checkoutCreated(detail);
-                    if (!success) {
-                        // 记录日志，等待下次处理
-                        log.info("余额不足以支付，等待下一次处理");
-                        break;
-                    }
-                }
                 // 释放冻结资金
                 checkoutDetailService.releaseConfirmedDetails();
             } finally {
@@ -91,6 +87,6 @@ public class NeteaseSyncTask {
         if (res != null) {
             log.debug("已经同步 {} 条网易PE产品记录", res.size());
         }
-        this.orderSyncService.syncOrdersFromLogs();
+
     }
 }

@@ -1,6 +1,8 @@
 package com.jackyblackson.idunntemplates.backend.commercial.repository.necrawler;
 
 import com.jackyblackson.idunntemplates.backend.commercial.entity.crawler.NePeProductLog;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -33,4 +35,14 @@ public interface NePeProductLogRepository extends JpaRepository<NePeProductLog, 
                     ") max_p ON p.id = max_p.max_id",
             nativeQuery = true)
     List<NePeProductLog> findLatestRecordsGroupedByItemId();
+
+    /**
+     * 修改为支持分页。
+     * 注意：在大数据量下，Native Query 的 GROUP BY 分页可能比较慢，
+     * 但作为第一步优化，这比一次性拉取几万条要好得多。
+     */
+    @Query(value = "SELECT * FROM ne_pe_product_logs WHERE id IN " +
+            "(SELECT MAX(id) FROM ne_pe_product_logs GROUP BY item_id)",
+            nativeQuery = true)
+    Slice<NePeProductLog> findLatestRecordsGroupedByItemId(Pageable pageable);
 }

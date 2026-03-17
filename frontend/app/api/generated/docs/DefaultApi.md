@@ -11,6 +11,8 @@ All URIs are relative to *http://localhost*
 |[**apiV1CommercialAdminCalculateOrderGet**](#apiv1commercialadmincalculateorderget) | **GET** /api/v1/commercial/admin/calculate/order | 触发订单收益分解计算|
 |[**apiV1CommercialAdminCalculateReleaseGet**](#apiv1commercialadmincalculatereleaseget) | **GET** /api/v1/commercial/admin/calculate/release | 触发计算释放冻结资金|
 |[**apiV1CommercialAdminGet**](#apiv1commercialadminget) | **GET** /api/v1/commercial/admin | 是否有管理员权限|
+|[**apiV1CommercialAdminSyncNeOrderGet**](#apiv1commercialadminsyncneorderget) | **GET** /api/v1/commercial/admin/sync/ne-order | 同步爬虫网易订单|
+|[**apiV1CommercialAdminSyncNeProductGet**](#apiv1commercialadminsyncneproductget) | **GET** /api/v1/commercial/admin/sync/ne-product | 同步爬虫网易商品|
 |[**apiV1CommercialGlobalContextsCurrentGet**](#apiv1commercialglobalcontextscurrentget) | **GET** /api/v1/commercial/global-contexts/current | 获取当前激活的结算参数|
 |[**apiV1CommercialGlobalContextsGet**](#apiv1commercialglobalcontextsget) | **GET** /api/v1/commercial/global-contexts | 获取全部修改历史记录|
 |[**apiV1CommercialGlobalContextsPost**](#apiv1commercialglobalcontextspost) | **POST** /api/v1/commercial/global-contexts | 更新结算参数|
@@ -391,6 +393,94 @@ No authorization required
 |-------------|-------------|------------------|
 |**200** | 成功 |  -  |
 |**406** | 无权限 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialAdminSyncNeOrderGet**
+> object apiV1CommercialAdminSyncNeOrderGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialAdminSyncNeOrderGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CommercialAdminSyncNeProductGet**
+> object apiV1CommercialAdminSyncNeProductGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1CommercialAdminSyncNeProductGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

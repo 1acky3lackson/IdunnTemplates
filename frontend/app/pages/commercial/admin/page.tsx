@@ -15,6 +15,8 @@ import {
   RefreshCw,
   DollarSign,
   ShieldCheck,
+  Users,
+  Coins,
 } from "lucide-react";
 import { IDUNN_API } from "~/api";
 import { toast } from "sonner";
@@ -114,11 +116,79 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="text-2xl font-bold py-2">爬虫与同步</div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-8">
         {/* 卡片 1：结算单实际金额结算 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
-            <RefreshCw className="h-6 w-6 text-green-500 mb-2" />
+            <RefreshCw className="h-6 w-6 text-primary mb-2" />
+            <CardTitle className="text-lg">同步爬虫网易产品</CardTitle>
+            <CardDescription>触发重新从爬虫日志同步网易产品。</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1"></CardContent>
+          <CardFooter>
+            <Button
+              className="w-full"
+              variant="default"
+              disabled={loadingAction === "ne-product"}
+              onClick={() =>
+                handleTriggerAction(
+                  () => IDUNN_API.apiV1CommercialAdminSyncNeProductGet(),
+                  "ne-product",
+                  "同步网易商品",
+                )
+              }
+            >
+              {loadingAction === "ne-product" ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 执行中...
+                </>
+              ) : (
+                "同步商品"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* 卡片 2：同步网易订单 */}
+        <Card className="flex flex-col transition-all hover:shadow-md">
+          <CardHeader>
+            <Coins className="h-6 w-6 text-primary mb-2" />
+            <CardTitle className="text-lg">同步爬虫网易订单</CardTitle>
+            <CardDescription>触发重新从爬虫日志同步网易订单。</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1"></CardContent>
+          <CardFooter>
+            <Button
+              className="w-full"
+              variant="default"
+              disabled={loadingAction === "ne-order"}
+              onClick={() =>
+                handleTriggerAction(
+                  () => IDUNN_API.apiV1CommercialAdminSyncNeOrderGet(),
+                  "ne-order",
+                  "同步网易订单",
+                )
+              }
+            >
+              {loadingAction === "ne-order" ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 执行中...
+                </>
+              ) : (
+                "同步订单"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <div className="text-2xl font-bold py-2">账户与结算</div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-4">
+        {/* 卡片 1：结算单实际金额结算 */}
+        <Card className="flex flex-col transition-all hover:shadow-md">
+          <CardHeader>
+            <Users className="h-6 w-6 text-green-500 mb-2" />
             <CardTitle className="text-lg">订单收益分解</CardTitle>
             <CardDescription>
               触发系统重新进行订单收益的分解与归属计算。

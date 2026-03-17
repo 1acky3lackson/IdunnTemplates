@@ -1,20 +1,24 @@
 package com.jackyblackson.idunntemplates.backend.commercial.service;
 
+import com.jackyblackson.idunntemplates.backend.commercial.entity.crawler.NePeProductLog;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.crawler.NePeProductOrderLog;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProduct;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.necrawler.NePeProductLogRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.necrawler.NePeProductOrderLogRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -30,72 +34,125 @@ public class NeteaseOrderSyncService {
     private final NeteaseProductRepository productRepository;
     private final NeteaseOrderRepository orderRepository;
     private final NeteaseOrderUpdateService neteaseRefundService;
+    // 注入 TransactionTemplate 用于编程式事务控制
+    private final TransactionTemplate transactionTemplate;
 
     /**
-     * 执行同步操作：
-     * 1. 找出每个 appOrderId 对应的最新日志记录（id最大）
-     * 2. 对于每个最新记录，如果对应订单不存在则新建，存在则调用 updateOrder 更新
-     * 3. 批量保存到数据库
+     * 顶层方法：负责分页调度，【千万不要加 @Transactional】
      */
-    @Transactional
     public void syncOrdersFromLogs() {
-        log.info("开始同步订单数据...");
+        log.info("开始分页同步订单数据...");
 
-        // 1. 获取所有非空 appOrderId 的最新日志记录
-        List<NePeProductOrderLog> latestLogs = findLatestLogsPerAppOrderId();
+        int pageSize = 500; // 每批处理 500 条
+        int pageNumber = 0;
+        long totalProcessed = 0;
 
-        if (latestLogs.isEmpty()) {
-            log.info("没有需要同步的日志记录");
-            return;
+        while (true) {
+            // Native Query 已经包含了 ORDER BY，所以这里不需要传 Sort
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Slice<NePeProductOrderLog> slice = logRepository.findLatestLogsPerAppOrderId(pageable);
+
+            if (slice.isEmpty()) {
+                break;
+            }
+
+            List<NePeProductOrderLog> batchLogs = slice.getContent();
+
+            // 将每个批次的逻辑包裹在一个独立事务中
+            transactionTemplate.executeWithoutResult(status -> {
+                processBatch(batchLogs);
+            });
+
+            totalProcessed += batchLogs.size();
+            log.info("同步进度：已处理 {} 条最新订单记录", totalProcessed);
+
+            if (!slice.hasNext()) {
+                break; // 处理完最后一页，退出
+            }
+            pageNumber++; // 原表数据不变，按页递增
         }
 
-        // 2. 提取所有 appOrderId 用于查询已存在的订单
-        List<String> appOrderIds = latestLogs.stream()
+        log.info("同步完成，共计处理 {} 条唯一订单记录", totalProcessed);
+    }
+
+    /**
+     * 处理单批次数据（在 TransactionTemplate 的事务内执行）
+     */
+    private void processBatch(List<NePeProductOrderLog> batchLogs) {
+        // 1. 提取 appOrderId
+        List<String> appOrderIds = batchLogs.stream()
                 .map(NePeProductOrderLog::getAppOrderId)
                 .filter(Objects::nonNull)
                 .toList();
 
-        // 3. 查询已存在的订单，按 appOrderId 映射
+        if (appOrderIds.isEmpty()) return;
+
+        // 2. 批量查询已存在的订单
         Map<String, NeteaseOrder> existingOrderMap = orderRepository.findByAppOrderIdIn(appOrderIds).stream()
                 .collect(Collectors.toMap(NeteaseOrder::getAppOrderId, order -> order));
 
-        // 4. 准备待保存的订单列表
-        List<NeteaseOrder> ordersToSave = latestLogs.stream()
-                .map(orderLog -> {
-                    String appOrderId = orderLog.getAppOrderId();
-                    if (appOrderId == null) {
-                        log.warn("日志记录 id={} 的 appOrderId 为空，跳过", orderLog.getId());
-                        return null;
-                    }
-
-                    NeteaseOrder order = existingOrderMap.get(appOrderId);
-                    if (order == null) {
-                        // 不存在，新建
-                        order = new NeteaseOrder();
-                        var productLog = productLogRepository.findById(orderLog.getNePeProductLogId());
-                        if (!productLog.isPresent()) {
-                            log.warn("找不到对应 NePeProductLog 的 id 为 " + order.getNePeProductLogId() + " 的记录，丢弃此 Order 的同步");
-                            return null;
-                        }
-                        var product = productRepository.findByItemId(productLog.get().getItemId()).orElseThrow();
-                        order.setProduct(product);
-                        // 复制基本字段（可根据需要复制更多字段，此处仅示例）
-                        copyFromLog(order, orderLog);
-                    } else {
-                        // 已存在，调用更新方法（由用户后续实现）
-                        updateOrder(order, orderLog);
-                    }
-                    return order;
-                })
+        // ================= 消除 N+1 查询的核心逻辑 =================
+        // 收集所有需要新建订单的 productLogId
+        List<Long> needLogIds = batchLogs.stream()
+                .filter(log -> !existingOrderMap.containsKey(log.getAppOrderId()))
+                .map(NePeProductOrderLog::getNePeProductLogId)
                 .filter(Objects::nonNull)
+                .distinct()
                 .toList();
 
-        // 5. 批量保存
+        Map<Long, NePeProductLog> productLogMap = new HashMap<>();
+        Map<String, NeteaseProduct> productMap = new HashMap<>();
+
+        if (!needLogIds.isEmpty()) {
+            // 批量拉取 ProductLog
+            List<NePeProductLog> pLogs = productLogRepository.findAllById(needLogIds);
+            productLogMap = pLogs.stream().collect(Collectors.toMap(NePeProductLog::getId, l -> l));
+
+            // 批量拉取 Product
+            List<String> itemIds = pLogs.stream().map(NePeProductLog::getItemId).filter(Objects::nonNull).distinct().toList();
+            if (!itemIds.isEmpty()) {
+                // 假设你有 findByItemIdIn 方法，如果没有请在 Repository 中添加
+                List<NeteaseProduct> products = productRepository.findByItemIdIn(itemIds);
+                productMap = products.stream().collect(Collectors.toMap(NeteaseProduct::getItemId, p -> p));
+            }
+        }
+        // =========================================================
+
+        List<NeteaseOrder> ordersToSave = new ArrayList<>();
+
+        for (NePeProductOrderLog orderLog : batchLogs) {
+            String appOrderId = orderLog.getAppOrderId();
+            if (appOrderId == null) continue;
+
+            NeteaseOrder order = existingOrderMap.get(appOrderId);
+            if (order == null) {
+                // 新建逻辑
+                order = new NeteaseOrder();
+                NePeProductLog productLog = productLogMap.get(orderLog.getNePeProductLogId());
+
+                if (productLog == null) {
+                    log.warn("找不到对应 NePeProductLog 的 id={} 的记录，丢弃此 Order 的同步", orderLog.getNePeProductLogId());
+                    continue;
+                }
+
+                NeteaseProduct product = productMap.get(productLog.getItemId());
+                if (product == null) {
+                    log.warn("找不到对应 itemId={} 的 Product 记录，丢弃此 Order 的同步", productLog.getItemId());
+                    continue;
+                }
+
+                order.setProduct(product);
+                copyFromLog(order, orderLog);
+            } else {
+                // 更新逻辑
+                updateOrder(order, orderLog);
+            }
+            ordersToSave.add(order);
+        }
+
+        // 3. 批量保存
         if (!ordersToSave.isEmpty()) {
             orderRepository.saveAll(ordersToSave);
-            log.info("同步完成，共处理 {} 条记录", ordersToSave.size());
-        } else {
-            log.info("没有需要保存的订单");
         }
     }
 

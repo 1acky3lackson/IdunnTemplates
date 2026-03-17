@@ -3,6 +3,8 @@ package com.jackyblackson.idunntemplates.backend.commercial.controller;
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutCalculationService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutDetailService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.CrawlerSyncService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseOrderSyncService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
@@ -19,6 +21,8 @@ public class CommercialAdminController {
     private final CheckoutCalculationService checkoutCalculationService;
     private final LuckyPermAuthService authService;
     private final CheckoutDetailService checkoutDetailService;
+    private final CrawlerSyncService crawlerSyncService;
+    private final NeteaseOrderSyncService neteaseOrderSyncService;
 
     @GetMapping()
     @AuthRequired
@@ -56,6 +60,26 @@ public class CommercialAdminController {
             return ResponseEntity.status(406).build();
         }
         checkoutDetailService.releaseConfirmedDetails();
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/sync/ne-product")
+    @AuthRequired
+    public ResponseEntity<Void> syncCrawlerNeProductLog(UserContext user) {
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Admin.syncNeProduct)) {
+            return ResponseEntity.status(406).build();
+        }
+        crawlerSyncService.syncAllWithPaging();
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/sync/ne-order")
+    @AuthRequired
+    public ResponseEntity<Void> syncCrawlerNeProductOrderLog(UserContext user) {
+        if (!authService.checkPermission(user, PermissionNames.Commercial.Admin.triggerReleaseBalance)) {
+            return ResponseEntity.status(406).build();
+        }
+        neteaseOrderSyncService.syncOrdersFromLogs();
         return ResponseEntity.ok().build();
     }
 }
