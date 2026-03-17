@@ -10,38 +10,38 @@ import { Toaster } from "sonner";
 import { UserInfoProvider } from "~/common/util/user-info-cache";
 
 export default function RootLayout({ params }: Route.ComponentProps) {
-    let { lang } = params;
+  let { lang } = params;
 
+  const localstorageLang = localStorage.getItem("i18nextLng");
+
+  useEffect(() => {
     const localstorageLang = localStorage.getItem("i18nextLng");
+    const currentLang = lang || localstorageLang || Locales.CHINESE;
 
-    useEffect(() => {
-        const localstorageLang = localStorage.getItem("i18nextLng");
-        const currentLang = lang || localstorageLang || Locales.CHINESE;
-        
-        if (lang) {
-            localStorage.setItem("i18nextLng", lang);
-        }
-        document.documentElement.setAttribute("i18n-lang", currentLang as string);
-        document.documentElement.setAttribute("lang", currentLang as string);
-    }, [lang]);
+    if (lang) {
+      localStorage.setItem("i18nextLng", lang);
+    }
+    document.documentElement.setAttribute("i18n-lang", currentLang as string);
+    document.documentElement.setAttribute("lang", currentLang as string);
+  }, [lang]);
 
-    const currentLocale = localstorageLang || lang || Locales.CHINESE;
+  const currentLocale = localstorageLang || lang || Locales.CHINESE;
 
-    return (
-        <IntlayerProvider locale={currentLocale}>
-            <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-                <AuthProvider>
-                    <UserInfoProvider>
-                        {/* 使用 Flex 布局确保 Footer 始终在页面底部 */}
-                        <div className="relative flex min-h-screen flex-col">
-                            <main className="flex-1">
-                                <Outlet />
-                                <Toaster />
-                            </main>
-                        </div>
-                    </UserInfoProvider>
-                </AuthProvider>
-            </ThemeProvider>
-        </IntlayerProvider>
-    );
+  return (
+    <IntlayerProvider locale={currentLocale}>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <AuthProvider>
+          <UserInfoProvider>
+            {/* 使用 Flex 布局确保 Footer 始终在页面底部 */}
+            <div className="relative flex min-h-screen flex-col">
+              <main className="flex-1">
+                <Outlet />
+                <Toaster />
+              </main>
+            </div>
+          </UserInfoProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </IntlayerProvider>
+  );
 }

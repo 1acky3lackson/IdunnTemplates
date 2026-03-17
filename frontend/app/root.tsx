@@ -64,9 +64,7 @@ export function Layout({
 
 export default function App() {
   useI18nHTMLAttributes();
-  return (
-          <Outlet />
-  );
+  return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

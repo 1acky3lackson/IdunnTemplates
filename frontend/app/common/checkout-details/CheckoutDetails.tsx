@@ -15,7 +15,12 @@ import {
   GenericCrudTable,
   type PageResponse,
 } from "~/common/generic-crud-table/generic-crud-table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { CircleQuestionMark } from "lucide-react";
 import { Link } from "react-router";
 
@@ -113,7 +118,16 @@ export default function CheckoutDetails({
             title: "订单ID",
             filterable: true,
             render: (val) =>
-              val ? <Link to={`/commercial/orders?odr_s_id=${val}`} className="font-mono font-bold">{val}</Link> : "-",
+              val ? (
+                <Link
+                  to={`/commercial/orders?odr_s_id=${val}`}
+                  className="font-mono font-bold"
+                >
+                  {val}
+                </Link>
+              ) : (
+                "-"
+              ),
           },
           username: {
             title: "用户名",
@@ -141,7 +155,21 @@ export default function CheckoutDetails({
               val !== undefined ? `${(val * 100).toFixed(2)}%` : "-",
           },
           netProfit: {
-            title: <div>理论收益 <TooltipProvider delayDuration={300}><Tooltip><TooltipTrigger><CircleQuestionMark /></TooltipTrigger><TooltipContent>从网易收入计算而来，未扣除网易抽成</TooltipContent></Tooltip></TooltipProvider></div>,
+            title: (
+              <div>
+                理论收益{" "}
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <CircleQuestionMark />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      从网易收入计算而来，未扣除网易抽成
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            ),
             sortable: true,
             render: (val) => (
               <span className="text-blue-600 font-semibold">

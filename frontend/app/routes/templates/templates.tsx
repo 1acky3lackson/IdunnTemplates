@@ -1,7 +1,6 @@
 import TemplateBrowser from "~/common/template/template-browser";
 import type { Route } from "./+types/templates";
 
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },

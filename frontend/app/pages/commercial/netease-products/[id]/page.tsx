@@ -1,17 +1,12 @@
 // ~/common/netease-product/NeteaseProductDetail.tsx
-import React, { useEffect, useState } from 'react';
-import { IDUNN_API } from '~/api';
-import { deepNullToUndefined } from '~/common/util/null-to-undefined';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
+import React, { useEffect, useState } from "react";
+import { IDUNN_API } from "~/api";
+import { deepNullToUndefined } from "~/common/util/null-to-undefined";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import {
   LineChart,
   Line,
@@ -21,31 +16,32 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import type { NeteaseProduct } from '~/api/generated';
-import type { Route } from './+types/page';
-import { OrderDisplay, type FetchOrders } from '~/common/netease-order/OrderDisplay';
-import { Link } from 'react-router';
+} from "recharts";
+import type { NeteaseProduct } from "~/api/generated";
+import type { Route } from "./+types/page";
+import {
+  OrderDisplay,
+  type FetchOrders,
+} from "~/common/netease-order/OrderDisplay";
+import { Link } from "react-router";
 
 // 从生成的 API 导入产品类型（假设为 NeteaseProduct）
 
 export function meta({ params }: Route.MetaArgs) {
-  return [
-    { title: `Netease Project ${params.id}` },
-  ];
+  return [{ title: `Netease Project ${params.id}` }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
   return { id: Number.parseInt(params.id) };
 }
 
-
-
 /**
  * 产品详情页面
  * 路由参数：id
  */
-export default function NeteaseProductDetail({ loaderData }: Route.ComponentProps) {
+export default function NeteaseProductDetail({
+  loaderData,
+}: Route.ComponentProps) {
   const { id } = loaderData;
   const [product, setProduct] = useState<NeteaseProduct | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,11 +55,11 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
     IDUNN_API.apiV1CommercialNeteaseProductsIdGet(id)
       .then((response) => {
         setProduct(response.data);
-        
+
         setError(null);
       })
       .catch((err) => {
-        setError(err.message || '加载失败');
+        setError(err.message || "加载失败");
       })
       .finally(() => {
         setLoading(false);
@@ -86,13 +82,14 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
 
   const fetchOrdersProject: FetchOrders = async (page, size, search, sort) => {
     // 直接调用生成的 API，假设后端已经支持解析 search 和 sort 字符串
-    const response = await IDUNN_API.apiV1CommercialNeteaseProductsProductIdOrdersGet(
-      String(id),
-      search,
-      page,
-      size,
-      sort
-    );
+    const response =
+      await IDUNN_API.apiV1CommercialNeteaseProductsProductIdOrdersGet(
+        String(id),
+        search,
+        page,
+        size,
+        sort,
+      );
     return response.data;
   };
 
@@ -116,8 +113,8 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
               label="价格"
               value={
                 product.price != null
-                  ? `${product.price} ${product.priceType || ''}`
-                  : '-'
+                  ? `${product.price} ${product.priceType || ""}`
+                  : "-"
               }
             />
             <InfoItem
@@ -128,8 +125,36 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
               label="更新时间"
               value={formatTime(deepNullToUndefined(product.updateTimeMs))}
             />
-            <InfoItem label="项目ID" value={(product.project && product.project !== null) ? <Link className='font-bold inline-block' to={`/commercial/projects/${product.project?.id}`}>【{product.project?.id}】</Link> : '未关联项目'} />
-            <InfoItem label="项目名称" value={(product.project && product.project !== null) ? <Link className='font-bold inline-block' to={`/commercial/projects/${product.project?.id}`}>【{product.project?.displayName}】</Link> : '未关联项目'} />
+            <InfoItem
+              label="项目ID"
+              value={
+                product.project && product.project !== null ? (
+                  <Link
+                    className="font-bold inline-block"
+                    to={`/commercial/projects/${product.project?.id}`}
+                  >
+                    【{product.project?.id}】
+                  </Link>
+                ) : (
+                  "未关联项目"
+                )
+              }
+            />
+            <InfoItem
+              label="项目名称"
+              value={
+                product.project && product.project !== null ? (
+                  <Link
+                    className="font-bold inline-block"
+                    to={`/commercial/projects/${product.project?.id}`}
+                  >
+                    【{product.project?.displayName}】
+                  </Link>
+                ) : (
+                  "未关联项目"
+                )
+              }
+            />
           </div>
         </CardContent>
       </Card>
@@ -138,19 +163,14 @@ export default function NeteaseProductDetail({ loaderData }: Route.ComponentProp
       <OrderStatsDashboard productId={id} />
 
       {/* 统计数据图表 (statPayload) */}
-      {product.statPayload && (
-        <StatCharts statPayload={product.statPayload} />
-      )}
+      {product.statPayload && <StatCharts statPayload={product.statPayload} />}
 
       <Card>
         <CardHeader>
           <CardTitle>产品订单列表</CardTitle>
         </CardHeader>
         <CardContent>
-          <OrderDisplay
-            pageSize={10}
-            fetchOrders={fetchOrdersProject}
-          />
+          <OrderDisplay pageSize={10} fetchOrders={fetchOrdersProject} />
         </CardContent>
       </Card>
 
@@ -166,43 +186,43 @@ function InfoItem({ label, value }: { label: string; value: any }) {
   return (
     <div>
       <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="font-medium truncate">{value ?? '-'}</div>
+      <div className="font-medium truncate">{value ?? "-"}</div>
     </div>
   );
 }
 
 function formatTime(ms?: number): string {
-  if (!ms) return '-';
+  if (!ms) return "-";
   return new Date(ms).toLocaleString();
 }
 
 function getStatusVariant(
-  status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
-    case 'ONLINE':
-      return 'default';
-    case 'CREATED':
-      return 'secondary';
-    case 'REJECTED':
-      return 'destructive';
+    case "ONLINE":
+      return "default";
+    case "CREATED":
+      return "secondary";
+    case "REJECTED":
+      return "destructive";
     default:
-      return 'outline';
+      return "outline";
   }
 }
 
 // 时间差格式化辅助函数：将毫秒格式化为易读的文本
 function formatDuration(ms?: number): string {
-  if (!ms || ms <= 0) return '0秒';
+  if (!ms || ms <= 0) return "0秒";
   const seconds = Math.floor(ms / 1000);
   if (seconds < 60) return `${seconds}秒`;
-  
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}分钟`;
-  
+
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}小时 ${minutes % 60}分`;
-  
+
   const days = Math.floor(hours / 24);
   return `${days}天 ${hours % 24}小时`;
 }
@@ -221,7 +241,7 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
         setError(null);
       })
       .catch((err) => {
-        setError(err.message || '统计数据加载失败');
+        setError(err.message || "统计数据加载失败");
       })
       .finally(() => {
         setLoading(false);
@@ -252,7 +272,9 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
           <CardTitle>订单统计看板</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-red-500 bg-red-50 p-4 rounded-lg">{error || '暂无数据'}</div>
+          <div className="text-red-500 bg-red-50 p-4 rounded-lg">
+            {error || "暂无数据"}
+          </div>
         </CardContent>
       </Card>
     );
@@ -265,7 +287,6 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
           {/* 模块 1：订单数 (蓝色调) */}
           <div className="flex flex-col justify-center rounded-xl border border-blue-100 bg-blue-50/50 p-6 dark:border-blue-900/50 dark:bg-blue-950/20">
             <div className="text-sm font-medium text-blue-600/80 dark:text-blue-400/80 mb-2">
@@ -285,7 +306,8 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
               ¥ {stats.totalAmount ?? 0}
             </div>
             <div className="mt-2 text-sm text-emerald-600/70 dark:text-emerald-400/70">
-              平均金额: ¥ {stats.averageAmount ? stats.averageAmount.toFixed(2) : '0.00'}
+              平均金额: ¥{" "}
+              {stats.averageAmount ? stats.averageAmount.toFixed(2) : "0.00"}
             </div>
           </div>
 
@@ -297,7 +319,7 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
             <div className="text-4xl font-bold tracking-tight text-violet-700 dark:text-violet-400">
               {formatDuration(stats.avgTimeDiffMs)}
             </div>
-            
+
             {/* 间隔数据的下级详细信息 */}
             <div className="mt-4 flex items-center justify-between text-xs text-violet-600/70 dark:text-violet-400/70">
               <div className="flex flex-col gap-1">
@@ -322,7 +344,6 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
               </div>
             </div>
           </div>
-
         </div>
       </CardContent>
     </Card>
@@ -392,10 +413,31 @@ function StatCharts({ statPayload }: { statPayload: string }) {
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="DAU" stroke="#8884d8" yAxisId="left" />
-            <Line type="monotone" dataKey="下载量" stroke="#82ca9d" yAxisId="right" />
-            <Line type="monotone" dataKey="购买数" stroke="#ffc658" yAxisId="left" />
-            <Line type="monotone" dataKey="钻石" stroke="#ff7300" name="销售额（100钻石=1元）" yAxisId="left" />
+            <Line
+              type="monotone"
+              dataKey="DAU"
+              stroke="#8884d8"
+              yAxisId="left"
+            />
+            <Line
+              type="monotone"
+              dataKey="下载量"
+              stroke="#82ca9d"
+              yAxisId="right"
+            />
+            <Line
+              type="monotone"
+              dataKey="购买数"
+              stroke="#ffc658"
+              yAxisId="left"
+            />
+            <Line
+              type="monotone"
+              dataKey="钻石"
+              stroke="#ff7300"
+              name="销售额（100钻石=1元）"
+              yAxisId="left"
+            />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
@@ -412,57 +454,57 @@ function formatDate(dateid: string): string {
 function OtherFields({ product }: { product: NeteaseProduct }) {
   // 定义各组要展示的字段
   const basicKeys = [
-    'itemName',
-    'itemId',
-    'priType',
-    'ratingLevel',
-    'queuePosition',
-    'remindable',
-    'collectionId',
-    'exemptPerfReviewNum',
+    "itemName",
+    "itemId",
+    "priType",
+    "ratingLevel",
+    "queuePosition",
+    "remindable",
+    "collectionId",
+    "exemptPerfReviewNum",
   ];
   const timeKeys = [
-    'createTime',
-    'createTimeMs',
-    'updateTimeMs',
-    'onlineTime',
-    'onlineTimeMs',
-    'applyReviewTime',
-    'applyReviewTimeMs',
+    "createTime",
+    "createTimeMs",
+    "updateTimeMs",
+    "onlineTime",
+    "onlineTimeMs",
+    "applyReviewTime",
+    "applyReviewTimeMs",
   ];
   const configKeys = [
-    'canManageServer',
-    'canSilentOnline',
-    'canSynchronizePc',
-    'canUpdatePc',
-    'isEa',
-    'isOriginal',
-    'isSilentOnline',
-    'isSuitablePc',
-    'isSync',
-    'isTestServer',
-    'syncPcFlag',
-    'peIsAddPlayPlan',
+    "canManageServer",
+    "canSilentOnline",
+    "canSynchronizePc",
+    "canUpdatePc",
+    "isEa",
+    "isOriginal",
+    "isSilentOnline",
+    "isSuitablePc",
+    "isSync",
+    "isTestServer",
+    "syncPcFlag",
+    "peIsAddPlayPlan",
   ];
   const otherKeys = [
-    'discount',
-    'interceptFields',
-    'lobbyConfigOpLog',
-    'lobbySortKey',
-    'oriWeakOffline',
-    'oriWeakOfflineReason',
-    'perfData',
-    'performanceServiceAvailable',
-    'performanceServiceStatus',
-    'playPlanExpireMonth',
-    'syncItemInfo',
-    'urgentStatus',
-    'weakOffline',
-    'weakOfflineReason',
-    'res',
-    'orderPayload',
-    'statPayload',
-    'templates',
+    "discount",
+    "interceptFields",
+    "lobbyConfigOpLog",
+    "lobbySortKey",
+    "oriWeakOffline",
+    "oriWeakOfflineReason",
+    "perfData",
+    "performanceServiceAvailable",
+    "performanceServiceStatus",
+    "playPlanExpireMonth",
+    "syncItemInfo",
+    "urgentStatus",
+    "weakOffline",
+    "weakOfflineReason",
+    "res",
+    "orderPayload",
+    "statPayload",
+    "templates",
   ];
 
   return (
@@ -483,7 +525,9 @@ function OtherFields({ product }: { product: NeteaseProduct }) {
               <KeyValueList
                 obj={product}
                 keys={basicKeys}
-                formatter={(v) => (v !== undefined && v !== null ? String(v) : '-')}
+                formatter={(v) =>
+                  v !== undefined && v !== null ? String(v) : "-"
+                }
               />
             </div>
           </TabsContent>
@@ -493,7 +537,7 @@ function OtherFields({ product }: { product: NeteaseProduct }) {
                 obj={product}
                 keys={timeKeys}
                 formatter={(v) =>
-                  typeof v === 'number' ? formatTime(v) : v ?? '-'
+                  typeof v === "number" ? formatTime(v) : (v ?? "-")
                 }
               />
             </div>
@@ -503,7 +547,7 @@ function OtherFields({ product }: { product: NeteaseProduct }) {
               <KeyValueList
                 obj={product}
                 keys={configKeys}
-                formatter={(v) => (v !== undefined ? String(v) : '-')}
+                formatter={(v) => (v !== undefined ? String(v) : "-")}
               />
             </div>
           </TabsContent>
@@ -513,8 +557,8 @@ function OtherFields({ product }: { product: NeteaseProduct }) {
                 obj={product}
                 keys={otherKeys}
                 formatter={(v) => {
-                  if (v === null || v === undefined) return '-';
-                  if (typeof v === 'object') {
+                  if (v === null || v === undefined) return "-";
+                  if (typeof v === "object") {
                     return (
                       <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-40">
                         {JSON.stringify(v, null, 2)}

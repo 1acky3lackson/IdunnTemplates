@@ -5,8 +5,8 @@
  * @returns 包含Base64编码和文件信息的对象
  */
 async function fetchFileToBase64(
-  url: string, 
-  filename?: string
+  url: string,
+  filename?: string,
 ): Promise<{ base64: string; filename: string; size: number; type: string }> {
   try {
     // 使用fetch获取文件
@@ -14,24 +14,24 @@ async function fetchFileToBase64(
     if (!response.ok) {
       throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
     }
-    
+
     // 获取ArrayBuffer
     const arrayBuffer = await response.arrayBuffer();
-    
+
     // 将ArrayBuffer转换为纯净Base64
     const base64 = arrayBufferToBase64(arrayBuffer);
-    
+
     // 获取文件信息
     const blob = new Blob([arrayBuffer]);
-    
+
     return {
       base64,
       filename: filename || getFilenameFromUrl(url),
       size: blob.size,
-      type: response.headers.get('content-type') || blob.type
+      type: response.headers.get("content-type") || blob.type,
     };
   } catch (error) {
-    console.error('获取文件失败:', error);
+    console.error("获取文件失败:", error);
     throw error;
   }
 }
@@ -43,13 +43,13 @@ async function fetchFileToBase64(
  */
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  let binary = '';
+  let binary = "";
   const len = bytes.byteLength;
-  
+
   for (let i = 0; i < len; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  
+
   return btoa(binary);
 }
 
@@ -60,8 +60,8 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
  */
 function getFilenameFromUrl(url: string): string {
   // 移除查询参数和哈希
-  const cleanUrl = url.split('?')[0].split('#')[0];
-  return cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+  const cleanUrl = url.split("?")[0].split("#")[0];
+  return cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
 }
 
 /**
@@ -73,11 +73,11 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
-  
+
   for (let i = 0; i < len; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  
+
   return bytes.buffer;
 }
 
@@ -87,14 +87,14 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
  * @returns 是否有效
  */
 function isValidBase64(base64: string): boolean {
-  if (typeof base64 !== 'string') return false;
-  
+  if (typeof base64 !== "string") return false;
+
   // Base64正则表达式
   const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-  
+
   // 检查长度是否为4的倍数
   if (base64.length % 4 !== 0) return false;
-  
+
   return base64Regex.test(base64);
 }
 
@@ -102,20 +102,19 @@ function isValidBase64(base64: string): boolean {
 async function exampleUsage(): Promise<void> {
   try {
     const result = await fetchFileToBase64(
-      'https://example.com/file.pdf', 
-      'document.pdf'
+      "https://example.com/file.pdf",
+      "document.pdf",
     );
-    
+
     // console.log('纯净Base64编码:', result.base64.substring(0, 100) + '...');
     // console.log('文件名:', result.filename);
     // console.log('文件大小:', result.size, 'bytes');
     // console.log('文件类型:', result.type);
     // console.log('Base64有效:', isValidBase64(result.base64));
-    
+
     // 如果需要，可以将Base64转换回ArrayBuffer
     const arrayBuffer = base64ToArrayBuffer(result.base64);
     // console.log('转换回的ArrayBuffer大小:', arrayBuffer.byteLength, 'bytes');
-    
   } catch (error) {
     // console.error('处理文件时出错:', error);
   }
@@ -135,7 +134,7 @@ export {
   arrayBufferToBase64,
   base64ToArrayBuffer,
   isValidBase64,
-  getFilenameFromUrl
+  getFilenameFromUrl,
 };
 
 export type { FileToBase64Result };

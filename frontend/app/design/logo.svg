@@ -31,7 +31,7 @@
   <!-- The Leaf (Idunn Symbolism - Nature/Apple) -->
   <!-- Positioned emerging from the top of the block -->
   <path d="M 256 160 Q 200 100 256 60 Q 312 100 256 160" fill="#76FF03" stroke="#33691E" stroke-width="3" filter="url(#glow)"/>
-  
+
   <!-- Blueprint Brackets -->
   <path d="M 120 120 L 80 120 L 80 160" fill="none" stroke="#00BCD4" stroke-width="8" stroke-linecap="round"/>
   <path d="M 392 120 L 432 120 L 432 160" fill="none" stroke="#00BCD4" stroke-width="8" stroke-linecap="round"/>

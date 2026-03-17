@@ -1,25 +1,52 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router';
-import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend 
-} from 'recharts';
-import { 
-  Card, CardContent, CardHeader, CardTitle, CardDescription 
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { useParams, Link } from "react-router";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { 
-  ArrowLeft, Wallet, PieChart as PieIcon, 
-  Coins, Info, CheckCircle2, ListCheck, Search, User, Calendar
+import {
+  ArrowLeft,
+  Wallet,
+  PieChart as PieIcon,
+  Coins,
+  Info,
+  CheckCircle2,
+  ListCheck,
+  Search,
+  User,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// 引入 API 和类型; 
-import { IDUNN_API } from '~/api';
-import type { NeteaseWithdraw, CheckoutWithdrawAllocation } from '~/api/generated';
-import { GenericCrudTable, type PageResponse } from '../generic-crud-table/generic-crud-table';
+// 引入 API 和类型;
+import { IDUNN_API } from "~/api";
+import type {
+  NeteaseWithdraw,
+  CheckoutWithdrawAllocation,
+} from "~/api/generated";
+import {
+  GenericCrudTable,
+  type PageResponse,
+} from "../generic-crud-table/generic-crud-table";
 
 // 定义结账单类型（基于你提供的JSON结构）
 interface CheckoutDetailInfo {
@@ -37,12 +64,19 @@ interface CheckoutDetailInfo {
   finishTimeMs?: number;
 }
 
-export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: string; uid?: string}) {
+export default function WithdrawDetailView({
+  id = "1",
+  uid = "wthdrw",
+}: {
+  id: string;
+  uid?: string;
+}) {
   const withdrawId = Number(id);
   const [withdraw, setWithdraw] = useState<NeteaseWithdraw | null>(null);
-  
+
   // 详情弹窗状态
-  const [selectedDetail, setSelectedDetail] = useState<CheckoutDetailInfo | null>(null);
+  const [selectedDetail, setSelectedDetail] =
+    useState<CheckoutDetailInfo | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   // 1. 获取提现单基础数据
@@ -62,8 +96,8 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
     const used = withdraw.usedOriginalValue || 0;
     const remaining = Math.max(0, (withdraw.originalValue || 0) - used);
     return [
-      { name: '已分配原始额', value: used, color: '#3b82f6' },
-      { name: '剩余可用原始额', value: remaining, color: '#e2e8f0' }
+      { name: "已分配原始额", value: used, color: "#3b82f6" },
+      { name: "剩余可用原始额", value: remaining, color: "#e2e8f0" },
     ];
   }, [withdraw]);
 
@@ -83,13 +117,18 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
     }
   };
 
-  const fetchAllocations = async (page: number, size: number, search: string) => {
-    const res = await IDUNN_API.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(
-      withdrawId,
-      search || undefined,
-      page,
-      size
-    );
+  const fetchAllocations = async (
+    page: number,
+    size: number,
+    search: string,
+  ) => {
+    const res =
+      await IDUNN_API.apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet(
+        withdrawId,
+        search || undefined,
+        page,
+        size,
+      );
     return res.data as PageResponse<CheckoutWithdrawAllocation>;
   };
 
@@ -100,57 +139,88 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
       {/* 顶部导航 */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/commercial/netease-withdraws"><ArrowLeft className="w-4 h-4 mr-2" />返回列表</Link>
+          <Link to="/commercial/netease-withdraws">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            返回列表
+          </Link>
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">提现单使用明细</h1>
-        <Badge variant="outline" className="font-mono">ID: {withdrawId}</Badge>
+        <Badge variant="outline" className="font-mono">
+          ID: {withdrawId}
+        </Badge>
       </div>
 
       {/* 第一部分：统计卡片 (保持不变) */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">原始总额 (PE)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              原始总额 (PE)
+            </CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-mono text-blue-600">¥{withdraw.originalValue?.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">费率: {(withdraw.ratio! * 100).toFixed(2)}%</p>
+            <div className="text-2xl font-bold font-mono text-blue-600">
+              ¥{withdraw.originalValue?.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              费率: {(withdraw.ratio! * 100).toFixed(2)}%
+            </p>
           </CardContent>
         </Card>
         <Card>
-           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             <CardTitle className="text-sm font-medium text-muted-foreground">已分配金额</CardTitle>
-             <CheckCircle2 className="h-4 w-4 text-green-500" />
-           </CardHeader>
-           <CardContent>
-             <div className="text-2xl font-bold font-mono">¥{withdraw.usedOriginalValue?.toFixed(2)}</div>
-             <p className="text-xs text-muted-foreground mt-1">
-               占比: {((withdraw.usedOriginalValue! / withdraw.originalValue!) * 100).toFixed(1)}%
-             </p>
-           </CardContent>
-         </Card>
-         <Card>
-           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             <CardTitle className="text-sm font-medium text-muted-foreground">剩余可用额</CardTitle>
-             <Coins className="h-4 w-4 text-amber-500" />
-           </CardHeader>
-           <CardContent>
-             <div className="text-2xl font-bold font-mono text-amber-600">
-               ¥{(withdraw.originalValue! - withdraw.usedOriginalValue!).toFixed(2)}
-             </div>
-           </CardContent>
-         </Card>
-         <Card>
-           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             <CardTitle className="text-sm font-medium text-muted-foreground">实际到账金额</CardTitle>
-             <Info className="h-4 w-4 text-muted-foreground" />
-           </CardHeader>
-           <CardContent>
-             <div className="text-2xl font-bold font-mono">¥{withdraw.withdrawValue?.toFixed(2)}</div>
-             <p className="text-xs text-muted-foreground mt-1">记录时间: {new Date(withdraw.saveTimeMs!).toLocaleDateString()}</p>
-           </CardContent>
-         </Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              已分配金额
+            </CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono">
+              ¥{withdraw.usedOriginalValue?.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              占比:{" "}
+              {(
+                (withdraw.usedOriginalValue! / withdraw.originalValue!) *
+                100
+              ).toFixed(1)}
+              %
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              剩余可用额
+            </CardTitle>
+            <Coins className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-amber-600">
+              ¥
+              {(withdraw.originalValue! - withdraw.usedOriginalValue!).toFixed(
+                2,
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              实际到账金额
+            </CardTitle>
+            <Info className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono">
+              ¥{withdraw.withdrawValue?.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              记录时间: {new Date(withdraw.saveTimeMs!).toLocaleDateString()}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 第二部分：图表展示 (保持不变) */}
@@ -176,7 +246,7 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
                   ))}
                 </Pie>
                 <Tooltip />
-                <Legend verticalAlign="bottom" height={36}/>
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -185,12 +255,22 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg">使用说明</CardTitle>
-            <CardDescription>该提现记录的所有资金流向如下列表所示</CardDescription>
+            <CardDescription>
+              该提现记录的所有资金流向如下列表所示
+            </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground leading-relaxed">
-            <p>1. 每一行记录代表一笔结算单（CheckoutDetail）对该提现单的占用。</p>
-            <p className="mt-2">2. <strong>扣除原始额</strong> 是指从网易后台显示的 PE 总额中扣除的部分。</p>
-            <p className="mt-2">3. <strong>实际折算额</strong> 是根据当前提现单的汇率（Ratio）自动计算的最终支付金额。</p>
+            <p>
+              1. 每一行记录代表一笔结算单（CheckoutDetail）对该提现单的占用。
+            </p>
+            <p className="mt-2">
+              2. <strong>扣除原始额</strong> 是指从网易后台显示的 PE
+              总额中扣除的部分。
+            </p>
+            <p className="mt-2">
+              3. <strong>实际折算额</strong>{" "}
+              是根据当前提现单的汇率（Ratio）自动计算的最终支付金额。
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -209,39 +289,50 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
             list={fetchAllocations}
             pageSize={10}
             schema={{
-              'id': { title: '分配ID' },
-              'checkoutDetailId': { 
-                title: '关联结账单', 
+              id: { title: "分配ID" },
+              checkoutDetailId: {
+                title: "关联结账单",
                 render: (val) => (
-                  <Button 
-                    variant="link" 
+                  <Button
+                    variant="link"
                     className="h-auto p-0 text-blue-600 font-medium"
                     onClick={() => handleViewDetail(val)}
                   >
                     #{val}
                   </Button>
-                )
+                ),
               },
-              'allocatedOriginal': { 
-                title: '扣除原始额 (PE)', 
+              allocatedOriginal: {
+                title: "扣除原始额 (PE)",
                 sortable: true,
-                render: (val) => <span className="font-mono text-blue-600">¥{val?.toFixed(4)}</span> 
+                render: (val) => (
+                  <span className="font-mono text-blue-600">
+                    ¥{val?.toFixed(4)}
+                  </span>
+                ),
               },
-              'actualAmount': { 
-                title: '实际折算额', 
-                render: (val) => <span className="font-mono font-semibold text-green-600">¥{val?.toFixed(4)}</span> 
+              actualAmount: {
+                title: "实际折算额",
+                render: (val) => (
+                  <span className="font-mono font-semibold text-green-600">
+                    ¥{val?.toFixed(4)}
+                  </span>
+                ),
               },
-              'createTimeMs': { 
-                title: '分配时间', 
-                render: (val) => new Date(val).toLocaleString() 
-              }
+              createTimeMs: {
+                title: "分配时间",
+                render: (val) => new Date(val).toLocaleString(),
+              },
             }}
           />
         </CardContent>
       </Card>
 
       {/* 结账单详情对话框 */}
-      <Dialog open={!!selectedDetail} onOpenChange={(open) => !open && setSelectedDetail(null)}>
+      <Dialog
+        open={!!selectedDetail}
+        onOpenChange={(open) => !open && setSelectedDetail(null)}
+      >
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -263,31 +354,43 @@ export default function WithdrawDetailView({ id = "1", uid = "wthdrw" }: {id: st
               </div>
               <div className="space-y-1">
                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                   角色类型
+                  角色类型
                 </span>
                 <Badge variant="secondary">{selectedDetail.role}</Badge>
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">分账比例</span>
-                <p className="font-mono">{(selectedDetail.ratio || 0 * 100).toFixed(2)}%</p>
+                <p className="font-mono">
+                  {(selectedDetail.ratio || 0 * 100).toFixed(2)}%
+                </p>
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">当前状态</span>
                 <Badge className="bg-green-600">{selectedDetail.status}</Badge>
               </div>
               <div className="space-y-1 border-t pt-2">
-                <span className="text-muted-foreground text-xs">净利润 (PE)</span>
-                <p className="font-mono text-blue-600 font-bold">¥{(selectedDetail.netProfit ?? 0).toFixed(4)}</p>
+                <span className="text-muted-foreground text-xs">
+                  净利润 (PE)
+                </span>
+                <p className="font-mono text-blue-600 font-bold">
+                  ¥{(selectedDetail.netProfit ?? 0).toFixed(4)}
+                </p>
               </div>
               <div className="space-y-1 border-t pt-2">
-                <span className="text-muted-foreground text-xs">实际利润 (CNY)</span>
-                <p className="font-mono text-green-600 font-bold">¥{(selectedDetail.actualProfit ?? 0).toFixed(4)}</p>
+                <span className="text-muted-foreground text-xs">
+                  实际利润 (CNY)
+                </span>
+                <p className="font-mono text-green-600 font-bold">
+                  ¥{(selectedDetail.actualProfit ?? 0).toFixed(4)}
+                </p>
               </div>
               <div className="col-span-2 space-y-1 border-t pt-2">
                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                   <Calendar className="w-3 h-3" /> 创建时间
                 </span>
-                <p className="text-xs">{new Date(selectedDetail.createTimeMs ?? 0).toLocaleString()}</p>
+                <p className="text-xs">
+                  {new Date(selectedDetail.createTimeMs ?? 0).toLocaleString()}
+                </p>
               </div>
             </div>
           )}

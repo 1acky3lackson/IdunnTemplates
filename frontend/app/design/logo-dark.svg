@@ -6,7 +6,7 @@
   </g>
 
   <path d="M 256 165 Q 210 110 256 75 Q 302 110 256 165" fill="oklch(0.90 0.20 150)" />
-  
+
   <path d="M 100 160 V 100 H 160" stroke="oklch(0.95 0.02 285)" stroke-width="6" stroke-opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M 352 412 V 352 H 412" stroke="oklch(0.95 0.02 285)" stroke-width="6" stroke-opacity="0.4" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 382 382)"/>
 </svg>
