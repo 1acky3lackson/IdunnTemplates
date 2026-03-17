@@ -1,0 +1,223 @@
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  ShieldAlert,
+  Loader2,
+  Calculator,
+  RefreshCw,
+  DollarSign,
+  ShieldCheck,
+} from "lucide-react";
+import { IDUNN_API } from "~/api";
+import { toast } from "sonner";
+
+// 假设 IDUNN_API 是全局可用或已导入的
+// import { IDUNN_API } from '@/api';
+
+export default function AdminDashboard() {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
+  useEffect(() => {
+    checkPermission();
+  }, []);
+
+  // 检查管理员权限
+  const checkPermission = async () => {
+    try {
+      // 调用鉴权接口
+      await IDUNN_API.apiV1CommercialAdminGet();
+      // 如果接口没有抛出异常，说明有权限（具体可根据你的后端实际返回结构调整，例如 res.data === true）
+      setIsAdmin(true);
+    } catch (error) {
+      // 捕获到错误（如 401/403）则视为无权限
+      setIsAdmin(false);
+    }
+  };
+
+  // 通用触发函数
+  const handleTriggerAction = async (
+    apiFunction: () => Promise<any>,
+    actionId: string,
+    actionName: string,
+  ) => {
+    setLoadingAction(actionId);
+    try {
+      await apiFunction();
+      toast("✅ 操作成功", {
+        description: `${actionName} 指令已成功发送。`,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.warning("❌ 操作失败", {
+        description: `${actionName} 触发失败，请检查网络或联系技术支持。`,
+      });
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  // 状态 1：正在检查权限（加载中）
+  if (isAdmin === null) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground animate-pulse">
+          正在验证管理员权限...
+        </p>
+      </div>
+    );
+  }
+
+  // 状态 2：无权限页面
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 animate-in fade-in zoom-in duration-500">
+        <div className="bg-destructive/10 p-5 rounded-full mb-6">
+          <ShieldAlert className="h-16 w-16 text-destructive" />
+        </div>
+        <h2 className="text-3xl font-bold tracking-tight mb-3">访问受限</h2>
+        <p className="text-muted-foreground max-w-md text-lg">
+          抱歉，您当前使用的账号没有管理员权限。如果您认为这是一个错误，请联系系统管理员获取访问权限。
+        </p>
+        <Button
+          variant="outline"
+          className="mt-8"
+          onClick={() => window.history.back()}
+        >
+          返回上一页
+        </Button>
+      </div>
+    );
+  }
+
+  // 状态 3：有权限，展示管理员面板
+  return (
+    <div className="container mx-auto py-10 max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center space-x-3 mb-8">
+        <div className="bg-primary/10 p-2 rounded-lg">
+          <ShieldCheck className="h-8 w-8 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">商业财务控制台</h1>
+          <p className="text-muted-foreground mt-1">
+            管理和手动触发核心商业计算与资金结算流程
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* 卡片 1：结算单实际金额结算 */}
+        <Card className="flex flex-col transition-all hover:shadow-md">
+          <CardHeader>
+            <RefreshCw className="h-6 w-6 text-green-500 mb-2" />
+            <CardTitle className="text-lg">订单收益分解</CardTitle>
+            <CardDescription>
+              触发系统重新进行订单收益的分解与归属计算。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1"></CardContent>
+          <CardFooter>
+            <Button
+              className="w-full"
+              variant="default"
+              disabled={loadingAction === "order"}
+              onClick={() =>
+                handleTriggerAction(
+                  () => IDUNN_API.apiV1CommercialAdminCalculateOrderGet(),
+                  "order",
+                  "订单收益分解计算",
+                )
+              }
+            >
+              {loadingAction === "order" ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 执行中...
+                </>
+              ) : (
+                "触发分解"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* 卡片 2：订单收益分解计算 */}
+        <Card className="flex flex-col transition-all hover:shadow-md">
+          <CardHeader>
+            <Calculator className="h-6 w-6 text-blue-500 mb-2" />
+            <CardTitle className="text-lg">结算实际金额</CardTitle>
+            <CardDescription>
+              重新触发或结算单到实际金额的计算逻辑。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            {/* 留空以保持对齐，或者可以放一些最后更新时间等信息 */}
+          </CardContent>
+          <CardFooter>
+            <Button
+              className="w-full"
+              disabled={loadingAction === "checkout"}
+              onClick={() =>
+                handleTriggerAction(
+                  () =>
+                    IDUNN_API.apiV1CommercialAdminCalculateCheckoutDetailGet(),
+                  "checkout",
+                  "结算单金额计算",
+                )
+              }
+            >
+              {loadingAction === "checkout" ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 执行中...
+                </>
+              ) : (
+                "触发计算"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* 卡片 3：释放冻结资金 */}
+        <Card className="flex flex-col transition-all hover:shadow-md">
+          <CardHeader>
+            <DollarSign className="h-6 w-6 text-amber-500 mb-2" />
+            <CardTitle className="text-lg">释放冻结资金</CardTitle>
+            <CardDescription>
+              触发计算，将符合条件的风险期内冻结资金释放至可用余额。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1"></CardContent>
+          <CardFooter>
+            <Button
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              disabled={loadingAction === "release"}
+              onClick={() =>
+                handleTriggerAction(
+                  () => IDUNN_API.apiV1CommercialAdminCalculateReleaseGet(),
+                  "release",
+                  "释放冻结资金",
+                )
+              }
+            >
+              {loadingAction === "release" ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 执行中...
+                </>
+              ) : (
+                "触发释放"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
+}

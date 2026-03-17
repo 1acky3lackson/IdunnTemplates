@@ -4,22 +4,27 @@ import { LogIn, Menu, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/theme/mode-toggle"
 import { NavigationBar } from "./nav/navigation-bar"
-import logo from "@/common/topbar/logo.svg"
 import darkLogo from "@/common/topbar/logo-dark.svg"
 import lightLogo from "@/common/topbar/logo-light.svg"
 import { useTheme } from "@/components/theme/theme-provider"
 import { LocaleSwitcher } from "../i18n/locale-switcher"
 import { useAuth } from "../auth/auth-provider"
-import { is } from "zod/v4/locales"
 import { Link, useNavigate } from "react-router"
 import { useIntlayer } from "react-intlayer"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "~/components/ui/hover-card"
+import { IDUNN_API } from "~/api"
 
 export default function TopBar() {
     const { siteTitle, login, logout: logoutBtn, meBtn } = useIntlayer("topbar");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
     const { theme } = useTheme()
     const nav = useNavigate();
+
+    const [isCommercialAdmin, setIsCommercialAdmin] = React.useState<boolean>(false);
+
+    React.useEffect(() => {
+        IDUNN_API.apiV1CommercialAdminGet().then((data) => {if(data.status >= 200 && data.status < 300) setIsCommercialAdmin(true)});
+    })
 
     const { isAuthenticated, user, login: loginFunc, logout } = useAuth();
     const toggleMobileMenu = () => {
@@ -87,8 +92,13 @@ export default function TopBar() {
                                         </Button>
                                     </div>
                                 </HoverCardTrigger>
-                                <HoverCardContent className="flex w-64 flex-col gap-0.5">
+                                <HoverCardContent className="flex w-64 flex-col gap-2">
                                     <Button variant="default" onClick={() => nav("/me")}>{meBtn}</Button>
+                                    {
+                                        isCommercialAdmin && (
+                                            <Button variant="outline" onClick={() => nav("/commercial/admin")}>商务管理员页</Button>
+                                        )
+                                    }
                                     <Button onClick={logout} variant="link">{logoutBtn}</Button>
                                 </HoverCardContent>
                             </HoverCard>

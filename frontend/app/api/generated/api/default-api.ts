@@ -227,6 +227,126 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 触发结算单实际金额结算
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminCalculateCheckoutDetailGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/admin/calculate/checkout-detail`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 触发订单收益分解计算
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminCalculateOrderGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/admin/calculate/order`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 触发计算释放冻结资金
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminCalculateReleaseGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/admin/calculate/release`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 是否有管理员权限
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/commercial/admin`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 获取当前激活的结算参数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2365,6 +2485,54 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 触发结算单实际金额结算
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialAdminCalculateCheckoutDetailGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialAdminCalculateCheckoutDetailGet(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialAdminCalculateCheckoutDetailGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 触发订单收益分解计算
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialAdminCalculateOrderGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialAdminCalculateOrderGet(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialAdminCalculateOrderGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 触发计算释放冻结资金
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialAdminCalculateReleaseGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialAdminCalculateReleaseGet(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialAdminCalculateReleaseGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 是否有管理员权限
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CommercialAdminGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CommercialAdminGet(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CommercialAdminGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 获取当前激活的结算参数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3139,6 +3307,42 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 触发结算单实际金额结算
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminCalculateCheckoutDetailGet(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialAdminCalculateCheckoutDetailGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 触发订单收益分解计算
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminCalculateOrderGet(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialAdminCalculateOrderGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 触发计算释放冻结资金
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminCalculateReleaseGet(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialAdminCalculateReleaseGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 是否有管理员权限
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CommercialAdminGet(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CommercialAdminGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 获取当前激活的结算参数
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3757,6 +3961,46 @@ export class DefaultApi extends BaseAPI {
      */
     public apiAuthMeGet(authToken?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiAuthMeGet(authToken, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 触发结算单实际金额结算
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialAdminCalculateCheckoutDetailGet(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialAdminCalculateCheckoutDetailGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 触发订单收益分解计算
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialAdminCalculateOrderGet(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialAdminCalculateOrderGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 触发计算释放冻结资金
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialAdminCalculateReleaseGet(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialAdminCalculateReleaseGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 是否有管理员权限
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CommercialAdminGet(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CommercialAdminGet(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
