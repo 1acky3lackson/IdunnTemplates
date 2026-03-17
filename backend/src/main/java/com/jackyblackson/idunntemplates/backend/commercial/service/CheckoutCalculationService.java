@@ -22,41 +22,41 @@ public class CheckoutCalculationService {
 
     public void processAllEnteredOrders() {
         int pageSize = 20;
-        int pageNumber = 0;
-
         int count = 0;
+
+        // 因为你的业务是 OrderByIdDesc（从大到小），初始游标设为 Long 的最大值
+        // 这样第一次查询时，能抓取到所有实际存在的 ID
+        long lastId = Long.MAX_VALUE;
+
         while (true) {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("id").descending());
-            int calculated = 0;
-            // 1. 始终查询第 0 页
-            Page<NeteaseOrder> page = neteaseOrderRepository.findByInternalStatusOrderByIdDesc(
+            // 注意：这里的 PageRequest 永远传 0 页，它只起到了 LIMIT 20 的作用
+            Pageable limit = PageRequest.of(0, pageSize);
+
+            java.util.List<NeteaseOrder> orders = neteaseOrderRepository.findByInternalStatusAndIdLessThanOrderByIdDesc(
                     NeteaseOrderStatus.ENTERED,
-                    pageable
+                    lastId,
+                    limit
             );
 
-            // 2. 处理当前页数据
-            for(NeteaseOrder order : page) {
-                boolean success = neteaseOrderUpdateService.checkoutEnterToCalculated(order);
-                if (success) {
-                    calculated ++;
-                }
-            }
-
-            if (calculated >= pageSize) {
-                pageNumber++;
-            } else {
-                pageNumber = 0;
-            }
-
-            // 3. 如果没有下一页了，或者当前页没满（说明后面没数据了），则退出
-            if (!page.hasNext()) {
+            // 如果查不到数据了，说明所有符合条件的记录都已经遍历过了，退出
+            if (orders.isEmpty()) {
                 break;
             }
 
-            // 可选：如果担心死循环（比如 service 没能成功修改状态），可以加一个安全计数器
-            count ++;
+            // 处理当前批次
+            for (NeteaseOrder order : orders) {
+                // 无论 checkoutEnterToCalculated 成功还是失败，都不会阻碍程序继续往下走
+                neteaseOrderUpdateService.checkoutEnterToCalculated(order);
+
+                // 【核心】：不断更新游标为当前读取到的最小 ID
+                // 因为集合是倒序排列的，最后一条一定是这个批次里 ID 最小的
+                lastId = order.getId();
+            }
+
+            // 依然保留一个安全网，防止极端情况的无限循环
+            count++;
             if (count > 600) {
-                log.warn("循环次数过多，大于 12000");
+                log.warn("批处理次数超过 600 次，强制退出以保护系统");
                 break;
             }
         }

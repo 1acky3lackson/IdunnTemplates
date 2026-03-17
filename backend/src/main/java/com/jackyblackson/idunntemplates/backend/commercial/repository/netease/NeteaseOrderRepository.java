@@ -26,4 +26,13 @@ public interface NeteaseOrderRepository extends
 
     // 支持分页的查询
     Page<NeteaseOrder> findByInternalStatusOrderByIdDesc(NeteaseOrderStatus internalStatus, Pageable pageable);
+
+    /**
+     * 游标分页：查询状态为 ENTERED，且 ID 小于指定 lastId 的记录，按 ID 倒序
+     */
+    List<NeteaseOrder> findByInternalStatusAndIdLessThanOrderByIdDesc(
+            NeteaseOrderStatus internalStatus,
+            Long lastId,
+            Pageable pageable
+    );
 }
