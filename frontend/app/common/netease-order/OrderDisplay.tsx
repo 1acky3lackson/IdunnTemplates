@@ -20,32 +20,47 @@ import CheckoutDetails from "../checkout-details/CheckoutDetails";
 
 // ---------- 辅助工具 ----------
 
+/*
+public enum NeteaseOrderStatus {
+  ENTERED,
+  CALCULATED,
+  INCOME,
+  AFTER_M,
+  AFTER_N,
+  REFUNDED
+}
+*/
+
 // 状态标签颜色映射
 const orderStatusColor = (status: string) => {
   switch (status) {
     case "ENTERED":
-      return "bg-blue-500";
-    case "PENDING":
-      return "bg-yellow-500";
-    case "CANCELLED":
-      return "bg-gray-500";
-    case "COMPLETED":
-      return "bg-green-500";
+      return "bg-blue-500 dark:bg-blue-500/50";
+    case "CALCULATED":
+      return "bg-yellow-500 dark:bg-yellow-500/50";
+    case "INCOME":
+      return "bg-lime-300 dark:bg-lime-300/50";
+    case "AFTER_N":
+      return "bg-green-500 dark:bg-green-500/50";
+    case "REFUNDED":
+      return "bg-red-300 dark:bg-red-300/50";
     default:
-      return "bg-gray-300";
+      return "bg-gray-300 dark:bg-gray-300/50";
   }
 };
 
 const orderStatusText = (status: string) => {
   switch (status) {
     case "ENTERED":
-      return "已录入";
-    case "PENDING":
-      return "处理中";
-    case "CANCELLED":
-      return "已取消";
-    case "COMPLETED":
-      return "已完成";
+      return "录入";
+    case "CALCULATED":
+      return "分成";
+    case "INCOME":
+      return "结款";
+    case "AFTER_N":
+      return "完成";
+    case "REFUNDED":
+      return "退款";
     default:
       return status;
   }
@@ -140,7 +155,9 @@ export function OrderDisplay({
             title: "状态",
             filterable: true,
             render: (val: string) => (
-              <Badge className={orderStatusColor(val)}>
+              <Badge
+                className={orderStatusColor(val) + " text-foreground font-bold"}
+              >
                 {orderStatusText(val)}
               </Badge>
             ),
@@ -234,7 +251,7 @@ function OrderDetailsDialog({
             <div className="col-span-2">
               <span className="text-muted-foreground block mb-1">备注信息</span>
               <CheckoutDetails
-                forceSearch={{ orderId: String(order.id) }}
+                forceSearch={{ "order.id": String(order.id) }}
                 pageSize={5}
               />
             </div>
