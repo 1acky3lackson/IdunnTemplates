@@ -37,9 +37,10 @@ const statusColorMap: Record<string, string> = {
 
 // 角色标签颜色映射
 const roleColorMap: Record<string, string> = {
-  CREATOR: "bg-purple-100 text-purple-800 border-purple-200",
-  PLATFORM: "bg-blue-100 text-blue-800 border-blue-200",
-  AGENCY: "bg-orange-100 text-orange-800 border-orange-200",
+  BUILDER: "bg-green-100 text-green-800 border-green-200",
+  MODIFIER: "bg-blue-100 text-blue-800 border-blue-200",
+  UPLOADER: "bg-purple-100 text-purple-800 border-purple-200",
+  SYSTEM: "bg-orange-100 text-orange-800 border-orange-200",
 };
 
 // 时间格式化工具
@@ -181,7 +182,7 @@ export default function CheckoutDetails({
             title: "实际收益",
             sortable: true,
             render: (val) => (
-              <span className="text-blue-600 font-semibold">
+              <span className="text-green-600 font-semibold">
                 {formatMoney(val)}
               </span>
             ),
