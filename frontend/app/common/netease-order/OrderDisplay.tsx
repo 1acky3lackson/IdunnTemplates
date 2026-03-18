@@ -144,13 +144,13 @@ export function OrderDisplay({
             title: "价格",
             filterable: true,
             sortable: true,
-            render: (val, row) => `${val} ${row.pointType}`,
+            // render: (val, row) => `${val} ${row.pointType}`,
           },
-          // 'pointType': {
-          //   title: "货币",
-          //   filterable: true,
-          //   sortable: true
-          // },
+          pointType: {
+            title: "类型",
+            filterable: true,
+            // sortable: true
+          },
           internalStatus: {
             title: "状态",
             filterable: true,
