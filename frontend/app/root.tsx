@@ -16,6 +16,7 @@ import TopBar from "@/common/topbar/topbar";
 import { IntlayerProvider, useLocale } from "react-intlayer";
 import { useI18nHTMLAttributes } from "./hooks/i18n/useI18nHTMLAttributes";
 import { getLocaleFromPath } from "intlayer";
+import { LoadingScreen } from "./common/loading-screen/LoadingScreen";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -60,6 +61,10 @@ export function Layout({
       </body>
     </html>
   );
+}
+
+export function HydrateFallback() {
+  return <LoadingScreen />;
 }
 
 export default function App() {
