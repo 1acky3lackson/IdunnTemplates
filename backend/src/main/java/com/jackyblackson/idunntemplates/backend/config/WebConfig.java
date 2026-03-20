@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.backend.config;
 
 import com.jackyblackson.idunntemplates.backend.interceptor.AuthInterceptor;
+import com.jackyblackson.idunntemplates.backend.resolver.TrustedServerArgumentResolver;
 import com.jackyblackson.idunntemplates.backend.resolver.UserArgumentResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -15,10 +16,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
     private final UserArgumentResolver userArgumentResolver;
+    private final TrustedServerArgumentResolver trustedServerArgumentResolver;
 
-    public WebConfig(AuthInterceptor authInterceptor, UserArgumentResolver userArgumentResolver) {
+    public WebConfig(AuthInterceptor authInterceptor, 
+                     UserArgumentResolver userArgumentResolver,
+                     TrustedServerArgumentResolver trustedServerArgumentResolver) {
         this.authInterceptor = authInterceptor;
         this.userArgumentResolver = userArgumentResolver;
+        this.trustedServerArgumentResolver = trustedServerArgumentResolver;
     }
 
     @Override
@@ -29,6 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(userArgumentResolver);
+        resolvers.add(trustedServerArgumentResolver);
     }
 
     @Override

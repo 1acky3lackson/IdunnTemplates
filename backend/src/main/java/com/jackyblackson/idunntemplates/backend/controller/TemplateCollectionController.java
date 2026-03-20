@@ -2,10 +2,18 @@ package com.jackyblackson.idunntemplates.backend.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.domain.TemplateCollection;
+import com.jackyblackson.idunntemplates.backend.dto.TrustedServerContext;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.TemplateCollectionService;
 import com.jackyblackson.idunntemplates.backend.store.repository.TemplateCollectionRepository;
 import com.jackyblackson.idunntemplates.backend.store.repository.TemplateRepository;
+import com.jackyblackson.idunntemplates.backend.dto.TemplateWithColorsDto;
+import com.jackyblackson.idunntemplates.backend.service.TemplateColorService;
+import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
+import com.jackyblackson.idunntemplates.backend.store.repository.TemplateVersionRepository;
+import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
+import org.springframework.data.domain.PageImpl;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
@@ -22,8 +30,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/collections")
@@ -33,8 +47,11 @@ public class TemplateCollectionController {
     private final TemplateCollectionRepository repository;
     private final TemplateCollectionService collectionService;
 
-    // ... 在 TemplateCollectionController 顶部添加 TemplateRepository 依赖 ...
+    // ... 在 TemplateCollectionController 顶部添加 TemplateRepository 和其他所需依赖 ...
     private final TemplateRepository templateRepository;
+    private final TemplateColorService templateColorService;
+    private final LuckyPermAuthService luckyPermAuthService;
+    private final TemplateVersionRepository templateVersionRepository;
 
     /**
      * 分页查询合集列表
@@ -47,6 +64,9 @@ public class TemplateCollectionController {
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.list)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
 
         boolean viewAll = false;
 
@@ -85,6 +105,9 @@ public class TemplateCollectionController {
             @PathVariable Long id,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.get)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
         boolean viewAll = false;
 
         TemplateCollection collection = repository.findById(id)
@@ -107,6 +130,9 @@ public class TemplateCollectionController {
             @RequestBody CollectionRequest request,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.create)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
         TemplateCollection created = collectionService.createCollection(
                 request.getName(), request.getDescription(), request.isPrivateCollection(), user);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -123,6 +149,9 @@ public class TemplateCollectionController {
             @RequestParam(required = false, defaultValue = "false") boolean viewAll,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.update)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
         TemplateCollection updated = collectionService.updateCollection(
                 id, request.getName(), request.getDescription(), request.isPrivateCollection(), user, viewAll);
         return ResponseEntity.ok(updated);
@@ -138,6 +167,9 @@ public class TemplateCollectionController {
             @RequestParam(required = false, defaultValue = "false") boolean viewAll,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.delete)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
         collectionService.deleteCollection(id, user, viewAll);
         return ResponseEntity.noContent().build();
     }
@@ -148,12 +180,16 @@ public class TemplateCollectionController {
      */
     @GetMapping("/{id}/templates")
     @AuthRequired
-    public ResponseEntity<Page<Template>> listTemplatesInCollection(
+    public ResponseEntity<Page<TemplateWithColorsDto>> listTemplatesInCollection(
             @PathVariable Long id,
             @RequestParam(required = false) String search,
             @RequestParam(required = false, defaultValue = "false") boolean viewAll,
             @PageableDefault(size = 20, sort = "lastVersionAt", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user) {
+
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.listTemplates)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
 
         // 1. 获取针对该合集的子查询过滤条件（内部已包含合集可见性鉴权）
         Specification<Template> collectionSpec = collectionService.getTemplatesInCollectionSpec(id, user, viewAll);
@@ -168,8 +204,77 @@ public class TemplateCollectionController {
 
         // 4. 执行查询
         Page<Template> page = templateRepository.findAll(finalSpec, pageable);
+        List<Template> originalContent = page.getContent();
 
-        return ResponseEntity.ok(page);
+        // 1. 提取非空的 ID 和 Path 用于批量查询，避免对 null 对象调用方法
+        List<Template> nonNullTemplates = originalContent.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // 2. 批量解析颜色 (Map 的 Key 是 UUID)
+        Map<UUID, List<String>> colors = nonNullTemplates.isEmpty() ? Collections.emptyMap() :
+                templateColorService.resolveColorsForTemplates(nonNullTemplates);
+
+        // 3. 批量检查权限 (需处理 path 为 null 的情况)
+        List<String> distinctPaths = nonNullTemplates.stream()
+                .map(Template::getPath)
+                .filter(Objects::nonNull)
+                .map(path -> PermissionNames.Templates.commitToPath$R + "." + path.replace("/", "."))
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, Boolean> commitPermResults = (user != null && !distinctPaths.isEmpty()) ?
+                luckyPermAuthService.batchCheckPermissions(user.getUuid(), user.getUsername(), distinctPaths) :
+                Collections.emptyMap();
+
+        // 4. 批量获取版本 (关联查询)
+        Map<UUID, List<TemplateVersion>> versionsMap = nonNullTemplates.isEmpty() ? Collections.emptyMap() :
+                templateVersionRepository.findByTemplateIn(nonNullTemplates).stream()
+                        .filter(v -> v != null && v.getTemplate() != null)
+                        .collect(Collectors.groupingBy(v -> v.getTemplate().getId()));
+
+        // 5. 映射 DTO，严格保持 originalContent 的顺序和长度
+        List<TemplateWithColorsDto> dtos = originalContent.stream().map(t -> {
+            // 如果元素为 null，直接返回 null 保持占位
+            if (t == null) {
+                return null;
+            }
+
+            // 此时 t 保证非空
+            List<String> colorList = colors.getOrDefault(t.getId(), Collections.emptyList());
+            TemplateWithColorsDto dto = new TemplateWithColorsDto(t, colorList);
+
+            // 处理版本信息
+            List<TemplateVersion> allVersions = versionsMap.getOrDefault(t.getId(), Collections.emptyList());
+            List<TemplateVersion> sortedVersions = allVersions.stream()
+                    .filter(Objects::nonNull)
+                    .sorted(Comparator.comparingLong((TemplateVersion v) ->
+                            Optional.of(v.getCreatedAt()).orElse(0L)).reversed())
+                    .toList();
+
+            dto.setVersionCount(sortedVersions.size());
+            if (!sortedVersions.isEmpty()) {
+                dto.setLatestVersionName(sortedVersions.get(0).getVersionId());
+                dto.setLatestVersions(sortedVersions.stream().limit(10).collect(Collectors.toList()));
+            } else {
+                dto.setLatestVersions(Collections.emptyList());
+            }
+
+            dto.setCanUse(true);
+
+            // 处理权限
+            String path = t.getPath();
+            if (path != null) {
+                String commitPerm = PermissionNames.Templates.commitToPath$R + "." + path.replace("/", ".");
+                dto.setCanCommit(commitPermResults.getOrDefault(commitPerm, false));
+            } else {
+                dto.setCanCommit(false);
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(new PageImpl<>(dtos, page.getPageable(), page.getTotalElements()));
     }
 
     /**
@@ -227,6 +332,9 @@ public class TemplateCollectionController {
             @RequestParam(required = false, defaultValue = "false") boolean viewAll,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.addTemplate)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
         collectionService.addTemplateToCollection(id, request.getTemplateId(), user, viewAll);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -242,8 +350,74 @@ public class TemplateCollectionController {
             @RequestParam(required = false, defaultValue = "false") boolean viewAll,
             UserContext user
     ) {
+        if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.removeTemplate)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+        }
         collectionService.removeTemplateFromCollection(id, templateId, user, viewAll);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 获取指定合集下的随机模板
+     * 采用外尔序列算法尽力避免重复
+     */
+    @GetMapping("/{id}/random")
+    @AuthRequired(allowServerToken = true)
+    public ResponseEntity<TemplateWithColorsDto> getRandomTemplate(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "false") boolean viewAll,
+            UserContext user,
+            TrustedServerContext trustedServerContext) {
+        
+        if (trustedServerContext != null) {
+            viewAll = true;
+        } else {
+            if (!luckyPermAuthService.checkPermission(user, PermissionNames.TemplateCollections.getRandom)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied");
+            }
+        }
+
+        Template t = collectionService.getRandomTemplateFromCollection(id, user, viewAll);
+        if (t == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 映射 DTO (颜色、版本、权限)
+        Map<UUID, List<String>> colors = templateColorService.resolveColorsForTemplates(Collections.singletonList(t));
+        List<String> colorList = colors.getOrDefault(t.getId(), Collections.emptyList());
+
+        TemplateWithColorsDto dto = new TemplateWithColorsDto(t, colorList);
+
+        // 处理版本信息
+        List<TemplateVersion> allVersions = templateVersionRepository.findByTemplateIn(Collections.singletonList(t));
+        List<TemplateVersion> sortedVersions = allVersions.stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingLong((TemplateVersion v) ->
+                        Optional.ofNullable(v.getCreatedAt()).orElse(0L)).reversed())
+                .collect(Collectors.toList());
+
+        dto.setVersionCount(sortedVersions.size());
+        if (!sortedVersions.isEmpty()) {
+            dto.setLatestVersionName(sortedVersions.get(0).getVersionId());
+            dto.setLatestVersions(sortedVersions.stream().limit(10).collect(Collectors.toList()));
+        } else {
+            dto.setLatestVersions(Collections.emptyList());
+        }
+
+        dto.setCanUse(true);
+
+        // 处理权限
+        String path = t.getPath();
+        if (path != null) {
+            String commitPerm = PermissionNames.Templates.commitToPath$R + "." + path.replace("/", ".");
+            Map<String, Boolean> permResult = luckyPermAuthService.batchCheckPermissions(
+                    user.getUuid(), user.getUsername(), Collections.singletonList(commitPerm));
+            dto.setCanCommit(permResult.getOrDefault(commitPerm, false));
+        } else {
+            dto.setCanCommit(false);
+        }
+
+        return ResponseEntity.ok(dto);
     }
 
     // ---------- 内部 Request DTO 类 ----------

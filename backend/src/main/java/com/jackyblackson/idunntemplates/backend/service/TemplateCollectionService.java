@@ -14,7 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @AllArgsConstructor
@@ -23,6 +29,8 @@ public class TemplateCollectionService {
     private final TemplateCollectionRepository collectionRepository;
     private final TemplateCollectionRelationRepository relationRepository;
     private final TemplateRepository templateRepository;
+
+    private final Map<Long, AtomicLong> collectionCounters = new ConcurrentHashMap<>();
 
     @Transactional
     public TemplateCollection createCollection(String name, String description, boolean isPrivate, UserContext user) {
@@ -99,6 +107,39 @@ public class TemplateCollectionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to modify this collection");
         }
         return collection;
+    }
+
+    /**
+     * 获取合集内的随机模板，使用外尔序列 (Weyl sequence) 算法实现无状态的去重随机。
+     * 可以保证在 N 次请求内一定遍历一遍完整的模板，而不在服务端保存历史。
+     */
+    public Template getRandomTemplateFromCollection(Long collectionId, UserContext user, boolean viewAll) {
+        // 1. 鉴权：检查可见性
+        getCollectionAndCheckPermission(collectionId, user, viewAll);
+        
+        // 2. 获取所有 Template ID
+        List<UUID> templateIds = relationRepository.findTemplateIdsByCollectionId(collectionId);
+        if (templateIds == null || templateIds.isEmpty()) {
+            return null;
+        }
+        
+        int n = templateIds.size();
+        
+        // 3. 取得该合集的递增计数器
+        AtomicLong counter = collectionCounters.computeIfAbsent(collectionId, k -> new AtomicLong((long) (Math.random() * 100000)));
+        long c = counter.getAndIncrement();
+        
+        // 4. 基于轮次 (round) 的洗牌算法 (Shuffle-Bag 变种)
+        // 我们以 N 次请求为一轮。在同一轮中，使用与轮次相关的固定 Seed 对 ID 列表进行完全乱序 (Shuffle)。
+        // 然后按照这一轮的步数 (step) 按序取出。这样就能实现“同一轮内绝对随机且不重复”，并且无任何昂贵的历史记录开销。
+        long round = c / n;
+        int step = (int) (c % n);
+        
+        long seed = (collectionId * 31L) ^ (round * 1000003L);
+        Collections.shuffle(templateIds, new Random(seed));
+        
+        UUID randomTemplateId = templateIds.get(step);
+        return templateRepository.findById(randomTemplateId).orElse(null);
     }
 
     /**

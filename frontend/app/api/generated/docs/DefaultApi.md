@@ -7,6 +7,14 @@ All URIs are relative to *http://localhost*
 |[**apiAuthLoginPost**](#apiauthloginpost) | **POST** /api/auth/login | Yggdrasil 登录|
 |[**apiAuthLogoutPost**](#apiauthlogoutpost) | **POST** /api/auth/logout | 查看个人信息 / 验证登录 Copy|
 |[**apiAuthMeGet**](#apiauthmeget) | **GET** /api/auth/me | 查看个人信息 / 验证登录|
+|[**apiV1CollectionsGet**](#apiv1collectionsget) | **GET** /api/v1/collections | 模板合集列表|
+|[**apiV1CollectionsIdDelete**](#apiv1collectionsiddelete) | **DELETE** /api/v1/collections/{id} | 删除合集|
+|[**apiV1CollectionsIdPut**](#apiv1collectionsidput) | **PUT** /api/v1/collections/{id} | 更新模板合集|
+|[**apiV1CollectionsIdRandomGet**](#apiv1collectionsidrandomget) | **GET** /api/v1/collections/{id}/random | 获取随机模板|
+|[**apiV1CollectionsIdTemplatesGet**](#apiv1collectionsidtemplatesget) | **GET** /api/v1/collections/{id}/templates | 分页获取/筛选合集的模板列表|
+|[**apiV1CollectionsIdTemplatesPost**](#apiv1collectionsidtemplatespost) | **POST** /api/v1/collections/{id}/templates | 向合集添加模板|
+|[**apiV1CollectionsIdTemplatesTemplateIdDelete**](#apiv1collectionsidtemplatestemplateiddelete) | **DELETE** /api/v1/collections/{id}/templates/{templateId} | 删除合集内的模板|
+|[**apiV1CollectionsPost**](#apiv1collectionspost) | **POST** /api/v1/collections | 新建合集|
 |[**apiV1CommercialAdminCalculateCheckoutDetailGet**](#apiv1commercialadmincalculatecheckoutdetailget) | **GET** /api/v1/commercial/admin/calculate/checkout-detail | 触发结算单实际金额结算|
 |[**apiV1CommercialAdminCalculateOrderGet**](#apiv1commercialadmincalculateorderget) | **GET** /api/v1/commercial/admin/calculate/order | 触发订单收益分解计算|
 |[**apiV1CommercialAdminCalculateReleaseGet**](#apiv1commercialadmincalculatereleaseget) | **GET** /api/v1/commercial/admin/calculate/release | 触发计算释放冻结资金|
@@ -49,6 +57,9 @@ All URIs are relative to *http://localhost*
 |[**apiV1RemoteSetsIdSourcesGet**](#apiv1remotesetsidsourcesget) | **GET** /api/v1/remote-sets/{id}/sources | 具体RemoteSet的Source列表|
 |[**apiV1RemoteSetsIdSourcesPost**](#apiv1remotesetsidsourcespost) | **POST** /api/v1/remote-sets/{id}/sources | 为 Set 添加 Source|
 |[**apiV1RemoteSetsPost**](#apiv1remotesetspost) | **POST** /api/v1/remote-sets | 新建 RemoteSet|
+|[**apiV1ServersGet**](#apiv1serversget) | **GET** /api/v1/servers | 信任服务器列表|
+|[**apiV1ServersIdDelete**](#apiv1serversiddelete) | **DELETE** /api/v1/servers/{id} | 删除服务器|
+|[**apiV1ServersPost**](#apiv1serverspost) | **POST** /api/v1/servers | 添加服务器|
 |[**apiV1TemplatesGet**](#apiv1templatesget) | **GET** /api/v1/templates | 模板列表（或根据Path）|
 |[**apiV1TemplatesIdDownloadGet**](#apiv1templatesiddownloadget) | **GET** /api/v1/templates/{id}/download | 模板版本 schem 数据下载|
 |[**apiV1TemplatesIdGet**](#apiv1templatesidget) | **GET** /api/v1/templates/{id} | 模板详细数据|
@@ -216,6 +227,447 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsGet**
+> object apiV1CollectionsGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let search: string; // (optional) (default to undefined)
+let page: number; // (optional) (default to undefined)
+let size: number; // (optional) (default to undefined)
+let sort: string; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CollectionsGet(
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **search** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to undefined|
+| **size** | [**number**] |  | (optional) defaults to undefined|
+| **sort** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsIdDelete**
+> object apiV1CollectionsIdDelete()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CollectionsIdDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**204** | 删除成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsIdPut**
+> TemplateCollection apiV1CollectionsIdPut()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CollectionsIdPutRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1CollectionsIdPutRequest: ApiV1CollectionsIdPutRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CollectionsIdPut(
+    id,
+    apiV1CollectionsIdPutRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CollectionsIdPutRequest** | **ApiV1CollectionsIdPutRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**TemplateCollection**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsIdRandomGet**
+> Template apiV1CollectionsIdRandomGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CollectionsIdRandomGet(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**Template**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsIdTemplatesGet**
+> ApiV1CollectionsIdTemplatesGet200Response apiV1CollectionsIdTemplatesGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+let search: number; // (optional) (default to undefined)
+let page: string; // (optional) (default to undefined)
+let size: string; // (optional) (default to undefined)
+let sort: number; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CollectionsIdTemplatesGet(
+    id,
+    search,
+    page,
+    size,
+    sort
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+| **search** | [**number**] |  | (optional) defaults to undefined|
+| **page** | [**string**] |  | (optional) defaults to undefined|
+| **size** | [**string**] |  | (optional) defaults to undefined|
+| **sort** | [**number**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**ApiV1CollectionsIdTemplatesGet200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsIdTemplatesPost**
+> object apiV1CollectionsIdTemplatesPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CollectionsIdTemplatesPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+let apiV1CollectionsIdTemplatesPostRequest: ApiV1CollectionsIdTemplatesPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CollectionsIdTemplatesPost(
+    id,
+    apiV1CollectionsIdTemplatesPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CollectionsIdTemplatesPostRequest** | **ApiV1CollectionsIdTemplatesPostRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**201** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsIdTemplatesTemplateIdDelete**
+> Undefined apiV1CollectionsIdTemplatesTemplateIdDelete()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //合集 Id (default to undefined)
+let templateId: string; //模板的 Uuid (default to undefined)
+
+const { status, data } = await apiInstance.apiV1CollectionsIdTemplatesTemplateIdDelete(
+    id,
+    templateId
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | 合集 Id | defaults to undefined|
+| **templateId** | [**string**] | 模板的 Uuid | defaults to undefined|
+
+
+### Return type
+
+**Undefined**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**204** | 删除成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1CollectionsPost**
+> TemplateCollection apiV1CollectionsPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1CollectionsPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let apiV1CollectionsPostRequest: ApiV1CollectionsPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1CollectionsPost(
+    apiV1CollectionsPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1CollectionsPostRequest** | **ApiV1CollectionsPostRequest**|  | |
+
+
+### Return type
+
+**TemplateCollection**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**201** | 成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2411,6 +2863,153 @@ const { status, data } = await apiInstance.apiV1RemoteSetsPost(
 ### Return type
 
 **ApiV1RemoteSetsPost200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1ServersGet**
+> Array<ApiV1ServersGet200ResponseInner> apiV1ServersGet()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+const { status, data } = await apiInstance.apiV1ServersGet();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**Array<ApiV1ServersGet200ResponseInner>**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1ServersIdDelete**
+> object apiV1ServersIdDelete()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiV1ServersIdDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiV1ServersPost**
+> ApiV1ServersPost200Response apiV1ServersPost()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApiV1ServersPostRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let apiV1ServersPostRequest: ApiV1ServersPostRequest; // (optional)
+
+const { status, data } = await apiInstance.apiV1ServersPost(
+    apiV1ServersPostRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **apiV1ServersPostRequest** | **ApiV1ServersPostRequest**|  | |
+
+
+### Return type
+
+**ApiV1ServersPost200Response**
 
 ### Authorization
 

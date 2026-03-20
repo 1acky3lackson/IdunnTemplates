@@ -28,6 +28,14 @@ import type { ApiAuthLoginPostRequest } from '../model';
 // @ts-ignore
 import type { ApiAuthMeGet200Response } from '../model';
 // @ts-ignore
+import type { ApiV1CollectionsIdPutRequest } from '../model';
+// @ts-ignore
+import type { ApiV1CollectionsIdTemplatesGet200Response } from '../model';
+// @ts-ignore
+import type { ApiV1CollectionsIdTemplatesPostRequest } from '../model';
+// @ts-ignore
+import type { ApiV1CollectionsPostRequest } from '../model';
+// @ts-ignore
 import type { ApiV1CommercialGlobalContextsCurrentGet200Response } from '../model';
 // @ts-ignore
 import type { ApiV1CommercialGlobalContextsGet200ResponseInner } from '../model';
@@ -73,6 +81,12 @@ import type { ApiV1RemoteSetsIdSourcesPostRequest } from '../model';
 import type { ApiV1RemoteSetsPost200Response } from '../model';
 // @ts-ignore
 import type { ApiV1RemoteSetsPostRequest } from '../model';
+// @ts-ignore
+import type { ApiV1ServersGet200ResponseInner } from '../model';
+// @ts-ignore
+import type { ApiV1ServersPost200Response } from '../model';
+// @ts-ignore
+import type { ApiV1ServersPostRequest } from '../model';
 // @ts-ignore
 import type { ApiV1TemplatesIdMovePatchRequest } from '../model';
 // @ts-ignore
@@ -120,9 +134,13 @@ import type { SystemWithdraw } from '../model';
 // @ts-ignore
 import type { Template } from '../model';
 // @ts-ignore
+import type { TemplateCollection } from '../model';
+// @ts-ignore
 import type { TemplatePagenable } from '../model';
 // @ts-ignore
 import type { TemplateVersionPagenable } from '../model';
+// @ts-ignore
+import type { Undefined } from '../model';
 // @ts-ignore
 import type { UserProjectContribution } from '../model';
 /**
@@ -219,6 +237,323 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 模板合集列表
+         * @param {string} [search] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsGet: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/collections`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 删除合集
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdDelete: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CollectionsIdDelete', 'id', id)
+            const localVarPath = `/api/v1/collections/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 更新模板合集
+         * @param {string} id 
+         * @param {ApiV1CollectionsIdPutRequest} [apiV1CollectionsIdPutRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdPut: async (id: string, apiV1CollectionsIdPutRequest?: ApiV1CollectionsIdPutRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CollectionsIdPut', 'id', id)
+            const localVarPath = `/api/v1/collections/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CollectionsIdPutRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取随机模板
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdRandomGet: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CollectionsIdRandomGet', 'id', id)
+            const localVarPath = `/api/v1/collections/{id}/random`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 分页获取/筛选合集的模板列表
+         * @param {string} id 
+         * @param {number} [search] 
+         * @param {string} [page] 
+         * @param {string} [size] 
+         * @param {number} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdTemplatesGet: async (id: string, search?: number, page?: string, size?: string, sort?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CollectionsIdTemplatesGet', 'id', id)
+            const localVarPath = `/api/v1/collections/{id}/templates`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 向合集添加模板
+         * @param {string} id 
+         * @param {ApiV1CollectionsIdTemplatesPostRequest} [apiV1CollectionsIdTemplatesPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdTemplatesPost: async (id: string, apiV1CollectionsIdTemplatesPostRequest?: ApiV1CollectionsIdTemplatesPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CollectionsIdTemplatesPost', 'id', id)
+            const localVarPath = `/api/v1/collections/{id}/templates`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CollectionsIdTemplatesPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 删除合集内的模板
+         * @param {string} id 合集 Id
+         * @param {string} templateId 模板的 Uuid
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdTemplatesTemplateIdDelete: async (id: string, templateId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1CollectionsIdTemplatesTemplateIdDelete', 'id', id)
+            // verify required parameter 'templateId' is not null or undefined
+            assertParamExists('apiV1CollectionsIdTemplatesTemplateIdDelete', 'templateId', templateId)
+            const localVarPath = `/api/v1/collections/{id}/templates/{templateId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"templateId"}}`, encodeURIComponent(String(templateId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 新建合集
+         * @param {ApiV1CollectionsPostRequest} [apiV1CollectionsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsPost: async (apiV1CollectionsPostRequest?: ApiV1CollectionsPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/collections`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1CollectionsPostRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1783,6 +2118,103 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 
+         * @summary 信任服务器列表
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ServersGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/servers`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 删除服务器
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ServersIdDelete: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('apiV1ServersIdDelete', 'id', id)
+            const localVarPath = `/api/v1/servers/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = '*/*';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 添加服务器
+         * @param {ApiV1ServersPostRequest} [apiV1ServersPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ServersPost: async (apiV1ServersPostRequest?: ApiV1ServersPostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/servers`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(apiV1ServersPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
          * @summary 模板列表（或根据Path）
          * @param {string} [pathPrefix] 
@@ -2545,6 +2977,120 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 模板合集列表
+         * @param {string} [search] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsGet(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsGet(search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 删除合集
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsIdDelete(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 更新模板合集
+         * @param {string} id 
+         * @param {ApiV1CollectionsIdPutRequest} [apiV1CollectionsIdPutRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsIdPut(id: string, apiV1CollectionsIdPutRequest?: ApiV1CollectionsIdPutRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TemplateCollection>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsIdPut(id, apiV1CollectionsIdPutRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsIdPut']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取随机模板
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsIdRandomGet(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Template>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsIdRandomGet(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsIdRandomGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 分页获取/筛选合集的模板列表
+         * @param {string} id 
+         * @param {number} [search] 
+         * @param {string} [page] 
+         * @param {string} [size] 
+         * @param {number} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsIdTemplatesGet(id: string, search?: number, page?: string, size?: string, sort?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1CollectionsIdTemplatesGet200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsIdTemplatesGet(id, search, page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsIdTemplatesGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 向合集添加模板
+         * @param {string} id 
+         * @param {ApiV1CollectionsIdTemplatesPostRequest} [apiV1CollectionsIdTemplatesPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsIdTemplatesPost(id: string, apiV1CollectionsIdTemplatesPostRequest?: ApiV1CollectionsIdTemplatesPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsIdTemplatesPost(id, apiV1CollectionsIdTemplatesPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsIdTemplatesPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 删除合集内的模板
+         * @param {string} id 合集 Id
+         * @param {string} templateId 模板的 Uuid
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsIdTemplatesTemplateIdDelete(id: string, templateId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Undefined>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsIdTemplatesTemplateIdDelete(id, templateId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsIdTemplatesTemplateIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 新建合集
+         * @param {ApiV1CollectionsPostRequest} [apiV1CollectionsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1CollectionsPost(apiV1CollectionsPostRequest?: ApiV1CollectionsPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TemplateCollection>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1CollectionsPost(apiV1CollectionsPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1CollectionsPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 触发结算单实际金额结算
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3116,6 +3662,44 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @summary 信任服务器列表
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1ServersGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ApiV1ServersGet200ResponseInner>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1ServersGet(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1ServersGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 删除服务器
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1ServersIdDelete(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1ServersIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1ServersIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 添加服务器
+         * @param {ApiV1ServersPostRequest} [apiV1ServersPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiV1ServersPost(apiV1ServersPostRequest?: ApiV1ServersPostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiV1ServersPost200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiV1ServersPost(apiV1ServersPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiV1ServersPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
          * @summary 模板列表（或根据Path）
          * @param {string} [pathPrefix] 
@@ -3388,6 +3972,96 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         apiAuthMeGet(authToken?: string, options?: RawAxiosRequestConfig): AxiosPromise<ApiAuthMeGet200Response> {
             return localVarFp.apiAuthMeGet(authToken, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 模板合集列表
+         * @param {string} [search] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsGet(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CollectionsGet(search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 删除合集
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdDelete(id: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CollectionsIdDelete(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 更新模板合集
+         * @param {string} id 
+         * @param {ApiV1CollectionsIdPutRequest} [apiV1CollectionsIdPutRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdPut(id: string, apiV1CollectionsIdPutRequest?: ApiV1CollectionsIdPutRequest, options?: RawAxiosRequestConfig): AxiosPromise<TemplateCollection> {
+            return localVarFp.apiV1CollectionsIdPut(id, apiV1CollectionsIdPutRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取随机模板
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdRandomGet(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Template> {
+            return localVarFp.apiV1CollectionsIdRandomGet(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 分页获取/筛选合集的模板列表
+         * @param {string} id 
+         * @param {number} [search] 
+         * @param {string} [page] 
+         * @param {string} [size] 
+         * @param {number} [sort] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdTemplatesGet(id: string, search?: number, page?: string, size?: string, sort?: number, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1CollectionsIdTemplatesGet200Response> {
+            return localVarFp.apiV1CollectionsIdTemplatesGet(id, search, page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 向合集添加模板
+         * @param {string} id 
+         * @param {ApiV1CollectionsIdTemplatesPostRequest} [apiV1CollectionsIdTemplatesPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdTemplatesPost(id: string, apiV1CollectionsIdTemplatesPostRequest?: ApiV1CollectionsIdTemplatesPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1CollectionsIdTemplatesPost(id, apiV1CollectionsIdTemplatesPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 删除合集内的模板
+         * @param {string} id 合集 Id
+         * @param {string} templateId 模板的 Uuid
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsIdTemplatesTemplateIdDelete(id: string, templateId: string, options?: RawAxiosRequestConfig): AxiosPromise<Undefined> {
+            return localVarFp.apiV1CollectionsIdTemplatesTemplateIdDelete(id, templateId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 新建合集
+         * @param {ApiV1CollectionsPostRequest} [apiV1CollectionsPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1CollectionsPost(apiV1CollectionsPostRequest?: ApiV1CollectionsPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<TemplateCollection> {
+            return localVarFp.apiV1CollectionsPost(apiV1CollectionsPostRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3836,6 +4510,35 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest, options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @summary 信任服务器列表
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ServersGet(options?: RawAxiosRequestConfig): AxiosPromise<Array<ApiV1ServersGet200ResponseInner>> {
+            return localVarFp.apiV1ServersGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 删除服务器
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ServersIdDelete(id: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.apiV1ServersIdDelete(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 添加服务器
+         * @param {ApiV1ServersPostRequest} [apiV1ServersPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiV1ServersPost(apiV1ServersPostRequest?: ApiV1ServersPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApiV1ServersPost200Response> {
+            return localVarFp.apiV1ServersPost(apiV1ServersPostRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
          * # 模板搜索接口文档  ## 1. 搜索模板列表  支持复合条件筛选（模糊匹配、精确匹配、范围查询）、分页以及多字段排序。  - **URL**: `/api/v1/templates` - **Method**: `GET` - **Content-Type**: `application/json`  ### 请求参数 (Query Parameters)  | 参数名 | 类型 | 必填 | 默认值 | 说明 | | :--- | :--- | :--- | :--- | :--- | | `pathPrefix` | string | 否 | - | **路径前缀匹配**<br>搜索以该路径开头的模板 (SQL: `LIKE \'val%\'`) | | `creatorId` | UUID | 否 | - | **创建者ID** (精确匹配) | | `worldId` | UUID | 否 | - | **所属世界ID** (精确匹配) | | `locked` | boolean | 否 | - | **锁定状态**<br>`true`: 仅看锁定; `false`: 仅看未锁定 | | `minWidth` | integer | 否 | - | **最小宽度** (包含) | | `maxWidth` | integer | 否 | - | **最大宽度** (包含) | | `minHeight` | integer | 否 | - | **最小高度** (包含) | | `maxHeight` | integer | 否 | - | **最大高度** (包含) | | `minLength` | integer | 否 | - | **最小长度** (包含) | | `maxLength` | integer | 否 | - | **最大长度** (包含) | | `page` | integer | 否 | `0` | **页码** (从 0 开始) | | `size` | integer | 否 | `20` | **每页条数** | | `sort` | string[] | 否 | `path,asc` | **排序规则**<br>格式: `字段名,方向`<br>方向: `asc`(升序), `desc`(降序)<br>支持传多个 sort 参数 |  ---  ### 排序字段说明 (Sort Fields)  排序参数格式为 `sort=字段名,方向`。 **注意**：元数据相关的字段必须加上 `metadata.` 前缀。  #### A. 基础属性 | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `path` | 按文件路径/名称排序 (默认) | `sort=path,asc` | | `name` | 按模板显示名称排序 | `sort=name,desc` |  #### B. 时间与状态 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.creationTime` | 按创建时间排序 (时间戳) | `sort=metadata.creationTime,desc` (最新在前) | | `metadata.locked` | 按锁定状态排序 | `sort=metadata.locked,desc` (锁定的在前) | | `metadata.lockedTimestamp` | 按锁定时间排序 | - | | `metadata.deletedTimestamp` | 按删除时间排序 | - |  #### C. 尺寸与空间 (Metadata) | 字段名 | 说明 | 示例 | | :--- | :--- | :--- | | `metadata.width` | 按宽度 (X轴跨度) 排序 | `sort=metadata.width,desc` (最宽的在前) | | `metadata.height` | 按高度 (Y轴跨度) 排序 | `sort=metadata.height,desc` (最高的在前) | | `metadata.length` | 按长度 (Z轴跨度) 排序 | `sort=metadata.length,desc` (最长的在前) | | `metadata.anchorX` | 按锚点 X 坐标排序 | - | | `metadata.anchorY` | 按锚点 Y 坐标排序 | - | | `metadata.anchorZ` | 按锚点 Z 坐标排序 | - |  ---  ### 请求示例  **示例场景**： 查找 `users/` 目录下，宽度在 10 到 200 之间，且未锁定的模板。 结果按“创建时间倒序”排列（最新的在最前），每页 20 条。  ```http GET /api/v1/templates?pathPrefix=users/&locked=false&minWidth=10&maxWidth=200&page=0&size=20&sort=metadata.creationTime,desc
          * @summary 模板列表（或根据Path）
          * @param {string} [pathPrefix] 
@@ -4063,6 +4766,104 @@ export class DefaultApi extends BaseAPI {
      */
     public apiAuthMeGet(authToken?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiAuthMeGet(authToken, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 模板合集列表
+     * @param {string} [search] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sort] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsGet(search?: string, page?: number, size?: number, sort?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsGet(search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 删除合集
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsIdDelete(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsIdDelete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 更新模板合集
+     * @param {string} id 
+     * @param {ApiV1CollectionsIdPutRequest} [apiV1CollectionsIdPutRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsIdPut(id: string, apiV1CollectionsIdPutRequest?: ApiV1CollectionsIdPutRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsIdPut(id, apiV1CollectionsIdPutRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取随机模板
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsIdRandomGet(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsIdRandomGet(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 分页获取/筛选合集的模板列表
+     * @param {string} id 
+     * @param {number} [search] 
+     * @param {string} [page] 
+     * @param {string} [size] 
+     * @param {number} [sort] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsIdTemplatesGet(id: string, search?: number, page?: string, size?: string, sort?: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsIdTemplatesGet(id, search, page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 向合集添加模板
+     * @param {string} id 
+     * @param {ApiV1CollectionsIdTemplatesPostRequest} [apiV1CollectionsIdTemplatesPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsIdTemplatesPost(id: string, apiV1CollectionsIdTemplatesPostRequest?: ApiV1CollectionsIdTemplatesPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsIdTemplatesPost(id, apiV1CollectionsIdTemplatesPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 删除合集内的模板
+     * @param {string} id 合集 Id
+     * @param {string} templateId 模板的 Uuid
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsIdTemplatesTemplateIdDelete(id: string, templateId: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsIdTemplatesTemplateIdDelete(id, templateId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 新建合集
+     * @param {ApiV1CollectionsPostRequest} [apiV1CollectionsPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1CollectionsPost(apiV1CollectionsPostRequest?: ApiV1CollectionsPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1CollectionsPost(apiV1CollectionsPostRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4551,6 +5352,38 @@ export class DefaultApi extends BaseAPI {
      */
     public apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest?: ApiV1RemoteSetsPostRequest, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).apiV1RemoteSetsPost(apiV1RemoteSetsPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 信任服务器列表
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1ServersGet(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1ServersGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 删除服务器
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1ServersIdDelete(id: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1ServersIdDelete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 添加服务器
+     * @param {ApiV1ServersPostRequest} [apiV1ServersPostRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiV1ServersPost(apiV1ServersPostRequest?: ApiV1ServersPostRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).apiV1ServersPost(apiV1ServersPostRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

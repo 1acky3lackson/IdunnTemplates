@@ -85,7 +85,7 @@ app:
   # 指向实际存放 .schem 文件的根目录
   # 在本地测试时，填写绝对路径
   storage:
-    schematic-root-dir: D:/dev/IdunnTemplates/plugin/run/idunn/templates
+    schematic-root-dir: C:/Users/Jacky/Desktop/Dev/IdunnTemplates/plugin/run/idunn/templates
   server:
     internal-host: localhost
   service:

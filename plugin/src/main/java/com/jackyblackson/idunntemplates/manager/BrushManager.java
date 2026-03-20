@@ -94,7 +94,7 @@ public class BrushManager implements Listener {
         if (settings == null) return false;
 
         long now = System.currentTimeMillis();
-        if (now - session.getLastInteractTime() < 200) {
+        if (now - session.getLastInteractTime() < 2000) {
             return true;
         }
         session.setLastInteractTime(now);
@@ -109,8 +109,17 @@ public class BrushManager implements Listener {
     }
     
     public void executeBrush(Player player, BrushSettings settings, org.bukkit.Location targetLoc) {
+        if (settings.isFetchingNext()) {
+            player.sendMessage(org.bukkit.ChatColor.YELLOW + "Loading template from collection, please wait...");
+            return;
+        }
+        
         if (settings.getNextPlacement() == null) {
             updateNextPlacement(settings, player);
+            if (settings.isFetchingNext()) {
+                player.sendMessage(org.bukkit.ChatColor.YELLOW + "Fetching collection template, please wait...");
+                return;
+            }
         }
         var next = settings.getNextPlacement();
         if (next == null || next.getTemplate() == null) return;
@@ -129,6 +138,32 @@ public class BrushManager implements Listener {
     }
 
     public void updateNextPlacement(BrushSettings settings, Player player) {
+        if (settings.getCollectionId() != null) {
+            settings.setFetchingNext(true);
+            com.jackyblackson.idunntemplates.IdunnTemplates.getInstance().getBackendApiClient().getRandomTemplateFromCollection(settings.getCollectionId())
+                    .thenAccept(uuid -> {
+                        org.bukkit.Bukkit.getScheduler().runTask(com.jackyblackson.idunntemplates.IdunnTemplates.getInstance(), () -> {
+                            settings.setFetchingNext(false);
+                            if (uuid != null) {
+                                Template t = templateManager.getTemplate(uuid);
+                                if (t != null) {
+                                    int rot = resolveRotation(settings.getRotation());
+                                    boolean fx = resolveFlip(settings.getFlipX());
+                                    boolean fz = resolveFlip(settings.getFlipZ());
+                                    settings.setNextPlacement(new PlayerSession.NextPlacement(t, rot, fx, fz));
+                                } else {
+                                    player.sendMessage(org.bukkit.ChatColor.RED + "Template from collection not found locally!");
+                                    settings.setNextPlacement(null);
+                                }
+                            } else {
+                                player.sendMessage(org.bukkit.ChatColor.RED + "Failed to get template from collection backend.");
+                                settings.setNextPlacement(null);
+                            }
+                        });
+                    });
+            return;
+        }
+
         Template t = settings.getContent().pickRandom(templateManager, name -> setManager.getSet(name, player.getName()), false);
         if (t == null) {
             settings.setNextPlacement(null);

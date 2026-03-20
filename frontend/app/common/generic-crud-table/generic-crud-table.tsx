@@ -89,7 +89,12 @@ export interface GenericCrudTableProps<T> {
   searchFields?: SearchFieldDef[];
   forcedSearchValues?: Record<string, string>;
   rowActions?: (row: T, actions: TableActions) => React.ReactNode;
+  headerActions?: React.ReactNode;
   pageSize?: number;
+  customRenderer?: {
+    renderContainer: (nodes: ReactNode[]) => ReactNode;
+    renderElement: (row: T, actions: TableActions) => ReactNode;
+  };
 }
 
 // --- 工具函数 ---
@@ -157,7 +162,9 @@ const GenericCrudTableComponent = forwardRef(
       searchFields = [],
       forcedSearchValues = {},
       rowActions,
+      headerActions,
       pageSize = 20,
+      customRenderer,
     }: GenericCrudTableProps<T>,
     ref: React.ForwardedRef<GenericCrudTableHandle>,
   ) => {
@@ -464,11 +471,14 @@ const GenericCrudTableComponent = forwardRef(
                 )}
               </div>
             )}
-            {create && (
-              <Button onClick={create} className="ml-auto">
-                <Plus className="mr-2 h-4 w-4" /> 新建
-              </Button>
-            )}
+            <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+              {headerActions}
+              {create && (
+                <Button onClick={create}>
+                  <Plus className="mr-2 h-4 w-4" /> 新建
+                </Button>
+              )}
+            </div>
           </div>
 
           {hasActiveFilters && (
@@ -522,132 +532,142 @@ const GenericCrudTableComponent = forwardRef(
           )}
         </div>
 
-        <div className="rounded-md border bg-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {columnsKeys.map((key) => (
-                  <TableHead key={key}>
-                    {schema[key].sortable ? (
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleSort(key)}
-                        className="-ml-4 h-8"
-                      >
-                        {schema[key].title}
-                        {sortState?.field === key ? (
-                          sortState.direction === "asc" ? (
-                            <ArrowUp className="ml-2 h-4 w-4" />
+        {customRenderer ? (
+          customRenderer.renderContainer(
+            data.map((row) => (
+              <React.Fragment key={getRowId(row)}>
+                {customRenderer.renderElement(row, tableActions)}
+              </React.Fragment>
+            ))
+          )
+        ) : (
+          <div className="rounded-md border bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  {columnsKeys.map((key) => (
+                    <TableHead key={key}>
+                      {schema[key].sortable ? (
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort(key)}
+                          className="-ml-4 h-8"
+                        >
+                          {schema[key].title}
+                          {sortState?.field === key ? (
+                            sortState.direction === "asc" ? (
+                              <ArrowUp className="ml-2 h-4 w-4" />
+                            ) : (
+                              <ArrowDown className="ml-2 h-4 w-4" />
+                            )
                           ) : (
-                            <ArrowDown className="ml-2 h-4 w-4" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    ) : (
-                      schema[key].title
-                    )}
-                  </TableHead>
-                ))}
-                {hasActionsColumn && (
-                  <TableHead className="text-right">操作</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {columnsKeys.map((k) => (
-                      <TableCell key={k}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                    {hasActionsColumn && (
-                      <TableCell>
-                        <Skeleton className="h-4 w-12 ml-auto" />
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))
-              ) : data.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columnsKeys.length + (hasActionsColumn ? 1 : 0)}
-                    className="h-24 text-center text-muted-foreground"
-                  >
-                    暂无数据
-                  </TableCell>
+                            <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      ) : (
+                        schema[key].title
+                      )}
+                    </TableHead>
+                  ))}
+                  {hasActionsColumn && (
+                    <TableHead className="text-right">操作</TableHead>
+                  )}
                 </TableRow>
-              ) : (
-                data.map((row) => (
-                  <TableRow key={getRowId(row)}>
-                    {columnsKeys.map((key) => {
-                      const col = schema[key];
-                      const rawValue = getNestedValue(row, key);
-                      return (
-                        <TableCell key={key} className="group relative">
-                          <div className="flex items-center gap-1.5 min-h-6">
-                            {col.render
-                              ? col.render(rawValue, row, tableActions)
-                              : (rawValue as any)}
-                            {col.filterable &&
-                              rawValue &&
-                              !(key in forcedSearchValues) && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => {
-                                    const newSearch = {
-                                      ...activeSearchValues,
-                                      [key]: String(rawValue),
-                                    };
-                                    if (uid) updateUrl(0, sortState, newSearch);
-                                    else {
-                                      setActiveSearchValues(newSearch);
-                                      setDraftSearchValues(newSearch);
-                                      setPage(0);
-                                    }
-                                  }}
-                                >
-                                  <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                                </Button>
-                              )}
-                          </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {columnsKeys.map((k) => (
+                        <TableCell key={k}>
+                          <Skeleton className="h-4 w-full" />
                         </TableCell>
-                      );
-                    })}
-                    {hasActionsColumn && (
-                      <TableCell className="text-right space-x-2">
-                        {rowActions && rowActions(row, tableActions)}
-                        {modify && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => modify(row, tableActions)}
-                          >
-                            <Edit className="h-4 w-4 text-blue-500" />
-                          </Button>
-                        )}
-                        {deleteAction && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deleteAction(row, tableActions)}
-                          >
-                            <Trash className="h-4 w-4 text-red-500" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    )}
+                      ))}
+                      {hasActionsColumn && (
+                        <TableCell>
+                          <Skeleton className="h-4 w-12 ml-auto" />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                ) : data.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columnsKeys.length + (hasActionsColumn ? 1 : 0)}
+                      className="h-24 text-center text-muted-foreground"
+                    >
+                      暂无数据
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : (
+                  data.map((row) => (
+                    <TableRow key={getRowId(row)}>
+                      {columnsKeys.map((key) => {
+                        const col = schema[key];
+                        const rawValue = getNestedValue(row, key);
+                        return (
+                          <TableCell key={key} className="group relative">
+                            <div className="flex items-center gap-1.5 min-h-6">
+                              {col.render
+                                ? col.render(rawValue, row, tableActions)
+                                : (rawValue as any)}
+                              {col.filterable &&
+                                rawValue &&
+                                !(key in forcedSearchValues) && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => {
+                                      const newSearch = {
+                                        ...activeSearchValues,
+                                        [key]: String(rawValue),
+                                      };
+                                      if (uid) updateUrl(0, sortState, newSearch);
+                                      else {
+                                        setActiveSearchValues(newSearch);
+                                        setDraftSearchValues(newSearch);
+                                        setPage(0);
+                                      }
+                                    }}
+                                  >
+                                    <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                )}
+                            </div>
+                          </TableCell>
+                        );
+                      })}
+                      {hasActionsColumn && (
+                        <TableCell className="text-right space-x-2">
+                          {rowActions && rowActions(row, tableActions)}
+                          {modify && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => modify(row, tableActions)}
+                            >
+                              <Edit className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
+                          {deleteAction && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteAction(row, tableActions)}
+                            >
+                              <Trash className="h-4 w-4 text-red-500" />
+                            </Button>
+                          )}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">共 {total} 条数据</div>
