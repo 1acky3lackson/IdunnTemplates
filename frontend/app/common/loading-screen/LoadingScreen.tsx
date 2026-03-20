@@ -74,20 +74,17 @@ export function LoadingScreen({
             {/* 紫色几何体 - 使用 animationDelay 实现交错入场，animationFillMode: 'both' 确保延迟期间保持透明 */}
             <path
               d="M 256 140 L 360 190 L 256 240 L 152 190 Z"
-              fill="oklch(0.85 0.12 285)"
-              className="animate-in fade-in duration-700"
+              className="fill-primary/30 animate-in fade-in duration-700"
               style={{ animationDelay: "100ms", animationFillMode: "both" }}
             />
             <path
               d="M 152 190 L 256 240 L 256 360 L 152 310 Z"
-              fill="oklch(0.45 0.10 285)"
-              className="animate-in fade-in duration-700"
+              className="fill-primary animate-in fade-in duration-700"
               style={{ animationDelay: "200ms", animationFillMode: "both" }}
             />
             <path
               d="M 256 240 L 360 190 L 360 310 L 256 360 Z"
-              fill="oklch(0.70 0.14 285)"
-              className="animate-in fade-in duration-700"
+              className="fill-primary/70 animate-in fade-in duration-700"
               style={{ animationDelay: "300ms", animationFillMode: "both" }}
             />
           </g>
@@ -95,31 +92,26 @@ export function LoadingScreen({
           {/* 绿色叶子/苹果 - 淡入后应用 Tailwind 自带的 pulse 持续呼吸动画 */}
           <path
             d="M 256 165 Q 210 110 256 75 Q 302 110 256 165"
-            fill="oklch(0.90 0.20 150)"
-            className="animate-in fade-in zoom-in duration-700 animate-pulse"
+            className="fill-secondary animate-in fade-in zoom-in duration-700 animate-pulse"
             style={{ animationDelay: "500ms", animationFillMode: "both" }}
           />
 
           {/* 抽象边角 */}
           <path
             d="M 100 160 V 100 H 160"
-            stroke="oklch(0.95 0.02 285)"
             strokeWidth="6"
-            strokeOpacity="0.4"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="stroke-muted-foreground opacity-40 dark:stroke-muted-foreground/60 animate-in fade-in duration-1000"
+            className="stroke-muted-foreground/40 dark:stroke-muted-foreground/60 animate-in fade-in duration-1000"
             style={{ animationDelay: "600ms", animationFillMode: "both" }}
           />
           <path
             d="M 352 412 V 352 H 412"
-            stroke="oklch(0.95 0.02 285)"
             strokeWidth="6"
-            strokeOpacity="0.4"
             strokeLinecap="round"
             strokeLinejoin="round"
             transform="rotate(180 382 382)"
-            className="stroke-muted-foreground opacity-40 dark:stroke-muted-foreground/60 animate-in fade-in duration-1000"
+            className="stroke-muted-foreground/40 dark:stroke-muted-foreground/60 animate-in fade-in duration-1000"
             style={{ animationDelay: "600ms", animationFillMode: "both" }}
           />
         </svg>
