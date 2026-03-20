@@ -53,6 +53,11 @@ export function Layout({
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <Meta />
         <Links />
+        <script
+          defer
+          src="https://umami.taixue.cc/script.js"
+          data-website-id="ea5b2573-e818-4e90-bf42-3a7f4fa8ec60"
+        />
       </head>
       <body>
         {children}
