@@ -33,7 +33,7 @@ public class BrushBindCommand extends BaseSubCommand {
     @Override
     public void execute(Player player, String[] args) {
         // /idunn brush bind <channel> <type> <value> [flags]
-        // types: path, set
+        // types: path, set, collection
         if (args.length < 4) {
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.usage"));
             return;
@@ -87,6 +87,14 @@ public class BrushBindCommand extends BaseSubCommand {
             for (var src : sourceSet.getSources()) {
                 settings.getContent().addSource(src.getPath(), src.getWeight());
             }
+        } else if (type.equals("collection")) {
+            try {
+                long cId = Long.parseLong(value);
+                settings.setCollectionId(cId);
+            } catch (NumberFormatException e) {
+                player.sendMessage(org.bukkit.ChatColor.RED + "Invalid collection ID. Must be a number.");
+                return;
+            }
         } else {
             player.sendMessage(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "brush.bind.unknown_type", type));
             return;
@@ -107,7 +115,7 @@ public class BrushBindCommand extends BaseSubCommand {
             return filter(Arrays.asList("left", "right", "<custom>"), args[1]);
         }
         if (args.length == 3) {
-            return filter(Arrays.asList("path", "set"), args[2]);
+            return filter(Arrays.asList("path", "set", "collection"), args[2]);
         }
         if (args.length == 4) {
             if (args[2].equalsIgnoreCase("path")) {

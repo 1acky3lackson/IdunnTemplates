@@ -46,6 +46,21 @@ const navigationContent = {
         [Locales.CHINESE]: "商业化",
         [Locales.CHINESE_TRADITIONAL]: "商业化",
       }),
+      financial: t({
+        [Locales.ENGLISH]: "Financial",
+        [Locales.CHINESE]: "财务管理",
+        [Locales.CHINESE_TRADITIONAL]: "財務管理",
+      }),
+      netease: t({
+        [Locales.ENGLISH]: "Netease",
+        [Locales.CHINESE]: "网易业务",
+        [Locales.CHINESE_TRADITIONAL]: "網易業務",
+      }),
+      system: t({
+        [Locales.ENGLISH]: "System",
+        [Locales.CHINESE]: "系统管理",
+        [Locales.CHINESE_TRADITIONAL]: "系統管理",
+      }),
     },
     items: {
       searchTemplates: t({
@@ -244,14 +259,14 @@ const navigationContent = {
         },
         neteaseWithdraw: {
           title: t({
-            [Locales.ENGLISH]: "",
+            [Locales.ENGLISH]: "Netease Withdrawals",
             [Locales.CHINESE]: "网易提现记录",
-            [Locales.CHINESE_TRADITIONAL]: "網易銷售訂單",
+            [Locales.CHINESE_TRADITIONAL]: "網易提現記錄",
           }),
           desc: t({
-            [Locales.ENGLISH]: "",
+            [Locales.ENGLISH]: "View Netease withdrawal records",
             [Locales.CHINESE]: "查看网易提现记录及其使用情况",
-            [Locales.CHINESE_TRADITIONAL]: "",
+            [Locales.CHINESE_TRADITIONAL]: "查看網易提現記錄及其使用情況",
           }),
         },
         systemWithdraw: {
@@ -264,6 +279,18 @@ const navigationContent = {
             [Locales.ENGLISH]: "Manage system withdrawal requests",
             [Locales.CHINESE]: "管理和审批用户的系统提现请求",
             [Locales.CHINESE_TRADITIONAL]: "管理和審批用戶的系統提現請求",
+          }),
+        },
+        servers: {
+          title: t({
+            [Locales.ENGLISH]: "Server Management",
+            [Locales.CHINESE]: "服务器管理",
+            [Locales.CHINESE_TRADITIONAL]: "伺服器管理",
+          }),
+          desc: t({
+            [Locales.ENGLISH]: "Manage trusted servers and Tokens",
+            [Locales.CHINESE]: "管理受信任的服务器以及 Token",
+            [Locales.CHINESE_TRADITIONAL]: "管理受信任的伺服器以及 Token",
           }),
         },
       },

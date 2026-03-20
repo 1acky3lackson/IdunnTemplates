@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates;
 
 import com.jackyblackson.idunntemplates.command.IdunnCommand;
+import com.jackyblackson.idunntemplates.core.api.BackendApiClient;
 import com.jackyblackson.idunntemplates.core.calc.BlockComparator;
 import com.jackyblackson.idunntemplates.core.calc.DiffCalculator;
 import com.jackyblackson.idunntemplates.core.store.*;
@@ -36,8 +37,13 @@ public final class IdunnTemplates extends JavaPlugin {
 
     private DatabaseManager databaseManager;
     private PermissionServerManager permissionServerManager;
+    private BackendApiClient backendApiClient;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
+
+    public BackendApiClient getBackendApiClient() {
+        return backendApiClient;
+    }
 
     public TemplateStorage getTemplateStorage() {
         return templateStorage;
@@ -225,6 +231,11 @@ public final class IdunnTemplates extends JavaPlugin {
         // 9. Start Permission Server
         this.permissionServerManager = new PermissionServerManager(this);
         this.permissionServerManager.start();
+        
+        // 10. Init Backend API Client
+        String backendUrl = getConfig().getString("services.backend.api-url", "http://localhost:8080/api/v1");
+        String serverToken = getConfig().getString("services.backend.server-token", "");
+        this.backendApiClient = new BackendApiClient(backendUrl, serverToken);
 
         // 1. 初始化 VoxelWind 模块
         try {

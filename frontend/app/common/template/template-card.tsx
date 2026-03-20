@@ -12,10 +12,10 @@ import {
   AtSign,
   User,
   GitCommit,
-  PersonStanding,
   MoreHorizontal,
   FileInput,
   ArrowRightLeft,
+  FolderPlus,
 } from "lucide-react";
 import { useTheme } from "~/components/theme/theme-provider";
 import {
@@ -28,6 +28,8 @@ import {
 } from "react";
 import { getThumbnailUrlForTemplate, IDUNN_API } from "~/api";
 import type { Template } from "~/api/generated/model/template";
+import type { TemplateCollection } from "~/api/generated/model/template-collection";
+import { TemplateCollectionList } from "~/common/template-collection/template-collection-list";
 import { cn } from "~/lib/utils";
 import { SmartTemplatePreview, type ViewState } from "./smart-template-preview";
 import { Link } from "react-router";
@@ -325,8 +327,21 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
 
   const [isMoveSheetOpen, setIsMoveSheetOpen] = useState(false);
   const [isTransferSheetOpen, setIsTransferSheetOpen] = useState(false);
+  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
   const [newPath, setNewPath] = useState(template.path);
   const [newOwner, setNewOwner] = useState("");
+
+  const handleAddToCollection = async (collection: TemplateCollection) => {
+    try {
+      await IDUNN_API.apiV1CollectionsIdTemplatesPost(collection.id.toString(), {
+        templateId: template.id
+      });
+      toast.success(`Successfully added to collection: ${collection.name}`);
+      setIsAddToCollectionOpen(false);
+    } catch (e) {
+      toast.error("Failed to add to collection");
+    }
+  };
 
   const handleMove = async () => {
     try {
@@ -392,7 +407,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   }, [template.colorSchemes, template.id, theme, angle]);
 
   let latestVersionMessage: any =
-    template.latestVersions[0]?.message || templateCard.noVersionMessages;
+    template.latestVersions?.[0]?.message || templateCard.noVersionMessages;
   if (
     typeof latestVersionMessage === "string" &&
     latestVersionMessage === "Initial creation"
@@ -401,7 +416,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   } else if (
     typeof latestVersionMessage === "string" &&
     latestVersionMessage ===
-      "Auto-commit: Cascading update from child instances."
+    "Auto-commit: Cascading update from child instances."
   ) {
     latestVersionMessage = templateCard.cascadingUpdateMessage;
   }
@@ -437,6 +452,10 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{templateCard.manage}</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsAddToCollectionOpen(true)}>
+                <FolderPlus className="mr-2 h-4 w-4" />
+                <span>Add to Collection</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsMoveSheetOpen(true)}>
                 <FileInput className="mr-2 h-4 w-4" />
                 <span>{templateCard.move.label}</span>
@@ -621,13 +640,13 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
                 <span>by</span>
                 <span className="underline underline-offset-2">
-                  {template.latestVersions[0]?.submitterId
-                    ? template.latestVersions[0]?.submitterId ===
+                  {template.latestVersions?.[0]?.submitterId
+                    ? template.latestVersions?.[0]?.submitterId ===
                       "00000000-0000-0000-0000-000000000000"
                       ? templateCard.autoUpdatingSystem
                       : getUsernameByUuid(
-                          template.latestVersions[0]?.submitterId,
-                        )
+                        template.latestVersions?.[0]?.submitterId,
+                      )
                     : templateCard.unknownUser}
                 </span>
               </div>
@@ -714,6 +733,20 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
             </SheetClose>
             <Button onClick={handleTransfer}>Transfer</Button>
           </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isAddToCollectionOpen} onOpenChange={setIsAddToCollectionOpen}>
+        <SheetContent className="w-[90vw] sm:max-w-3xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Add to Collection</SheetTitle>
+            <SheetDescription>
+              Select a collection to add template "{template.name}" to.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="py-2">
+             <TemplateCollectionList onSelect={handleAddToCollection} />
+          </div>
         </SheetContent>
       </Sheet>
     </div>

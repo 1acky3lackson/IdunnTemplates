@@ -44,6 +44,24 @@ public class PermissionNames {
         }
     }
 
+    public static class TemplateCollections {
+        public static final String list =               "idunn.collection.list";
+        public static final String get =                "idunn.collection.get";
+        public static final String create =             "idunn.collection.create";
+        public static final String update =             "idunn.collection.update";
+        public static final String delete =             "idunn.collection.delete";
+        public static final String listTemplates =      "idunn.collection.list_templates";
+        public static final String addTemplate =        "idunn.collection.add_template";
+        public static final String removeTemplate =     "idunn.collection.remove_template";
+        public static final String getRandom =          "idunn.collection.get_random";
+    }
+
+    public static class TrustedServers {
+        public static final String create =             "idunn.server.create";
+        public static final String list =               "idunn.server.list";
+        public static final String delete =             "idunn.server.delete";
+    }
+
     public static class Commercial {
 
         public static class Admin {

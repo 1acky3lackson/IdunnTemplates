@@ -11,8 +11,10 @@ public class BrushSettings implements Cloneable {
     private FlipMode flipZ = FlipMode.RANDOM;
     private boolean noAir = true;
     private boolean emptyOnly = true;
+    private Long collectionId = null;
     
     private transient PlayerSession.NextPlacement nextPlacement;
+    private transient boolean isFetchingNext = false;
 
     public BrushSettings() {
         this.content = new TemplateSet();
@@ -24,6 +26,7 @@ public class BrushSettings implements Cloneable {
         this.flipZ = other.flipZ;
         this.noAir = other.noAir;
         this.emptyOnly = other.emptyOnly;
+        this.collectionId = other.collectionId;
         
         // Deep copy content
         this.content = new TemplateSet();
@@ -81,6 +84,22 @@ public class BrushSettings implements Cloneable {
 
     public void setEmptyOnly(boolean emptyOnly) {
         this.emptyOnly = emptyOnly;
+    }
+    
+    public Long getCollectionId() {
+        return collectionId;
+    }
+    
+    public void setCollectionId(Long collectionId) {
+        this.collectionId = collectionId;
+    }
+    
+    public boolean isFetchingNext() {
+        return isFetchingNext;
+    }
+    
+    public void setFetchingNext(boolean fetchingNext) {
+        this.isFetchingNext = fetchingNext;
     }
     
     public PlayerSession.NextPlacement getNextPlacement() {

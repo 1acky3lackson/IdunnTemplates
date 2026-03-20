@@ -25,6 +25,14 @@ export default [
       // 模板详情
       route("/:lang?/templates/:uuid", "routes/templates/templates-detail.tsx"),
 
+      // 合集列表
+      route("/:lang?/collections", "pages/collections/page.tsx"),
+      // 合集详情
+      route("/:lang?/collections/:id", "pages/collections/[id]/page.tsx"),
+
+      // 信任服务器
+      route("/:lang?/servers", "pages/trusted-servers/page.tsx"),
+
       // 商业化
       //
       // 商业化管理员

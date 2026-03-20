@@ -17,6 +17,7 @@ import {
 } from "../generic-crud-table/generic-crud-table";
 import { Link } from "react-router";
 import CheckoutDetails from "../checkout-details/CheckoutDetails";
+import { CircleDollarSign, Coins, DollarSign } from "lucide-react";
 
 // ---------- 辅助工具 ----------
 
@@ -149,6 +150,16 @@ export function OrderDisplay({
           pointType: {
             title: "类型",
             filterable: true,
+            render: (val: string) =>
+              val.includes("付费") || val.includes("钻石") ? (
+                <div className="flex gap-2 align-middle text-sm rounded-4xl border border-blue-600 bg-blue-300/50 px-2 py-1 text-blue-950 dark:text-blue-300">
+                  <DollarSign size="1em" /> {val}
+                </div>
+              ) : (
+                <div className="flex gap-2 align-middle text-sm rounded-4xl border border-green-600 bg-green-400/50 px-2 py-1 text-green-800 dark:text-green-300">
+                  <Coins size="1em" /> {val}
+                </div>
+              ),
             // sortable: true
           },
           internalStatus: {

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LogIn, Menu, User, X } from "lucide-react";
+import { LogIn, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/theme/mode-toggle";
@@ -20,7 +20,6 @@ import { IDUNN_API } from "~/api";
 
 export default function TopBar() {
   const { siteTitle, login, logout: logoutBtn, meBtn } = useIntlayer("topbar");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const { theme } = useTheme();
   const nav = useNavigate();
 
@@ -34,9 +33,6 @@ export default function TopBar() {
   });
 
   const { isAuthenticated, user, login: loginFunc, logout } = useAuth();
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
 
   // Simple Logo Component that switches based on theme or shows a fallback
   const Logo = () => (
@@ -65,9 +61,9 @@ export default function TopBar() {
           </Link>
         </div>
 
-        {/* Center: Navigation (Desktop) */}
-        <div className="hidden md:flex flex-1 justify-center">
-          <NavigationBar />
+        {/* Center: Navigation */}
+        <div className="flex-1 flex justify-center">
+          <NavigationBar layout="desktop" />
         </div>
 
         {/* Right: Actions */}
@@ -117,20 +113,9 @@ export default function TopBar() {
               </Button>
             </Link>
           )}
-          {/* Mobile Menu Trigger */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={toggleMobileMenu}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-            <span className="sr-only">Toggle menu</span>
-          </Button>
+
+          {/* Mobile Navigation Menu */}
+          <NavigationBar layout="mobile" />
         </div>
       </div>
     </header>
