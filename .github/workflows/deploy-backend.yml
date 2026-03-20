@@ -12,21 +12,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          # 如果根目录有 gradle 依赖，可以开启缓存
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        # 在 monorepo 中，进入 backend 目录执行构建，或通过参数指定
-        run: ./gradlew :backend:bootJar
+          # 关键：递归拉取子模块，确保 /lib/SchemConvert 代码存在
+          submodules: recursive
+          # 如果子模块是私有库，可能需要配置 fetch-depth: 0 或使用 token
+          fetch-depth: 0
 
       - name: Add SSH Key
         uses: webfactory/ssh-agent@v0.9.0
@@ -38,14 +28,27 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Sync JAR to Server
-        # 将 backend/build/libs/ 下的 jar 包同步到目标目录
-        # 注意：这里假设你的 jar 包名包含版本号或为 backend.jar
+      - name: Sync Source to Server
+        # 使用 rsync 增量同步：
+        # -a: 归档模式，保留权限和时间戳
+        # -v: 显示详细日志
+        # -z: 传输时压缩数据（解决你提到的传输慢问题）
+        # --delete: 确保远程目录与本地完全一致，清理掉已删除的文件
+        # --exclude: 避开不需要同步的元数据和构建产物
         run: |
-          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" \
-          backend/build/libs/ \
-          ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/services/idunn-backend/build/lib
+          # 确保远程目标路径存在
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "mkdir -p /home/taixue/data/services/idunn-backend/build/src"
+          
+          rsync -avz --delete \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='backend/build/' \
+            --exclude='.gradle/' \
+            ./ \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/taixue/data/services/idunn-backend/build/src/
 
       - name: Execute Remote Build Script
+        # 同步完成后，触发服务器上的构建脚本
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "bash /home/taixue/data/services/idunn-backend/build-remote.sh"
