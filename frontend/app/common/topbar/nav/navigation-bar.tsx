@@ -131,114 +131,114 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
     <>
       {/* --- 桌面端版本 (md 以上显示) --- */}
       {layout !== "mobile" && (
-      <div className="hidden md:flex items-center justify-center w-full py-4">
-        <NavigationMenu>
-          <NavigationMenuList>
-            {/* 直接链接 */}
-            {directLinks.map((link, idx) => (
-              <NavigationMenuItem key={idx}>
-                <NavigationMenuLink asChild className="bg-transparent">
-                  <a href={link.href} className={navigationMenuTriggerStyle()}>
-                    {link.title as React.ReactNode}
-                  </a>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
+        <div className="hidden md:flex items-center justify-center w-full py-4">
+          <NavigationMenu>
+            <NavigationMenuList>
+              {/* 直接链接 */}
+              {directLinks.map((link, idx) => (
+                <NavigationMenuItem key={idx}>
+                  <NavigationMenuLink asChild className="bg-transparent">
+                    <a href={link.href} className={navigationMenuTriggerStyle()}>
+                      {link.title as React.ReactNode}
+                    </a>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
 
-            {/* 下拉菜单 */}
-            {dropdownMenus.map((group, idx) => (
-              <NavigationMenuItem key={idx}>
-                <NavigationMenuTrigger className="bg-transparent">
-                  {group.trigger as React.ReactNode}
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150">
-                    {group.children.map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex flex-row gap-1 items-center"
-                      >
-                        {item.icon && (
-                          <div className="ml-2">{item.icon}</div>
-                        )}
-                        <ListItem title={item.title} href={item.href}>
-                          {item.desc as React.ReactNode}
-                        </ListItem>
-                      </div>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-      </div>
+              {/* 下拉菜单 */}
+              {dropdownMenus.map((group, idx) => (
+                <NavigationMenuItem key={idx}>
+                  <NavigationMenuTrigger className="bg-transparent">
+                    {group.trigger as React.ReactNode}
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150">
+                      {group.children.map((item, i) => (
+                        <div
+                          key={i}
+                          className="flex flex-row gap-1 items-center"
+                        >
+                          {item.icon && (
+                            <div className="ml-2">{item.icon}</div>
+                          )}
+                          <ListItem title={item.title} href={item.href}>
+                            {item.desc as React.ReactNode}
+                          </ListItem>
+                        </div>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
       )}
 
       {/* --- 移动端菜单布局 (md 以下显示) --- */}
       {layout !== "desktop" && (
-      <div className="md:hidden flex items-center mr-2">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-            >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[85%] p-0">
-            <SheetHeader className="p-6 text-left border-b">
-              <SheetTitle>{logoTitle as React.ReactNode}</SheetTitle>
-            </SheetHeader>
-            <ScrollArea className="h-[calc(100vh-80px)] px-6">
-              <div className="py-4 border-b space-y-2">
-                {directLinks.map((link, idx) => (
-                  <a
-                    key={idx}
-                    href={link.href}
-                    className="flex items-center justify-between py-2 text-lg font-medium"
-                  >
-                    {link.title as React.ReactNode} <ChevronRight className="w-4 h-4" />
-                  </a>
-                ))}
-              </div>
-              <Accordion type="single" collapsible className="w-full pb-10 mt-4">
-                {dropdownMenus.map((section, idx) => (
-                  <AccordionItem value={`section-${idx}`} key={idx}>
-                    <AccordionTrigger className="text-lg font-medium">
-                      {section.trigger as React.ReactNode}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col gap-1 pl-2 border-l-2 ml-1">
-                        {section.children.map((item, i) => (
-                          <a
-                            key={i}
-                            href={item.href}
-                            className="flex items-center gap-3 rounded-md p-3 hover:bg-accent"
-                          >
-                            {item.icon}
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-sm">
-                                {item.title as React.ReactNode}
-                              </span>
-                              <span className="text-xs text-muted-foreground line-clamp-1">
-                                {item.desc as React.ReactNode}
-                              </span>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </ScrollArea>
-          </SheetContent>
-        </Sheet>
-      </div>
+        <div className="md:hidden flex items-center mr-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85%] p-0">
+              <SheetHeader className="p-6 text-left border-b">
+                <SheetTitle>{logoTitle as React.ReactNode}</SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(100vh-80px)] px-6">
+                <div className="py-4 border-b space-y-2">
+                  {directLinks.map((link, idx) => (
+                    <a
+                      key={idx}
+                      href={link.href}
+                      className="flex items-center justify-between py-2 text-base font-medium"
+                    >
+                      {link.title as React.ReactNode} <ChevronRight className="w-4 h-4" />
+                    </a>
+                  ))}
+                </div>
+                <Accordion type="single" collapsible className="w-full pb-10 mt-4">
+                  {dropdownMenus.map((section, idx) => (
+                    <AccordionItem value={`section-${idx}`} key={idx}>
+                      <AccordionTrigger className="text-base font-medium hover:no-underline">
+                        {section.trigger as React.ReactNode}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-1 pl-2 border-l-2 ml-1">
+                          {section.children.map((item, i) => (
+                            <a
+                              key={i}
+                              href={item.href}
+                              className="flex items-center gap-3 rounded-md p-3 hover:bg-accent"
+                            >
+                              {item.icon}
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-sm">
+                                  {item.title as React.ReactNode}
+                                </span>
+                                <span className="text-xs text-muted-foreground line-clamp-1">
+                                  {item.desc as React.ReactNode}
+                                </span>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+        </div>
       )}
     </>
   );
