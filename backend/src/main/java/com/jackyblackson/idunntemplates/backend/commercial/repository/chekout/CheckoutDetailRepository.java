@@ -21,7 +21,11 @@ public interface CheckoutDetailRepository extends
     List<CheckoutDetail> findByUsernameAndStatus(String username, CheckoutDetail.Status status);
 
     // 检查唯一性（用于功能1）
-    boolean existsByUsernameAndOrderIdAndRole(String username, Long orderId, CommercialRoleType role);
+    boolean existsByUsernameAndOrder_IdAndRole(
+            String username,
+            Long orderId,
+            CommercialRoleType role
+    );
 
     List<CheckoutDetail> findByStatusOrderByCreateTimeMsAsc(CheckoutDetail.Status status);
 
