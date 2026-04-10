@@ -50,11 +50,11 @@ public class CheckoutDetailService {
             GlobalCheckoutParamContext paramContext
     ) {
         // 检查唯一性（可选，数据库唯一约束会最终保证，但提前检查可提供更友好提示）
-        if (checkoutDetailRepository.existsByUsernameAndOrderIdAndRole(username, orderId, role)) {
-            throw new IllegalArgumentException(
-                    String.format("CheckoutDetail already exists for username=%s, orderId=%d, role=%s",
-                            username, orderId, role));
-        }
+//        if (checkoutDetailRepository.existsByUsernameAndOrder_IdAndRole(username, orderId, role)) {
+//            throw new IllegalArgumentException(
+//                    String.format("CheckoutDetail already exists for username=%s, orderId=%d, role=%s",
+//                            username, orderId, role));
+//        }
 
         // 加载关联的 NeteaseOrder
         NeteaseOrder order = neteaseOrderRepository.findById(orderId)
