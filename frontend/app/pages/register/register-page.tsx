@@ -1,19 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-  Loader2,
-  Lock,
-  User,
-  Code,
-  Layout,
-  Hexagon,
-  Database,
-  Server,
-  Cloud,
-} from "lucide-react";
+import { Loader2, Lock, Code, Layout, Hexagon, Database, Server, Cloud } from "lucide-react";
 import { useIntlayer } from "react-intlayer";
+import { useSearchParams, useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,104 +20,112 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "~/common/auth/auth-provider";
+import { toast } from "sonner";
+import { getBackendBaseUrl } from "~/api";
 
 import lightLogo from "@/common/topbar/logo-light.svg";
 import darkLogo from "@/common/topbar/logo-dark.svg";
 import { FallingIconsBackground } from "~/common/util/falling-icons-background";
 import MeshGradientBackground from "~/common/util/mesh-gradient-background";
 import { useTheme } from "next-themes";
-import { th } from "zod/v4/locales";
-import { useSearchParams } from "react-router";
 
 const Logo = () => (
   <div className="flex items-center gap-1 font-bold text-xl">
-    {/* Assuming the svgs are importable as strings or components.
-            If they are URLs, we use img tags.
-            Tailwind dark mode strategy usually requires 'dark:' class.
-            Here we explicitly check theme if needed or use CSS hiding. */}
     <img src={lightLogo} alt="Logo" className="h-12 w-auto dark:hidden" />
     <img src={darkLogo} alt="Logo" className="h-12 w-auto hidden dark:block" />
   </div>
 );
 
-// 定义你想在背景中飘落的图标集合
 const backgroundIcons = [Code, Layout, Hexagon, Database, Server, Cloud];
 
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { theme } = useTheme();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  // 获取国际化文本
   const {
     title,
     description,
-    skinServerName,
-    description2,
-    usernameLabel,
     passwordLabel,
-    usernamePlaceholder,
+    confirmPasswordLabel,
     passwordPlaceholder,
-    usernameErrorMsg,
+    confirmPasswordPlaceholder,
     passwordErrorMsg,
-    loginBtn,
-    loginBtnLoading,
-    footerText,
-  } = useIntlayer("login-page");
+    confirmPasswordErrorMsg,
+    registerBtn,
+    registerBtnLoading,
+    registerSuccessTitle,
+    registerSuccessDesc,
+    registerErrorTitle,
+    invalidTokenMsg,
+  } = useIntlayer("register-page");
 
-  // 1. 定义表单验证 Schema (移入组件内部以支持动态国际化)
   const formSchema = z.object({
-    username: z.string().min(2, {
-      message: usernameErrorMsg.value, // 使用 .value 获取字符串
-    }),
     password: z.string().min(4, {
       message: passwordErrorMsg.value,
     }),
+    confirmPassword: z.string().min(4, {
+      message: confirmPasswordErrorMsg.value,
+    }),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: confirmPasswordErrorMsg.value,
+    path: ["confirmPassword"],
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      setIsLoading(true);
-      login({ username: "", password: token })
-        .catch((err) => {
-          console.error("Token login failed", err);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [searchParams, login]);
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const token = searchParams.get("token");
+    if (!token) {
+      toast(registerErrorTitle, { description: invalidTokenMsg.value });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await login(values);
-    } catch (error) {
-      // 错误已在 AuthProvider 中通过 Toast 处理
+      // Use direct fetch as it might not be in the openapi spec wrapper yet
+      const baseUrl = getBackendBaseUrl() || "";
+      // But wait, the backend controller is mapped to /api/auth, not /api/v1/auth
+      const apiUrl = baseUrl ? `${baseUrl}/api/auth/register` : "/api/auth/register";
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: token,
+          password: values.password,
+        }),
+      });
+
+      if (response.ok) {
+        toast(registerSuccessTitle, { description: registerSuccessDesc.value });
+        navigate("/login");
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || "Registration failed");
+      }
+    } catch (error: any) {
+      toast(registerErrorTitle, { description: error.message });
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    // <div className="">
     <MeshGradientBackground
-      id="idunn-login-page-bg"
+      id="idunn-register-page-bg"
       count={10}
       speedRange={
         theme === "dark"
@@ -149,14 +148,12 @@ export default function LoginPage() {
     >
       <FallingIconsBackground icons={backgroundIcons} iconCount={20}>
         <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden ">
-          {/* 装饰背景：淡紫色光晕 */}
           <div className="absolute -top-[20%] -left-[10%] h-125 w-125 rounded-full bg-primary/10 blur-[100px]" />
           <div className="absolute top-[40%] -right-[10%] h-100 w-100 rounded-full bg-secondary/20 blur-[100px]" />
 
           <Card className="z-1000 w-full max-w-md border-muted/40 shadow-xl backdrop-blur-sm sm:w-100">
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
-                {/* Logo */}
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Logo />
                 </div>
@@ -164,18 +161,7 @@ export default function LoginPage() {
               <CardTitle className="text-2xl font-bold tracking-tight">
                 {title}
               </CardTitle>
-              <CardDescription>
-                <span>{description}</span>
-                <a
-                  href="https://skin.taixue.cc/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-extrabold underline text-primary mx-2"
-                >
-                  {skinServerName}
-                </a>
-                <span>{description2}</span>
-              </CardDescription>
+              <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -183,26 +169,6 @@ export default function LoginPage() {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{usernameLabel}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              placeholder={usernamePlaceholder.value}
-                              className="pl-9 bg-background/50"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="password"
@@ -224,6 +190,27 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{confirmPasswordLabel}</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              type="password"
+                              placeholder={confirmPasswordPlaceholder.value}
+                              className="pl-9 bg-background/50"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <Button
                     type="submit"
                     className="w-full font-bold transition-all hover:scale-[1.02]"
@@ -232,22 +219,18 @@ export default function LoginPage() {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {loginBtnLoading}
+                        {registerBtnLoading}
                       </>
                     ) : (
-                      loginBtn
+                      registerBtn
                     )}
                   </Button>
                 </form>
               </Form>
             </CardContent>
-            <CardFooter className="flex justify-center">
-              <p className="text-xs text-muted-foreground">{footerText}</p>
-            </CardFooter>
           </Card>
         </div>
       </FallingIconsBackground>
     </MeshGradientBackground>
-    // </div>
   );
 }

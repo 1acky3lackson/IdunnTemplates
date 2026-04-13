@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > patch.diff
 --- frontend/app/pages/register/register-page.tsx
 +++ frontend/app/pages/register/register-page.tsx
 @@ -24,7 +24,7 @@
@@ -19,3 +20,5 @@
 +      const apiUrl = baseUrl ? `${baseUrl}/api/auth/register` : "/api/auth/register";
 
        const response = await fetch(apiUrl, {
+INNER_EOF
+patch frontend/app/pages/register/register-page.tsx < patch.diff
