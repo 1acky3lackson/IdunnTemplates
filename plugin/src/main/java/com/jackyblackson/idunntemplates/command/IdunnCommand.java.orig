@@ -41,15 +41,15 @@ public class IdunnCommand implements TabExecutor {
         instanceGroup.register("delete", new DeleteInstanceCommand(instanceRepository, templateManager));
         instanceGroup.register("mask", new InstanceMaskCommand(instanceRepository));
         subCommands.put("instance", instanceGroup);
-        
+
         // Sets Group
         CommandGroup setsGroup = new CommandGroup();
-        
+
         CommandGroup setsAddGroup = new CommandGroup();
         setsAddGroup.register("path", new SetsAddPathCommand(sessionManager, templateManager));
         setsAddGroup.register("subset", new SetsAddSubsetCommand(sessionManager, setManager));
         setsGroup.register("add", setsAddGroup);
-        
+
         setsGroup.register("remove", new SetsRemoveCommand(sessionManager));
         setsGroup.register("clear", new SetsClearCommand(sessionManager));
         setsGroup.register("prop", new SetsPropCommand(sessionManager));
@@ -61,7 +61,7 @@ public class IdunnCommand implements TabExecutor {
         setsGroup.register("update", new SetsUpdateCommand(sessionManager, setManager));
         setsGroup.register("transferToGlobal", new SetsTransferCommand(sessionManager, setManager));
         subCommands.put("set", setsGroup);
-        
+
         // Brush Group
         CommandGroup brushGroup = new CommandGroup();
         brushGroup.register("bind", new BrushBindCommand(sessionManager, templateManager, setManager));
@@ -71,13 +71,13 @@ public class IdunnCommand implements TabExecutor {
         brushGroup.register("source", new BrushSourceCommand(sessionManager, templateManager, setManager));
         brushGroup.register("list", new BrushListCommand(sessionManager));
         brushGroup.register("change", new BrushChangeCommand(sessionManager, brushManager));
-        
+
         CommandGroup presetGroup = new CommandGroup();
         presetGroup.register("save", new BrushPresetSaveCommand(brushPresetManager, sessionManager));
         presetGroup.register("update", new BrushPresetUpdateCommand(brushPresetManager, sessionManager));
         presetGroup.register("load", new BrushPresetLoadCommand(brushPresetManager, sessionManager));
         brushGroup.register("preset", presetGroup);
-        
+
         subCommands.put("brush", brushGroup);
 
         // Root Commands
@@ -87,7 +87,6 @@ public class IdunnCommand implements TabExecutor {
         subCommands.put("commit", new SmartCommitCommand(templateManager));
         subCommands.put("resize", new ResizeCommand(resizeManager, resizeConfigManager, languageManager));
         subCommands.put("migrate", new com.jackyblackson.idunntemplates.command.sub.internal.MigrateCommand());
-        subCommands.put("auth", new AuthCommand());
     }
 
     @Override

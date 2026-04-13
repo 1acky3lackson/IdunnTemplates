@@ -37,6 +37,7 @@ dependencies {
 
     // Source: https://mvnrepository.com/artifact/com.github.usefulness/webp-imageio
     implementation group: 'com.github.usefulness', name: 'webp-imageio', version: '0.10.2'
+    implementation 'org.mindrot:jbcrypt:0.4'
 }
 
 tasks.named('test') {

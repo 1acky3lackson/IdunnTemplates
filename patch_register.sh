@@ -1,0 +1,24 @@
+cat << 'INNER_EOF' > patch.diff
+--- frontend/app/pages/register/register-page.tsx
++++ frontend/app/pages/register/register-page.tsx
+@@ -24,7 +24,7 @@
+   CardTitle,
+ } from "@/components/ui/card";
+ import { toast } from "sonner";
+-import { IDUNN_API_BASE_URL } from "~/api";
++import { getBackendBaseUrl } from "~/api";
+
+ import lightLogo from "@/common/topbar/logo-light.svg";
+ import darkLogo from "@/common/topbar/logo-dark.svg";
+@@ -87,8 +87,8 @@
+     try {
+       // Use direct fetch as it might not be in the openapi spec wrapper yet
+-      const url = `${IDUNN_API_BASE_URL || "/api/v1"}/auth/register`;
++      const baseUrl = getBackendBaseUrl() || "";
+       // But wait, the backend controller is mapped to /api/auth, not /api/v1/auth
+-      const apiUrl = (IDUNN_API_BASE_URL || "/api/v1").replace("/api/v1", "/api/auth/register");
++      const apiUrl = baseUrl ? `${baseUrl}/api/auth/register` : "/api/auth/register";
+
+       const response = await fetch(apiUrl, {
+INNER_EOF
+patch frontend/app/pages/register/register-page.tsx < patch.diff
