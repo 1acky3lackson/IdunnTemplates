@@ -55,7 +55,7 @@ tasks {
 //        }
 
         // 使用绝对路径，并确保没有多余的符号
-        jvmArgs("-javaagent:C:/Users/Jacky/Desktop/Dev/IdunnTemplates/plugin/run/authlib-injector-1.2.7.jar=https://skin.taixue.cc/api/yggdrasil")
+        jvmArgs("-javaagent:C:/Users/Jacky/Desktop/Dev/IdunnTemplates/plugin/run/authlib-injector-1.2.7.jar=https://littleskin.cn/api/yggdrasil")
 
         // 可选：增加此参数以获得详细的注入日志，方便排查
         jvmArgs("-Dauthlibinjector.debug")

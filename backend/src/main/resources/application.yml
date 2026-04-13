@@ -41,7 +41,7 @@ server:
 # 标准的 Yggdrasil 验证端点通常以 /authserver/authenticate 结尾
 yggdrasil:
   api:
-    url: https://skin.taixue.cc/api/yggdrasil/authserver/authenticate
+    url: https://littleskin.cn/api/yggdrasil/authserver/authenticate
 
 # --- JWT (JSON Web Token) ---
 # 用于生成和验证后端签发的 API Token

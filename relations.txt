@@ -1,0 +1,252 @@
+﻿
+=== Namespace.java ===
+
+> public class Namespace {
+  
+
+=== RemoteSet.java ===
+> public class RemoteSet {
+  
+>     @ManyToOne(optional = false)
+      @JoinColumn(name = "namespace_name", nullable = false)
+>     @OneToMany(mappedBy = "remoteSet", cascade = CascadeType.ALL, orphanRemoval = true)
+>     private List<RemoteSetSource> sources = new ArrayList<>();
+  
+>     public List<RemoteSetSource> getSources() {
+          return sources;
+>     public void setSources(List<RemoteSetSource> sources) {
+          this.sources = sources;
+
+=== RemoteSetSource.java ===
+> public class RemoteSetSource {
+  
+>     @ManyToOne(optional = false)
+      @JoinColumn(name = "remote_set_id", nullable = false)
+>     @ManyToOne
+      @JoinColumn(name = "target_remote_set_id")
+
+=== Tag.java ===
+> public class Tag {
+  
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "parent_id")
+>     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+      @JsonIgnoreProperties("parent")
+>     private List<Tag> children = new ArrayList<>();
+  
+>     @ManyToMany
+      @JoinTable(
+>     private Set<Template> templates = new HashSet<>();
+  
+>     public List<Tag> getChildren() {
+          return children;
+>     public void setChildren(List<Tag> children) {
+          this.children = children;
+>     public Set<Template> getTemplates() {
+          return templates;
+>     public void setTemplates(Set<Template> templates) {
+          this.templates = templates;
+
+=== TemplateCollection.java ===
+> public class TemplateCollection {
+      @Id
+
+=== TemplateCollectionRelation.java ===
+> public class TemplateCollectionRelation {
+      @Id
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "template_id")
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "collection_id")
+
+=== TemplateColorScheme.java ===
+> public class TemplateColorScheme {
+  
+
+=== TrustedServer.java ===
+> public class TrustedServer {
+  
+
+=== Project.java ===
+> public class Project implements Serializable {
+  
+>     @ManyToOne(fetch = FetchType.EAGER)
+      @JoinColumn(name = "world_id", foreignKey = @ForeignKey(name = "fk_projects_worlds_world_id"))
+>     @ManyToOne(fetch = FetchType.EAGER)
+      @JoinColumn(name = "parent_project_id", foreignKey = @ForeignKey(name = "fk_projects_projects_parent_project_id"))
+>     @OneToMany(mappedBy = "parentProject", fetch = FetchType.LAZY)
+>     private Set<Project> childProjects = new HashSet<>();
+  
+> //    @ManyToOne(fetch = FetchType.LAZY)
+  //    @JoinColumn(name = "create_user_id", foreignKey = @ForeignKey(name = "fk_projects_users_create_user_id"))
+> //    @ManyToOne(fetch = FetchType.LAZY)
+  //    @JoinColumn(name = "delete_user_id", foreignKey = @ForeignKey(name = "fk_projects_users_delete_user_id"))
+> //    @ManyToOne(fetch = FetchType.LAZY)
+  //    @JoinColumn(name = "icon_file_id", foreignKey = @ForeignKey(name = "fk_projects_files_avatar_icon_id"))
+
+=== World.java ===
+> public class World implements Serializable {
+  
+>     @OneToMany(mappedBy = "world", fetch = FetchType.LAZY)
+      @Builder.Default
+>     private Set<Project> projects = new HashSet<>();
+  
+
+=== UserBalance.java ===
+> public class UserBalance {
+  
+
+=== UserBalanceRecord.java ===
+> public class UserBalanceRecord {
+  
+
+=== CheckoutDetail.java ===
+> public class CheckoutDetail {
+  
+>     @ManyToOne(fetch = FetchType.EAGER)
+      @JoinColumn(name = "netease_order_id")
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "checkout_context_id")
+>     @ManyToOne(fetch = FetchType.EAGER)
+      @JoinColumn(name = "ne_withdraw_id")
+
+=== CheckoutWithdrawAllocation.java ===
+> public class CheckoutWithdrawAllocation {
+      @Id
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "checkout_detail_id", nullable = false)
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "withdraw_id", nullable = false)
+
+=== GlobalCheckoutParamContext.java ===
+> public class GlobalCheckoutParamContext {
+      public GlobalCheckoutParamContext(String username) {
+
+=== UserProjectContribution.java ===
+> public class UserProjectContribution {
+  
+>     @ManyToOne(fetch = FetchType.EAGER)  // 默认关联查询为 LAZY 提升性能
+      @JoinColumn(name = "project_id")    // 指定外键列名
+
+=== NeCompProductLog.java ===
+> public class NeCompProductLog {
+  
+
+=== NeLog.java ===
+> public class NeLog {
+  
+
+=== NePeProductCommentLog.java ===
+> public class NePeProductCommentLog {
+  
+
+=== NePeProductFeedbackLog.java ===
+> public class NePeProductFeedbackLog {
+  
+
+=== NePeProductLog.java ===
+> public class NePeProductLog {
+  
+
+=== NePeProductOrderLog.java ===
+> public class NePeProductOrderLog {
+  
+
+=== NePeProductStatLog.java ===
+> public class NePeProductStatLog {
+  
+
+=== NeUserLog.java ===
+> public class NeUserLog {
+  
+
+=== NeteaseOrder.java ===
+> public class NeteaseOrder {
+      @Id
+>     @ManyToOne(fetch = FetchType.LAZY)  // 默认关联查询为 LAZY 提升性能
+      @JoinColumn(name = "product_id")    // 指定外键列名
+
+=== NeteaseProduct.java ===
+> public class NeteaseProduct {
+      @Id
+>     @ManyToOne(fetch = FetchType.EAGER)  // 默认关联查询为 LAZY 提升性能
+      @JoinColumn(name = "project_id")    // 指定外键列名
+
+=== NeteaseWithdraw.java ===
+> public class NeteaseWithdraw {
+      @Id
+
+=== SystemWithdraw.java ===
+> public class SystemWithdraw {
+  
+
+=== Instance.java ===
+> @DatabaseTable(tableName = "idunn_instances", daoClass = InstanceDao.class)
+> public class Instance {
+  
+
+=== StagedChanges.java ===
+> public class StagedChanges {
+      // List of new instances added to this template during the locked session
+>     private List<Instance> addedInstances = new ArrayList<>();
+      
+>     private List<String> removedInstanceIds = new ArrayList<>();
+  
+>     public List<Instance> getAddedInstances() {
+>         if (addedInstances == null) addedInstances = new ArrayList<>();
+          return addedInstances;
+>     public void setAddedInstances(List<Instance> addedInstances) {
+          this.addedInstances = addedInstances;
+>     public List<String> getRemovedInstanceIds() {
+>         if (removedInstanceIds == null) removedInstanceIds = new ArrayList<>();
+          return removedInstanceIds;
+>     public void setRemovedInstanceIds(List<String> removedInstanceIds) {
+          this.removedInstanceIds = removedInstanceIds;
+
+=== Template.java ===
+> @DatabaseTable(tableName = "idunn_templates", daoClass = TemplateDao.class)
+> public class Template {
+  
+>     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+      @JoinColumn(name = "metadata_id", referencedColumnName = "template_id")
+>     @OneToMany(mappedBy = "template", fetch = FetchType.LAZY)
+      @JsonIgnore
+>     private List<TemplateVersion> versions = new ArrayList<>();
+  
+>     public List<TemplateVersion> getVersions() { return versions; }
+>     public void setVersions(List<TemplateVersion> versions) { this.versions = versions; }
+  
+
+=== TemplateMetadata.java ===
+> public class TemplateMetadata {
+  
+>     private final transient List<TemplateVersion> versions = new ArrayList<>();
+  
+>     private transient Map<UUID, List<Instance>> childTemplateInstances = new HashMap<>();
+      @Transient
+>     private transient Map<UUID, List<Instance>> parentTemplateInstances = new HashMap<>();
+  
+>     public void hydrateVersions(List<TemplateVersion> loadedVersions) {
+          this.versions.clear();
+>     public List<TemplateVersion> getVersions() {
+          return versions;
+>     public Map<UUID, List<Instance>> getChildTemplateInstances() {
+          if (childTemplateInstances == null) childTemplateInstances = new HashMap<>();
+>     public Map<UUID, List<Instance>> getParentTemplateInstances() {
+          if (parentTemplateInstances == null) parentTemplateInstances = new HashMap<>();
+>     public void hydrateChildInstances(List<Instance> instances) {
+          this.childTemplateInstances = new HashMap<>();
+>             this.childTemplateInstances.computeIfAbsent(i.getTemplateId(), k -> new ArrayList<>()).add(i);
+          }
+>     public void hydrateParentInstances(List<Instance> instances) {
+          this.parentTemplateInstances = new HashMap<>();
+>                 this.parentTemplateInstances.computeIfAbsent(i.getEmbeddedInTemplateId(), k -> new ArrayList<>()).add(i);
+              }
+
+=== TemplateVersion.java ===
+> public class TemplateVersion {
+  
+>     @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "template_id", nullable = false)
+
+

@@ -6,7 +6,7 @@ const topbarContent = {
     // 网站标题
     siteTitle: t({
       [Locales.ENGLISH]: "IdunnTemplates™",
-      [Locales.CHINESE]: "Idunn™ 模板",
+      [Locales.CHINESE]: "建筑模板管理系统",
       [Locales.CHINESE_TRADITIONAL]: "Idunn™ 模板",
     }),
     login: t({
