@@ -14,7 +14,7 @@ export interface CommonListProps {
 // ---------- 辅助格式化工具 ----------
 const formatMoney = (amount?: number | null) => {
   if (amount === undefined || amount === null) return "-";
-  return `¥${amount.toFixed(2)}`; // 根据实际金额单位调整，若是分则需 /100
+  return `${Math.round(amount * 100)}`; // 将数值 *100 显示为虚拟点数（不需要带单位）
 };
 
 const formatTime = (ms?: number | null) => {
@@ -74,7 +74,7 @@ export function UserBalanceList({
           render: (val) => <span className="font-bold">{val}</span>,
         },
         availableBalance: {
-          title: "账户余额",
+          title: "账户虚拟点数",
           sortable: true,
           render: (val) => (
             <span className="text-emerald-600 font-semibold">
@@ -151,7 +151,7 @@ export function UserTransactionRecordList({
           render: (val: string) => <TransactionTypeBadge type={val} />,
         },
         amount: {
-          title: "变动金额",
+          title: "变动虚拟点数",
           sortable: true,
           render: (val: number, row) => {
             const isIncome = row.type === "INCOME";
@@ -166,7 +166,7 @@ export function UserTransactionRecordList({
           },
         },
         balanceBefore: {
-          title: "变动前余额",
+          title: "变动前虚拟点数",
           render: (val) => (
             <span className="text-muted-foreground text-sm">
               {formatMoney(val)}
@@ -174,7 +174,7 @@ export function UserTransactionRecordList({
           ),
         },
         balanceAfter: {
-          title: "变动后余额",
+          title: "变动后虚拟点数",
           render: (val) => (
             <span className="text-muted-foreground text-sm">
               {formatMoney(val)}

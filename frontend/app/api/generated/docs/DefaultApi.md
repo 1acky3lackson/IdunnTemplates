@@ -25,13 +25,13 @@ All URIs are relative to *http://localhost*
 |[**apiV1CommercialGlobalContextsGet**](#apiv1commercialglobalcontextsget) | **GET** /api/v1/commercial/global-contexts | 获取全部修改历史记录|
 |[**apiV1CommercialGlobalContextsPost**](#apiv1commercialglobalcontextspost) | **POST** /api/v1/commercial/global-contexts | 更新结算参数|
 |[**apiV1CommercialNeteaseOrdersGet**](#apiv1commercialneteaseordersget) | **GET** /api/v1/commercial/netease-orders | 获取/筛选订单列表|
-|[**apiV1CommercialNeteaseProductsGet**](#apiv1commercialneteaseproductsget) | **GET** /api/v1/commercial/netease-products | 分页查询产品列表|
-|[**apiV1CommercialNeteaseProductsIdGet**](#apiv1commercialneteaseproductsidget) | **GET** /api/v1/commercial/netease-products/{id} | 根据ID查询单个产品|
-|[**apiV1CommercialNeteaseProductsIdProjectPatch**](#apiv1commercialneteaseproductsidprojectpatch) | **PATCH** /api/v1/commercial/netease-products/{id}/project | 指派或清除项目关联|
-|[**apiV1CommercialNeteaseProductsIdPut**](#apiv1commercialneteaseproductsidput) | **PUT** /api/v1/commercial/netease-products/{id} | 更新产品信息（支持部分字段）|
-|[**apiV1CommercialNeteaseProductsIdStatsGet**](#apiv1commercialneteaseproductsidstatsget) | **GET** /api/v1/commercial/netease-products/{id}/stats | 获取工程统计数据|
-|[**apiV1CommercialNeteaseProductsIdStatusPatch**](#apiv1commercialneteaseproductsidstatuspatch) | **PATCH** /api/v1/commercial/netease-products/{id}/status | 修改产品状态|
-|[**apiV1CommercialNeteaseProductsProductIdOrdersGet**](#apiv1commercialneteaseproductsproductidordersget) | **GET** /api/v1/commercial/netease-products/{productId}/orders | 获取商品的所有订单|
+|[**apiV1CommercialNeteaseProductsGet**](#apiv1commercialneteaseproductsget) | **GET** /api/v1/commercial/products | 分页查询产品列表|
+|[**apiV1CommercialNeteaseProductsIdGet**](#apiv1commercialneteaseproductsidget) | **GET** /api/v1/commercial/products/{id} | 根据ID查询单个产品|
+|[**apiV1CommercialNeteaseProductsIdProjectPatch**](#apiv1commercialneteaseproductsidprojectpatch) | **PATCH** /api/v1/commercial/products/{id}/project | 指派或清除项目关联|
+|[**apiV1CommercialNeteaseProductsIdPut**](#apiv1commercialneteaseproductsidput) | **PUT** /api/v1/commercial/products/{id} | 更新产品信息（支持部分字段）|
+|[**apiV1CommercialNeteaseProductsIdStatsGet**](#apiv1commercialneteaseproductsidstatsget) | **GET** /api/v1/commercial/products/{id}/stats | 获取工程统计数据|
+|[**apiV1CommercialNeteaseProductsIdStatusPatch**](#apiv1commercialneteaseproductsidstatuspatch) | **PATCH** /api/v1/commercial/products/{id}/status | 修改产品状态|
+|[**apiV1CommercialNeteaseProductsProductIdOrdersGet**](#apiv1commercialneteaseproductsproductidordersget) | **GET** /api/v1/commercial/products/{productId}/orders | 获取商品的所有订单|
 |[**apiV1CommercialNeteaseWithdrawsWithdrawIdAllocationsGet**](#apiv1commercialneteasewithdrawswithdrawidallocationsget) | **GET** /api/v1/commercial/netease-withdraws/{withdrawId}/allocations | 查询提现记录使用详情|
 |[**apiV1CommercialProjectsGet**](#apiv1commercialprojectsget) | **GET** /api/v1/commercial/projects | 获取/筛选项目列表|
 |[**apiV1CommercialProjectsIdDelete**](#apiv1commercialprojectsiddelete) | **DELETE** /api/v1/commercial/projects/{id} | 软删除 Project|

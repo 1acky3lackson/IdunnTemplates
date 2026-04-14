@@ -44,8 +44,8 @@ import { useAuth } from "../auth/auth-provider";
 
 // 格式化工具：统一使用 standard text
 const formatMoney = (amount?: number | null) => {
-  if (amount === undefined || amount === null) return "¥0.00";
-  return `¥${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (amount === undefined || amount === null) return "0";
+  return `${Math.round(amount * 100).toLocaleString()}`;
 };
 
 export function MyBalanceView() {
@@ -83,11 +83,11 @@ export function MyBalanceView() {
   const handleRequestWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0) {
-      toast.error("请输入有效的提现金额");
+      toast.error("请输入有效的提现虚拟点数");
       return;
     }
     if (amount > (balanceInfo?.availableBalance || 0)) {
-      toast.error("可用余额不足");
+      toast.error("可用虚拟点数不足");
       return;
     }
 
@@ -132,20 +132,17 @@ export function MyBalanceView() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="amount">提现金额</Label>
+                  <Label htmlFor="amount">提现虚拟点数</Label>
                   <span className="text-xs text-muted-foreground">
                     可用: {formatMoney(balanceInfo?.availableBalance)}
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground font-medium">
-                    ¥
-                  </span>
                   <Input
                     id="amount"
                     type="number"
-                    placeholder="0.00"
-                    className="pl-7 font-mono"
+                    placeholder="0"
+                    className="font-mono"
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                   />
@@ -153,7 +150,7 @@ export function MyBalanceView() {
               </div>
               <div className="rounded-md border border-input bg-muted/50 p-3">
                 <p className="text-[11px] leading-relaxed text-muted-foreground">
-                  提示：提交后将锁定对应余额。若审批拒绝，金额将自动退回您的账户。
+                  提示：提交后将锁定对应虚拟点数。若审批拒绝，点数将自动退回您的账户。
                 </p>
               </div>
             </div>
@@ -181,8 +178,7 @@ export function MyBalanceView() {
         <Card className="relative overflow-hidden border-none bg-primary text-primary-foreground shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium opacity-90">
-              可用余额
-            </CardTitle>
+              可用虚拟点数
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -203,8 +199,7 @@ export function MyBalanceView() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              保留中金额
-            </CardTitle>
+              保留中虚拟点数
             <Lock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -225,8 +220,7 @@ export function MyBalanceView() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              待提现 (预估)
-            </CardTitle>
+              待提现虚拟点数 (预估)
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

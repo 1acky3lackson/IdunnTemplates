@@ -214,7 +214,7 @@ export function NeteaseProductManagerPage({
             title: "名称",
             render: (val, row) => (
               <Link
-                to={`/commercial/netease-products/${row.id}`}
+                to={`/commercial/products/${row.id}`}
                 className="font-bold hover:text-accent transition-all duration-300"
               >
                 {val}
@@ -368,9 +368,8 @@ function AssignProjectDialog({
                 {projects.map((project) => (
                   <div
                     key={project.id}
-                    className={`p-2 rounded cursor-pointer hover:bg-accent ${
-                      selectedProject?.id === project.id ? "bg-accent" : ""
-                    }`}
+                    className={`p-2 rounded cursor-pointer hover:bg-accent ${selectedProject?.id === project.id ? "bg-accent" : ""
+                      }`}
                     onClick={() => setSelectedProject(project)}
                   >
                     {project.displayName} (ID: {project.id})

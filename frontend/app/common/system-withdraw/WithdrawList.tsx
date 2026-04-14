@@ -147,11 +147,11 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
           id: { title: "ID" },
           username: { title: "申请人" },
           amount: {
-            title: "提现金额",
+            title: "提现虚拟点数",
             sortable: true,
             render: (val) => (
               <span className="font-mono font-bold text-primary">
-                ¥{val.toFixed(2)}
+                {Math.round(val * 100).toLocaleString()}
               </span>
             ),
           },
@@ -205,10 +205,10 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
               <div className="grid grid-cols-2 gap-6 p-4 rounded-xl border bg-card shadow-sm">
                 <div className="space-y-1">
                   <Label className="text-muted-foreground font-normal">
-                    提现金额
+                    提现虚拟点数
                   </Label>
                   <p className="text-2xl font-bold tracking-tight text-primary">
-                    ¥{activeContext.data.amount?.toFixed(2)}
+                    {Math.round((activeContext.data.amount || 0) * 100).toLocaleString()}
                   </p>
                 </div>
                 <div className="space-y-1">

@@ -61,7 +61,9 @@ public class AuthCommand implements IdunnSubCommand {
                         boolean registered = json.get("registered").getAsBoolean();
                         String link = json.get("link").getAsString();
 
-                        String frontendUrl = IdunnTemplates.getInstance().getConfig().getString("services.thumbnail-generation.renderer-url", "http://localhost:3000");
+                        System.out.println(response.body());
+
+                        String frontendUrl = IdunnTemplates.getInstance().getConfig().getString("services.thumbnail-generation.renderer-url", "http://localhost:5173");
                         String fullLink = frontendUrl + link;
 
                         if (registered) {

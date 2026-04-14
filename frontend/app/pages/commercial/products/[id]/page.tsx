@@ -300,14 +300,14 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
           {/* 模块 2：金额 (绿色调) */}
           <div className="flex flex-col justify-center rounded-xl border border-emerald-100 bg-emerald-50/50 p-6 dark:border-emerald-900/50 dark:bg-emerald-950/20">
             <div className="text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80 mb-2">
-              总金额
+              总虚拟点数
             </div>
             <div className="text-4xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
-              ¥ {stats.totalAmount ?? 0}
+              {Math.round((stats.totalAmount ?? 0) * 100).toLocaleString()}
             </div>
             <div className="mt-2 text-sm text-emerald-600/70 dark:text-emerald-400/70">
-              平均金额: ¥{" "}
-              {stats.averageAmount ? stats.averageAmount.toFixed(2) : "0.00"}
+              平均虚拟点数:{" "}
+              {Math.round((stats.averageAmount || 0) * 100).toLocaleString()}
             </div>
           </div>
 
@@ -435,7 +435,7 @@ function StatCharts({ statPayload }: { statPayload: string }) {
               type="monotone"
               dataKey="钻石"
               stroke="#ff7300"
-              name="销售额（100钻石=1元）"
+              name="销售额（虚拟点数）"
               yAxisId="left"
             />
           </LineChart>

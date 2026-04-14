@@ -36,6 +36,8 @@ import {
   Parentheses,
   ChevronRight,
   Server,
+  Layers,
+  Library,
 } from "lucide-react";
 
 export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobile" | "both" } = {}) {
@@ -43,15 +45,46 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
     useIntlayer("navigation_bar");
 
   // 直接链接
-  const directLinks = [
-    { title: menus.templates, href: "/" },
-    { title: menus.sets, href: "/collections" },
-  ];
+  const directLinks: any[] = [];
 
-  // 商业化拆分的下拉菜单
+  // 一级菜单
   const dropdownMenus = [
     {
-      trigger: menus.financial,
+      trigger: menus.templateManagement,
+      children: [
+        {
+          icon: <Layers className="w-4 h-4" />,
+          title: menus.templates,
+          href: "/",
+          desc: items.searchTemplatesDesc,
+        },
+        {
+          icon: <Library className="w-4 h-4" />,
+          title: menus.sets,
+          href: "/collections",
+          desc: items.browseSetsDesc,
+        },
+      ],
+    },
+    {
+      trigger: menus.projectCollab,
+      children: [
+        {
+          icon: <FolderKanban className="w-4 h-4" />,
+          title: items.commercial.projects.title,
+          href: "/commercial/projects",
+          desc: items.commercial.projects.desc,
+        },
+        {
+          icon: <PackageSearch className="w-4 h-4" />,
+          title: items.commercial.neteaseProducts.title,
+          href: "/commercial/products",
+          desc: items.commercial.neteaseProducts.desc,
+        },
+      ],
+    },
+    {
+      trigger: menus.revenueSharing,
       children: [
         {
           icon: <Landmark className="w-4 h-4" />,
@@ -65,23 +98,12 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
           href: "/commercial/balances/transactions",
           desc: items.commercial.transactions.desc,
         },
-        {
-          icon: <Coins className="w-4 h-4" />,
-          title: items.commercial.systemWithdraw.title,
-          href: "/commercial/withdraws",
-          desc: items.commercial.systemWithdraw.desc,
-        },
-      ],
-    },
-    {
-      trigger: menus.netease,
-      children: [
-        {
-          icon: <PackageSearch className="w-4 h-4" />,
-          title: items.commercial.neteaseProducts.title,
-          href: "/commercial/netease-products",
-          desc: items.commercial.neteaseProducts.desc,
-        },
+        // {
+        //   icon: <Coins className="w-4 h-4" />,
+        //   title: items.commercial.systemWithdraw.title,
+        //   href: "/commercial/withdraws",
+        //   desc: items.commercial.systemWithdraw.desc,
+        // },
         {
           icon: <Coins className="w-4 h-4" />,
           title: items.commercial.neteaseOrders.title,
@@ -94,23 +116,17 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
           href: "/commercial/checkout",
           desc: items.commercial.checkout.desc,
         },
-        {
-          icon: <Coins className="w-4 h-4" />,
-          title: items.commercial.neteaseWithdraw.title,
-          href: "/commercial/netease-withdraws",
-          desc: items.commercial.neteaseWithdraw.desc,
-        },
+        // {
+        //   icon: <Coins className="w-4 h-4" />,
+        //   title: items.commercial.neteaseWithdraw.title,
+        //   href: "/commercial/netease-withdraws",
+        //   desc: items.commercial.neteaseWithdraw.desc,
+        // },
       ],
     },
     {
       trigger: menus.system,
       children: [
-        {
-          icon: <FolderKanban className="w-4 h-4" />,
-          title: items.commercial.projects.title,
-          href: "/commercial/projects",
-          desc: items.commercial.projects.desc,
-        },
         {
           icon: <Parentheses className="w-4 h-4" />,
           title: items.commercial.globalParams.title,

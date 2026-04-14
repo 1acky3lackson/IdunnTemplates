@@ -46,15 +46,30 @@ const navigationContent = {
         [Locales.CHINESE]: "商业化",
         [Locales.CHINESE_TRADITIONAL]: "商业化",
       }),
+      templateManagement: t({
+        [Locales.ENGLISH]: "Template Management",
+        [Locales.CHINESE]: "模板管理",
+        [Locales.CHINESE_TRADITIONAL]: "模板管理",
+      }),
+      projectCollab: t({
+        [Locales.ENGLISH]: "Project Collaboration",
+        [Locales.CHINESE]: "建造工程协作",
+        [Locales.CHINESE_TRADITIONAL]: "建造工程協作",
+      }),
+      revenueSharing: t({
+        [Locales.ENGLISH]: "Revenue Sharing",
+        [Locales.CHINESE]: "收益分成管理",
+        [Locales.CHINESE_TRADITIONAL]: "收益分成管理",
+      }),
       financial: t({
         [Locales.ENGLISH]: "Financial",
         [Locales.CHINESE]: "财务管理",
         [Locales.CHINESE_TRADITIONAL]: "財務管理",
       }),
       netease: t({
-        [Locales.ENGLISH]: "Netease",
-        [Locales.CHINESE]: "网易业务",
-        [Locales.CHINESE_TRADITIONAL]: "網易業務",
+        [Locales.ENGLISH]: "Business",
+        [Locales.CHINESE]: "业务",
+        [Locales.CHINESE_TRADITIONAL]: "業務",
       }),
       system: t({
         [Locales.ENGLISH]: "System",
@@ -176,9 +191,9 @@ const navigationContent = {
             [Locales.CHINESE_TRADITIONAL]: "用戶賬戶",
           }),
           desc: t({
-            [Locales.ENGLISH]: "View user accounts and various balances",
-            [Locales.CHINESE]: "查看用户的账户、各类余额等",
-            [Locales.CHINESE_TRADITIONAL]: "查看用戶的賬戶、各類餘額等",
+            [Locales.ENGLISH]: "View user accounts and various virtual points",
+            [Locales.CHINESE]: "查看用户的账户、各类虚拟点数等",
+            [Locales.CHINESE_TRADITIONAL]: "查看用戶的賬戶、各類虛擬點數等",
           }),
         },
         checkout: {
@@ -189,9 +204,9 @@ const navigationContent = {
           }),
           desc: t({
             [Locales.ENGLISH]:
-              "View records of NetEase order settlements to user earnings",
-            [Locales.CHINESE]: "查看网易订单结算到用户收益的记录",
-            [Locales.CHINESE_TRADITIONAL]: "查看網易訂單結算到用戶收益的記錄",
+              "View records of order settlements to user earnings",
+            [Locales.CHINESE]: "查看订单结算到用户收益的记录",
+            [Locales.CHINESE_TRADITIONAL]: "查看訂單結算到用戶收益的記錄",
           }),
         },
         transactions: {
@@ -220,9 +235,9 @@ const navigationContent = {
         },
         projects: {
           title: t({
-            [Locales.ENGLISH]: "Taixue Projects",
-            [Locales.CHINESE]: "太学工程",
-            [Locales.CHINESE_TRADITIONAL]: "太學工程",
+            [Locales.ENGLISH]: "Construction Projects",
+            [Locales.CHINESE]: "建造工程",
+            [Locales.CHINESE_TRADITIONAL]: "建造工程",
           }),
           desc: t({
             [Locales.ENGLISH]:
@@ -233,40 +248,40 @@ const navigationContent = {
         },
         neteaseProducts: {
           title: t({
-            [Locales.ENGLISH]: "Netease Products",
-            [Locales.CHINESE]: "网易上架商品",
-            [Locales.CHINESE_TRADITIONAL]: "網易上架商品",
+            [Locales.ENGLISH]: "Products",
+            [Locales.CHINESE]: "上架商品",
+            [Locales.CHINESE_TRADITIONAL]: "上架商品",
           }),
           desc: t({
             [Locales.ENGLISH]:
-              "View all our products listed on the Netease Mall",
-            [Locales.CHINESE]: "查看我们上架到网易商城的所有商品",
-            [Locales.CHINESE_TRADITIONAL]: "查看我們上架到網易商城的所有商品",
+              "View all our products listed on the Mall",
+            [Locales.CHINESE]: "查看我们上架到商城的所有商品",
+            [Locales.CHINESE_TRADITIONAL]: "查看我們上架到商城的所有商品",
           }),
         },
         neteaseOrders: {
           title: t({
-            [Locales.ENGLISH]: "Netease Sales Orders",
-            [Locales.CHINESE]: "网易销售订单",
-            [Locales.CHINESE_TRADITIONAL]: "網易銷售訂單",
+            [Locales.ENGLISH]: "Sales Orders",
+            [Locales.CHINESE]: "销售订单",
+            [Locales.CHINESE_TRADITIONAL]: "銷售訂單",
           }),
           desc: t({
             [Locales.ENGLISH]:
-              "View all orders for products in the Netease Mall",
-            [Locales.CHINESE]: "查看网易商城中商品的全部订单",
-            [Locales.CHINESE_TRADITIONAL]: "查看網易商城中商品的全部訂單",
+              "View all orders for products in the Mall",
+            [Locales.CHINESE]: "查看商城中商品的全部订单",
+            [Locales.CHINESE_TRADITIONAL]: "查看商城中商品的全部訂單",
           }),
         },
         neteaseWithdraw: {
           title: t({
-            [Locales.ENGLISH]: "Netease Withdrawals",
-            [Locales.CHINESE]: "网易提现记录",
-            [Locales.CHINESE_TRADITIONAL]: "網易提現記錄",
+            [Locales.ENGLISH]: "Withdrawals",
+            [Locales.CHINESE]: "提现记录",
+            [Locales.CHINESE_TRADITIONAL]: "提現記錄",
           }),
           desc: t({
-            [Locales.ENGLISH]: "View Netease withdrawal records",
-            [Locales.CHINESE]: "查看网易提现记录及其使用情况",
-            [Locales.CHINESE_TRADITIONAL]: "查看網易提現記錄及其使用情況",
+            [Locales.ENGLISH]: "View withdrawal records",
+            [Locales.CHINESE]: "查看提现记录及其使用情况",
+            [Locales.CHINESE_TRADITIONAL]: "查看提現記錄及其使用情況",
           }),
         },
         systemWithdraw: {

@@ -51,7 +51,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
          * @throws {RequiredError}
          */
         apiV1CommercialNeteaseProductsGet: async (search?: string, page?: number, size?: number, sort?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/commercial/netease-products`;
+            const localVarPath = `/api/v1/commercial/products`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -59,7 +59,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -83,7 +83,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -100,7 +100,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
         apiV1CommercialNeteaseProductsIdGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('apiV1CommercialNeteaseProductsIdGet', 'id', id)
-            const localVarPath = `/api/v1/commercial/netease-products/{id}`
+            const localVarPath = `/api/v1/commercial/products/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -109,7 +109,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -117,7 +117,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -135,7 +135,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
         apiV1CommercialNeteaseProductsIdProjectPatch: async (id: number, projectAssignmentRequest?: ProjectAssignmentRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('apiV1CommercialNeteaseProductsIdProjectPatch', 'id', id)
-            const localVarPath = `/api/v1/commercial/netease-products/{id}/project`
+            const localVarPath = `/api/v1/commercial/products/{id}/project`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -144,7 +144,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options };
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -153,7 +153,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
             localVarRequestOptions.data = serializeDataIfNeeded(projectAssignmentRequest, localVarRequestOptions, configuration)
 
             return {
@@ -172,7 +172,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
         apiV1CommercialNeteaseProductsIdPut: async (id: number, neteaseProductUpdateRequest?: NeteaseProductUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('apiV1CommercialNeteaseProductsIdPut', 'id', id)
-            const localVarPath = `/api/v1/commercial/netease-products/{id}`
+            const localVarPath = `/api/v1/commercial/products/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -181,7 +181,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options };
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -190,7 +190,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
             localVarRequestOptions.data = serializeDataIfNeeded(neteaseProductUpdateRequest, localVarRequestOptions, configuration)
 
             return {
@@ -209,7 +209,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
         apiV1CommercialNeteaseProductsIdStatusPatch: async (id: number, statusChangeRequest?: StatusChangeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('apiV1CommercialNeteaseProductsIdStatusPatch', 'id', id)
-            const localVarPath = `/api/v1/commercial/netease-products/{id}/status`
+            const localVarPath = `/api/v1/commercial/products/{id}/status`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -218,7 +218,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options };
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -227,7 +227,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
             localVarRequestOptions.data = serializeDataIfNeeded(statusChangeRequest, localVarRequestOptions, configuration)
 
             return {
@@ -241,7 +241,7 @@ export const NeteaseProductsApiAxiosParamCreator = function (configuration?: Con
 /**
  * NeteaseProductsApi - functional programming interface
  */
-export const NeteaseProductsApiFp = function(configuration?: Configuration) {
+export const NeteaseProductsApiFp = function (configuration?: Configuration) {
     const localVarAxiosParamCreator = NeteaseProductsApiAxiosParamCreator(configuration)
     return {
         /**

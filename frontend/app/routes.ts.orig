@@ -68,13 +68,13 @@ export default [
 
       // Netease Products
       route(
-        "/:lang?/commercial/netease-products",
-        "pages/commercial/netease-products/page.tsx",
+        "/:lang?/commercial/products",
+        "pages/commercial/products/page.tsx",
       ),
       // Netease Product Details
       route(
-        "/:lang?/commercial/netease-products/:id",
-        "pages/commercial/netease-products/[id]/page.tsx",
+        "/:lang?/commercial/products/:id",
+        "pages/commercial/products/[id]/page.tsx",
       ),
 
       // Balance List

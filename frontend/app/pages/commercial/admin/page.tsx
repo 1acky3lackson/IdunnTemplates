@@ -118,7 +118,7 @@ export default function AdminDashboard() {
 
       <div className="text-2xl font-bold py-2">爬虫与同步</div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-8">
-        {/* 卡片 1：结算单实际金额结算 */}
+        {/* 卡片 1：结算单实际虚拟点数结算 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <RefreshCw className="h-6 w-6 text-primary mb-2" />
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
 
       <div className="text-2xl font-bold py-2">账户与结算</div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-4">
-        {/* 卡片 1：结算单实际金额结算 */}
+        {/* 卡片 1：结算单实际虚拟点数结算 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <Users className="h-6 w-6 text-green-500 mb-2" />
@@ -223,9 +223,9 @@ export default function AdminDashboard() {
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <Calculator className="h-6 w-6 text-blue-500 mb-2" />
-            <CardTitle className="text-lg">结算实际金额</CardTitle>
+            <CardTitle className="text-lg">结算实际虚拟点数</CardTitle>
             <CardDescription>
-              重新触发或结算单到实际金额的计算逻辑。
+              重新触发结算单到实际点数的计算逻辑。
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1">
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
                   () =>
                     IDUNN_API.apiV1CommercialAdminCalculateCheckoutDetailGet(),
                   "checkout",
-                  "结算单金额计算",
+                  "结算单虚拟点数计算",
                 )
               }
             >
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-6 w-6 text-amber-500 mb-2" />
             <CardTitle className="text-lg">释放冻结资金</CardTitle>
             <CardDescription>
-              触发计算，将符合条件的风险期内冻结资金释放至可用余额。
+              触发计算，将符合条件的风险期内保留点数释放至可用虚拟点数。
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1"></CardContent>

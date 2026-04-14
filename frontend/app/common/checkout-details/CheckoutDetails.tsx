@@ -52,7 +52,7 @@ const formatTime = (ms?: number | null) => {
 // 金额格式化工具 (假设后端传来的直接是元或者具体数值)
 const formatMoney = (amount?: number | null) => {
   if (amount === undefined || amount === null) return "-";
-  return `¥${amount.toFixed(4)}`;
+  return `${Math.round(amount * 100).toLocaleString()}`;
 };
 
 // ---------- 主页面组件 ----------
@@ -158,7 +158,7 @@ export default function CheckoutDetails({
           netProfit: {
             title: (
               <div>
-                理论收益{" "}
+                理论收益 (虚拟点数){" "}
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger>
@@ -179,7 +179,7 @@ export default function CheckoutDetails({
             ),
           },
           actualProfit: {
-            title: "实际收益",
+            title: "实际收益 (虚拟点数)",
             sortable: true,
             render: (val) => (
               <span className="text-green-600 font-semibold">
@@ -292,13 +292,13 @@ function CheckoutDetailDialog({
             </div>
             <div>
               <span className="text-muted-foreground block mb-1">
-                应结利润 (Net Profit)
+                应结利润 (虚拟点数)
               </span>
               <div className="font-medium">{formatMoney(detail.netProfit)}</div>
             </div>
             <div>
               <span className="text-muted-foreground block mb-1">
-                实际收益 (Actual Profit)
+                实际收益 (虚拟点数)
               </span>
               <div className="font-medium text-lg text-blue-600">
                 {formatMoney(detail.actualProfit)}

@@ -48,21 +48,22 @@ public class NeteaseOrderController {
      * @param pageable  分页参数，默认页码0，每页20条，按id降序排序。
      * @return 分页结果
      */
-    @GetMapping("/netease-products/{productId}/orders")
+    @GetMapping("/products/{productId}/orders")
     @AuthRequired
     public ResponseEntity<Page<NeteaseOrderDto>> listByProduct(
             @PathVariable Long productId,
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "shipTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
-            UserContext user
-    ) {
+            UserContext user) {
         var productOptional = neteaseProductRepository.findById(productId);
-        if(productOptional.isEmpty()) return ResponseEntity.notFound().build();
+        if (productOptional.isEmpty())
+            return ResponseEntity.notFound().build();
         var product = productOptional.get();
         if (product.getProject() == null) {
             return ResponseEntity.status(406).build();
         }
-        boolean participated = userProjectContributionService.isUserParticipant(user.getUsername(), product.getProject().getId());
+        boolean participated = userProjectContributionService.isUserParticipant(user.getUsername(),
+                product.getProject().getId());
         if (!participated && !luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)) {
             return ResponseEntity.status(406).build();
         }
@@ -87,8 +88,7 @@ public class NeteaseOrderController {
     public ResponseEntity<Page<NeteaseOrderDto>> listAll(
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "shipTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
-            UserContext user
-    ) {
+            UserContext user) {
 
         if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)) {
             return ResponseEntity.ok(Page.empty());
@@ -124,7 +124,8 @@ public class NeteaseOrderController {
             if (project == null) {
                 return ResponseEntity.status(406).build();
             }
-            boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(), project.getId());
+            boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(),
+                    project.getId());
             if (!isContributor) {
                 return ResponseEntity.status(406).build();
             }
@@ -184,7 +185,8 @@ public class NeteaseOrderController {
             List<Predicate> predicates = new ArrayList<>();
             for (SearchCriteria criteria : criteriaList) {
                 Path<?> path = resolvePath(root, criteria.getField());
-                if (path == null) continue; // 无法解析的字段忽略
+                if (path == null)
+                    continue; // 无法解析的字段忽略
                 Object value = convertValue(path.getJavaType(), criteria.getValue());
 
                 switch (criteria.getOperator()) {
@@ -224,7 +226,8 @@ public class NeteaseOrderController {
         String[] conditions = search.split(",");
         for (String condition : conditions) {
             String[] parts = condition.split(":", 2);
-            if (parts.length != 2) continue;
+            if (parts.length != 2)
+                continue;
 
             String fieldWithOp = parts[0].trim();
             String value = parts[1].trim();
@@ -284,7 +287,7 @@ public class NeteaseOrderController {
      * 操作符枚举
      */
     private enum Operator {
-        EQ,      // 等于
-        LIKE     // 模糊查询
+        EQ, // 等于
+        LIKE // 模糊查询
     }
 }

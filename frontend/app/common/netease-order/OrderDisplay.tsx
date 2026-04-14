@@ -135,7 +135,7 @@ export function OrderDisplay({
             title: "产品名称",
             filterable: true,
             render: (val, row) => (
-              <Link to={`/commercial/netease-products/${row.productId}`}>
+              <Link to={`/commercial/products/${row.productId}`}>
                 <span className="font-medium">{val || "-"}</span>
               </Link>
             ),
@@ -242,10 +242,9 @@ function OrderDetailsDialog({
           </div>
 
           <div>
-            <span className="text-muted-foreground block mb-1">订单金额</span>
+            <span className="text-muted-foreground block mb-1">订单虚拟点数</span>
             <div className="font-medium text-lg text-blue-600">
-              {(order.point ? `¥${(order.point / 100).toFixed(2)}` : "0") +
-                order.pointType}
+              {order.point ? order.point.toLocaleString() : "0"}
             </div>
           </div>
           <div>

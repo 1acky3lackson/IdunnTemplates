@@ -155,13 +155,13 @@ export default function WithdrawDetailView({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              原始总额 (PE)
+              原始总点数 (PE)
             </CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono text-blue-600">
-              ¥{withdraw.originalValue?.toFixed(2)}
+              {Math.round((withdraw.originalValue || 0) * 100).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               费率: {(withdraw.ratio! * 100).toFixed(2)}%
@@ -171,13 +171,13 @@ export default function WithdrawDetailView({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              已分配金额
+              已分配点数
             </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">
-              ¥{withdraw.usedOriginalValue?.toFixed(2)}
+              {Math.round((withdraw.usedOriginalValue || 0) * 100).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               占比:{" "}
@@ -192,29 +192,26 @@ export default function WithdrawDetailView({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              剩余可用额
+              剩余可用点数
             </CardTitle>
             <Coins className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono text-amber-600">
-              ¥
-              {(withdraw.originalValue! - withdraw.usedOriginalValue!).toFixed(
-                2,
-              )}
+              {Math.round((withdraw.originalValue! - withdraw.usedOriginalValue!) * 100).toLocaleString()}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              实际到账金额
+              实际到账点数
             </CardTitle>
             <Info className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">
-              ¥{withdraw.withdrawValue?.toFixed(2)}
+              {Math.round((withdraw.withdrawValue || 0) * 100).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               记录时间: {new Date(withdraw.saveTimeMs!).toLocaleDateString()}
@@ -268,8 +265,8 @@ export default function WithdrawDetailView({
               总额中扣除的部分。
             </p>
             <p className="mt-2">
-              3. <strong>实际折算额</strong>{" "}
-              是根据当前提现单的汇率（Ratio）自动计算的最终支付金额。
+              3. <strong>实际折算点数</strong>{" "}
+              是根据当前提现单的汇率（Ratio）自动计算的最终支付数字。
             </p>
           </CardContent>
         </Card>
@@ -307,15 +304,15 @@ export default function WithdrawDetailView({
                 sortable: true,
                 render: (val) => (
                   <span className="font-mono text-blue-600">
-                    ¥{val?.toFixed(4)}
+                    {Math.round((val || 0) * 100).toLocaleString()}
                   </span>
                 ),
               },
               actualAmount: {
-                title: "实际折算额",
+                title: "实际折算点数",
                 render: (val) => (
                   <span className="font-mono font-semibold text-green-600">
-                    ¥{val?.toFixed(4)}
+                    {Math.round((val || 0) * 100).toLocaleString()}
                   </span>
                 ),
               },
@@ -370,18 +367,18 @@ export default function WithdrawDetailView({
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">
-                  净利润 (PE)
+                  净利润 (点数)
                 </span>
                 <p className="font-mono text-blue-600 font-bold">
-                  ¥{(selectedDetail.netProfit ?? 0).toFixed(4)}
+                  {Math.round((selectedDetail.netProfit ?? 0) * 100).toLocaleString()}
                 </p>
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">
-                  实际利润 (CNY)
+                  实际利润 (点数)
                 </span>
                 <p className="font-mono text-green-600 font-bold">
-                  ¥{(selectedDetail.actualProfit ?? 0).toFixed(4)}
+                  {Math.round((selectedDetail.actualProfit ?? 0) * 100).toLocaleString()}
                 </p>
               </div>
               <div className="col-span-2 space-y-1 border-t pt-2">

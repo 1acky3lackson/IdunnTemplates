@@ -38,15 +38,15 @@ import java.util.Optional;
  * RESTful API for managing NeteaseProduct entities.
  */
 @RestController
-@RequestMapping("/api/v1/commercial/netease-products")
+@RequestMapping("/api/v1/commercial/products")
 @AllArgsConstructor
 public class NeteaseProductController {
 
     private final LuckyPermAuthService luckyPermAuthService;
     private final NeteaseProductStatService neteaseProductStatService;
     private NeteaseProductRepository repository;
-    private final ProductPermissionService permissionService;  // 注入权限服务
-    private final ProjectRepository projectRepository;  // 新增依赖，用于指定项目
+    private final ProductPermissionService permissionService; // 注入权限服务
+    private final ProjectRepository projectRepository; // 新增依赖，用于指定项目
 
     /**
      * 获取指定商品的订单统计数据
@@ -79,9 +79,8 @@ public class NeteaseProductController {
     @Transactional
     @AuthRequired
     public ResponseEntity<NeteaseProductDto> update(@PathVariable Long id,
-                                                    @RequestBody NeteaseProductUpdateRequest request,
-                                                    UserContext user
-    ) {
+            @RequestBody NeteaseProductUpdateRequest request,
+            UserContext user) {
 
         if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.modify)) {
             return ResponseEntity.status(406).build();
@@ -96,7 +95,7 @@ public class NeteaseProductController {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Project not found with id: " + request.getProjectId()));
             product.setProject(project);
-        } else if (request.isClearProject()) {  // 如果明确要求清空项目
+        } else if (request.isClearProject()) { // 如果明确要求清空项目
             product.setProject(null);
         }
 
@@ -119,9 +118,8 @@ public class NeteaseProductController {
     @Transactional
     @AuthRequired
     public ResponseEntity<NeteaseProductDto> assignProject(@PathVariable Long id,
-                                                           @RequestBody ProjectAssignmentRequest request,
-                                                           UserContext user
-    ) {
+            @RequestBody ProjectAssignmentRequest request,
+            UserContext user) {
         if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.bindProject)) {
             return ResponseEntity.status(406).build();
         }
@@ -147,9 +145,8 @@ public class NeteaseProductController {
     @Transactional
     @AuthRequired
     public ResponseEntity<NeteaseProductDto> changeStatus(@PathVariable Long id,
-                                                          @RequestBody StatusChangeRequest request,
-                                                          UserContext user
-    ) {
+            @RequestBody StatusChangeRequest request,
+            UserContext user) {
         if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.changeStatus)) {
             return ResponseEntity.status(406).build();
         }
@@ -170,8 +167,8 @@ public class NeteaseProductController {
      */
     @Getter
     public static class NeteaseProductUpdateRequest {
-        private Long projectId;                // 要关联的项目ID，null 表示不修改
-        private boolean clearProject = false;  // 是否清空项目（当为 true 时，projectId 忽略）
+        private Long projectId; // 要关联的项目ID，null 表示不修改
+        private boolean clearProject = false; // 是否清空项目（当为 true 时，projectId 忽略）
         private NeteaseProductStatus internalStatus; // 要更新的状态，null 表示不修改
         // 可扩展其他字段
     }
@@ -181,7 +178,7 @@ public class NeteaseProductController {
      */
     @Getter
     public static class ProjectAssignmentRequest {
-        private Long projectId;  // 项目ID，null 表示清空项目
+        private Long projectId; // 项目ID，null 表示清空项目
     }
 
     /**
@@ -246,7 +243,8 @@ public class NeteaseProductController {
             List<Predicate> predicates = new ArrayList<>();
             for (SearchCriteria criteria : criteriaList) {
                 Path<?> path = resolvePath(root, criteria.getField());
-                if (path == null) continue; // 无法解析的字段忽略
+                if (path == null)
+                    continue; // 无法解析的字段忽略
                 Object value = convertValue(path.getJavaType(), criteria.getValue());
 
                 switch (criteria.getOperator()) {
@@ -287,7 +285,8 @@ public class NeteaseProductController {
         String[] conditions = search.split(",");
         for (String condition : conditions) {
             String[] parts = condition.split(":", 2);
-            if (parts.length != 2) continue;
+            if (parts.length != 2)
+                continue;
 
             String fieldWithOp = parts[0].trim();
             String value = parts[1].trim();
@@ -348,7 +347,7 @@ public class NeteaseProductController {
      * 操作符枚举
      */
     private enum Operator {
-        EQ,      // 等于
-        LIKE     // 模糊查询
+        EQ, // 等于
+        LIKE // 模糊查询
     }
 }

@@ -80,20 +80,20 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
             ),
           },
           originalValue: {
-            title: "原始金额",
+            title: "原始虚拟点数",
             sortable: true,
             render: (val) => (
               <div className="flex items-center gap-1 font-mono text-blue-600">
                 <CircleDollarSign className="w-3.5 h-3.5" />
-                <span>¥{val?.toFixed(2)}</span>
+                <span>{Math.round((val || 0) * 100).toLocaleString()}</span>
               </div>
             ),
           },
           withdrawValue: {
-            title: "实际到账",
+            title: "实际到账 (虚拟点数)",
             render: (val) => (
               <div className="font-mono text-green-600 font-semibold">
-                ¥{val?.toFixed(2)}
+                {Math.round((val || 0) * 100).toLocaleString()}
               </div>
             ),
           },
@@ -129,11 +129,11 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
                   <div className="flex justify-between items-center text-[10px] font-medium uppercase tracking-wider">
                     <div className="flex items-center gap-1 text-blue-600">
                       <CheckCircle2 className="w-3 h-3" />
-                      <span>¥{used.toFixed(2)}</span>
+                      <span>{Math.round(used * 100).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <History className="w-3 h-3" />
-                      <span>剩 ¥{remaining.toFixed(2)}</span>
+                      <span>剩 {Math.round(remaining * 100).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -222,7 +222,7 @@ function CreateWithdrawDialog({
           <div className="space-y-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="originalValue" className="text-right text-xs">
-                原始金额 (PE)
+                原始虚拟点数 (PE)
               </Label>
               <Input
                 id="originalValue"
@@ -242,7 +242,7 @@ function CreateWithdrawDialog({
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="withdrawValue" className="text-right text-xs">
-                实际到账
+                实际到账 (虚拟点数)
               </Label>
               <Input
                 id="withdrawValue"
@@ -264,7 +264,7 @@ function CreateWithdrawDialog({
 
           <div className="bg-amber-50 border border-amber-100 p-3 rounded-md text-[11px] text-amber-700 leading-relaxed">
             <strong>自动计算：</strong> 费率（Ratio）将由后台根据{" "}
-            <code>实际到账 / 原始金额</code> 自动生成，无需手动维护。
+            <code>实际到账 (虚拟点数) / 原始虚拟点数</code> 自动生成，无需手动维护。
           </div>
 
           <DialogFooter>
