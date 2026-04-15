@@ -200,7 +200,7 @@ export function MyBalanceView() {
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               保留中虚拟点数
-            <Lock className="h-4 w-4 text-muted-foreground" />
+              <Lock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -221,7 +221,7 @@ export function MyBalanceView() {
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               待提现虚拟点数 (预估)
-            <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -244,7 +244,7 @@ export function MyBalanceView() {
           <TabsList className="grid w-full max-w-100 grid-cols-3">
             <TabsTrigger
               value="checkout-details"
-              // className={authUser ? "" : "hidden"}
+            // className={authUser ? "" : "hidden"}
             >
               <History className="w-4 h-4 mr-2" /> 分成记录
             </TabsTrigger>
@@ -252,7 +252,7 @@ export function MyBalanceView() {
               <History className="w-4 h-4 mr-2" /> 提现记录
             </TabsTrigger>
             <TabsTrigger value="transactions">
-              <ArrowRightLeft className="w-4 h-4 mr-2" /> 交易流水
+              <ArrowRightLeft className="w-4 h-4 mr-2" /> 交易虚拟点数变动
             </TabsTrigger>
           </TabsList>
         </div>

@@ -25,16 +25,16 @@ const formatTime = (ms?: number | null) => {
 const TransactionTypeBadge = ({ type }: { type: string }) => {
   switch (type) {
     case "EXPENSE":
-      return <Badge className="bg-orange-500">支出</Badge>;
+      return <Badge className="bg-orange-500">减少</Badge>;
     case "INCOME":
-      return <Badge className="bg-emerald-500">收入</Badge>;
+      return <Badge className="bg-emerald-500">增加</Badge>;
     default:
       return <Badge className="bg-gray-400">{type}</Badge>;
   }
 };
 
 // ==========================================
-// 1. 用户账户余额列表组件
+// 1. 用户虚拟点数余额列表组件
 // ==========================================
 export function UserBalanceList({
   forceSearch = {},
@@ -74,7 +74,7 @@ export function UserBalanceList({
           render: (val) => <span className="font-bold">{val}</span>,
         },
         availableBalance: {
-          title: "账户虚拟点数",
+          title: "虚拟点数",
           sortable: true,
           render: (val) => (
             <span className="text-emerald-600 font-semibold">
@@ -132,12 +132,12 @@ export function UserTransactionRecordList({
       forcedSearchValues={forceSearch}
       searchFields={[
         { key: "username", label: "用户名", fuzzy: true },
-        { key: "type", label: "流水类型 (如 PROFIT)", fuzzy: false },
+        { key: "type", label: "变动类型 (如 PROFIT)", fuzzy: false },
         { key: "relatedId", label: "关联ID", fuzzy: false },
       ]}
       schema={{
         id: {
-          title: "流水号",
+          title: "变动号",
           sortable: true,
         },
         username: {

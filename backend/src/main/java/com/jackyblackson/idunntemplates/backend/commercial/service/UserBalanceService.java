@@ -21,24 +21,26 @@ public class UserBalanceService {
     private final UserBalanceRecordRepository recordRepository;
 
     /**
-     * 增加收入
+     * 增加增加
+     * 
      * @param username    用户名
-     * @param amount      收入金额（正数）
+     * @param amount      增加金额（正数）
      * @param relatedId   关联业务ID（如 checkout_detail_id）
      * @param description 描述
      */
     @Transactional
     public void addIncome(String username, BigDecimal amount, Long relatedId, String description) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("收入金额必须为正数");
+            throw new IllegalArgumentException("增加金额必须为正数");
         }
         updateBalance(username, amount, UserBalanceRecord.RecordType.INCOME, relatedId, description);
     }
 
     /**
-     * 增加支出（扣款）
+     * 增加减少（扣款）
+     * 
      * @param username    用户名
-     * @param amount      支出金额（正数）
+     * @param amount      减少金额（正数）
      * @param relatedId   关联业务ID
      * @param description 描述
      * @throws IllegalStateException 余额不足时抛出
@@ -46,13 +48,14 @@ public class UserBalanceService {
     @Transactional
     public void addExpense(String username, BigDecimal amount, Long relatedId, String description) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("支出金额必须为正数");
+            throw new IllegalArgumentException("减少金额必须为正数");
         }
         updateBalance(username, amount.negate(), UserBalanceRecord.RecordType.EXPENSE, relatedId, description);
     }
 
     /**
-     * 内部方法：更新余额并记录流水
+     * 内部方法：更新余额并记录虚拟点数变动
+     * 
      * @param username    用户名
      * @param delta       变动金额（可为正或负）
      * @param type        记录类型
@@ -60,8 +63,8 @@ public class UserBalanceService {
      * @param description 描述
      */
     private void updateBalance(String username, BigDecimal delta,
-                               UserBalanceRecord.RecordType type,
-                               Long relatedId, String description) {
+            UserBalanceRecord.RecordType type,
+            Long relatedId, String description) {
         // 悲观锁获取用户余额记录
         UserBalance balance = userBalanceRepository.findByUsernameWithLock(username)
                 .orElseGet(() -> {
@@ -77,9 +80,9 @@ public class UserBalanceService {
         BigDecimal before = balance.getBalance();
         BigDecimal after = before.add(delta);
 
-        // 检查余额是否足够（如果是支出）
+        // 检查余额是否足够（如果是减少）
         if (delta.compareTo(BigDecimal.ZERO) < 0 && after.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalStateException(String.format("用户 %s 余额不足，当前余额 %s，欲支出 %s",
+            throw new IllegalStateException(String.format("用户 %s 余额不足，当前余额 %s，欲减少 %s",
                     username, before.toPlainString(), delta.abs().toPlainString()));
         }
 

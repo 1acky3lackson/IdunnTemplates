@@ -187,7 +187,7 @@ const navigationContent = {
         balances: {
           title: t({
             [Locales.ENGLISH]: "User Balances",
-            [Locales.CHINESE]: "用户账户",
+            [Locales.CHINESE]: "用户虚拟点数",
             [Locales.CHINESE_TRADITIONAL]: "用戶賬戶",
           }),
           desc: t({
@@ -212,12 +212,12 @@ const navigationContent = {
         transactions: {
           title: t({
             [Locales.ENGLISH]: "Account Transactions",
-            [Locales.CHINESE]: "账户流水",
+            [Locales.CHINESE]: "虚拟点数变动",
             [Locales.CHINESE_TRADITIONAL]: "賬戶流水",
           }),
           desc: t({
             [Locales.ENGLISH]: "View the list of user account transactions",
-            [Locales.CHINESE]: "查看用户账户的流水信息列表",
+            [Locales.CHINESE]: "查看用户虚拟点数的流水信息列表",
             [Locales.CHINESE_TRADITIONAL]: "查看用戶賬戶的流水信息列表",
           }),
         },

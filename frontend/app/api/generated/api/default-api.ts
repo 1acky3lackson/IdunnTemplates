@@ -2699,7 +2699,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
-         * @summary 获取当前用户账户金额
+         * @summary 获取当前用户虚拟点数金额
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2779,7 +2779,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-         * @summary 获取/筛选流水记录
+         * @summary 获取/筛选虚拟点数变动记录
          * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -2829,7 +2829,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-         * @summary 获取/筛选用户账户列表
+         * @summary 获取/筛选用户虚拟点数列表
          * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -3860,7 +3860,7 @@ export const DefaultApiFp = function (configuration?: Configuration) {
         },
         /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
-         * @summary 获取当前用户账户金额
+         * @summary 获取当前用户虚拟点数金额
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3888,7 +3888,7 @@ export const DefaultApiFp = function (configuration?: Configuration) {
         },
         /**
          * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-         * @summary 获取/筛选流水记录
+         * @summary 获取/筛选虚拟点数变动记录
          * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -3904,7 +3904,7 @@ export const DefaultApiFp = function (configuration?: Configuration) {
         },
         /**
          * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-         * @summary 获取/筛选用户账户列表
+         * @summary 获取/筛选用户虚拟点数列表
          * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -4669,7 +4669,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * Retrieves the balance information for the currently authenticated user. Requires authentication.
-         * @summary 获取当前用户账户金额
+         * @summary 获取当前用户虚拟点数金额
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4691,7 +4691,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-         * @summary 获取/筛选流水记录
+         * @summary 获取/筛选虚拟点数变动记录
          * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -4704,7 +4704,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-         * @summary 获取/筛选用户账户列表
+         * @summary 获取/筛选用户虚拟点数列表
          * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
          * @param {number} [page] Zero-based page index (0..N). Default is 0.
          * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -5527,7 +5527,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * Retrieves the balance information for the currently authenticated user. Requires authentication.
-     * @summary 获取当前用户账户金额
+     * @summary 获取当前用户虚拟点数金额
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -5551,7 +5551,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * Searches user balance transaction records with dynamic conditions and pagination. Requires authentication.
-     * @summary 获取/筛选流水记录
+     * @summary 获取/筛选虚拟点数变动记录
      * @param {string} [search] Dynamic search query string. Format: &#x60;field:value&#x60; (exact match) or &#x60;field~:value&#x60; (fuzzy match for strings). Multiple conditions can be separated by commas. 
      * @param {number} [page] Zero-based page index (0..N). Default is 0.
      * @param {number} [size] The size of the page to be returned. Default is 20.
@@ -5565,7 +5565,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * Retrieves a paginated list of balance information for all system users. Supports filtering by username. Requires authentication.
-     * @summary 获取/筛选用户账户列表
+     * @summary 获取/筛选用户虚拟点数列表
      * @param {string} [search] Dynamic search query string. Format: &#x60;username:value&#x60; (exact match) or &#x60;username~:value&#x60; (fuzzy match). Examples: &#x60;username:player1&#x60;, &#x60;username~:player&#x60; 
      * @param {number} [page] Zero-based page index (0..N). Default is 0.
      * @param {number} [size] The size of the page to be returned. Default is 20.

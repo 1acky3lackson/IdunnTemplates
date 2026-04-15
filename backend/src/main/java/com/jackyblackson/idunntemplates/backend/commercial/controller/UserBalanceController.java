@@ -84,8 +84,7 @@ public class UserBalanceController {
     @GetMapping()
     @AuthRequired
     public ResponseEntity<BalanceInfo> getMyBalance(
-            UserContext user
-    ) {
+            UserContext user) {
         // 通常用户名可以从认证信息中获取，这里作为示例传入参数
         BalanceInfo info = balanceService.getInfo(user.getUsername());
         return ResponseEntity.ok(info);
@@ -97,8 +96,7 @@ public class UserBalanceController {
     public ResponseEntity<Page<BalanceInfo>> listUserBalances(
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "username", direction = Sort.Direction.ASC) Pageable pageable,
-            UserContext user
-    ) {
+            UserContext user) {
         if (!luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.list)) {
             return ResponseEntity.status(406).build();
         }
@@ -117,10 +115,10 @@ public class UserBalanceController {
     public ResponseEntity<Page<CheckoutDetailController.CheckoutDetailDto>> listCheckoutDetails(
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
-            UserContext user
-    ) {
+            UserContext user) {
 
-        boolean checkoutAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.checkoutAll);
+        boolean checkoutAll = luckyPermAuthService.checkPermission(user,
+                PermissionNames.Commercial.Balance.checkoutAll);
 
         Specification<CheckoutDetail> spec = buildCheckoutDetailSpecification(search);
         Page<CheckoutDetail> page = checkoutDetailRepository.findAll(spec, pageable);
@@ -134,15 +132,15 @@ public class UserBalanceController {
         return ResponseEntity.ok(dtoPage);
     }
 
-    // ---------- 4. 查看账户流水列表（分页、筛选、排序） ----------
+    // ---------- 4. 查看虚拟点数变动列表（分页、筛选、排序） ----------
     @GetMapping("/records")
     @AuthRequired
     public ResponseEntity<Page<UserBalanceRecordDto>> listBalanceRecords(
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "createTimeMs", direction = Sort.Direction.DESC) Pageable pageable,
-            UserContext user
-    ) {
-        boolean checkoutAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.transactionAll);
+            UserContext user) {
+        boolean checkoutAll = luckyPermAuthService.checkPermission(user,
+                PermissionNames.Commercial.Balance.transactionAll);
 
         Specification<UserBalanceRecord> spec = buildBalanceRecordSpecification(search);
         Page<UserBalanceRecord> page = userBalanceRecordRepository.findAll(spec, pageable);
@@ -169,7 +167,7 @@ public class UserBalanceController {
                     String fieldOp = parts[0].trim();
                     String value = parts[1].trim();
                     boolean like = fieldOp.endsWith("~");
-                    String field = like ? fieldOp.substring(0, fieldOp.length()-1).trim() : fieldOp;
+                    String field = like ? fieldOp.substring(0, fieldOp.length() - 1).trim() : fieldOp;
                     if ("username".equalsIgnoreCase(field)) {
                         if (like) {
                             predicates.add(cb.like(root.get("username"), "%" + value + "%"));
@@ -191,13 +189,15 @@ public class UserBalanceController {
                 String[] conditions = search.split(",");
                 for (String condition : conditions) {
                     String[] parts = condition.split(":", 2);
-                    if (parts.length != 2) continue;
+                    if (parts.length != 2)
+                        continue;
                     String fieldOp = parts[0].trim();
                     String value = parts[1].trim();
                     boolean like = fieldOp.endsWith("~");
-                    String field = like ? fieldOp.substring(0, fieldOp.length()-1).trim() : fieldOp;
+                    String field = like ? fieldOp.substring(0, fieldOp.length() - 1).trim() : fieldOp;
                     Path<?> path = resolvePath(root, field);
-                    if (path == null) continue;
+                    if (path == null)
+                        continue;
                     Object converted = convertValue(path.getJavaType(), value);
                     if (like && path.getJavaType() == String.class) {
                         predicates.add(cb.like((Path<String>) path, "%" + value + "%"));
@@ -217,13 +217,15 @@ public class UserBalanceController {
                 String[] conditions = search.split(",");
                 for (String condition : conditions) {
                     String[] parts = condition.split(":", 2);
-                    if (parts.length != 2) continue;
+                    if (parts.length != 2)
+                        continue;
                     String fieldOp = parts[0].trim();
                     String value = parts[1].trim();
                     boolean like = fieldOp.endsWith("~");
-                    String field = like ? fieldOp.substring(0, fieldOp.length()-1).trim() : fieldOp;
+                    String field = like ? fieldOp.substring(0, fieldOp.length() - 1).trim() : fieldOp;
                     Path<?> path = resolvePath(root, field);
-                    if (path == null) continue;
+                    if (path == null)
+                        continue;
                     Object converted = convertValue(path.getJavaType(), value);
                     if (like && path.getJavaType() == String.class) {
                         predicates.add(cb.like((Path<String>) path, "%" + value + "%"));

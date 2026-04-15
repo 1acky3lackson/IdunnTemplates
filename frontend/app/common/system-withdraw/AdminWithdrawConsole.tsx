@@ -52,7 +52,7 @@ export function AdminWithdrawConsole() {
           </AlertTitle>
           <AlertDescription className="text-xs text-blue-600/80">
             所有提现审批动作均会被审计记录。在执行 <strong>PAID</strong>{" "}
-            操作前，请务必核对第三方流水单号。
+            操作前，请务必核对第三方虚拟点数变动单号。
           </AlertDescription>
         </Alert>
       </div>
@@ -120,7 +120,7 @@ export function AdminWithdrawConsole() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    用户提出申请生成提现记录。系统自动扣除用户虚拟点数，并生成出账流水（备注：用户提现）。
+                    用户提出申请生成提现记录。系统自动扣除用户虚拟点数，并生成出账虚拟点数变动（备注：用户提现）。
                   </p>
                 </div>
 
@@ -148,7 +148,7 @@ export function AdminWithdrawConsole() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    管理员向用户账户实际转账。在系统中上传转账凭证与交易单号，记录打款时间。
+                    管理员向用户虚拟点数实际转账。在系统中上传转账凭证与交易单号，记录打款时间。
                   </p>
                 </div>
 
@@ -190,7 +190,7 @@ export function AdminWithdrawConsole() {
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     管理员拒绝申请（需填理由）。虚拟点数将<strong>自动退回</strong>
-                    用户系统账户，并生成入账流水（备注：提现退回+理由）。
+                    用户系统账户，并生成入账虚拟点数变动（备注：提现退回+理由）。
                   </p>
                 </div>
 
@@ -239,7 +239,7 @@ export function AdminWithdrawConsole() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          管理员执行，附错误说明。资金自动退回用户账户。
+                          管理员执行，附错误说明。资金自动退回用户虚拟点数。
                         </p>
                       </div>
                     </div>

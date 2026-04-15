@@ -70,10 +70,10 @@ All URIs are relative to *http://localhost*
 |[**apiV1TemplatesThumbnailPost**](#apiv1templatesthumbnailpost) | **POST** /api/v1/templates/thumbnail | 上传缩略图|
 |[**apiV1UserinfoCreatorsGet**](#apiv1userinfocreatorsget) | **GET** /api/v1/userinfo/creators | 获取所有模板作者的用户信息|
 |[**createWithdraw**](#createwithdraw) | **POST** /api/v1/commercial/netease-withdraws | 添加提现记录|
-|[**getMyBalance**](#getmybalance) | **GET** /api/v1/commercial/balance | 获取当前用户账户金额|
+|[**getMyBalance**](#getmybalance) | **GET** /api/v1/commercial/balance | 获取当前用户虚拟点数金额|
 |[**listBalanceCheckoutDetails**](#listbalancecheckoutdetails) | **GET** /api/v1/commercial/balance/checkout-details | List Checkout Details|
-|[**listBalanceRecords**](#listbalancerecords) | **GET** /api/v1/commercial/balance/records | 获取/筛选流水记录|
-|[**listUserBalances**](#listuserbalances) | **GET** /api/v1/commercial/balance/users | 获取/筛选用户账户列表|
+|[**listBalanceRecords**](#listbalancerecords) | **GET** /api/v1/commercial/balance/records | 获取/筛选虚拟点数变动记录|
+|[**listUserBalances**](#listuserbalances) | **GET** /api/v1/commercial/balance/users | 获取/筛选用户虚拟点数列表|
 |[**listWithdraws**](#listwithdraws) | **GET** /api/v1/commercial/netease-withdraws | 分页查询提现记录|
 
 # **apiAuthLoginPost**

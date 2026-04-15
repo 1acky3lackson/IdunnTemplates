@@ -165,7 +165,7 @@ export default function CheckoutDetails({
                       <CircleQuestionMark />
                     </TooltipTrigger>
                     <TooltipContent>
-                      从网易收入计算而来，未扣除网易抽成
+                      从网易增加计算而来，未扣除网易抽成
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

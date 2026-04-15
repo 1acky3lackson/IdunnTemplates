@@ -93,15 +93,15 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
     const res =
       mode === "user"
         ? await IDUNN_API.apiV1CommercialWithdrawalsMeGet(
-            page,
-            size,
-            sort || undefined,
-          )
+          page,
+          size,
+          sort || undefined,
+        )
         : await IDUNN_API.apiV1CommercialWithdrawalsGet(
-            page,
-            size,
-            sort || undefined,
-          );
+          page,
+          size,
+          sort || undefined,
+        );
     return res.data;
   };
 
@@ -226,7 +226,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
                 {activeContext.data.transferProof && (
                   <div className="col-span-2 space-y-2 border-t pt-4">
                     <Label className="text-xs uppercase text-muted-foreground">
-                      转账流水/凭证
+                      转账虚拟点数变动/凭证
                     </Label>
                     <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono border">
                       {activeContext.data.transferProof}
@@ -384,23 +384,23 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
             {["REJECTED", "ERROR", "FINISHED"].includes(
               actionDialog.targetStatus,
             ) && (
-              <div className="space-y-2">
-                <Label className="text-xs">操作说明/原因 (必填)</Label>
-                <Textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="请输入处理说明..."
-                  className="min-h-25 text-sm"
-                />
-              </div>
-            )}
+                <div className="space-y-2">
+                  <Label className="text-xs">操作说明/原因 (必填)</Label>
+                  <Textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="请输入处理说明..."
+                    className="min-h-25 text-sm"
+                  />
+                </div>
+              )}
             {actionDialog.targetStatus === "PAID" && (
               <div className="space-y-2">
                 <Label className="text-xs">转账凭证/单号</Label>
                 <Input
                   value={proof}
                   onChange={(e) => setProof(e.target.value)}
-                  placeholder="流水号或备注信息..."
+                  placeholder="虚拟点数变动号或备注信息..."
                   className="text-sm"
                 />
               </div>
@@ -467,10 +467,10 @@ function StatusNode({
           ? "cursor-pointer bg-primary border-primary shadow-[0_0_15px_rgba(var(--primary),0.3)]"
           : "border-transparent",
         canAction &&
-          "hover:scale-110 hover:shadow-[0_0_25px_rgba(var(--primary),0.5)] active:scale-95 group",
+        "hover:scale-110 hover:shadow-[0_0_25px_rgba(var(--primary),0.5)] active:scale-95 group",
         isCurrent &&
-          !canAction &&
-          "bg-primary/5 border-primary/20 shadow-inner",
+        !canAction &&
+        "bg-primary/5 border-primary/20 shadow-inner",
       )}
     >
       <div
@@ -483,8 +483,8 @@ function StatusNode({
             ? "bg-primary-foreground border-primary-foreground text-primary"
             : "",
           !isPast &&
-            !isCurrent &&
-            "border-dashed border-muted-foreground/30 text-muted-foreground",
+          !isCurrent &&
+          "border-dashed border-muted-foreground/30 text-muted-foreground",
         )}
       >
         {isPast ? (

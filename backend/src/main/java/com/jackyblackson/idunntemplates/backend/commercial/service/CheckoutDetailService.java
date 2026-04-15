@@ -47,14 +47,15 @@ public class CheckoutDetailService {
             BigDecimal ratio,
             BigDecimal netProfit,
             BigDecimal orderProfit,
-            GlobalCheckoutParamContext paramContext
-    ) {
+            GlobalCheckoutParamContext paramContext) {
         // 检查唯一性（可选，数据库唯一约束会最终保证，但提前检查可提供更友好提示）
-//        if (checkoutDetailRepository.existsByUsernameAndOrder_IdAndRole(username, orderId, role)) {
-//            throw new IllegalArgumentException(
-//                    String.format("CheckoutDetail already exists for username=%s, orderId=%d, role=%s",
-//                            username, orderId, role));
-//        }
+        // if (checkoutDetailRepository.existsByUsernameAndOrder_IdAndRole(username,
+        // orderId, role)) {
+        // throw new IllegalArgumentException(
+        // String.format("CheckoutDetail already exists for username=%s, orderId=%d,
+        // role=%s",
+        // username, orderId, role));
+        // }
 
         // 加载关联的 NeteaseOrder
         NeteaseOrder order = neteaseOrderRepository.findById(orderId)
@@ -75,7 +76,8 @@ public class CheckoutDetailService {
             return checkoutDetailRepository.save(detail);
         } catch (DataIntegrityViolationException e) {
             // 捕获唯一约束冲突（并发情况）
-            throw new IllegalArgumentException("Duplicate entry: combination (username, orderId, role) already exists", e);
+            throw new IllegalArgumentException("Duplicate entry: combination (username, orderId, role) already exists",
+                    e);
         }
     }
 
@@ -89,6 +91,7 @@ public class CheckoutDetailService {
 
     /**
      * 尝试支付一个 CREATED 状态的结账单
+     * 
      * @param detail 待支付的结账单（netProfit 为原始金额）
      * @return true 表示支付成功，结账单变为 CONFIRMED；false 表示余额不足，未支付
      */
@@ -133,9 +136,11 @@ public class CheckoutDetailService {
         BigDecimal remaining = need;
         List<CheckoutWithdrawAllocation> allocations = new ArrayList<>();
         for (NeteaseWithdraw withdraw : lockedWithdraws) {
-            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0)
+                break;
             BigDecimal availableForThis = withdraw.getOriginalValue().subtract(withdraw.getUsedOriginalValue());
-            if (availableForThis.compareTo(BigDecimal.ZERO) <= 0) continue;
+            if (availableForThis.compareTo(BigDecimal.ZERO) <= 0)
+                continue;
             BigDecimal deduct = remaining.min(availableForThis);
             BigDecimal actual = deduct.multiply(withdraw.getRatio()).setScale(8, RoundingMode.HALF_UP);
             withdraw.setUsedOriginalValue(withdraw.getUsedOriginalValue().add(deduct));
@@ -161,11 +166,12 @@ public class CheckoutDetailService {
         // 注意：订单时间可以从 detail.getOrder().getCreateTimeMs() 获取
         long orderTime = detail.getOrder().getShipTimeMs(); // 假设 NeteaseOrder 有 createTimeMs 字段
         Integer delayDays = detail.getParamContext().getReleaseDelayDays();
-        if (delayDays == null) delayDays = 0; // 默认不延迟
+        if (delayDays == null)
+            delayDays = 0; // 默认不延迟
         long scheduledRelease = orderTime + delayDays * 24L * 3600L * 1000L;
         detail.setReleaseTimeMs(scheduledRelease);
 
-        detail.setStatus(CONFIRMED);  // 进入冻结状态
+        detail.setStatus(CONFIRMED); // 进入冻结状态
         checkoutDetailRepository.save(detail);
 
         log.info("结账单 {} 支付成功，使用 {} 笔提现记录，总实际到账 {}，计划释放时间：{}",
@@ -203,9 +209,8 @@ public class CheckoutDetailService {
                     detail.getUsername(),
                     detail.getActualProfit(), // 实际到账金额
                     detail.getId(),
-                    "订单收入释放，结账单 #" + detail.getId()
-            );
-            log.info("结账单 {} 已释放，用户 {} 收入 {} 元", detail.getId(), detail.getUsername(), detail.getActualProfit());
+                    "订单增加释放，结账单 #" + detail.getId());
+            log.info("结账单 {} 已释放，用户 {} 增加 {} 元", detail.getId(), detail.getUsername(), detail.getActualProfit());
         }
     }
 }
