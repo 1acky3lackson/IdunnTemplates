@@ -216,16 +216,21 @@ export function OrderDisplay({
               size="sm"
               onClick={() => setViewingOrder(row)}
             >
-              查看详情
+              详情
             </Button>
-            <Button
-              variant={row.point == null ? "default" : "secondary"}
-              size="sm"
-              onClick={() => setEditingPointOrder(row)}
-            >
-              {row.point == null ? "填写点数" : "修改点数"}
-            </Button>
-            {row.internalStatus !== "REFUNDED" && (
+            {row.point == null ? (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setEditingPointOrder(row)}
+              >
+                录入
+              </Button>
+            ) : row.internalStatus === "REFUNDED" ? (
+              <Button variant="secondary" size="sm" disabled>
+                退款
+              </Button>
+            ) : (
               <Button
                 variant="destructive"
                 size="sm"
@@ -311,13 +316,13 @@ function OrderDetailsDialog({
 
   return (
     <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="w-[min(96vw,72rem)] max-w-[96vw] max-h-[90vh] overflow-hidden sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>订单详情 - {order.id}</DialogTitle>
         </DialogHeader>
 
         {/* 使用 grid 布局紧凑展示详细信息 */}
-        <div className="grid grid-cols-2 gap-y-4 gap-x-8 py-4 text-sm">
+        <div className="grid max-h-[calc(90vh-5rem)] grid-cols-2 gap-y-4 gap-x-8 overflow-y-auto py-4 pr-2 text-sm">
           <div>
             <span className="text-muted-foreground block mb-1">数据库 ID</span>
             <div className="font-medium">{order.id}</div>
@@ -416,7 +421,7 @@ function UpdateOrderPointDialog({
     <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>填写订单虚拟点数</DialogTitle>
+          <DialogTitle>录入订单虚拟点数</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="text-sm text-muted-foreground">

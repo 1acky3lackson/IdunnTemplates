@@ -45,6 +45,20 @@ export function UserBalanceList({
   pageSize = 20,
   uid = "ublc",
 }: CommonListProps) {
+  const normalizeBalanceSort = (sort: string) => {
+    if (!sort) {
+      return sort;
+    }
+
+    return sort
+      .split(",")
+      .map((part) => {
+        const trimmed = part.trim();
+        return trimmed === "availableBalance" ? "balance" : trimmed;
+      })
+      .join(",");
+  };
+
   const fetchBalances = async (
     page: number,
     size: number,
@@ -55,7 +69,7 @@ export function UserBalanceList({
       search || undefined,
       page,
       size,
-      sort || undefined,
+      normalizeBalanceSort(sort) || undefined,
     );
     // @ts-ignore (视实际生成的类型签名而定，通常 .data 包含 PageResponse 结构)
     return response.data as PageResponse<BalanceInfo>;

@@ -16,6 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @Transactional
 @AllArgsConstructor
 public class GlobalCheckoutParamContextService {
+    private static final int DEFAULT_RELEASE_DELAY_DAYS = 7;
+
     private final GlobalCheckoutParamContextRepository repository;
 
     // 应用层锁，保证创建或更新操作的原子性
@@ -30,7 +32,7 @@ public class GlobalCheckoutParamContextService {
         // 先尝试无锁查询，提高性能
         Optional<GlobalCheckoutParamContext> existing = repository.findFirstByDisableTimeMsIsNull();
         if (existing.isPresent()) {
-            return existing.get();
+            return ensureReleaseDelayDays(existing.get());
         }
 
         // 无有效记录，加锁并双重检查，防止并发创建多条
@@ -38,12 +40,13 @@ public class GlobalCheckoutParamContextService {
         try {
             existing = repository.findFirstByDisableTimeMsIsNull();
             if (existing.isPresent()) {
-                return existing.get();
+                return ensureReleaseDelayDays(existing.get());
             }
 
             // 创建默认配置，创建人设为 system
             GlobalCheckoutParamContext defaultConfig = new GlobalCheckoutParamContext("system");
             defaultConfig.setTaixueRatio(0.0);
+            defaultConfig.setReleaseDelayDays(DEFAULT_RELEASE_DELAY_DAYS);
             return repository.save(defaultConfig);
         } finally {
             lock.unlock();
@@ -91,9 +94,11 @@ public class GlobalCheckoutParamContextService {
             if (newConfig.getUploaderRatio() != null) {
                 newEntity.setUploaderRatio(newConfig.getUploaderRatio());
             }
-            if (newConfig.getReleaseDelayDays() != null) {
-                newEntity.setReleaseDelayDays(newConfig.getReleaseDelayDays());
-            }
+            newEntity.setReleaseDelayDays(
+                    newConfig.getReleaseDelayDays() != null
+                            ? newConfig.getReleaseDelayDays()
+                            : DEFAULT_RELEASE_DELAY_DAYS
+            );
             // 显式设置创建时间戳为当前时间（更精确）
             newEntity.setCreateTimeMs(System.currentTimeMillis());
 
@@ -107,6 +112,16 @@ public class GlobalCheckoutParamContextService {
      * 获取所有历史配置记录，按创建时间倒序排列（最新的在前）
      */
     public List<GlobalCheckoutParamContext> getAllConfigs() {
-        return repository.findAllByOrderByCreateTimeMsDesc();
+        return repository.findAllByOrderByCreateTimeMsDesc().stream()
+                .map(this::ensureReleaseDelayDays)
+                .toList();
+    }
+
+    private GlobalCheckoutParamContext ensureReleaseDelayDays(GlobalCheckoutParamContext context) {
+        if (context.getReleaseDelayDays() == null) {
+            context.setReleaseDelayDays(DEFAULT_RELEASE_DELAY_DAYS);
+            return repository.save(context);
+        }
+        return context;
     }
 }

@@ -53,6 +53,9 @@ export function GlobalParamManager({
   fetchHistoryConfigs,
   updateConfig,
 }: GlobalParamManagerProps) {
+  const getReleaseDelayDays = (
+    config: Partial<GlobalCheckoutParam> | null | undefined,
+  ) => config?.releaseDelayDays ?? 7;
   const [current, setCurrent] = useState<GlobalCheckoutParam | null>(null);
   const [history, setHistory] = useState<GlobalCheckoutParam[]>([]);
   const [loading, setLoading] = useState(false);
@@ -91,7 +94,7 @@ export function GlobalParamManager({
       templateDefectParam: config.templateDefectParam,
       placerRatio: config.placerRatio,
       uploaderRatio: config.uploaderRatio,
-      releaseDelayDays: config.releaseDelayDays,
+      releaseDelayDays: getReleaseDelayDays(config),
     });
     setUpdateReason("");
     setOperator("");
@@ -158,7 +161,7 @@ export function GlobalParamManager({
               </div>
               <div>
                 <span className="font-medium">收益释放延迟天数：</span>
-                {current.releaseDelayDays}
+                {getReleaseDelayDays(current)}
               </div>
               <div>
                 <span className="font-medium">创建人：</span>
@@ -204,7 +207,7 @@ export function GlobalParamManager({
                     <TableCell>{item.templateDefectParam}</TableCell>
                     <TableCell>{item.placerRatio}</TableCell>
                     <TableCell>{item.uploaderRatio}</TableCell>
-                    <TableCell>{item.releaseDelayDays}</TableCell>
+                    <TableCell>{getReleaseDelayDays(item)}</TableCell>
                     <TableCell>{item.createUsername}</TableCell>
                     <TableCell>{formatTime(item.createTimeMs)}</TableCell>
                     <TableCell>
@@ -303,7 +306,7 @@ export function GlobalParamManager({
                 id="releaseDelayDays"
                 type="number"
                 step="0.01"
-                value={selectedConfig.releaseDelayDays ?? ""}
+                value={getReleaseDelayDays(selectedConfig)}
                 onChange={(e) =>
                   setSelectedConfig({
                     ...selectedConfig,
