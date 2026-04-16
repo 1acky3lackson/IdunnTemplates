@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Lock, Code, Layout, Hexagon, Database, Server, Cloud } from "lucide-react";
 import { useIntlayer } from "react-intlayer";
-import { useSearchParams, useNavigate } from "react-router";
+import { useSearchParams, useNavigate, useParams } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +45,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { theme } = useTheme();
   const [searchParams] = useSearchParams();
+  const { encodedToken } = useParams();
   const navigate = useNavigate();
 
   const {
@@ -86,8 +87,28 @@ export default function RegisterPage() {
     },
   });
 
+  function decodeLinkToken(value: string | null | undefined) {
+    if (!value) {
+      return null;
+    }
+
+    if (!/^[0-9a-f]+$/i.test(value) || value.length % 2 !== 0) {
+      return value;
+    }
+
+    try {
+      const bytes = new Uint8Array(
+        value.match(/.{1,2}/g)?.map((part) => parseInt(part, 16)) ?? [],
+      );
+      return new TextDecoder().decode(bytes);
+    } catch (error) {
+      console.error("Failed to decode auth link token", error);
+      return value;
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const token = searchParams.get("token");
+    const token = decodeLinkToken(encodedToken) ?? searchParams.get("token");
     if (!token) {
       toast(registerErrorTitle, { description: invalidTokenMsg.value });
       return;

@@ -15,12 +15,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    private static final HexFormat HEX_FORMAT = HexFormat.of();
 
     private final YggdrasilService yggdrasilService;
     private final JwtUtil jwtUtil;
@@ -77,16 +80,18 @@ public class AuthController {
         if (registered) {
             String token = jwtUtil.generateLoginLinkToken(userContext);
             response.put("registered", true);
-            // Front end route for login link
-            response.put("link", "/login?token=" + token);
+            response.put("link", "/login/t/" + encodeLinkToken(token));
         } else {
             String token = jwtUtil.generateRegisterToken(userContext);
             response.put("registered", false);
-            // Front end route for register link
-            response.put("link", "/register?token=" + token);
+            response.put("link", "/register/t/" + encodeLinkToken(token));
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    private String encodeLinkToken(String token) {
+        return HEX_FORMAT.formatHex(token.getBytes(StandardCharsets.UTF_8));
     }
 
     @PostMapping("/register")

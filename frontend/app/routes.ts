@@ -8,8 +8,10 @@ export default [
     // A. 不需要 Topbar 的页面 (独立路由)
     // ---------------------------------------------------------
     // 这里的 /:lang? 确保登录页也支持类似 /zh-CN/login 的 URL
+    route("/:lang?/login/t/:encodedToken", "pages/login/login-token-page.tsx"),
     route("/:lang?/login", "pages/login/login-page.tsx"),
     // 注册页
+    route("/:lang?/register/t/:encodedToken", "pages/register/register-token-page.tsx"),
     route("/:lang?/register", "pages/register/register-page.tsx"),
 
     // ---------------------------------------------------------

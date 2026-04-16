@@ -4,6 +4,10 @@ language: "en-us"
 # 依赖的各种服务
 # =============================================================
 services:
+  # 玩家浏览器访问的前端地址，用于登录/注册链接
+  frontend:
+    url: "http://localhost:5173/"
+
   # 缩略图渲染服务，需要用到 NodeJS 渲染服务和后端提供可访问的 url
   thumbnail-generation:
     # 是否开启

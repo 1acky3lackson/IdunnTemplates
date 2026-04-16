@@ -31,6 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const isAuthPage = /^\/(?:[^/]+\/)?(?:login|register)(?:\/|$)/.test(
+    location.pathname,
+  );
 
   // 获取国际化文本
   const {
@@ -88,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 如果剩余时间小于缓冲时间（1分钟），强制登出
       if (timeLeft <= EXPIRATION_BUFFER_SECONDS * 1000) {
         // 只有当不在登录页时才触发
-        if (location.pathname !== "/login") {
+        if (!isAuthPage) {
           logout();
 
           // 使用新的 Toast API
@@ -115,14 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(intervalId);
   }, [
     navigate,
-    location.pathname,
+    isAuthPage,
     logout,
     sessionExpiredTitle,
     sessionExpiredDesc,
     reLoginAction,
   ]);
 
-  const login = async (values: any) => {
+  const login = useCallback(async (values: any) => {
     try {
       // 调用 apifox 生成的接口
       const res = await IDUNN_API.apiAuthLoginPost({
@@ -161,7 +164,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       throw error;
     }
-  };
+  }, [
+    loginErrorDefault,
+    loginErrorTitle,
+    loginSuccessDesc,
+    loginSuccessTitle,
+    navigate,
+    tokenMissing,
+  ]);
 
   const isAuthenticated = !!user;
 

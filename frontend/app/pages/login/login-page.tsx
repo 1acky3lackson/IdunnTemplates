@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,8 +40,7 @@ import darkLogo from "@/common/topbar/logo-dark.svg";
 import { FallingIconsBackground } from "~/common/util/falling-icons-background";
 import MeshGradientBackground from "~/common/util/mesh-gradient-background";
 import { useTheme } from "next-themes";
-import { th } from "zod/v4/locales";
-import { useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 
 const Logo = () => (
   <div className="flex items-center gap-1 font-bold text-xl">
@@ -62,6 +61,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { theme } = useTheme();
   const [searchParams] = useSearchParams();
+  const { encodedToken } = useParams();
+  const attemptedTokenRef = useRef<string | null>(null);
 
   // 获取国际化文本
   const {
@@ -100,19 +101,47 @@ export default function LoginPage() {
     },
   });
 
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      setIsLoading(true);
-      login({ username: "", password: token })
-        .catch((err) => {
-          console.error("Token login failed", err);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+  function decodeLinkToken(value: string | null | undefined) {
+    if (!value) {
+      return null;
     }
-  }, [searchParams, login]);
+
+    if (!/^[0-9a-f]+$/i.test(value) || value.length % 2 !== 0) {
+      return value;
+    }
+
+    try {
+      const bytes = new Uint8Array(
+        value.match(/.{1,2}/g)?.map((part) => parseInt(part, 16)) ?? [],
+      );
+      return new TextDecoder().decode(bytes);
+    } catch (error) {
+      console.error("Failed to decode auth link token", error);
+      return value;
+    }
+  }
+
+  const loginToken = useMemo(
+    () => decodeLinkToken(encodedToken) ?? searchParams.get("token"),
+    [encodedToken, searchParams],
+  );
+  const isTokenLogin = Boolean(loginToken);
+
+  useEffect(() => {
+    if (!loginToken || attemptedTokenRef.current === loginToken) {
+      return;
+    }
+
+    attemptedTokenRef.current = loginToken;
+    setIsLoading(true);
+    login({ username: "", password: loginToken })
+      .catch((err) => {
+        console.error("Token login failed", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [loginToken, login]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -180,68 +209,80 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{usernameLabel}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              placeholder={usernamePlaceholder.value}
-                              className="pl-9 bg-background/50"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{passwordLabel}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="password"
-                              placeholder={passwordPlaceholder.value}
-                              className="pl-9 bg-background/50"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full font-bold transition-all hover:scale-[1.02]"
-                    disabled={isLoading}
+              {isTokenLogin ? (
+                <div className="flex flex-col items-center gap-3 rounded-lg border border-border/60 bg-background/40 px-5 py-8 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <p className="text-sm font-medium text-foreground">
+                    正在验证游戏内登录身份
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    当前链接已包含认证信息，无需再输入用户名和密码。
+                  </p>
+                </div>
+              ) : (
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {loginBtnLoading}
-                      </>
-                    ) : (
-                      loginBtn
-                    )}
-                  </Button>
-                </form>
-              </Form>
+                    <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{usernameLabel}</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder={usernamePlaceholder.value}
+                                className="pl-9 bg-background/50"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{passwordLabel}</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                type="password"
+                                placeholder={passwordPlaceholder.value}
+                                className="pl-9 bg-background/50"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full font-bold transition-all hover:scale-[1.02]"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {loginBtnLoading}
+                        </>
+                      ) : (
+                        loginBtn
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              )}
             </CardContent>
             <CardFooter className="flex justify-center">
               <p className="text-xs text-muted-foreground">{footerText}</p>
