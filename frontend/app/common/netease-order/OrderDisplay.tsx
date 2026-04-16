@@ -1,12 +1,20 @@
 import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // 引入通用表格组件
 import { IDUNN_API } from "~/api";
@@ -18,6 +26,8 @@ import {
 import { Link } from "react-router";
 import CheckoutDetails from "../checkout-details/CheckoutDetails";
 import { CircleDollarSign, Coins, DollarSign } from "lucide-react";
+import { toast } from "sonner";
+import apiClient from "@/lib/axios";
 
 // ---------- 辅助工具 ----------
 
@@ -110,27 +120,41 @@ export function OrderDisplay({
 }: OrderDisplayProps) {
   // 详情弹窗的状态管理
   const [viewingOrder, setViewingOrder] = useState<NeteaseOrder | null>(null);
+  const [editingPointOrder, setEditingPointOrder] = useState<NeteaseOrder | null>(
+    null,
+  );
+  const [refundingOrder, setRefundingOrder] = useState<NeteaseOrder | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const fetchOrdersWithRefresh = useCallback(
+    (page: number, size: number, search: string, sort: string) =>
+      fetchOrders(page, size, search, sort),
+    [fetchOrders, refreshTrigger],
+  );
 
   return (
     <div className="space-y-4">
       <GenericCrudTable<NeteaseOrder>
         uid={uid}
         getRowId={(row) => row.id}
-        list={fetchOrders}
+        list={fetchOrdersWithRefresh}
         pageSize={pageSize}
         forcedSearchValues={forceSearch}
         // 配置搜索字段 (基于你原先的 placeholder 需求)
         searchFields={[
           // 注意：这里的 key 需要和你后端的 Specification 对应
-          { key: "orderId", label: "订单号", fuzzy: true },
-          { key: "userId", label: "用户ID", fuzzy: true },
+          { key: "appOrderId", label: "订单号", fuzzy: true },
+          { key: "appUid", label: "用户ID", fuzzy: true },
           { key: "productName", label: "产品名称", fuzzy: true },
           { key: "internalStatus", label: "状态 (如 PENDING)", fuzzy: false },
         ]}
         // 配置表格列
         schema={{
           id: { title: "ID" },
-          appOrderId: { title: "订单编号" },
+          appOrderId: {
+            title: "订单编号",
+            render: (val) => <CompactCopyValue value={val} />,
+          },
           productName: {
             title: "产品名称",
             filterable: true,
@@ -140,25 +164,29 @@ export function OrderDisplay({
               </Link>
             ),
           },
-          appUid: { title: "用户ID" },
+          appUid: {
+            title: "用户ID",
+            render: (val) => <CompactCopyValue value={val} />,
+          },
           point: {
             title: "价格",
             filterable: true,
             sortable: true,
-            // render: (val, row) => `${val} ${row.pointType}`,
+            render: (val, row) =>
+              val != null ? `${Number(val).toLocaleString()} ${row.pointType || ""}` : "待填写",
           },
           pointType: {
             title: "类型",
             filterable: true,
             render: (val: string) =>
               val.includes("付费") || val.includes("钻石") ? (
-                <div className="flex gap-2 align-middle text-sm rounded-4xl border border-blue-600 bg-blue-300/50 px-2 py-1 text-blue-950 dark:text-blue-300">
-                  <DollarSign size="1em" /> {val}
-                </div>
+                <Badge className="inline-flex items-center gap-1 rounded-full border border-blue-600 bg-blue-300/50 px-2 py-0.5 text-[11px] font-medium leading-4 text-blue-950 dark:text-blue-300">
+                  <DollarSign size={12} /> {val}
+                </Badge>
               ) : (
-                <div className="flex gap-2 align-middle text-sm rounded-4xl border border-green-600 bg-green-400/50 px-2 py-1 text-green-800 dark:text-green-300">
-                  <Coins size="1em" /> {val}
-                </div>
+                <Badge className="inline-flex items-center gap-1 rounded-full border border-green-600 bg-green-400/50 px-2 py-0.5 text-[11px] font-medium leading-4 text-green-800 dark:text-green-300">
+                  <Coins size={12} /> {val}
+                </Badge>
               ),
             // sortable: true
           },
@@ -182,13 +210,31 @@ export function OrderDisplay({
         }}
         // 注入自定义操作列：查看详情
         rowActions={(row) => (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setViewingOrder(row)}
-          >
-            查看详情
-          </Button>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewingOrder(row)}
+            >
+              查看详情
+            </Button>
+            <Button
+              variant={row.point == null ? "default" : "secondary"}
+              size="sm"
+              onClick={() => setEditingPointOrder(row)}
+            >
+              {row.point == null ? "填写点数" : "修改点数"}
+            </Button>
+            {row.internalStatus !== "REFUNDED" && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setRefundingOrder(row)}
+              >
+                退款
+              </Button>
+            )}
+          </div>
         )}
       />
 
@@ -197,7 +243,58 @@ export function OrderDisplay({
         order={viewingOrder}
         onClose={() => setViewingOrder(null)}
       />
+      <UpdateOrderPointDialog
+        order={editingPointOrder}
+        onClose={() => setEditingPointOrder(null)}
+        onSuccess={() => {
+          setEditingPointOrder(null);
+          setRefreshTrigger((prev) => prev + 1);
+        }}
+      />
+      <RefundOrderDialog
+        order={refundingOrder}
+        onClose={() => setRefundingOrder(null)}
+        onSuccess={() => {
+          setRefundingOrder(null);
+          setRefreshTrigger((prev) => prev + 1);
+        }}
+      />
     </div>
+  );
+}
+
+function CompactCopyValue({ value }: { value?: string | number | null }) {
+  const fullValue = value == null ? "-" : String(value);
+  const shortValue =
+    fullValue.length > 6 ? `${fullValue.slice(0, 6)}...` : fullValue;
+
+  const handleContextMenu = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    if (fullValue === "-") return;
+    try {
+      await navigator.clipboard.writeText(fullValue);
+      toast.success("已复制完整内容");
+    } catch (error) {
+      console.error(error);
+      toast.warning("复制失败");
+    }
+  };
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="max-w-[8rem] cursor-copy truncate rounded px-1 text-left font-mono hover:bg-muted"
+            onContextMenu={handleContextMenu}
+          >
+            {shortValue}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>{fullValue}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -267,6 +364,143 @@ function OrderDetailsDialog({
             </div>
           )}
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UpdateOrderPointDialog({
+  order,
+  onClose,
+  onSuccess,
+}: {
+  order: NeteaseOrder | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [point, setPoint] = useState("");
+  const [pointType, setPointType] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    setPoint(order?.point != null ? String(order.point) : "");
+    setPointType(order?.pointType || "");
+  }, [order]);
+
+  if (!order) return null;
+
+  const handleSubmit = async () => {
+    const parsedPoint = Number(point);
+    if (!Number.isFinite(parsedPoint) || parsedPoint <= 0) {
+      toast.warning("请输入大于 0 的虚拟点数");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await apiClient.patch(`/api/v1/commercial/netease-orders/${order.id}/point`, {
+        point: parsedPoint,
+        pointType: pointType || undefined,
+      });
+      toast.success("虚拟点数已更新，系统已触发即时结算");
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.warning("更新虚拟点数失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>填写订单虚拟点数</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            订单 #{order.id}，填写后会立即触发分成与结算链路。
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm font-medium">虚拟点数</div>
+            <Input
+              type="number"
+              min={1}
+              value={point}
+              onChange={(e) => setPoint(e.target.value)}
+              placeholder="请输入订单虚拟点数"
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm font-medium">点数类型</div>
+            <Input
+              value={pointType}
+              onChange={(e) => setPointType(e.target.value)}
+              placeholder="可选，不填则沿用现有类型"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
+            取消
+          </Button>
+          <Button onClick={handleSubmit} disabled={submitting}>
+            保存并结算
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RefundOrderDialog({
+  order,
+  onClose,
+  onSuccess,
+}: {
+  order: NeteaseOrder | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+
+  if (!order) return null;
+
+  const handleRefund = async () => {
+    setSubmitting(true);
+    try {
+      await apiClient.patch(`/api/v1/commercial/netease-orders/${order.id}/refund`, {
+        refundStatus: "MANUAL_REFUND",
+      });
+      toast.success("订单已触发退款流程");
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.warning("订单退款失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>确认退款</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <div>订单 #{order.id}</div>
+          <div>退款会立即回滚该订单对应的收益分成与虚拟点数变动。</div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
+            取消
+          </Button>
+          <Button variant="destructive" onClick={handleRefund} disabled={submitting}>
+            确认退款
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

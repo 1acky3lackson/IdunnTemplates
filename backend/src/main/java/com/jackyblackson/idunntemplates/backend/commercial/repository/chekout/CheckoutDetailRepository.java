@@ -31,6 +31,8 @@ public interface CheckoutDetailRepository extends
 
     List<CheckoutDetail> findByStatusAndReleaseTimeMsLessThanEqual(CheckoutDetail.Status status, long releaseTimeMs);
 
+    List<CheckoutDetail> findByOrder_Id(Long orderId);
+
     @Modifying
     @Query("UPDATE CheckoutDetail c SET c.status = :newStatus, c.finishTimeMs = :finishTime WHERE c.id = :id AND c.status = :oldStatus")
     int updateStatusAndFinishTime(@Param("id") Long id,

@@ -31,6 +31,7 @@ public class NeteaseSyncTask {
     private final CheckoutDetailService checkoutDetailService;
     private final CheckoutCalculationService checkoutCalculationService;
     private final CrawlerSyncService crawlerSyncService;
+    private final OrderSettlementTriggerService orderSettlementTriggerService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -54,12 +55,7 @@ public class NeteaseSyncTask {
                 crawlerSyncService.syncAllWithPaging();
                 // 同步订单
                 orderSyncService.syncOrdersFromLogs();
-                // 计算分成
-                checkoutCalculationService.processAllEnteredOrders();
-                // 结算收益
-                checkoutCalculationService.processAllCreatedDetails();
-                // 释放冻结资金
-                checkoutDetailService.releaseConfirmedDetails();
+                orderSettlementTriggerService.runSettlementPipeline();
             } finally {
                 // 无论成功还是异常，必须释放锁
                 isSyncing.set(false);

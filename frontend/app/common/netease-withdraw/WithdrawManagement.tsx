@@ -90,7 +90,7 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
             ),
           },
           withdrawValue: {
-            title: "实际到账 (虚拟点数)",
+            title: "实际处理点数",
             render: (val) => (
               <div className="font-mono text-green-600 font-semibold">
                 {Math.round((val || 0) * 100).toLocaleString()}
@@ -199,7 +199,7 @@ function CreateWithdrawDialog({
     setLoading(true);
     try {
       await IDUNN_API.createWithdraw(formData as NeteaseWithdrawInput);
-      toast.success("提现记录已成功添加");
+      toast.success("处理记录已成功添加");
       onSuccess();
     } catch (error) {
       console.error(error);
@@ -215,7 +215,7 @@ function CreateWithdrawDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-primary" />
-            新建提现记录
+            新建处理记录
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
@@ -242,7 +242,7 @@ function CreateWithdrawDialog({
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="withdrawValue" className="text-right text-xs">
-                实际到账 (虚拟点数)
+                实际处理点数
               </Label>
               <Input
                 id="withdrawValue"
@@ -263,8 +263,8 @@ function CreateWithdrawDialog({
           </div>
 
           <div className="bg-amber-50 border border-amber-100 p-3 rounded-md text-[11px] text-amber-700 leading-relaxed">
-            <strong>自动计算：</strong> 费率（Ratio）将由后台根据{" "}
-            <code>实际到账 (虚拟点数) / 原始虚拟点数</code> 自动生成，无需手动维护。
+            <strong>自动计算：</strong> 折算比例（Ratio）将由后台根据{" "}
+            <code>实际处理点数 / 原始虚拟点数</code> 自动生成，无需手动维护。
           </div>
 
           <DialogFooter>

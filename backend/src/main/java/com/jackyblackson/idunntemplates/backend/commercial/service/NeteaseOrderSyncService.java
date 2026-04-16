@@ -197,7 +197,9 @@ public class NeteaseOrderSyncService {
      */
     private void updateOrder(NeteaseOrder order, NePeProductOrderLog log) {
         // 退款
-        if(!order.getInternalStatus().equals(NeteaseOrderStatus.REFUNDED) && !log.getRefundStatus().isEmpty()) {
+        if (!order.getInternalStatus().equals(NeteaseOrderStatus.REFUNDED)
+                && log.getRefundStatus() != null
+                && !log.getRefundStatus().isBlank()) {
             if (order.getRefundInTimeMs() == null || order.getRefundInTimeMs() <= 0) {
                 order.setRefundInTimeMs(System.currentTimeMillis());
                 if (order.getInternalStatus().equals(NeteaseOrderStatus.ENTERED)) {

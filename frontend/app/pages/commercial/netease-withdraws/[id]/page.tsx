@@ -29,7 +29,7 @@ import WithdrawDetailView from "~/common/netease-withdraw/WithdrawDetailView";
 // 从生成的 API 导入产品类型（假设为 NeteaseProduct）
 
 export function meta({ params }: Route.MetaArgs) {
-  return [{ title: `Netease Project ${params.id}` }];
+  return [{ title: `处理记录详情 ${params.id}` }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {

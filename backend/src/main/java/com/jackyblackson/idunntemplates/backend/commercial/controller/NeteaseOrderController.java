@@ -6,6 +6,8 @@ import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.Neteas
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.service.OrderSettlementTriggerService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseOrderUpdateService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
@@ -14,13 +16,16 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +43,8 @@ public class NeteaseOrderController {
     private final UserProjectContributionService userProjectContributionService;
     private final NeteaseProductRepository neteaseProductRepository;
     private final LuckyPermAuthService luckyPermAuthService;
+    private final OrderSettlementTriggerService orderSettlementTriggerService;
+    private final NeteaseOrderUpdateService neteaseOrderUpdateService;
 
     /**
      * 查询指定商品下的订单列表，支持分页和动态筛选。
@@ -74,6 +81,45 @@ public class NeteaseOrderController {
         Page<NeteaseOrder> page = orderRepository.findAll(spec, pageable);
         Page<NeteaseOrderDto> dtoPage = page.map(this::convertToDto);
         return ResponseEntity.ok(dtoPage);
+    }
+
+    @PostMapping("/products/{productId}/orders")
+    @AuthRequired
+    public ResponseEntity<NeteaseOrderDto> createForProduct(
+            @PathVariable Long productId,
+            @RequestBody OrderCreateRequest request,
+            UserContext user) {
+        var product = neteaseProductRepository.findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        if (product.getProject() == null || !canManageProductOrder(user, product.getProject().getId())) {
+            return ResponseEntity.status(406).build();
+        }
+
+        NeteaseOrder order = new NeteaseOrder();
+        long shipTimeMs = resolveShipTimeMs(request);
+        order.setProduct(product);
+        order.setAppOrderId(request.getAppOrderId());
+        order.setAppOrderIdInt(request.getAppOrderIdInt());
+        order.setAppUid(request.getAppUid());
+        order.setAppUidInt(request.getAppUidInt());
+        order.setPoint(request.getPoint());
+        order.setPointType(request.getPointType() != null ? request.getPointType() : product.getPriceType());
+        order.setPrice(request.getPrice() != null ? request.getPrice() : product.getPrice());
+        order.setPriceType(request.getPriceType() != null ? request.getPriceType() : product.getPriceType());
+        order.setDiscount(request.getDiscount());
+        order.setOfficialChannel(request.getOfficialChannel());
+        order.setProductName(request.getProductName() != null ? request.getProductName() : product.getItemName());
+        order.setPurchaseLimit(request.getPurchaseLimit());
+        order.setRefundStatus(request.getRefundStatus());
+        order.setShipTime(request.getShipTime() != null ? request.getShipTime() : String.valueOf(shipTimeMs));
+        order.setShipTimeMs(shipTimeMs);
+        order.setRefundInTimeMs(request.getRefundInTimeMs());
+        order.setInternalStatus(NeteaseOrderStatus.ENTERED);
+
+        NeteaseOrder saved = orderRepository.save(order);
+        orderSettlementTriggerService.runSettlementPipeline();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(convertToDto(orderRepository.findById(saved.getId()).orElse(saved)));
     }
 
     /**
@@ -132,6 +178,56 @@ public class NeteaseOrderController {
         }
         return optional.map(order -> ResponseEntity.ok(convertToDto(order)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/netease-orders/{id}/point")
+    @AuthRequired
+    public ResponseEntity<NeteaseOrderDto> updatePoint(
+            @PathVariable Long id,
+            @RequestBody OrderPointUpdateRequest request,
+            UserContext user) {
+        NeteaseOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if (order.getProduct() == null || order.getProduct().getProject() == null
+                || !canManageProductOrder(user, order.getProduct().getProject().getId())) {
+            return ResponseEntity.status(406).build();
+        }
+
+        order.setPoint(request.getPoint());
+        if (request.getPointType() != null) {
+            order.setPointType(request.getPointType());
+        } else if (order.getPointType() == null && order.getProduct() != null) {
+            order.setPointType(order.getProduct().getPriceType());
+        }
+        order.setInternalStatus(NeteaseOrderStatus.ENTERED);
+
+        NeteaseOrder saved = orderRepository.save(order);
+        orderSettlementTriggerService.runSettlementPipeline();
+        return ResponseEntity.ok(convertToDto(orderRepository.findById(saved.getId()).orElse(saved)));
+    }
+
+    @PatchMapping("/netease-orders/{id}/refund")
+    @AuthRequired
+    public ResponseEntity<NeteaseOrderDto> refundOrder(
+            @PathVariable Long id,
+            @RequestBody(required = false) OrderRefundRequest request,
+            UserContext user) {
+        NeteaseOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if (order.getProduct() == null || order.getProduct().getProject() == null
+                || !canManageProductOrder(user, order.getProduct().getProject().getId())) {
+            return ResponseEntity.status(406).build();
+        }
+
+        if (request != null && request.getRefundStatus() != null && !request.getRefundStatus().isBlank()) {
+            order.setRefundStatus(request.getRefundStatus().trim());
+        } else if (order.getRefundStatus() == null || order.getRefundStatus().isBlank()) {
+            order.setRefundStatus("MANUAL_REFUND");
+        }
+        order.setRefundInTimeMs(System.currentTimeMillis());
+        NeteaseOrder saved = orderRepository.save(order);
+        neteaseOrderUpdateService.refundOrder(saved);
+        return ResponseEntity.ok(convertToDto(orderRepository.findById(saved.getId()).orElse(saved)));
     }
 
     // ---------- 辅助方法 ----------
@@ -289,5 +385,52 @@ public class NeteaseOrderController {
     private enum Operator {
         EQ, // 等于
         LIKE // 模糊查询
+    }
+
+    @Getter
+    @Setter
+    public static class OrderCreateRequest {
+        private String appOrderId;
+        private Long appOrderIdInt;
+        private String appUid;
+        private Long appUidInt;
+        private Integer point;
+        private String pointType;
+        private Integer price;
+        private String priceType;
+        private String discount;
+        private Integer officialChannel;
+        private String productName;
+        private Integer purchaseLimit;
+        private String refundStatus;
+        private String shipTime;
+        private Long shipTimeMs;
+        private Long refundInTimeMs;
+    }
+
+    @Getter
+    @Setter
+    public static class OrderPointUpdateRequest {
+        private Integer point;
+        private String pointType;
+    }
+
+    @Getter
+    @Setter
+    public static class OrderRefundRequest {
+        private String refundStatus;
+    }
+
+    private long resolveShipTimeMs(OrderCreateRequest request) {
+        if (request.getShipTimeMs() == null || request.getShipTimeMs() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "shipTimeMs is required");
+        }
+        return request.getShipTimeMs();
+    }
+
+    private boolean canManageProductOrder(UserContext user, Long projectId) {
+        return luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)
+                || luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.modify)
+                || userProjectContributionService.isUserParticipant(user.getUsername(), projectId);
     }
 }

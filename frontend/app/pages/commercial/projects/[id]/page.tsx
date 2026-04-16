@@ -28,6 +28,7 @@ import {
 } from "recharts";
 
 import { IDUNN_API } from "~/api";
+import apiClient from "@/lib/axios";
 import type { Project, NeteaseProduct } from "~/api/generated";
 import {
   NeteaseProductManagerPage,
@@ -47,6 +48,7 @@ import { deepNullToUndefined } from "~/common/util/null-to-undefined";
 import { ProjectContributions } from "~/common/project/ProjectContributions";
 import type { Route } from "./+types/page";
 import { PlusCircle, Search, Package, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
 // ---------- 类型定义 ----------
 interface ProjectDetailProps {
@@ -113,6 +115,8 @@ export default function ProjectDetail({
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  document.title = `建造工程详情 - ${project?.displayName || projectId}`;
+
   useEffect(() => {
     if (!projectId) return;
     setLoading(true);
@@ -153,6 +157,10 @@ export default function ProjectDetail({
           </div>
           <div className="flex gap-2">
             <Badge variant="secondary">{project?.kind}</Badge>
+            <CreateProductDialog
+              projectId={projectId}
+              onSuccess={() => setRefreshKey((k) => k + 1)}
+            />
             <LinkProductDialog
               projectId={projectId}
               productApi={productApi}
@@ -198,6 +206,115 @@ export default function ProjectDetail({
         <ProjectProductsStats productApi={productApi} projectId={projectId} />
       </WaterfallProvider>
     </div>
+  );
+}
+
+function CreateProductDialog({
+  projectId,
+  onSuccess,
+}: {
+  projectId: number;
+  onSuccess: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    itemId: "",
+    itemName: "",
+    price: "",
+    priceType: "付费钻石",
+    internalStatus: "CREATED",
+  });
+
+  const handleSubmit = async () => {
+    if (!form.itemId.trim() || !form.itemName.trim()) {
+      toast.warning("请填写商品 ID 和商品名称");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await apiClient.post(`/api/v1/commercial/products/project/${projectId}`, {
+        itemId: form.itemId.trim(),
+        itemName: form.itemName.trim(),
+        price: form.price ? Number(form.price) : undefined,
+        priceType: form.priceType.trim() || undefined,
+        internalStatus: form.internalStatus,
+      });
+      toast.success("商品已创建");
+      setOpen(false);
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.warning("创建商品失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="default" size="sm">
+          <PlusCircle className="w-4 h-4 mr-2" />
+          创建商品
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>从当前项目创建商品</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-2">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">商品 ID</div>
+            <Input
+              value={form.itemId}
+              onChange={(e) => setForm((prev) => ({ ...prev, itemId: e.target.value }))}
+              placeholder="例如 item_12345"
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm font-medium">商品名称</div>
+            <Input
+              value={form.itemName}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, itemName: e.target.value }))
+              }
+              placeholder="请输入商品名称"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="text-sm font-medium">标价</div>
+              <Input
+                type="number"
+                min={0}
+                value={form.price}
+                onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+                placeholder="可选"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">价格类型</div>
+              <Input
+                value={form.priceType}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, priceType: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
+            取消
+          </Button>
+          <Button onClick={handleSubmit} disabled={submitting}>
+            创建
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -361,8 +478,8 @@ function ProjectProductsStats({
       >
         <DashboardCard label="总计订单" value={orderSummary.orders} />
         <DashboardCard
-          label="总销售额 (元)"
-          value={orderSummary.diamonds.toFixed(2)}
+          label="总虚拟点数"
+          value={Math.round(orderSummary.diamonds * 100).toLocaleString()}
         />
         <DashboardCard label="总积分" value={orderSummary.points} />
       </div>

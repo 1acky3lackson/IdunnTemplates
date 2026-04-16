@@ -5,6 +5,7 @@ import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutCalcu
 import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutDetailService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.CrawlerSyncService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseOrderSyncService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.OrderSettlementTriggerService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
@@ -23,6 +24,7 @@ public class CommercialAdminController {
     private final CheckoutDetailService checkoutDetailService;
     private final CrawlerSyncService crawlerSyncService;
     private final NeteaseOrderSyncService neteaseOrderSyncService;
+    private final OrderSettlementTriggerService orderSettlementTriggerService;
 
     @GetMapping()
     @AuthRequired
@@ -39,7 +41,7 @@ public class CommercialAdminController {
         if (!authService.checkPermission(user, PermissionNames.Commercial.Admin.triggerCheckoutOrder)) {
             return ResponseEntity.status(406).build();
         }
-        checkoutCalculationService.processAllEnteredOrders();
+        orderSettlementTriggerService.runSettlementPipeline();
         return ResponseEntity.ok().build();
     }
 

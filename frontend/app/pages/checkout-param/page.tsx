@@ -5,6 +5,8 @@ import {
 } from "~/common/checkout-params/CheckoutParamsView";
 
 export default function App() {
+  document.title = "全局结算参数";
+
   const fetchCurrent = async () => {
     const res = await IDUNN_API.apiV1CommercialGlobalContextsCurrentGet();
     return res.data;
@@ -18,7 +20,6 @@ export default function App() {
     reason: string,
   ) => {
     const res = await IDUNN_API.apiV1CommercialGlobalContextsPost({
-      taixueRatio: newConfig.taixueRatio,
       commercialRatio: newConfig.commercialRatio,
       templateDefectParam: newConfig.templateDefectParam,
       placerRatio: newConfig.placerRatio,
@@ -30,7 +31,8 @@ export default function App() {
   };
 
   return (
-    <div>
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">全局结算参数</h1>
       <GlobalParamManager
         fetchCurrentConfig={fetchCurrent}
         fetchHistoryConfigs={fetchHistory}

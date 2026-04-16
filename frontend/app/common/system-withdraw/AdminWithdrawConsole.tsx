@@ -26,7 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // 业务组件
-import { WithdrawList } from "./WithdrawList"; // 引用之前编写的提现列表组件
+import { WithdrawList } from "./WithdrawList";
 
 export function AdminWithdrawConsole() {
   return (
@@ -37,11 +37,11 @@ export function AdminWithdrawConsole() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold tracking-tight">
-              提现管理控制台
+              处理流程控制台
             </h1>
           </div>
           <p className="text-muted-foreground mt-2">
-            审核系统用户的提现申请、执行打款操作并处理异常申诉。
+            审核系统用户的处理申请、执行点数处理操作并处理异常申诉。
           </p>
         </div>
 
@@ -51,7 +51,7 @@ export function AdminWithdrawConsole() {
             操作合规性提示
           </AlertTitle>
           <AlertDescription className="text-xs text-blue-600/80">
-            所有提现审批动作均会被审计记录。在执行 <strong>PAID</strong>{" "}
+            所有处理审批动作均会被审计记录。在执行 <strong>PAID</strong>{" "}
             操作前，请务必核对第三方虚拟点数变动单号。
           </AlertDescription>
         </Alert>
@@ -77,7 +77,6 @@ export function AdminWithdrawConsole() {
           </div>
 
           <TabsContent value="all" className="mt-0">
-            {/* 调用 WithdrawList，指定为 admin 模式 */}
             <WithdrawList mode="admin" />
           </TabsContent>
 
@@ -89,13 +88,12 @@ export function AdminWithdrawConsole() {
         </Tabs>
       </div>
 
-      {/* 第二部分：业务说明 */}
       {/* 第二部分：业务说明与流程可视化 */}
       <Card className="bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Info className="h-5 w-5 text-blue-500" />
-            提现业务全流程说明
+            处理流程全说明
           </CardTitle>
           <CardDescription>
             全局状态流转与操作规范指南（左侧为主流程，右侧为异常处理）
@@ -106,7 +104,7 @@ export function AdminWithdrawConsole() {
             {/* 左列：主流程 (时间轴视图) */}
             <div className="space-y-4">
               <h3 className="font-semibold text-base flex items-center gap-2 text-primary border-b pb-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" /> 正常提现流转
+                <CheckCircle2 className="h-4 w-4 text-green-500" /> 正常流程流转
                 (Main Flow)
               </h3>
               <div className="relative border-l-2 border-slate-200 dark:border-slate-700 ml-3 space-y-6 pb-4 pt-2">
@@ -120,7 +118,7 @@ export function AdminWithdrawConsole() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    用户提出申请生成提现记录。系统自动扣除用户虚拟点数，并生成出账虚拟点数变动（备注：用户提现）。
+                    用户提出申请生成处理记录。系统自动扣除用户虚拟点数，并生成出账虚拟点数变动记录。
                   </p>
                 </div>
 
@@ -134,7 +132,7 @@ export function AdminWithdrawConsole() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    管理员核对无误后通过审批，记录正式进入待打款队列。
+                    管理员核对无误后通过审批，记录正式进入待处理队列。
                   </p>
                 </div>
 
@@ -142,13 +140,13 @@ export function AdminWithdrawConsole() {
                 <div className="relative pl-6">
                   <span className="absolute -left-2.25 top-1 h-4 w-4 rounded-full bg-yellow-400 border-2 border-white dark:border-slate-900" />
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold">3. 执行转账</span>
+                    <span className="text-sm font-semibold">3. 执行处理</span>
                     <Badge className="bg-yellow-500 hover:bg-yellow-600">
                       PAID
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    管理员向用户虚拟点数实际转账。在系统中上传转账凭证与交易单号，记录打款时间。
+                    管理员执行实际处理。在系统中上传处理凭证与变动单号，记录处理时间。
                   </p>
                 </div>
 
@@ -162,7 +160,7 @@ export function AdminWithdrawConsole() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    用户确认资金到账，在系统中点击确认收款，整个提现流程圆满结束。
+                    用户确认处理完成，在系统中点击确认，整个流程结束。
                   </p>
                 </div>
               </div>
@@ -186,11 +184,11 @@ export function AdminWithdrawConsole() {
                     <Badge variant="destructive">REJECTED</Badge>
                   </div>
                   <p className="text-sm font-medium mb-1">
-                    审批不通过 / 拒绝提现
+                    审批不通过 / 拒绝处理
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     管理员拒绝申请（需填理由）。虚拟点数将<strong>自动退回</strong>
-                    用户系统账户，并生成入账虚拟点数变动（备注：提现退回+理由）。
+                    用户虚拟点数余额，并生成入账虚拟点数变动记录。
                   </p>
                 </div>
 
@@ -209,10 +207,10 @@ export function AdminWithdrawConsole() {
                     </Badge>
                   </div>
                   <p className="text-sm font-medium mb-1">
-                    转账后未到账 / 支付异常
+                    处理后未完成 / 状态异常
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    用户反馈未收到款项时，管理员将状态标记为异常（需附带说明），转入线下人工核实阶段。
+                    用户反馈未完成时，管理员将状态标记为异常（需附带说明），转入线下人工核实阶段。
                   </p>
                 </div>
 
@@ -239,7 +237,7 @@ export function AdminWithdrawConsole() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          管理员执行，附错误说明。资金自动退回用户虚拟点数。
+                          管理员执行，附错误说明。虚拟点数自动退回用户余额。
                         </p>
                       </div>
                     </div>
@@ -257,7 +255,7 @@ export function AdminWithdrawConsole() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          管理员或用户执行，附处理说明。提现流程完结。
+                          管理员或用户执行，附处理说明。流程完结。
                         </p>
                       </div>
                     </div>

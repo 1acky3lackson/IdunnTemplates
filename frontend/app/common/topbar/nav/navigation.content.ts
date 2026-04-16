@@ -62,9 +62,9 @@ const navigationContent = {
         [Locales.CHINESE_TRADITIONAL]: "收益分成管理",
       }),
       financial: t({
-        [Locales.ENGLISH]: "Financial",
-        [Locales.CHINESE]: "财务管理",
-        [Locales.CHINESE_TRADITIONAL]: "財務管理",
+        [Locales.ENGLISH]: "Virtual Points",
+        [Locales.CHINESE]: "虚拟点数管理",
+        [Locales.CHINESE_TRADITIONAL]: "虛擬點數管理",
       }),
       netease: t({
         [Locales.ENGLISH]: "Business",
@@ -186,39 +186,39 @@ const navigationContent = {
       commercial: {
         balances: {
           title: t({
-            [Locales.ENGLISH]: "User Balances",
+            [Locales.ENGLISH]: "User Virtual Points",
             [Locales.CHINESE]: "用户虚拟点数",
-            [Locales.CHINESE_TRADITIONAL]: "用戶賬戶",
+            [Locales.CHINESE_TRADITIONAL]: "用戶虛擬點數",
           }),
           desc: t({
-            [Locales.ENGLISH]: "View user accounts and various virtual points",
-            [Locales.CHINESE]: "查看用户的账户、各类虚拟点数等",
-            [Locales.CHINESE_TRADITIONAL]: "查看用戶的賬戶、各類虛擬點數等",
+            [Locales.ENGLISH]: "View user virtual points and related data",
+            [Locales.CHINESE]: "查看用户的虚拟点数及相关数据",
+            [Locales.CHINESE_TRADITIONAL]: "查看用戶的虛擬點數及相關數據",
           }),
         },
         checkout: {
           title: t({
             [Locales.ENGLISH]: "Checkout Records",
-            [Locales.CHINESE]: "结算记录",
-            [Locales.CHINESE_TRADITIONAL]: "結算記錄",
+            [Locales.CHINESE]: "收益分成记录",
+            [Locales.CHINESE_TRADITIONAL]: "收益分成記錄",
           }),
           desc: t({
             [Locales.ENGLISH]:
               "View records of order settlements to user earnings",
-            [Locales.CHINESE]: "查看订单结算到用户收益的记录",
-            [Locales.CHINESE_TRADITIONAL]: "查看訂單結算到用戶收益的記錄",
+            [Locales.CHINESE]: "查看订单分成到用户收益的记录",
+            [Locales.CHINESE_TRADITIONAL]: "查看訂單分成到用戶收益的記錄",
           }),
         },
         transactions: {
           title: t({
-            [Locales.ENGLISH]: "Account Transactions",
+            [Locales.ENGLISH]: "Virtual Point Change Records",
             [Locales.CHINESE]: "虚拟点数变动",
-            [Locales.CHINESE_TRADITIONAL]: "賬戶流水",
+            [Locales.CHINESE_TRADITIONAL]: "虛擬點數變動記錄",
           }),
           desc: t({
-            [Locales.ENGLISH]: "View the list of user account transactions",
-            [Locales.CHINESE]: "查看用户虚拟点数的流水信息列表",
-            [Locales.CHINESE_TRADITIONAL]: "查看用戶賬戶的流水信息列表",
+            [Locales.ENGLISH]: "View the list of user virtual point change records",
+            [Locales.CHINESE]: "查看用户虚拟点数变动记录列表",
+            [Locales.CHINESE_TRADITIONAL]: "查看用戶虛擬點數變動記錄列表",
           }),
         },
         globalParams: {
@@ -254,7 +254,7 @@ const navigationContent = {
           }),
           desc: t({
             [Locales.ENGLISH]:
-              "View all our products listed on the Mall",
+              "View all listed products",
             [Locales.CHINESE]: "查看我们上架到商城的所有商品",
             [Locales.CHINESE_TRADITIONAL]: "查看我們上架到商城的所有商品",
           }),
@@ -267,33 +267,33 @@ const navigationContent = {
           }),
           desc: t({
             [Locales.ENGLISH]:
-              "View all orders for products in the Mall",
+              "View all product orders",
             [Locales.CHINESE]: "查看商城中商品的全部订单",
             [Locales.CHINESE_TRADITIONAL]: "查看商城中商品的全部訂單",
           }),
         },
         neteaseWithdraw: {
           title: t({
-            [Locales.ENGLISH]: "Withdrawals",
-            [Locales.CHINESE]: "提现记录",
-            [Locales.CHINESE_TRADITIONAL]: "提現記錄",
+            [Locales.ENGLISH]: "Processing Records",
+            [Locales.CHINESE]: "处理记录",
+            [Locales.CHINESE_TRADITIONAL]: "處理記錄",
           }),
           desc: t({
-            [Locales.ENGLISH]: "View withdrawal records",
-            [Locales.CHINESE]: "查看提现记录及其使用情况",
-            [Locales.CHINESE_TRADITIONAL]: "查看提現記錄及其使用情況",
+            [Locales.ENGLISH]: "View processing records and usage details",
+            [Locales.CHINESE]: "查看处理记录及其使用情况",
+            [Locales.CHINESE_TRADITIONAL]: "查看處理記錄及其使用情況",
           }),
         },
         systemWithdraw: {
           title: t({
-            [Locales.ENGLISH]: "System Withdrawals",
-            [Locales.CHINESE]: "系统提现管理",
-            [Locales.CHINESE_TRADITIONAL]: "系統提現管理",
+            [Locales.ENGLISH]: "Processing Console",
+            [Locales.CHINESE]: "处理流程管理",
+            [Locales.CHINESE_TRADITIONAL]: "處理流程管理",
           }),
           desc: t({
-            [Locales.ENGLISH]: "Manage system withdrawal requests",
-            [Locales.CHINESE]: "管理和审批用户的系统提现请求",
-            [Locales.CHINESE_TRADITIONAL]: "管理和審批用戶的系統提現請求",
+            [Locales.ENGLISH]: "Manage and review user processing requests",
+            [Locales.CHINESE]: "管理和审批用户的处理请求",
+            [Locales.CHINESE_TRADITIONAL]: "管理和審批用戶的處理請求",
           }),
         },
         servers: {

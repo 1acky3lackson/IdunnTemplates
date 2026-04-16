@@ -48,7 +48,7 @@ import {
   type PageResponse,
 } from "../generic-crud-table/generic-crud-table";
 
-// 定义结账单类型（基于你提供的JSON结构）
+// 定义收益分成记录类型（基于你提供的JSON结构）
 interface CheckoutDetailInfo {
   id?: number;
   orderId?: number;
@@ -63,6 +63,21 @@ interface CheckoutDetailInfo {
   releaseTimeMs?: number;
   finishTimeMs?: number;
 }
+
+const checkoutRoleTextMap: Record<string, string> = {
+  BUILDER: "建造者",
+  MODIFIER: "修改者",
+  UPLOADER: "上传者",
+  SYSTEM: "系统",
+};
+
+const checkoutStatusTextMap: Record<string, string> = {
+  CREATED: "已创建",
+  CONFIRMED: "已确认",
+  RELEASED: "已释放",
+  FINISHED: "已完成",
+  REFUNDED: "已退款",
+};
 
 export default function WithdrawDetailView({
   id = "1",
@@ -79,7 +94,7 @@ export default function WithdrawDetailView({
     useState<CheckoutDetailInfo | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
-  // 1. 获取提现单基础数据
+  // 1. 获取处理记录基础数据
   useEffect(() => {
     const loadWithdraw = async () => {
       const res = await IDUNN_API.listWithdraws(`id:${withdrawId}`);
@@ -96,8 +111,8 @@ export default function WithdrawDetailView({
     const used = withdraw.usedOriginalValue || 0;
     const remaining = Math.max(0, (withdraw.originalValue || 0) - used);
     return [
-      { name: "已分配原始额", value: used, color: "#3b82f6" },
-      { name: "剩余可用原始额", value: remaining, color: "#e2e8f0" },
+      { name: "已分配原始点数", value: used, color: "#3b82f6" },
+      { name: "剩余可用原始点数", value: remaining, color: "#e2e8f0" },
     ];
   }, [withdraw]);
 
@@ -144,7 +159,7 @@ export default function WithdrawDetailView({
             返回列表
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold tracking-tight">提现单使用明细</h1>
+        <h1 className="text-2xl font-bold tracking-tight">处理记录使用明细</h1>
         <Badge variant="outline" className="font-mono">
           ID: {withdrawId}
         </Badge>
@@ -155,7 +170,7 @@ export default function WithdrawDetailView({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              原始总点数 (PE)
+              原始总点数
             </CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -164,7 +179,7 @@ export default function WithdrawDetailView({
               {Math.round((withdraw.originalValue || 0) * 100).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              费率: {(withdraw.ratio! * 100).toFixed(2)}%
+              折算比例: {(withdraw.ratio! * 100).toFixed(2)}%
             </p>
           </CardContent>
         </Card>
@@ -205,7 +220,7 @@ export default function WithdrawDetailView({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              实际到账点数
+              实际处理点数
             </CardTitle>
             <Info className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -225,7 +240,7 @@ export default function WithdrawDetailView({
         <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <PieIcon className="w-5 h-5" /> 资金消耗比
+              <PieIcon className="w-5 h-5" /> 点数消耗比
             </CardTitle>
           </CardHeader>
           <CardContent className="h-62.5">
@@ -253,20 +268,19 @@ export default function WithdrawDetailView({
           <CardHeader>
             <CardTitle className="text-lg">使用说明</CardTitle>
             <CardDescription>
-              该提现记录的所有资金流向如下列表所示
+              该处理记录的所有点数去向如下列表所示
             </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground leading-relaxed">
             <p>
-              1. 每一行记录代表一笔结算单（CheckoutDetail）对该提现单的占用。
+              1. 每一行记录代表一笔收益分成记录对该处理记录的占用。
             </p>
             <p className="mt-2">
-              2. <strong>扣除原始额</strong> 是指从网易后台显示的 PE
-              总额中扣除的部分。
+              2. <strong>扣除原始点数</strong> 是指从原始点数总额中扣除的部分。
             </p>
             <p className="mt-2">
               3. <strong>实际折算点数</strong>{" "}
-              是根据当前提现单的汇率（Ratio）自动计算的最终支付数字。
+              是根据当前处理记录的折算比例（Ratio）自动计算的最终数字。
             </p>
           </CardContent>
         </Card>
@@ -288,7 +302,7 @@ export default function WithdrawDetailView({
             schema={{
               id: { title: "分配ID" },
               checkoutDetailId: {
-                title: "关联结账单",
+                title: "关联收益分成记录",
                 render: (val) => (
                   <Button
                     variant="link"
@@ -300,7 +314,7 @@ export default function WithdrawDetailView({
                 ),
               },
               allocatedOriginal: {
-                title: "扣除原始额 (PE)",
+                title: "扣除原始点数",
                 sortable: true,
                 render: (val) => (
                   <span className="font-mono text-blue-600">
@@ -325,7 +339,7 @@ export default function WithdrawDetailView({
         </CardContent>
       </Card>
 
-      {/* 结账单详情对话框 */}
+      {/* 收益分成记录详情对话框 */}
       <Dialog
         open={!!selectedDetail}
         onOpenChange={(open) => !open && setSelectedDetail(null)}
@@ -334,10 +348,10 @@ export default function WithdrawDetailView({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Search className="w-5 h-5 text-primary" />
-              结账单详情 #{selectedDetail?.id}
+              收益分成记录详情 #{selectedDetail?.id}
             </DialogTitle>
             <DialogDescription>
-              该结账单对应订单 #{selectedDetail?.orderId} 的分账明细
+              该收益分成记录对应订单 #{selectedDetail?.orderId} 的分成明细
             </DialogDescription>
           </DialogHeader>
 
@@ -353,7 +367,9 @@ export default function WithdrawDetailView({
                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                   角色类型
                 </span>
-                <Badge variant="secondary">{selectedDetail.role}</Badge>
+                <Badge variant="secondary">
+                  {checkoutRoleTextMap[selectedDetail.role || ""] || selectedDetail.role}
+                </Badge>
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">分账比例</span>
@@ -363,7 +379,9 @@ export default function WithdrawDetailView({
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">当前状态</span>
-                <Badge className="bg-green-600">{selectedDetail.status}</Badge>
+                <Badge className="bg-green-600">
+                  {checkoutStatusTextMap[selectedDetail.status || ""] || selectedDetail.status}
+                </Badge>
               </div>
               <div className="space-y-1 border-t pt-2">
                 <span className="text-muted-foreground text-xs">

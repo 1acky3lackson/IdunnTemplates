@@ -10,14 +10,14 @@ import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRep
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseProductStatService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.ProductPermissionService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
-import jakarta.persistence.Column;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,6 +47,36 @@ public class NeteaseProductController {
     private NeteaseProductRepository repository;
     private final ProductPermissionService permissionService; // 注入权限服务
     private final ProjectRepository projectRepository; // 新增依赖，用于指定项目
+    private final UserProjectContributionService userProjectContributionService;
+
+    @PostMapping("/project/{projectId}")
+    @Transactional
+    @AuthRequired
+    public ResponseEntity<NeteaseProductDto> createForProject(
+            @PathVariable Long projectId,
+            @RequestBody ProductCreateRequest request,
+            UserContext user) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+        if (!canManageProjectProduct(user, project)) {
+            return ResponseEntity.status(406).build();
+        }
+
+        NeteaseProduct product = new NeteaseProduct();
+        product.setProject(project);
+        product.setItemId(request.getItemId());
+        product.setItemName(request.getItemName());
+        product.setPrice(request.getPrice());
+        product.setPriceType(request.getPriceType());
+        product.setInternalStatus(
+                request.getInternalStatus() != null ? request.getInternalStatus() : NeteaseProductStatus.CREATED);
+        long now = System.currentTimeMillis();
+        product.setCreateTimeMs(now);
+        product.setUpdateTimeMs(now);
+        product.setCreateTime(request.getCreateTime() != null ? request.getCreateTime() : String.valueOf(now));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(permissionService.toDto(repository.save(product)));
+    }
 
     /**
      * 获取指定商品的订单统计数据
@@ -186,6 +216,17 @@ public class NeteaseProductController {
      */
     @Getter
     public static class StatusChangeRequest {
+        private NeteaseProductStatus internalStatus;
+    }
+
+    @Getter
+    @Setter
+    public static class ProductCreateRequest {
+        private String itemId;
+        private String itemName;
+        private Integer price;
+        private String priceType;
+        private String createTime;
         private NeteaseProductStatus internalStatus;
     }
 
@@ -349,5 +390,11 @@ public class NeteaseProductController {
     private enum Operator {
         EQ, // 等于
         LIKE // 模糊查询
+    }
+
+    private boolean canManageProjectProduct(UserContext user, Project project) {
+        return luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.modify)
+                || luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.bindProject)
+                || userProjectContributionService.isUserParticipant(user.getUsername(), project.getId());
     }
 }

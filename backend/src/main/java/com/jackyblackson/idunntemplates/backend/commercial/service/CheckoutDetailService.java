@@ -1,26 +1,18 @@
 package com.jackyblackson.idunntemplates.backend.commercial.service;
 
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CheckoutDetail;
-import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CheckoutWithdrawAllocation;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.GlobalCheckoutParamContext;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
-import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseWithdraw;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.CheckoutDetailRepository;
-import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.CheckoutWithdrawAllocationRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
-import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseWithdrawRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CheckoutDetail.Status.*;
 
@@ -31,14 +23,10 @@ public class CheckoutDetailService {
 
     private final CheckoutDetailRepository checkoutDetailRepository;
     private final NeteaseOrderRepository neteaseOrderRepository;
-
-    private final NeteaseWithdrawRepository neteaseWithdrawRepository;
-    private final CheckoutWithdrawAllocationRepository allocationRepository;
-
     private final UserBalanceService userBalanceService;
 
     /**
-     * 功能1：创建结算明细，保证 (username, orderId, role) 唯一
+     * 功能1：创建结算记录，保证 (username, orderId, role) 唯一
      */
     @Transactional
     public CheckoutDetail createCheckoutDetail(
@@ -71,14 +59,7 @@ public class CheckoutDetailService {
         detail.setCreateTimeMs(System.currentTimeMillis());
         detail.setParamContext(paramContext);
         detail.setOrderProfit(orderProfit);
-
-        try {
-            return checkoutDetailRepository.save(detail);
-        } catch (DataIntegrityViolationException e) {
-            // 捕获唯一约束冲突（并发情况）
-            throw new IllegalArgumentException("Duplicate entry: combination (username, orderId, role) already exists",
-                    e);
-        }
+        return checkoutDetailRepository.save(detail);
     }
 
     /**
@@ -90,16 +71,16 @@ public class CheckoutDetailService {
     }
 
     /**
-     * 尝试支付一个 CREATED 状态的结账单
-     * 
-     * @param detail 待支付的结账单（netProfit 为原始金额）
-     * @return true 表示支付成功，结账单变为 CONFIRMED；false 表示余额不足，未支付
+     * 尝试支付一个 CREATED 状态的结算记录
+     *
+     * @param detail 待支付的结算记录（netProfit 为原始金额）
+     * @return true 表示支付成功，结算记录变为 CONFIRMED；false 表示余额不足，未支付
      */
     @Transactional
     public boolean checkoutCreated(CheckoutDetail detail) {
         // 只处理 CREATED 状态的
         if (detail.getStatus() != CREATED) {
-            log.warn("结账单 {} 状态不是 CREATED，当前状态：{}", detail.getId(), detail.getStatus());
+            log.warn("结算记录 {} 状态不是 CREATED，当前状态：{}", detail.getId(), detail.getStatus());
             return false;
         }
 
@@ -112,54 +93,12 @@ public class CheckoutDetailService {
             // 计划释放时间设为当前，这样释放任务会立即处理
             detail.setReleaseTimeMs(System.currentTimeMillis());
             checkoutDetailRepository.save(detail);
-            log.info("结账单 {} net_profit 为 0，直接确认", detail.getId());
+            log.info("结算记录 {} net_profit 为 0，直接确认", detail.getId());
             return true;
         }
 
-        // 查询可用提现记录并锁定（同前）
-        List<NeteaseWithdraw> available = neteaseWithdrawRepository.findAvailableWithdraws();
-        if (available.isEmpty()) {
-            log.info("无可用的提现记录，结账单 {} 暂不支付", detail.getId());
-            return false;
-        }
-        List<Long> ids = available.stream().map(NeteaseWithdraw::getId).collect(Collectors.toList());
-        List<NeteaseWithdraw> lockedWithdraws = neteaseWithdrawRepository.findByIdsWithLock(ids);
-        BigDecimal totalAvailable = lockedWithdraws.stream()
-                .map(w -> w.getOriginalValue().subtract(w.getUsedOriginalValue()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (totalAvailable.compareTo(need) < 0) {
-            log.info("可用提现总额 {} 不足以支付结账单 {} 所需 {}，暂不支付", totalAvailable, detail.getId(), need);
-            return false;
-        }
-
-        // 分配提现记录（同前）
-        BigDecimal remaining = need;
-        List<CheckoutWithdrawAllocation> allocations = new ArrayList<>();
-        for (NeteaseWithdraw withdraw : lockedWithdraws) {
-            if (remaining.compareTo(BigDecimal.ZERO) <= 0)
-                break;
-            BigDecimal availableForThis = withdraw.getOriginalValue().subtract(withdraw.getUsedOriginalValue());
-            if (availableForThis.compareTo(BigDecimal.ZERO) <= 0)
-                continue;
-            BigDecimal deduct = remaining.min(availableForThis);
-            BigDecimal actual = deduct.multiply(withdraw.getRatio()).setScale(8, RoundingMode.HALF_UP);
-            withdraw.setUsedOriginalValue(withdraw.getUsedOriginalValue().add(deduct));
-            neteaseWithdrawRepository.save(withdraw);
-            CheckoutWithdrawAllocation alloc = new CheckoutWithdrawAllocation();
-            alloc.setCheckoutDetail(detail);
-            alloc.setWithdraw(withdraw);
-            alloc.setAllocatedOriginal(deduct);
-            alloc.setActualAmount(actual);
-            alloc.setCreateTimeMs(System.currentTimeMillis());
-            allocations.add(alloc);
-            remaining = remaining.subtract(deduct);
-        }
-        allocationRepository.saveAll(allocations);
-
-        BigDecimal totalActual = allocations.stream()
-                .map(CheckoutWithdrawAllocation::getActualAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        detail.setActualProfit(totalActual);
+        // 当前结算按订单原始虚拟点数执行，不再依赖提现记录及费率。
+        detail.setActualProfit(need);
         detail.setConfirmTimeMs(System.currentTimeMillis());
 
         // 计算计划释放时间：订单时间 + N 天
@@ -174,8 +113,8 @@ public class CheckoutDetailService {
         detail.setStatus(CONFIRMED); // 进入冻结状态
         checkoutDetailRepository.save(detail);
 
-        log.info("结账单 {} 支付成功，使用 {} 笔提现记录，总实际到账 {}，计划释放时间：{}",
-                detail.getId(), allocations.size(), totalActual, scheduledRelease);
+        log.info("结算记录 {} 已按原始虚拟点数确认，实际到账 {}，计划释放时间：{}",
+                detail.getId(), need, scheduledRelease);
         return true;
     }
 
@@ -190,7 +129,7 @@ public class CheckoutDetailService {
         List<CheckoutDetail> details = checkoutDetailRepository.findByStatusAndReleaseTimeMsLessThanEqual(
                 CONFIRMED, now);
         if (details.isEmpty()) {
-            log.debug("没有待释放的结账单");
+            log.debug("没有待释放的结算记录");
             return;
         }
 
@@ -201,7 +140,7 @@ public class CheckoutDetailService {
                     detail.getId(), CONFIRMED, RELEASED, now);
             if (updated == 0) {
                 // 可能已被其他线程释放，跳过
-                log.warn("结账单 {} 状态已变更，跳过释放", detail.getId());
+                log.warn("结算记录 {} 状态已变更，跳过释放", detail.getId());
                 continue;
             }
             // 释放资金到用户余额
@@ -209,8 +148,54 @@ public class CheckoutDetailService {
                     detail.getUsername(),
                     detail.getActualProfit(), // 实际到账金额
                     detail.getId(),
-                    "订单增加释放，结账单 #" + detail.getId());
-            log.info("结账单 {} 已释放，用户 {} 增加 {} 元", detail.getId(), detail.getUsername(), detail.getActualProfit());
+                    "订单增加释放，结算记录 #" + detail.getId());
+            log.info("结算记录 {} 已释放，用户 {} 增加 {} 元", detail.getId(), detail.getUsername(), detail.getActualProfit());
         }
+    }
+
+    /**
+     * 订单退款时回滚其全部结算记录。
+     * CREATED: 直接标记退款。
+     * CONFIRMED: 冻结中的收益直接退回系统，不产生用户支出。
+     * RELEASED/FINISHED: 已进入用户虚拟点数，需创建支出记录扣回。
+     */
+    @Transactional
+    public boolean refundOrderDetails(NeteaseOrder order) {
+        List<CheckoutDetail> details = checkoutDetailRepository.findByOrder_Id(order.getId());
+        if (details.isEmpty()) {
+            log.info("订单 {} 没有关联结算记录，直接标记退款", order.getId());
+            return false;
+        }
+
+        long refundTime = order.getRefundInTimeMs() != null && order.getRefundInTimeMs() > 0
+                ? order.getRefundInTimeMs()
+                : System.currentTimeMillis();
+
+        boolean changed = false;
+        for (CheckoutDetail detail : details) {
+            if (detail.getStatus() == REFUNDED) {
+                continue;
+            }
+
+            if (detail.getStatus() == RELEASED || detail.getStatus() == FINISHED) {
+                BigDecimal amount = detail.getActualProfit();
+                if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+                    userBalanceService.addRefundExpense(
+                            detail.getUsername(),
+                            amount,
+                            detail.getId(),
+                            "订单退款扣回，结算记录 #" + detail.getId());
+                }
+            }
+
+            detail.setStatus(REFUNDED);
+            detail.setRefundTimeMs(refundTime);
+            detail.setFinishTimeMs(refundTime);
+            checkoutDetailRepository.save(detail);
+            changed = true;
+        }
+
+        log.info("订单 {} 的 {} 条结算记录已退款回滚", order.getId(), details.size());
+        return changed;
     }
 }

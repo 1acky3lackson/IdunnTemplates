@@ -3,11 +3,9 @@ package com.jackyblackson.idunntemplates.backend.commercial.service;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
-import com.jackyblackson.idunntemplates.backend.commercial.entity.crawler.NePeProductOrderLog;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
-import com.jackyblackson.idunntemplates.core.IdunnConstants;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,33 +29,44 @@ public class NeteaseOrderUpdateService {
         private final CheckoutDetailService checkoutDetailService;
         private final NeteaseOrderRepository orderRepository;
 
-        private static final List<String> DIAMOND_WORD_LIST = List.of(
-                        "付费钻石",
-                        "钻石",
-                        "diamond",
-                        "Diamond",
-                        "DIAMOND",
-                        "diamonds",
-                        "Diamonds",
-                        "DIAMONDS");
-
         // 最小金额单位：1e-8 元（对应数据库 DECIMAL(19,8) 的最小精度）
         private static final BigDecimal MIN_UNIT = new BigDecimal("1e-8");
 
-        public void fromEnter(NeteaseOrder order, NePeProductOrderLog log) {
-                // 其他状态处理方法保持为空或按需实现
+        public void fromEnter(NeteaseOrder order, Object log) {
+                refundOrder(order);
         }
 
-        public void fromCalculated(NeteaseOrder order, NePeProductOrderLog log) {
+        public void fromCalculated(NeteaseOrder order, Object log) {
+                refundOrder(order);
         }
 
-        public void fromProfitted(NeteaseOrder order, NePeProductOrderLog log) {
+        public void fromProfitted(NeteaseOrder order, Object log) {
+                refundOrder(order);
         }
 
-        public void fromTPlusM(NeteaseOrder order, NePeProductOrderLog log) {
+        public void fromTPlusM(NeteaseOrder order, Object log) {
+                refundOrder(order);
         }
 
-        public void fromTPlusN(NeteaseOrder order, NePeProductOrderLog log) {
+        public void fromTPlusN(NeteaseOrder order, Object log) {
+                refundOrder(order);
+        }
+
+        @Transactional
+        public boolean refundOrder(NeteaseOrder order) {
+                if (order.getInternalStatus() == NeteaseOrderStatus.REFUNDED) {
+                        log.info("订单 {} 已是退款状态，跳过重复处理", order.getId());
+                        return false;
+                }
+
+                checkoutDetailService.refundOrderDetails(order);
+                order.setInternalStatus(NeteaseOrderStatus.REFUNDED);
+                if (order.getRefundInTimeMs() == null || order.getRefundInTimeMs() <= 0) {
+                        order.setRefundInTimeMs(System.currentTimeMillis());
+                }
+                orderRepository.save(order);
+                log.info("订单 {} 已完成退款流程", order.getId());
+                return true;
         }
 
         /**
@@ -116,12 +125,9 @@ public class NeteaseOrderUpdateService {
                         return false;
                 }
 
-                // 钻石类型和点数检查
-                if (!(DIAMOND_WORD_LIST.contains(order.getPointType()) && order.getPoint() > 0)) {
-                        order.setInternalStatus(NeteaseOrderStatus.AFTER_N);
-                        orderRepository.save(order);
-                        log.info("订单 {} 非钻石或点数为零 (pointType={}, point={})，标记为 AFTER_N 并跳过结算",
-                                        order.getId(), order.getPointType(), order.getPoint());
+                // 允许订单先创建后补填虚拟点数，未补填前保持 ENTERED 等待后续处理。
+                if (order.getPoint() == null || order.getPoint() <= 0) {
+                        log.info("订单 {} 尚未填写有效虚拟点数，保持 ENTERED 等待补充", order.getId());
                         return false;
                 }
 
@@ -150,24 +156,12 @@ public class NeteaseOrderUpdateService {
                         return false;
                 }
 
-                // 1. 钻石转化为人民币，保留 8 位小数（确保是 MIN_UNIT 的整数倍）
-                BigDecimal rmbPrice = BigDecimal.valueOf(order.getPoint())
+                // 1. 录入的虚拟点数按“实际结算值 * 100”存储，结算前先还原
+                BigDecimal orderAmount = BigDecimal.valueOf(order.getPoint())
                                 .divide(BigDecimal.valueOf(100), 8, RoundingMode.HALF_UP);
 
-                // 2. 太学增加（高精度）
-                BigDecimal taixueRatio = BigDecimal.valueOf(params.getTaixueRatio()); // 假设 params 中已是 BigDecimal
-                BigDecimal taixueProfit = rmbPrice.multiply(taixueRatio); // 未舍入，但后续存入时会自动舍入到 8 位
-                checkoutDetailService.createCheckoutDetail(
-                                IdunnConstants.SYSTEM_USER_NAME,
-                                order.getId(),
-                                CommercialRoleType.SYSTEM,
-                                taixueRatio.setScale(8, RoundingMode.HALF_UP), // 比率也舍入到 8 位
-                                taixueProfit.setScale(8, RoundingMode.HALF_UP),
-                                rmbPrice,
-                                params);
-
-                // 剩余待分配金额（精确减法）
-                BigDecimal remaining = rmbPrice.subtract(taixueProfit);
+                // 2. 当前规则下不再进行系统分成，参与用户直接分配全部结算值
+                BigDecimal remaining = orderAmount;
 
                 // 3. 商务占比
                 BigDecimal commercialRatio = BigDecimal.valueOf(params.getCommercialRatio());
@@ -178,8 +172,8 @@ public class NeteaseOrderUpdateService {
                 BigDecimal commercialGross = remaining.subtract(builderGross);
 
                 // 建筑组比率（用于 ratio 字段）
-                BigDecimal builderGroupRatio = BigDecimal.ONE.subtract(taixueRatio)
-                                .multiply(BigDecimal.ONE.subtract(commercialRatio))
+                BigDecimal builderGroupRatio = BigDecimal.ONE
+                                .subtract(commercialRatio)
                                 .setScale(8, RoundingMode.HALF_UP);
 
                 // 4. 建筑人员分配
@@ -200,7 +194,7 @@ public class NeteaseOrderUpdateService {
                                         CommercialRoleType.BUILDER,
                                         personalRatio,
                                         builderAmounts.get(i),
-                                        rmbPrice,
+                                        orderAmount,
                                         params);
                 }
 
@@ -213,8 +207,7 @@ public class NeteaseOrderUpdateService {
                 BigDecimal modifierGross = commercialGross.subtract(uploaderGross);
 
                 // 上传组比率
-                BigDecimal uploaderGroupRatio = BigDecimal.ONE.subtract(taixueRatio)
-                                .multiply(commercialRatio)
+                BigDecimal uploaderGroupRatio = BigDecimal.valueOf(commercialRatio.doubleValue())
                                 .multiply(uploaderRatio)
                                 .setScale(8, RoundingMode.HALF_UP);
 
@@ -236,13 +229,12 @@ public class NeteaseOrderUpdateService {
                                         CommercialRoleType.UPLOADER,
                                         personalRatio,
                                         uploaderAmounts.get(i),
-                                        rmbPrice,
+                                        orderAmount,
                                         params);
                 }
 
                 // 7. 修改组比率
-                BigDecimal modifierGroupRatio = BigDecimal.ONE.subtract(taixueRatio)
-                                .multiply(commercialRatio)
+                BigDecimal modifierGroupRatio = BigDecimal.valueOf(commercialRatio.doubleValue())
                                 .multiply(BigDecimal.ONE.subtract(uploaderRatio))
                                 .setScale(8, RoundingMode.HALF_UP);
 
@@ -264,7 +256,7 @@ public class NeteaseOrderUpdateService {
                                         CommercialRoleType.MODIFIER,
                                         personalRatio,
                                         modifierAmounts.get(i),
-                                        rmbPrice,
+                                        orderAmount,
                                         params);
                 }
 

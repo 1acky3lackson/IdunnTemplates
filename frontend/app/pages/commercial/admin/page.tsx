@@ -25,6 +25,8 @@ import { toast } from "sonner";
 // import { IDUNN_API } from '@/api';
 
 export default function AdminDashboard() {
+  document.title = "商业虚拟点数控制台";
+
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
@@ -109,9 +111,9 @@ export default function AdminDashboard() {
           <ShieldCheck className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">商业财务控制台</h1>
+          <h1 className="text-3xl font-bold tracking-tight">商业虚拟点数控制台</h1>
           <p className="text-muted-foreground mt-1">
-            管理和手动触发核心商业计算与资金结算流程
+            管理和手动触发核心商业计算与虚拟点数结算流程
           </p>
         </div>
       </div>
@@ -122,8 +124,8 @@ export default function AdminDashboard() {
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <RefreshCw className="h-6 w-6 text-primary mb-2" />
-            <CardTitle className="text-lg">同步爬虫网易产品</CardTitle>
-            <CardDescription>触发重新从爬虫日志同步网易产品。</CardDescription>
+            <CardTitle className="text-lg">同步爬虫商品</CardTitle>
+            <CardDescription>触发重新从爬虫日志同步商品。</CardDescription>
           </CardHeader>
           <CardContent className="flex-1"></CardContent>
           <CardFooter>
@@ -135,7 +137,7 @@ export default function AdminDashboard() {
                 handleTriggerAction(
                   () => IDUNN_API.apiV1CommercialAdminSyncNeProductGet(),
                   "ne-product",
-                  "同步网易商品",
+                  "同步商品",
                 )
               }
             >
@@ -150,12 +152,12 @@ export default function AdminDashboard() {
           </CardFooter>
         </Card>
 
-        {/* 卡片 2：同步网易订单 */}
+        {/* 卡片 2：同步订单 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <Coins className="h-6 w-6 text-primary mb-2" />
-            <CardTitle className="text-lg">同步爬虫网易订单</CardTitle>
-            <CardDescription>触发重新从爬虫日志同步网易订单。</CardDescription>
+            <CardTitle className="text-lg">同步爬虫订单</CardTitle>
+            <CardDescription>触发重新从爬虫日志同步订单。</CardDescription>
           </CardHeader>
           <CardContent className="flex-1"></CardContent>
           <CardFooter>
@@ -167,7 +169,7 @@ export default function AdminDashboard() {
                 handleTriggerAction(
                   () => IDUNN_API.apiV1CommercialAdminSyncNeOrderGet(),
                   "ne-order",
-                  "同步网易订单",
+                  "同步订单",
                 )
               }
             >
@@ -183,15 +185,15 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <div className="text-2xl font-bold py-2">账户与结算</div>
+      <div className="text-2xl font-bold py-2">虚拟点数与结算</div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-4">
         {/* 卡片 1：结算单实际虚拟点数结算 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <Users className="h-6 w-6 text-green-500 mb-2" />
-            <CardTitle className="text-lg">订单收益分解</CardTitle>
+            <CardTitle className="text-lg">订单分成分解</CardTitle>
             <CardDescription>
-              触发系统重新进行订单收益的分解与归属计算。
+              触发系统重新进行订单分成的分解与归属计算。
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1"></CardContent>
@@ -204,7 +206,7 @@ export default function AdminDashboard() {
                 handleTriggerAction(
                   () => IDUNN_API.apiV1CommercialAdminCalculateOrderGet(),
                   "order",
-                  "订单收益分解计算",
+                  "订单分成分解计算",
                 )
               }
             >
@@ -255,13 +257,13 @@ export default function AdminDashboard() {
           </CardFooter>
         </Card>
 
-        {/* 卡片 3：释放冻结资金 */}
+        {/* 卡片 3：释放冻结虚拟点数 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
             <DollarSign className="h-6 w-6 text-amber-500 mb-2" />
-            <CardTitle className="text-lg">释放冻结资金</CardTitle>
+            <CardTitle className="text-lg">释放冻结虚拟点数</CardTitle>
             <CardDescription>
-              触发计算，将符合条件的风险期内保留点数释放至可用虚拟点数。
+              触发计算，将符合条件的保留点数释放至可用虚拟点数。
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1"></CardContent>
@@ -273,7 +275,7 @@ export default function AdminDashboard() {
                 handleTriggerAction(
                   () => IDUNN_API.apiV1CommercialAdminCalculateReleaseGet(),
                   "release",
-                  "释放冻结资金",
+                  "释放冻结虚拟点数",
                 )
               }
             >

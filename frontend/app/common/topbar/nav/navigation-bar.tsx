@@ -87,6 +87,18 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
       trigger: menus.revenueSharing,
       children: [
         {
+          icon: <Coins className="w-4 h-4" />,
+          title: items.commercial.neteaseOrders.title,
+          href: "/commercial/orders",
+          desc: items.commercial.neteaseOrders.desc,
+        },
+        {
+          icon: <Calculator className="w-4 h-4" />,
+          title: items.commercial.checkout.title,
+          href: "/commercial/checkout",
+          desc: items.commercial.checkout.desc,
+        },
+        {
           icon: <Landmark className="w-4 h-4" />,
           title: items.commercial.balances.title,
           href: "/commercial/balances",
@@ -104,18 +116,7 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
         //   href: "/commercial/withdraws",
         //   desc: items.commercial.systemWithdraw.desc,
         // },
-        {
-          icon: <Coins className="w-4 h-4" />,
-          title: items.commercial.neteaseOrders.title,
-          href: "/commercial/orders",
-          desc: items.commercial.neteaseOrders.desc,
-        },
-        {
-          icon: <Calculator className="w-4 h-4" />,
-          title: items.commercial.checkout.title,
-          href: "/commercial/checkout",
-          desc: items.commercial.checkout.desc,
-        },
+
         // {
         //   icon: <Coins className="w-4 h-4" />,
         //   title: items.commercial.neteaseWithdraw.title,

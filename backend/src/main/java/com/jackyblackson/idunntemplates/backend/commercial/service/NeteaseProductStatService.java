@@ -47,9 +47,9 @@ public class NeteaseProductStatService {
 
         // 2. 遍历订单收集数据
         for (NeteaseOrder order : orders) {
-            // 累加金额 (忽略 price 为 null 的脏数据)
-            if (order.getPointType().contains("钻石") || order.getPointType().contains("付费")) {
-                totalAmount += order.getPoint() / 100L;
+            // 累加原始虚拟点数
+            if (order.getPoint() != null && order.getPoint() > 0) {
+                totalAmount += order.getPoint();
                 validPriceCount++;
             }
 

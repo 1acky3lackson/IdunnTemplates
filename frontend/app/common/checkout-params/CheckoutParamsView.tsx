@@ -24,7 +24,6 @@ import { toast } from "sonner";
 // 全局参数实体类型（与后端一致）
 export interface GlobalCheckoutParam {
   id: number;
-  taixueRatio: number;
   commercialRatio: number;
   templateDefectParam: number;
   placerRatio: number;
@@ -88,7 +87,6 @@ export function GlobalParamManager({
   // 打开“据此更新”对话框，预填选中行的参数
   const handleUpdateClick = (config: GlobalCheckoutParam) => {
     setSelectedConfig({
-      taixueRatio: config.taixueRatio,
       commercialRatio: config.commercialRatio,
       templateDefectParam: config.templateDefectParam,
       placerRatio: config.placerRatio,
@@ -143,10 +141,6 @@ export function GlobalParamManager({
           ) : current ? (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="font-medium">太学比例：</span>
-                {current.taixueRatio}
-              </div>
-              <div>
                 <span className="font-medium">商务处比例：</span>
                 {current.commercialRatio}
               </div>
@@ -191,7 +185,6 @@ export function GlobalParamManager({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>太学比例</TableHead>
                   <TableHead>商务处比例</TableHead>
                   <TableHead>模板衰减参数</TableHead>
                   <TableHead>放置者比例</TableHead>
@@ -207,7 +200,6 @@ export function GlobalParamManager({
               <TableBody>
                 {history.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.taixueRatio}</TableCell>
                     <TableCell>{item.commercialRatio}</TableCell>
                     <TableCell>{item.templateDefectParam}</TableCell>
                     <TableCell>{item.placerRatio}</TableCell>
@@ -249,24 +241,6 @@ export function GlobalParamManager({
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="taixueRatio" className="text-right">
-                太学比例
-              </Label>
-              <Input
-                id="taixueRatio"
-                type="number"
-                step="0.01"
-                value={selectedConfig.taixueRatio ?? ""}
-                onChange={(e) =>
-                  setSelectedConfig({
-                    ...selectedConfig,
-                    taixueRatio: parseFloat(e.target.value),
-                  })
-                }
-                className="col-span-3"
-              />
-            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="commercialRatio" className="text-right">
                 商务处比例

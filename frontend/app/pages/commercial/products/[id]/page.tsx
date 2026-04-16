@@ -1,12 +1,23 @@
 // ~/common/netease-product/NeteaseProductDetail.tsx
 import React, { useEffect, useState } from "react";
 import { IDUNN_API } from "~/api";
+import apiClient from "@/lib/axios";
 import { deepNullToUndefined } from "~/common/util/null-to-undefined";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   LineChart,
   Line,
@@ -24,11 +35,12 @@ import {
   type FetchOrders,
 } from "~/common/netease-order/OrderDisplay";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 // 从生成的 API 导入产品类型（假设为 NeteaseProduct）
 
 export function meta({ params }: Route.MetaArgs) {
-  return [{ title: `Netease Project ${params.id}` }];
+  return [{ title: `商品详情 ${params.id}` }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -46,8 +58,9 @@ export default function NeteaseProductDetail({
   const [product, setProduct] = useState<NeteaseProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshOrdersKey, setRefreshOrdersKey] = useState(0);
 
-  document.title = `网易商品详情 - [${id}]: ${product?.itemName || "未找到项目"}`;
+  document.title = `商品详情 - [${id}]: ${product?.itemName || "未找到商品"}`;
 
   useEffect(() => {
     if (!id) return;
@@ -98,19 +111,25 @@ export default function NeteaseProductDetail({
       {/* 顶部基本信息 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="truncate">{product.itemName}</span>
-            <Badge variant={getStatusVariant(product.internalStatus)}>
-              {product.internalStatus}
-            </Badge>
-          </CardTitle>
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle className="flex items-center justify-between gap-3">
+              <span className="truncate">{product.itemName}</span>
+              <Badge variant={getStatusVariant(product.internalStatus)}>
+                {getStatusText(product.internalStatus)}
+              </Badge>
+            </CardTitle>
+            <CreateOrderDialog
+              product={product}
+              onSuccess={() => setRefreshOrdersKey((prev) => prev + 1)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <InfoItem label="ID" value={product.id} />
             <InfoItem label="物品ID" value={product.itemId} />
             <InfoItem
-              label="价格"
+              label="虚拟点数"
               value={
                 product.price != null
                   ? `${product.price} ${product.priceType || ""}`
@@ -170,7 +189,11 @@ export default function NeteaseProductDetail({
           <CardTitle>产品订单列表</CardTitle>
         </CardHeader>
         <CardContent>
-          <OrderDisplay pageSize={10} fetchOrders={fetchOrdersProject} />
+          <OrderDisplay
+            key={refreshOrdersKey}
+            pageSize={10}
+            fetchOrders={fetchOrdersProject}
+          />
         </CardContent>
       </Card>
 
@@ -178,6 +201,157 @@ export default function NeteaseProductDetail({
       <OtherFields product={product} />
     </div>
   );
+}
+
+function CreateOrderDialog({
+  product,
+  onSuccess,
+}: {
+  product: NeteaseProduct;
+  onSuccess: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    appOrderId: "",
+    appUid: "",
+    point: "",
+    pointType: product.priceType || "付费钻石",
+    shipTime: "",
+  });
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        appOrderId: "",
+        appUid: "",
+        point: "",
+        pointType: product.priceType || "付费钻石",
+        shipTime: toDateTimeLocalValue(Date.now()),
+      });
+    }
+  }, [open, product.priceType]);
+
+  const handleSubmit = async () => {
+    if (!form.appOrderId.trim() || !form.appUid.trim() || !form.shipTime) {
+      toast.warning("请填写订单号、用户 ID 和订单时间");
+      return;
+    }
+
+    const shipTimeMs = new Date(form.shipTime).getTime();
+    if (!Number.isFinite(shipTimeMs) || shipTimeMs <= 0) {
+      toast.warning("请输入有效的订单时间");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await apiClient.post(`/api/v1/commercial/products/${product.id}/orders`, {
+        appOrderId: form.appOrderId.trim(),
+        appUid: form.appUid.trim(),
+        point: form.point ? Number(form.point) : undefined,
+        pointType: form.pointType.trim() || undefined,
+        price: product.price,
+        priceType: product.priceType,
+        productName: product.itemName,
+        shipTimeMs,
+        shipTime: new Date(shipTimeMs).toISOString(),
+      });
+      toast.success(
+        form.point
+          ? "订单已创建并触发即时结算"
+          : "订单已创建，待补充虚拟点数后再结算",
+      );
+      setOpen(false);
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      toast.warning("创建订单失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>添加订单</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>为当前商品添加订单</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-2">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">订单号</div>
+            <Input
+              value={form.appOrderId}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, appOrderId: e.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm font-medium">用户 ID</div>
+            <Input
+              value={form.appUid}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, appUid: e.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm font-medium">订单时间</div>
+            <Input
+              type="datetime-local"
+              value={form.shipTime}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, shipTime: e.target.value }))
+              }
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="text-sm font-medium">虚拟点数</div>
+              <Input
+                type="number"
+                min={0}
+                value={form.point}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, point: e.target.value }))
+                }
+                placeholder="可留空"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">点数类型</div>
+              <Input
+                value={form.pointType}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, pointType: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
+            取消
+          </Button>
+          <Button onClick={handleSubmit} disabled={submitting}>
+            保存订单
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function toDateTimeLocalValue(timeMs: number) {
+  const date = new Date(timeMs);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60_000);
+  return localDate.toISOString().slice(0, 16);
 }
 
 // ---------- 辅助组件 ----------
@@ -208,6 +382,21 @@ function getStatusVariant(
       return "destructive";
     default:
       return "outline";
+  }
+}
+
+function getStatusText(status: string) {
+  switch (status) {
+    case "CREATED":
+      return "已创建";
+    case "CONVERTED":
+      return "已转换";
+    case "ONLINE":
+      return "已上架";
+    case "REJECTED":
+      return "已拒绝";
+    default:
+      return status;
   }
 }
 
@@ -297,17 +486,17 @@ function OrderStatsDashboard({ productId }: { productId: number }) {
             </div>
           </div>
 
-          {/* 模块 2：金额 (绿色调) */}
+          {/* 模块 2：虚拟点数 (绿色调) */}
           <div className="flex flex-col justify-center rounded-xl border border-emerald-100 bg-emerald-50/50 p-6 dark:border-emerald-900/50 dark:bg-emerald-950/20">
             <div className="text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80 mb-2">
               总虚拟点数
             </div>
             <div className="text-4xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
-              {Math.round((stats.totalAmount ?? 0) * 100).toLocaleString()}
+              {(stats.totalAmount ?? 0).toLocaleString()}
             </div>
             <div className="mt-2 text-sm text-emerald-600/70 dark:text-emerald-400/70">
               平均虚拟点数:{" "}
-              {Math.round((stats.averageAmount || 0) * 100).toLocaleString()}
+              {Math.round(stats.averageAmount || 0).toLocaleString()}
             </div>
           </div>
 
@@ -435,7 +624,7 @@ function StatCharts({ statPayload }: { statPayload: string }) {
               type="monotone"
               dataKey="钻石"
               stroke="#ff7300"
-              name="销售额（虚拟点数）"
+              name="虚拟点数"
               yAxisId="left"
             />
           </LineChart>

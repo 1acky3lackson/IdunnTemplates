@@ -28,6 +28,10 @@ const TransactionTypeBadge = ({ type }: { type: string }) => {
       return <Badge className="bg-orange-500">减少</Badge>;
     case "INCOME":
       return <Badge className="bg-emerald-500">增加</Badge>;
+    case "FREEZE":
+      return <Badge className="bg-blue-500">冻结</Badge>;
+    case "UNFREEZE":
+      return <Badge className="bg-cyan-500">解冻</Badge>;
     default:
       return <Badge className="bg-gray-400">{type}</Badge>;
   }
@@ -89,7 +93,7 @@ export function UserBalanceList({
           ),
         },
         pendingBalance: {
-          title: "待网易提现（预估）",
+          title: "待处理（预估）",
           render: (val) => (
             <span className="text-gray-600">{formatMoney(val)}</span>
           ),
@@ -100,7 +104,7 @@ export function UserBalanceList({
 }
 
 // ==========================================
-// 2. 用户交易流水记录组件
+// 2. 用户虚拟点数变动记录组件
 // ==========================================
 export function UserTransactionRecordList({
   forceSearch = {},
@@ -186,7 +190,7 @@ export function UserTransactionRecordList({
           filterable: true,
           render: (val) =>
             val ? (
-              <span className="font-mono text-xs bg-gray-100 p-1 rounded">
+              <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-1 font-mono text-xs text-foreground/90 shadow-sm">
                 {val}
               </span>
             ) : (

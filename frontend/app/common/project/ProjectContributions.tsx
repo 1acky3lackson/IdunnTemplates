@@ -55,6 +55,12 @@ enum RoleType {
   UPLOADER = "UPLOADER",
 }
 
+const roleTextMap: Record<RoleType, string> = {
+  [RoleType.BUILDER]: "建造者",
+  [RoleType.MODIFIER]: "修改者",
+  [RoleType.UPLOADER]: "上传者",
+};
+
 type GroupedContributions = Record<RoleType, any[]>;
 
 const COLORS = [
@@ -187,7 +193,7 @@ function ContributionTable({
                   <TableCell className="font-medium">
                     {record.username}
                   </TableCell>
-                  <TableCell>{record.role}</TableCell>
+                  <TableCell>{roleTextMap[record.role as RoleType] || record.role}</TableCell>
                   <TableCell>{record.contributePoints}</TableCell>
                   <TableCell>
                     {record.contributeRatio != null
@@ -268,9 +274,9 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
       <h2 className="text-2xl font-bold tracking-tight">项目贡献看板</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <RolePieChart title="BUILDER (建筑师) 占比" data={buildersForPie} />
-        <RolePieChart title="MODIFIER (修改者) 占比" data={modifiersForPie} />
-        <RolePieChart title="UPLOADER (上传者) 占比" data={uploadersForPie} />
+        <RolePieChart title="建造者占比" data={buildersForPie} />
+        <RolePieChart title="修改者占比" data={modifiersForPie} />
+        <RolePieChart title="上传者占比" data={uploadersForPie} />
       </div>
 
       <div className="space-y-4">
@@ -280,17 +286,17 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
         </div>
 
         <ContributionTable
-          title="父项目 BUILDER (关联同步)"
+          title="父项目建造者（关联同步）"
           data={groupedData[RoleType.BUILDER] || []}
           onRefresh={loadData}
         />
         <ContributionTable
-          title="MODIFIER"
+          title="修改者"
           data={localModifiers}
           onRefresh={loadData}
         />
         <ContributionTable
-          title="UPLOADER"
+          title="上传者"
           data={localUploaders}
           onRefresh={loadData}
         />
@@ -465,7 +471,7 @@ function AddContributionDialog({
                       <SelectContent>
                         {Object.values(RoleType).map((role) => (
                           <SelectItem key={role} value={role}>
-                            {role}
+                            {roleTextMap[role]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -511,7 +517,7 @@ function AddContributionDialog({
               {/* Builder Row */}
               <div className="grid grid-cols-12 gap-4 items-end border-b pb-4">
                 <div className="col-span-3 text-sm font-bold text-blue-600 self-center">
-                  BUILDER
+                  建造者
                 </div>
                 <div className="col-span-6 space-y-1">
                   <label className="text-xs text-muted-foreground">
@@ -534,7 +540,7 @@ function AddContributionDialog({
               {/* Modifier Row */}
               <div className="grid grid-cols-12 gap-4 items-end border-b pb-4">
                 <div className="col-span-3 text-sm font-bold text-green-600 self-center">
-                  MODIFIER
+                  修改者
                 </div>
                 <div className="col-span-6 space-y-1">
                   <label className="text-xs text-muted-foreground">
@@ -557,7 +563,7 @@ function AddContributionDialog({
               {/* Uploader Row */}
               <div className="grid grid-cols-12 gap-4 items-end pb-2">
                 <div className="col-span-3 text-sm font-bold text-orange-600 self-center">
-                  UPLOADER
+                  上传者
                 </div>
                 <div className="col-span-6 space-y-1">
                   <label className="text-xs text-muted-foreground">

@@ -5,9 +5,9 @@ const loginContent = {
   content: {
     // 页面标题与描述
     title: t({
-      [Locales.ENGLISH]: "IdunnTemplates - Login",
-      [Locales.CHINESE]: "登录 Idunn 模板",
-      [Locales.CHINESE_TRADITIONAL]: "登入 Idunn 模板",
+      [Locales.ENGLISH]: "Login to Building Template Management System",
+      [Locales.CHINESE]: "登录建筑模板管理系统",
+      [Locales.CHINESE_TRADITIONAL]: "登入建築模板管理系統",
     }),
     description: t({
       [Locales.ENGLISH]: "Please enter your username and password",

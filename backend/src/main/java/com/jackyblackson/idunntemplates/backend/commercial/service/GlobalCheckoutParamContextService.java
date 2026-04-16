@@ -43,7 +43,7 @@ public class GlobalCheckoutParamContextService {
 
             // 创建默认配置，创建人设为 system
             GlobalCheckoutParamContext defaultConfig = new GlobalCheckoutParamContext("system");
-            // 其他字段已通过实体字段默认值初始化（如 taixueRatio=0.3 等）
+            defaultConfig.setTaixueRatio(0.0);
             return repository.save(defaultConfig);
         } finally {
             lock.unlock();
@@ -77,9 +77,8 @@ public class GlobalCheckoutParamContextService {
             // 2. 创建新记录
             GlobalCheckoutParamContext newEntity = new GlobalCheckoutParamContext(operatorUsername);
             // 仅复制非空字段，避免覆盖实体默认值
-            if (newConfig.getTaixueRatio() != null) {
-                newEntity.setTaixueRatio(newConfig.getTaixueRatio());
-            }
+            // 兼容保留数据库字段，但逻辑上不再启用系统分成
+            newEntity.setTaixueRatio(0.0);
             if (newConfig.getCommercialRatio() != null) {
                 newEntity.setCommercialRatio(newConfig.getCommercialRatio());
             }

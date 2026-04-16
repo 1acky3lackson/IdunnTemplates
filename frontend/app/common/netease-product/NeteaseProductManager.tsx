@@ -115,6 +115,21 @@ const statusColor = (status: NeteaseProductStatus) => {
   }
 };
 
+const statusText = (status: NeteaseProductStatus) => {
+  switch (status) {
+    case NeteaseProductStatus.CREATED:
+      return "已创建";
+    case NeteaseProductStatus.CONVERTED:
+      return "已转换";
+    case NeteaseProductStatus.ONLINE:
+      return "已上架";
+    case NeteaseProductStatus.REJECTED:
+      return "已拒绝";
+    default:
+      return status;
+  }
+};
+
 // ---------- 辅助转换函数 ----------
 // 将 GenericCrudTable 产生的 "itemName~:测试,internalStatus:ONLINE" 转回旧 API 需要的 Criteria 对象
 const parseSearchStringToCriteria = (search: string): ProductSearchParams => {
@@ -225,7 +240,7 @@ export function NeteaseProductManagerPage({
             title: "状态",
             filterable: true,
             render: (val: NeteaseProductStatus) => (
-              <Badge className={statusColor(val)}>{val}</Badge>
+              <Badge className={statusColor(val)}>{statusText(val)}</Badge>
             ),
           },
           project: {
@@ -468,7 +483,7 @@ function ChangeStatusDialog({
                     <SelectContent>
                       {Object.values(NeteaseProductStatus).map((status) => (
                         <SelectItem key={status} value={status}>
-                          {status}
+                          {statusText(status)}
                         </SelectItem>
                       ))}
                     </SelectContent>

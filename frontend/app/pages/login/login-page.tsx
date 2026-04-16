@@ -80,6 +80,8 @@ export default function LoginPage() {
     footerText,
   } = useIntlayer("login-page");
 
+  document.title = title.value;
+
   // 1. 定义表单验证 Schema (移入组件内部以支持动态国际化)
   const formSchema = z.object({
     username: z.string().min(2, {

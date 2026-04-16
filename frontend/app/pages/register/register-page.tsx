@@ -64,6 +64,8 @@ export default function RegisterPage() {
     invalidTokenMsg,
   } = useIntlayer("register-page");
 
+  document.title = title.value;
+
   const formSchema = z.object({
     password: z.string().min(4, {
       message: passwordErrorMsg.value,

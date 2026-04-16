@@ -30,12 +30,12 @@ public class CheckoutDetailController {
     private final CheckoutDetailRepository checkoutDetailRepository;
 
     /**
-     * 搜索结算明细，支持动态条件与分页
+     * 搜索结算记录，支持动态条件与分页
      *
      * @param search   查询条件，格式：字段:值 或 字段~:值（模糊查询），多个条件用逗号分隔
      *                 例如：username:player1,status:CREATED,order.id:1001
      * @param pageable 分页参数，默认每页20条，按id降序
-     * @return 分页的结算明细DTO
+     * @return 分页的结算记录 DTO
      */
     @GetMapping
     @AuthRequired

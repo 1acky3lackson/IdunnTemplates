@@ -54,12 +54,12 @@ const statusConfig: Record<
   PAID: {
     color: "bg-purple-500",
     text: "已转账",
-    actionDesc: "请核对账户并确认",
+    actionDesc: "请核对虚拟点数到账情况并确认",
   },
   FINISHED: {
     color: "bg-green-500",
     text: "流程结束",
-    actionDesc: "提现已成功结算",
+    actionDesc: "处理流程已完成",
   },
   ERROR: {
     color: "bg-orange-600",
@@ -147,7 +147,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
           id: { title: "ID" },
           username: { title: "申请人" },
           amount: {
-            title: "提现虚拟点数",
+            title: "处理虚拟点数",
             sortable: true,
             render: (val) => (
               <span className="font-mono font-bold text-primary">
@@ -186,7 +186,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
         }}
       />
 
-      {/* 提现详情对话框 */}
+      {/* 处理详情对话框 */}
       <Dialog
         open={!!activeContext}
         onOpenChange={(o) => !o && !isSubmitting && setActiveContext(null)}
@@ -195,7 +195,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
           <DialogHeader className="p-6 bg-muted/30 border-b text-left">
             <DialogTitle className="text-xl flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary" />
-              提现单详情 #{activeContext?.data.id}
+              处理记录详情 #{activeContext?.data.id}
             </DialogTitle>
           </DialogHeader>
 
@@ -205,7 +205,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
               <div className="grid grid-cols-2 gap-6 p-4 rounded-xl border bg-card shadow-sm">
                 <div className="space-y-1">
                   <Label className="text-muted-foreground font-normal">
-                    提现虚拟点数
+                    处理虚拟点数
                   </Label>
                   <p className="text-2xl font-bold tracking-tight text-primary">
                     {Math.round((activeContext.data.amount || 0) * 100).toLocaleString()}
@@ -239,7 +239,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <History className="w-4 h-4 text-primary" />
+                      <History className="w-4 h-4 text-primary" />
                     流程生命周期
                   </h3>
                   <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -374,7 +374,7 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
           <DialogHeader className="text-left">
             <DialogTitle className="text-lg">确认操作</DialogTitle>
             <DialogDescription>
-              您正在将提现状态变更为：
+              您正在将处理状态变更为：
               <Badge variant="outline" className="ml-1">
                 {statusConfig[actionDialog.targetStatus]?.text}
               </Badge>

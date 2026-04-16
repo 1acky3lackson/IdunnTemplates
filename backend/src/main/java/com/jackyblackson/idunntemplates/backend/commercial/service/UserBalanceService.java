@@ -33,7 +33,7 @@ public class UserBalanceService {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("增加金额必须为正数");
         }
-        updateBalance(username, amount, UserBalanceRecord.RecordType.INCOME, relatedId, description);
+        updateBalance(username, amount, UserBalanceRecord.RecordType.INCOME, relatedId, description, false);
     }
 
     /**
@@ -50,7 +50,18 @@ public class UserBalanceService {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("减少金额必须为正数");
         }
-        updateBalance(username, amount.negate(), UserBalanceRecord.RecordType.EXPENSE, relatedId, description);
+        updateBalance(username, amount.negate(), UserBalanceRecord.RecordType.EXPENSE, relatedId, description, false);
+    }
+
+    /**
+     * 退款冲销类支出允许余额变为负数，以确保已发放收益能够被完整扣回。
+     */
+    @Transactional
+    public void addRefundExpense(String username, BigDecimal amount, Long relatedId, String description) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("减少金额必须为正数");
+        }
+        updateBalance(username, amount.negate(), UserBalanceRecord.RecordType.EXPENSE, relatedId, description, true);
     }
 
     /**
@@ -64,7 +75,8 @@ public class UserBalanceService {
      */
     private void updateBalance(String username, BigDecimal delta,
             UserBalanceRecord.RecordType type,
-            Long relatedId, String description) {
+            Long relatedId, String description,
+            boolean allowNegativeBalance) {
         // 悲观锁获取用户余额记录
         UserBalance balance = userBalanceRepository.findByUsernameWithLock(username)
                 .orElseGet(() -> {
@@ -81,7 +93,7 @@ public class UserBalanceService {
         BigDecimal after = before.add(delta);
 
         // 检查余额是否足够（如果是减少）
-        if (delta.compareTo(BigDecimal.ZERO) < 0 && after.compareTo(BigDecimal.ZERO) < 0) {
+        if (!allowNegativeBalance && delta.compareTo(BigDecimal.ZERO) < 0 && after.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalStateException(String.format("用户 %s 余额不足，当前余额 %s，欲减少 %s",
                     username, before.toPlainString(), delta.abs().toPlainString()));
         }

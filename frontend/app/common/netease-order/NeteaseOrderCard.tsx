@@ -41,6 +41,29 @@ function getStatusVariant(
   }
 }
 
+function getStatusText(status: string): string {
+  switch (status) {
+    case "ENTERED":
+      return "已录入";
+    case "CALCULATED":
+      return "已分成";
+    case "INCOME":
+      return "已结算";
+    case "AFTER_M":
+      return "处理中";
+    case "AFTER_N":
+      return "已完成";
+    case "REFUNDED":
+      return "已退款";
+    case "PENDING":
+      return "待处理";
+    case "CANCELLED":
+      return "已取消";
+    default:
+      return status;
+  }
+}
+
 /** 将空字符串或 null 转为占位符 '-' */
 function renderValue(value: string | number | null | undefined): string {
   if (value === "" || value === null || value === undefined) return "-";
@@ -109,7 +132,7 @@ export function OrderCard({ data }: OrderCardProps) {
       label: "可退款时间戳",
       value: refundInTimeMs !== null ? refundInTimeMs : "-",
     },
-    { label: "内部状态", value: internalStatus },
+    { label: "内部状态", value: getStatusText(internalStatus) },
     { label: "产品ID", value: productId },
   ];
 
@@ -118,7 +141,7 @@ export function OrderCard({ data }: OrderCardProps) {
       <CardHeader className="flex flex-row items-start align-middle justify-between space-y-0">
         <div className="flex items-center align-middle gap-2 flex-wrap min-w-0">
           <Badge variant={getStatusVariant(internalStatus)}>
-            {internalStatus}
+            {getStatusText(internalStatus)}
           </Badge>
           <Badge
             variant="outline"

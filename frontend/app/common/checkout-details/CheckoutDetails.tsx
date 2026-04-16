@@ -35,6 +35,14 @@ const statusColorMap: Record<string, string> = {
   REFUNDED: "bg-red-500 hover:bg-red-600",
 };
 
+const statusTextMap: Record<string, string> = {
+  CREATED: "已创建",
+  CONFIRMED: "已确认",
+  RELEASED: "已释放",
+  FINISHED: "已完成",
+  REFUNDED: "已退款",
+};
+
 // 角色标签颜色映射
 const roleColorMap: Record<string, string> = {
   BUILDER: "bg-green-100 text-green-800 border-green-200",
@@ -43,13 +51,20 @@ const roleColorMap: Record<string, string> = {
   SYSTEM: "bg-orange-100 text-orange-800 border-orange-200",
 };
 
+const roleTextMap: Record<string, string> = {
+  BUILDER: "建造者",
+  MODIFIER: "修改者",
+  UPLOADER: "上传者",
+  SYSTEM: "系统",
+};
+
 // 时间格式化工具
 const formatTime = (ms?: number | null) => {
   if (!ms) return "-";
   return new Date(ms).toLocaleString();
 };
 
-// 金额格式化工具 (假设后端传来的直接是元或者具体数值)
+// 数值格式化工具
 const formatMoney = (amount?: number | null) => {
   if (amount === undefined || amount === null) return "-";
   return `${Math.round(amount * 100).toLocaleString()}`;
@@ -92,7 +107,7 @@ export default function CheckoutDetails({
   return (
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">结账单列表</h1>
+        <h1 className="text-2xl font-bold">收益分成记录列表</h1>
       </div>
 
       <GenericCrudTable<CheckoutDetailDto>
@@ -105,7 +120,7 @@ export default function CheckoutDetails({
         searchFields={[
           { key: "username", label: "用户名", fuzzy: true },
           { key: "orderId", label: "订单ID", fuzzy: false },
-          { key: "withdrawId", label: "提现ID", fuzzy: false },
+          { key: "withdrawId", label: "处理记录ID", fuzzy: false },
           { key: "status", label: "状态 (如 CREATED)", fuzzy: false },
           { key: "role", label: "角色 (如 CREATOR)", fuzzy: false },
         ]}
@@ -143,7 +158,7 @@ export default function CheckoutDetails({
                 <span
                   className={`px-2 py-1 rounded-md text-xs border ${roleColorMap[val] || "bg-gray-100 text-gray-800"}`}
                 >
-                  {val}
+                  {roleTextMap[val] || val}
                 </span>
               ) : (
                 "-"
@@ -158,14 +173,14 @@ export default function CheckoutDetails({
           netProfit: {
             title: (
               <div>
-                理论收益 (虚拟点数){" "}
+                应收虚拟点数{" "}
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger>
                       <CircleQuestionMark />
                     </TooltipTrigger>
                     <TooltipContent>
-                      从网易增加计算而来，未扣除网易抽成
+                      按原始虚拟点数计算，未做额外折算
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -179,7 +194,7 @@ export default function CheckoutDetails({
             ),
           },
           actualProfit: {
-            title: "实际收益 (虚拟点数)",
+            title: "实收虚拟点数",
             sortable: true,
             render: (val) => (
               <span className="text-green-600 font-semibold">
@@ -193,7 +208,7 @@ export default function CheckoutDetails({
             render: (val: string) =>
               val ? (
                 <Badge className={statusColorMap[val] || "bg-gray-400"}>
-                  {val}
+                  {statusTextMap[val] || val}
                 </Badge>
               ) : (
                 "-"
@@ -217,7 +232,7 @@ export default function CheckoutDetails({
         )}
       />
 
-      {/* 结算单详情弹窗 */}
+      {/* 收益分成记录详情弹窗 */}
       <CheckoutDetailDialog
         detail={viewingDetail}
         onClose={() => setViewingDetail(null)}
@@ -241,7 +256,7 @@ function CheckoutDetailDialog({
     <Dialog open={!!detail} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>结账单详情 - #{detail.id}</DialogTitle>
+          <DialogTitle>收益分成记录详情 - #{detail.id}</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-y-6 gap-x-8 py-4 text-sm">
@@ -253,7 +268,7 @@ function CheckoutDetailDialog({
               <Badge
                 className={statusColorMap[detail.status!] || "bg-gray-400"}
               >
-                {detail.status || "-"}
+                {statusTextMap[detail.status || ""] || detail.status || "-"}
               </Badge>
             </div>
             <div>
@@ -272,7 +287,7 @@ function CheckoutDetailDialog({
                 {detail.username || "-"}
                 {detail.role && (
                   <span className="text-xs text-muted-foreground ml-2">
-                    ({detail.role})
+                    ({roleTextMap[detail.role] || detail.role})
                   </span>
                 )}
               </div>
@@ -281,7 +296,7 @@ function CheckoutDetailDialog({
 
           {/* 财务数据 */}
           <div className="space-y-4 col-span-1">
-            <h4 className="font-semibold text-base border-b pb-2">财务数据</h4>
+            <h4 className="font-semibold text-base border-b pb-2">虚拟点数数据</h4>
             <div>
               <span className="text-muted-foreground block mb-1">分成比例</span>
               <div className="font-medium">
