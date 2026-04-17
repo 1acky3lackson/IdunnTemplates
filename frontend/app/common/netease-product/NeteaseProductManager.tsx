@@ -122,7 +122,7 @@ const statusText = (status: NeteaseProductStatus) => {
     case NeteaseProductStatus.CONVERTED:
       return "已转换";
     case NeteaseProductStatus.ONLINE:
-      return "已上架";
+      return "已添加";
     case NeteaseProductStatus.REJECTED:
       return "已拒绝";
     default:

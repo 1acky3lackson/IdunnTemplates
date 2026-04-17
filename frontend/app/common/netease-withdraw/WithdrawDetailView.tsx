@@ -25,15 +25,15 @@ import {
 } from "@/components/ui/dialog";
 import {
   ArrowLeft,
-  Wallet,
   PieChart as PieIcon,
-  Coins,
   Info,
   CheckCircle2,
   ListCheck,
   Search,
   User,
   Calendar,
+  Layers3,
+  BadgeInfo,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -65,9 +65,9 @@ interface CheckoutDetailInfo {
 }
 
 const checkoutRoleTextMap: Record<string, string> = {
-  BUILDER: "建造者",
-  MODIFIER: "修改者",
-  UPLOADER: "上传者",
+  BUILDER: "建筑制作",
+  MODIFIER: "修改美化",
+  UPLOADER: "包装宣传",
   SYSTEM: "系统",
 };
 
@@ -172,7 +172,7 @@ export default function WithdrawDetailView({
             <CardTitle className="text-sm font-medium text-muted-foreground">
               原始总点数
             </CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <Layers3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono text-blue-600">
@@ -209,7 +209,7 @@ export default function WithdrawDetailView({
             <CardTitle className="text-sm font-medium text-muted-foreground">
               剩余可用点数
             </CardTitle>
-            <Coins className="h-4 w-4 text-amber-500" />
+            <BadgeInfo className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono text-amber-600">

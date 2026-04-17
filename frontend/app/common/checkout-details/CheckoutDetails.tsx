@@ -52,9 +52,9 @@ const roleColorMap: Record<string, string> = {
 };
 
 const roleTextMap: Record<string, string> = {
-  BUILDER: "建造者",
-  MODIFIER: "修改者",
-  UPLOADER: "上传者",
+  BUILDER: "建筑制作",
+  MODIFIER: "修改美化",
+  UPLOADER: "包装宣传",
   SYSTEM: "系统",
 };
 

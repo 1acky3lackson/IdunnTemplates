@@ -92,8 +92,16 @@ export interface GenericCrudTableProps<T> {
   headerActions?: React.ReactNode;
   pageSize?: number;
   customRenderer?: {
-    renderContainer: (nodes: ReactNode[]) => ReactNode;
+    renderContainer: (
+      nodes: ReactNode[],
+      meta: {
+        loading: boolean;
+        isEmpty: boolean;
+      },
+    ) => ReactNode;
     renderElement: (row: T, actions: TableActions) => ReactNode;
+    renderLoading?: () => ReactNode;
+    renderEmpty?: () => ReactNode;
   };
 }
 
@@ -534,11 +542,23 @@ const GenericCrudTableComponent = forwardRef(
 
         {customRenderer ? (
           customRenderer.renderContainer(
-            data.map((row) => (
-              <React.Fragment key={getRowId(row)}>
-                {customRenderer.renderElement(row, tableActions)}
-              </React.Fragment>
-            ))
+            loading
+              ? customRenderer.renderLoading
+                ? [customRenderer.renderLoading()]
+                : []
+              : data.length === 0
+                ? customRenderer.renderEmpty
+                  ? [customRenderer.renderEmpty()]
+                  : []
+                : data.map((row) => (
+                    <React.Fragment key={getRowId(row)}>
+                      {customRenderer.renderElement(row, tableActions)}
+                    </React.Fragment>
+                  )),
+            {
+              loading,
+              isEmpty: !loading && data.length === 0,
+            },
           )
         ) : (
           <div className="rounded-md border bg-card overflow-hidden">

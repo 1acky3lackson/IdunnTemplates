@@ -49,6 +49,11 @@ import { ProjectContributions } from "~/common/project/ProjectContributions";
 import type { Route } from "./+types/page";
 import { PlusCircle, Search, Package, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  fromPointTypeDisplay,
+  NETEASE_RAW_VIRTUAL_POINT_TYPE,
+  toPointTypeDisplay,
+} from "~/common/util/point-type-display";
 
 // ---------- 类型定义 ----------
 interface ProjectDetailProps {
@@ -161,11 +166,11 @@ export default function ProjectDetail({
               projectId={projectId}
               onSuccess={() => setRefreshKey((k) => k + 1)}
             />
-            <LinkProductDialog
+            {/* <LinkProductDialog
               projectId={projectId}
               productApi={productApi}
               onSuccess={() => setRefreshKey((k) => k + 1)}
-            />
+            /> */}
           </div>
         </CardHeader>
         <CardContent>
@@ -222,7 +227,7 @@ function CreateProductDialog({
     itemId: "",
     itemName: "",
     price: "",
-    priceType: "付费钻石",
+    priceType: NETEASE_RAW_VIRTUAL_POINT_TYPE,
     internalStatus: "CREATED",
   });
 
@@ -297,9 +302,9 @@ function CreateProductDialog({
             <div className="space-y-2">
               <div className="text-sm font-medium">价格类型</div>
               <Input
-                value={form.priceType}
+                value={toPointTypeDisplay(form.priceType)}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, priceType: e.target.value }))
+                  setForm((prev) => ({ ...prev, priceType: fromPointTypeDisplay(e.target.value) }))
                 }
               />
             </div>
@@ -430,7 +435,7 @@ function LinkProductDialog({
               </div>
               <div>
                 <span className="text-muted-foreground">价格:</span>{" "}
-                {selected.price} {selected.priceType}
+                {selected.price} {toPointTypeDisplay(selected.priceType)}
               </div>
             </CardContent>
           </Card>
@@ -473,7 +478,7 @@ function ProjectProductsStats({
 
   return (
     <div className="space-y-6">
-      <div
+      {/* <div
         className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${!hasData ? "opacity-40 grayscale pointer-events-none" : ""}`}
       >
         <DashboardCard label="总计订单" value={orderSummary.orders} />
@@ -492,11 +497,11 @@ function ProjectProductsStats({
             关联产品后即可查看销售看板与趋势图
           </p>
         </div>
-      )}
+      )} */}
 
       <Card className={!hasData ? "hidden" : ""}>
         <CardHeader>
-          <CardTitle>关联产品列表</CardTitle>
+          <CardTitle>商品列表</CardTitle>
         </CardHeader>
         <CardContent>
           <NeteaseProductManagerPage

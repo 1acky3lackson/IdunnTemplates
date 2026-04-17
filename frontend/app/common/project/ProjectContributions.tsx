@@ -56,9 +56,9 @@ enum RoleType {
 }
 
 const roleTextMap: Record<RoleType, string> = {
-  [RoleType.BUILDER]: "建造者",
-  [RoleType.MODIFIER]: "修改者",
-  [RoleType.UPLOADER]: "上传者",
+  [RoleType.BUILDER]: "建筑制作",
+  [RoleType.MODIFIER]: "修改美化",
+  [RoleType.UPLOADER]: "包装宣传",
 };
 
 type GroupedContributions = Record<RoleType, any[]>;
@@ -274,9 +274,9 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
       <h2 className="text-2xl font-bold tracking-tight">项目贡献看板</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <RolePieChart title="建造者占比" data={buildersForPie} />
-        <RolePieChart title="修改者占比" data={modifiersForPie} />
-        <RolePieChart title="上传者占比" data={uploadersForPie} />
+        <RolePieChart title="建筑制作占比" data={buildersForPie} />
+        <RolePieChart title="修改美化占比" data={modifiersForPie} />
+        <RolePieChart title="包装宣传占比" data={uploadersForPie} />
       </div>
 
       <div className="space-y-4">
@@ -286,17 +286,17 @@ export function ProjectContributions({ projectId }: { projectId: number }) {
         </div>
 
         <ContributionTable
-          title="父项目建造者（关联同步）"
+          title="父项目建筑制作（关联同步）"
           data={groupedData[RoleType.BUILDER] || []}
           onRefresh={loadData}
         />
         <ContributionTable
-          title="修改者"
+          title="修改美化"
           data={localModifiers}
           onRefresh={loadData}
         />
         <ContributionTable
-          title="上传者"
+          title="包装宣传"
           data={localUploaders}
           onRefresh={loadData}
         />
@@ -517,14 +517,14 @@ function AddContributionDialog({
               {/* Builder Row */}
               <div className="grid grid-cols-12 gap-4 items-end border-b pb-4">
                 <div className="col-span-3 text-sm font-bold text-blue-600 self-center">
-                  建造者
+                  建筑制作
                 </div>
                 <div className="col-span-6 space-y-1">
                   <label className="text-xs text-muted-foreground">
                     用户名
                   </label>
                   <Input
-                    placeholder="建筑师用户名"
+                    placeholder="建筑制作用户名"
                     {...teamForm.register("builderUser")}
                   />
                 </div>
@@ -540,14 +540,14 @@ function AddContributionDialog({
               {/* Modifier Row */}
               <div className="grid grid-cols-12 gap-4 items-end border-b pb-4">
                 <div className="col-span-3 text-sm font-bold text-green-600 self-center">
-                  修改者
+                  修改美化
                 </div>
                 <div className="col-span-6 space-y-1">
                   <label className="text-xs text-muted-foreground">
                     用户名
                   </label>
                   <Input
-                    placeholder="修改者用户名"
+                    placeholder="修改美化用户名"
                     {...teamForm.register("modifierUser")}
                   />
                 </div>
@@ -563,14 +563,14 @@ function AddContributionDialog({
               {/* Uploader Row */}
               <div className="grid grid-cols-12 gap-4 items-end pb-2">
                 <div className="col-span-3 text-sm font-bold text-orange-600 self-center">
-                  上传者
+                  包装宣传
                 </div>
                 <div className="col-span-6 space-y-1">
                   <label className="text-xs text-muted-foreground">
                     用户名
                   </label>
                   <Input
-                    placeholder="上传者用户名"
+                    placeholder="包装宣传用户名"
                     {...teamForm.register("uploaderUser")}
                   />
                 </div>

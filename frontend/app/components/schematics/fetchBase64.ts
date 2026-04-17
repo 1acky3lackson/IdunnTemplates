@@ -1,3 +1,5 @@
+import apiClient from "@/lib/axios";
+
 /**
  * 异步获取二进制文件并返回纯净Base64编码
  * @param url 文件的URL地址
@@ -9,14 +11,10 @@ async function fetchFileToBase64(
   filename?: string,
 ): Promise<{ base64: string; filename: string; size: number; type: string }> {
   try {
-    // 使用fetch获取文件
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
-    }
-
-    // 获取ArrayBuffer
-    const arrayBuffer = await response.arrayBuffer();
+    const response = await apiClient.get<ArrayBuffer>(url, {
+      responseType: "arraybuffer",
+    });
+    const arrayBuffer = response.data;
 
     // 将ArrayBuffer转换为纯净Base64
     const base64 = arrayBufferToBase64(arrayBuffer);
@@ -28,7 +26,7 @@ async function fetchFileToBase64(
       base64,
       filename: filename || getFilenameFromUrl(url),
       size: blob.size,
-      type: response.headers.get("content-type") || blob.type,
+      type: (response.headers["content-type"] as string) || blob.type,
     };
   } catch (error) {
     console.error("获取文件失败:", error);

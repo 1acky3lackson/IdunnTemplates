@@ -1,6 +1,9 @@
 package com.jackyblackson.idunntemplates.backend.controller;
 
+import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
+import com.jackyblackson.idunntemplates.backend.dto.CrudTablePageResponse;
 import com.jackyblackson.idunntemplates.backend.dto.VersionSearchCriteria;
+import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.TemplateVersionService;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,22 +31,54 @@ public class TemplateVersionController {
      * 获取指定模板的版本列表
      * URL: GET /api/v1/templates/{templateId}/versions
      */
+    @AuthRequired
     @GetMapping("/{templateId}/versions")
-    public ResponseEntity<Page<TemplateVersion>> getTemplateVersions(
-            // 1. 从 URL 路径中获取 Template ID
+    public ResponseEntity<CrudTablePageResponse<TemplateVersion>> getTemplateVersions(
             @PathVariable UUID templateId,
-
-            // 2. 从 Query Params 绑定其他筛选条件 (submitter, message, time...)
-            @ModelAttribute VersionSearchCriteria criteria,
-
-            // 3. 分页与排序 (默认按创建时间倒序)
+            @RequestParam(required = false) String search,
+            UserContext user,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        // [关键安全步骤]
-        // 强制将 criteria 中的 templateId 设置为 URL 中的 ID。
-        // 这防止了用户访问 "/templates/A/versions" 却在参数里传 "templateId=B" 导致的数据泄露。
+        VersionSearchCriteria criteria = parseSearchCriteria(search);
         criteria.setTemplateId(templateId);
 
-        return ResponseEntity.ok(versionService.searchVersions(criteria, pageable));
+        Page<TemplateVersion> page = versionService.searchVersions(criteria, pageable);
+        return ResponseEntity.ok(CrudTablePageResponse.from(page));
+    }
+
+    private VersionSearchCriteria parseSearchCriteria(String search) {
+        VersionSearchCriteria criteria = new VersionSearchCriteria();
+        if (search == null || search.trim().isEmpty()) {
+            return criteria;
+        }
+
+        String[] conditions = search.split(",");
+        for (String condition : conditions) {
+            String[] parts = condition.split(":", 2);
+            if (parts.length != 2) {
+                continue;
+            }
+
+            String fieldOp = parts[0].trim();
+            String value = parts[1].trim();
+            boolean fuzzy = fieldOp.endsWith("~");
+            String field = fuzzy ? fieldOp.substring(0, fieldOp.length() - 1).trim() : fieldOp;
+
+            switch (field) {
+                case "versionId" -> criteria.setVersionId(value);
+                case "submitterId" -> criteria.setSubmitterId(UUID.fromString(value));
+                case "message" -> criteria.setMessageKeyword(value);
+                case "createdAt" -> {
+                    Long createdAt = Long.parseLong(value);
+                    criteria.setMinCreatedAt(createdAt);
+                    criteria.setMaxCreatedAt(createdAt);
+                }
+                case "minCreatedAt" -> criteria.setMinCreatedAt(Long.parseLong(value));
+                case "maxCreatedAt" -> criteria.setMaxCreatedAt(Long.parseLong(value));
+                default -> {
+                }
+            }
+        }
+        return criteria;
     }
 }

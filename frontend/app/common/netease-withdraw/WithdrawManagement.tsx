@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import {
   CheckCircle2,
   History,
-  CircleDollarSign,
+  BadgeInfo,
   TrendingDown,
   PlusCircle,
 } from "lucide-react";
@@ -84,7 +84,7 @@ export function WithdrawManagement({ pageSize = 20 }: WithdrawManagementProps) {
             sortable: true,
             render: (val) => (
               <div className="flex items-center gap-1 font-mono text-blue-600">
-                <CircleDollarSign className="w-3.5 h-3.5" />
+                <BadgeInfo className="w-3.5 h-3.5" />
                 <span>{Math.round((val || 0) * 100).toLocaleString()}</span>
               </div>
             ),

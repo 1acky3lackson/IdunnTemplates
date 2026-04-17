@@ -249,21 +249,21 @@ const navigationContent = {
         neteaseProducts: {
           title: t({
             [Locales.ENGLISH]: "Products",
-            [Locales.CHINESE]: "上架商品",
-            [Locales.CHINESE_TRADITIONAL]: "上架商品",
+            [Locales.CHINESE]: "商品管理",
+            [Locales.CHINESE_TRADITIONAL]: "商品管理",
           }),
           desc: t({
             [Locales.ENGLISH]:
               "View all listed products",
-            [Locales.CHINESE]: "查看我们上架到商城的所有商品",
-            [Locales.CHINESE_TRADITIONAL]: "查看我們上架到商城的所有商品",
+            [Locales.CHINESE]: "管理系统内用户录入的商品",
+            [Locales.CHINESE_TRADITIONAL]: "管理系統內使用者錄入的商品",
           }),
         },
         neteaseOrders: {
           title: t({
             [Locales.ENGLISH]: "Sales Orders",
-            [Locales.CHINESE]: "销售订单",
-            [Locales.CHINESE_TRADITIONAL]: "銷售訂單",
+            [Locales.CHINESE]: "订单管理",
+            [Locales.CHINESE_TRADITIONAL]: "訂單管理",
           }),
           desc: t({
             [Locales.ENGLISH]:

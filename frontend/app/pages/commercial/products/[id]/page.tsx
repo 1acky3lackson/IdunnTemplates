@@ -36,6 +36,11 @@ import {
 } from "~/common/netease-order/OrderDisplay";
 import { Link } from "react-router";
 import { toast } from "sonner";
+import {
+  fromPointTypeDisplay,
+  NETEASE_RAW_VIRTUAL_POINT_TYPE,
+  toPointTypeDisplay,
+} from "~/common/util/point-type-display";
 
 // 从生成的 API 导入产品类型（假设为 NeteaseProduct）
 
@@ -132,7 +137,7 @@ export default function NeteaseProductDetail({
               label="虚拟点数"
               value={
                 product.price != null
-                  ? `${product.price} ${product.priceType || ""}`
+                  ? `${product.price} ${toPointTypeDisplay(product.priceType) || ""}`
                   : "-"
               }
             />
@@ -216,7 +221,7 @@ function CreateOrderDialog({
     appOrderId: "",
     appUid: "",
     point: "",
-    pointType: product.priceType || "付费钻石",
+    pointType: product.priceType || NETEASE_RAW_VIRTUAL_POINT_TYPE,
     shipTime: "",
   });
 
@@ -226,7 +231,7 @@ function CreateOrderDialog({
         appOrderId: "",
         appUid: "",
         point: "",
-        pointType: product.priceType || "付费钻石",
+        pointType: product.priceType || NETEASE_RAW_VIRTUAL_POINT_TYPE,
         shipTime: toDateTimeLocalValue(Date.now()),
       });
     }
@@ -326,9 +331,9 @@ function CreateOrderDialog({
             <div className="space-y-2">
               <div className="text-sm font-medium">点数类型</div>
               <Input
-                value={form.pointType}
+                value={toPointTypeDisplay(form.pointType)}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, pointType: e.target.value }))
+                  setForm((prev) => ({ ...prev, pointType: fromPointTypeDisplay(e.target.value) }))
                 }
               />
             </div>
@@ -392,7 +397,7 @@ function getStatusText(status: string) {
     case "CONVERTED":
       return "已转换";
     case "ONLINE":
-      return "已上架";
+      return "已添加";
     case "REJECTED":
       return "已拒绝";
     default:

@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates.backend.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateSearchCriteria;
+import com.jackyblackson.idunntemplates.backend.dto.TemplateInstanceDto;
 import com.jackyblackson.idunntemplates.backend.dto.TemplateWithColorsDto;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
@@ -16,6 +17,7 @@ import com.jackyblackson.idunntemplates.backend.dto.ThumbnailUploadRequestDto;
 import com.jackyblackson.idunntemplates.backend.dto.ThumbnailUploadTokenDto;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.jpa.domain.Specification;
 import pitheguy.schemconvert.converter.ConversionException;
 import pitheguy.schemconvert.converter.formats.SchemSchematicFormat;
 import pitheguy.schemconvert.converter.formats.SchematicFormat;
@@ -39,6 +42,8 @@ import pitheguy.schemconvert.converter.formats.SchematicFormat;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -54,6 +59,7 @@ public class TemplateController {
     private final JwtUtil jwtUtil;
     private final LuckyPermAuthService luckyPermAuthService;
     private final TemplateVersionRepository templateVersionRepository;
+    private final com.jackyblackson.idunntemplates.backend.store.repository.InstanceRepository instanceRepository;
 
     @Autowired
     public TemplateController(TemplateService templateService,
@@ -61,13 +67,15 @@ public class TemplateController {
                               SchematicFormatService schematicFormatService,
                               JwtUtil jwtUtil,
                               LuckyPermAuthService luckyPermAuthService,
-                              TemplateVersionRepository templateVersionRepository) {
+                              TemplateVersionRepository templateVersionRepository,
+                              com.jackyblackson.idunntemplates.backend.store.repository.InstanceRepository instanceRepository) {
         this.templateService = templateService;
         this.templateColorService = templateColorService;
         this.schematicFormatService = schematicFormatService;
         this.jwtUtil = jwtUtil;
         this.luckyPermAuthService = luckyPermAuthService;
         this.templateVersionRepository = templateVersionRepository;
+        this.instanceRepository = instanceRepository;
     }
 
     @GetMapping
@@ -161,6 +169,25 @@ public class TemplateController {
                 })
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/instances")
+    @AuthRequired
+    public ResponseEntity<Page<TemplateInstanceDto>> listTemplateInstances(
+            @PathVariable UUID id,
+            @RequestParam(required = false) String search,
+            UserContext user,
+            @PageableDefault(size = 20, sort = "placedAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Optional<Template> templateOptional = templateService.getTemplateById(id, user);
+        if (templateOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Specification<Instance> specification = buildTemplateInstanceSpecification(id, search);
+        Page<Instance> page = instanceRepository.findAll(specification, pageable);
+        Page<TemplateInstanceDto> dtoPage = page.map(this::toTemplateInstanceDto);
+        return ResponseEntity.ok(dtoPage);
     }
 
     @GetMapping("/{id}/download")
@@ -367,5 +394,98 @@ public class TemplateController {
             if (e.getMessage().equals("Template not found")) return ResponseEntity.notFound().build();
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private TemplateInstanceDto toTemplateInstanceDto(Instance instance) {
+        TemplateInstanceDto dto = new TemplateInstanceDto();
+        dto.setId(instance.getId());
+        dto.setTemplateId(instance.getTemplateId());
+        dto.setCurrentVersionId(instance.getCurrentVersionId());
+        dto.setWorldId(instance.getWorldId());
+        dto.setX(instance.getX());
+        dto.setY(instance.getY());
+        dto.setZ(instance.getZ());
+        dto.setRotationY(instance.getRotationY());
+        dto.setFlipX(instance.isFlipX());
+        dto.setFlipY(instance.isFlipY());
+        dto.setFlipZ(instance.isFlipZ());
+        dto.setAutoUpdate(instance.isAutoUpdate());
+        dto.setPlacedAt(instance.getPlacedAt());
+        dto.setPlacedBy(instance.getPlacedBy());
+        dto.setPlacedByName(instance.getPlacedByName());
+        dto.setDeletedTimestamp(instance.getDeletedTimestamp());
+        dto.setMaskXNeg(instance.getMaskXNeg());
+        dto.setMaskXPos(instance.getMaskXPos());
+        dto.setMaskYNeg(instance.getMaskYNeg());
+        dto.setMaskYPos(instance.getMaskYPos());
+        dto.setMaskZNeg(instance.getMaskZNeg());
+        dto.setMaskZPos(instance.getMaskZPos());
+        dto.setEmbeddedInTemplateId(instance.getEmbeddedInTemplateId());
+        dto.setDeleted(instance.isDeleted());
+        dto.setWild(instance.isWild());
+        return dto;
+    }
+
+    private Specification<Instance> buildTemplateInstanceSpecification(UUID templateId, String search) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("templateId"), templateId));
+
+            if (search != null && !search.trim().isEmpty()) {
+                String[] conditions = search.split(",");
+                for (String condition : conditions) {
+                    String[] parts = condition.split(":", 2);
+                    if (parts.length != 2) {
+                        continue;
+                    }
+
+                    String fieldOp = parts[0].trim();
+                    String value = parts[1].trim();
+                    boolean like = fieldOp.endsWith("~");
+                    String field = like ? fieldOp.substring(0, fieldOp.length() - 1).trim() : fieldOp;
+                    Path<?> path;
+                    try {
+                        path = resolvePath(root, field);
+                    } catch (IllegalArgumentException ex) {
+                        continue;
+                    }
+                    Object converted = convertValue(path.getJavaType(), value);
+                    if (like && path.getJavaType() == String.class) {
+                        predicates.add(cb.like(path.as(String.class), "%" + value + "%"));
+                    } else {
+                        predicates.add(cb.equal(path, converted));
+                    }
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    private Path<?> resolvePath(Path<?> root, String fieldPath) {
+        String[] parts = fieldPath.split("\\.");
+        Path<?> path = root;
+        for (String part : parts) {
+            path = path.get(part);
+        }
+        return path;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Object convertValue(Class<?> targetType, String value) {
+        if (targetType == String.class) {
+            return value;
+        } else if (targetType == Long.class || targetType == long.class) {
+            return Long.parseLong(value);
+        } else if (targetType == Integer.class || targetType == int.class) {
+            return Integer.parseInt(value);
+        } else if (targetType == Boolean.class || targetType == boolean.class) {
+            return Boolean.parseBoolean(value);
+        } else if (targetType == UUID.class) {
+            return UUID.fromString(value);
+        } else if (targetType.isEnum()) {
+            return Enum.valueOf((Class<Enum>) targetType, value);
+        }
+        return value;
     }
 }

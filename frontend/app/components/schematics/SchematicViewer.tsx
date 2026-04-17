@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   renderSchematic,
   type SchematicHandles,
@@ -57,26 +57,48 @@ export default function JKSchematicViewer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<SchematicHandles | null>(null);
-  const fetchResult = useRef<string>("");
+  const base64Ref = useRef<string>("");
 
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
-  // 1. 响应式监听 (取代 useResponsive)
   useEffect(() => {
-    const mql = window.matchMedia("(max-width: 768px)");
-    const handler = (e: MediaQueryListEvent | MediaQueryList) =>
-      setIsMobile(e.matches);
-    handler(mql);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const width = Math.floor(entry.contentRect.width);
+      const height = Math.floor(entry.contentRect.height);
+      setContainerSize((prev) =>
+        prev.width === width && prev.height === height
+          ? prev
+          : { width, height },
+      );
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
   }, []);
+
+  const mergedOptions = useMemo<SchematicViewRenderOptions>(() => {
+    const width = options?.size?.width || containerSize.width || 500;
+    const height = options?.size?.height || containerSize.height || 500;
+
+    return {
+      ...DEFAULT_OPTIONS,
+      ...options,
+      size: { width, height },
+    };
+  }, [options, containerSize]);
 
   // 2. 渲染核心逻辑
   const drawSchematic = useCallback(
     async (base64Data: string) => {
       if (!canvasRef.current || !base64Data) return;
+      if (!mergedOptions.size || mergedOptions.size.width < 32 || mergedOptions.size.height < 32) {
+        return;
+      }
 
       try {
         // 如果已有实例，先销毁
@@ -93,15 +115,6 @@ export default function JKSchematicViewer({
           canvasRef.current.height = height;
         }
 
-        // 合并配置
-        const mergedOptions: SchematicViewRenderOptions = {
-          ...DEFAULT_OPTIONS,
-          size: isMobile
-            ? { width: 300, height: 350 }
-            : { width: 500, height: 500 },
-          ...options,
-        };
-
         rendererRef.current = await renderSchematic(
           canvasRef.current,
           base64Data,
@@ -117,7 +130,7 @@ export default function JKSchematicViewer({
         onError?.(error as Error);
       }
     },
-    [options, isMobile, onLoad, onError],
+    [mergedOptions, onLoad, onError],
   );
 
   // 3. 数据抓取与生命周期管理
@@ -132,7 +145,7 @@ export default function JKSchematicViewer({
         const { base64 } = await fetchFileToBase64(src);
         if (!isMounted) return;
 
-        fetchResult.current = base64;
+        base64Ref.current = base64;
         await drawSchematic(base64);
       } catch (error) {
         if (!isMounted) return;
@@ -152,20 +165,27 @@ export default function JKSchematicViewer({
         rendererRef.current = null;
       }
     };
-  }, [src]);
+  }, [src, onError]);
 
-  // 4. 监听配置项变化（如 orbit 开关）进行局部热更新
+  // 4. 在容器尺寸或渲染选项变化时重绘
   useEffect(() => {
-    if (fetchResult.current && !isLoading) {
-      drawSchematic(fetchResult.current);
+    if (base64Ref.current && !isLoading && !isError) {
+      drawSchematic(base64Ref.current);
     }
   }, [
+    drawSchematic,
+    isLoading,
+    isError,
+    mergedOptions.size?.width,
+    mergedOptions.size?.height,
     options?.orbit,
     options?.orbitSpeed,
     options?.renderBars,
     options?.renderArrow,
     options?.backgroundColor,
-    isMobile,
+    options?.antialias,
+    options?.debug,
+    options?.disableAutoRender,
   ]);
 
   return (

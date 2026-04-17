@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toPointTypeDisplay } from "../util/point-type-display";
 
 // --- 辅助函数 ---
 
@@ -118,10 +119,10 @@ export function OrderCard({ data }: OrderCardProps) {
       label: "官方渠道",
       value: officialChannel === 1 ? "官方" : `渠道 ${officialChannel}`,
     },
-    { label: "积分", value: `${point} ${pointType}` },
+    { label: "积分", value: `${point} ${toPointTypeDisplay(pointType)}` },
     {
       label: "价格",
-      value: priceType ? `${price} ${priceType}` : `${price}`,
+      value: priceType ? `${price} ${toPointTypeDisplay(priceType)}` : `${price}`,
     },
     { label: "产品名称", value: productName },
     { label: "购买限制", value: purchaseLimit ?? "-" },
@@ -147,7 +148,7 @@ export function OrderCard({ data }: OrderCardProps) {
             variant="outline"
             className="text-xs font-normal whitespace-nowrap"
           >
-            {point} {pointType}
+            {point} {toPointTypeDisplay(pointType)}
           </Badge>
           <CardTitle className="text-base font-semibold truncate max-w-50 sm:max-w-xs">
             {productName}

@@ -13,10 +13,10 @@ import {
   Loader2,
   Calculator,
   RefreshCw,
-  DollarSign,
   ShieldCheck,
   Users,
-  Coins,
+  ListOrdered,
+  Layers3,
 } from "lucide-react";
 import { IDUNN_API } from "~/api";
 import { toast } from "sonner";
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
         {/* 卡片 2：同步订单 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
-            <Coins className="h-6 w-6 text-primary mb-2" />
+            <ListOrdered className="h-6 w-6 text-primary mb-2" />
             <CardTitle className="text-lg">同步爬虫订单</CardTitle>
             <CardDescription>触发重新从爬虫日志同步订单。</CardDescription>
           </CardHeader>
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
         {/* 卡片 3：释放冻结虚拟点数 */}
         <Card className="flex flex-col transition-all hover:shadow-md">
           <CardHeader>
-            <DollarSign className="h-6 w-6 text-amber-500 mb-2" />
+            <Layers3 className="h-6 w-6 text-amber-500 mb-2" />
             <CardTitle className="text-lg">释放冻结虚拟点数</CardTitle>
             <CardDescription>
               触发计算，将符合条件的保留点数释放至可用虚拟点数。

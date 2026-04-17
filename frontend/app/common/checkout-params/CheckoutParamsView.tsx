@@ -156,7 +156,7 @@ export function GlobalParamManager({
                 {current.placerRatio}
               </div>
               <div>
-                <span className="font-medium">上传者比例：</span>
+                <span className="font-medium">包装宣传比例：</span>
                 {current.uploaderRatio}
               </div>
               <div>
@@ -191,7 +191,7 @@ export function GlobalParamManager({
                   <TableHead>商务处比例</TableHead>
                   <TableHead>模板衰减参数</TableHead>
                   <TableHead>放置者比例</TableHead>
-                  <TableHead>上传者比例</TableHead>
+                  <TableHead>包装宣传比例</TableHead>
                   <TableHead>收益释放延迟 (天)</TableHead>
                   <TableHead>创建人</TableHead>
                   <TableHead>创建时间</TableHead>
@@ -318,7 +318,7 @@ export function GlobalParamManager({
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="uploaderRatio" className="text-right">
-                上传者比例
+                包装宣传比例
               </Label>
               <Input
                 id="uploaderRatio"

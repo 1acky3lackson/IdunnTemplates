@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
-  Wallet,
   Lock,
   Clock,
   ArrowRightLeft,
   History,
-  Landmark,
+  Layers3,
 } from "lucide-react";
 
 // Shadcn UI
@@ -92,10 +91,10 @@ export function MyBalanceView() {
               </div>
             )}
             <div className="mt-4 flex items-center text-xs opacity-70">
-              <Landmark className="mr-1 h-3 w-3" /> 当前可用虚拟点数
+              <Layers3 className="mr-1 h-3 w-3" /> 当前可用虚拟点数
             </div>
           </CardContent>
-          <Wallet className="absolute -right-4 -bottom-4 h-24 w-24 opacity-10 rotate-12" />
+          <Layers3 className="absolute -right-4 -bottom-4 h-24 w-24 opacity-10 rotate-12" />
         </Card>
 
         {/* 冻结点数：使用默认 Card 样式 */}

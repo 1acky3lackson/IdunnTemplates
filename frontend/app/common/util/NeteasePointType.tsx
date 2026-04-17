@@ -1,9 +1,12 @@
 import { CircleQuestionMark } from "lucide-react";
 import type React from "react";
+import { toPointTypeDisplay } from "./point-type-display";
 
 const NeteasePointType: React.FC<{ point: string | null | undefined }> = ({
   point,
 }) => {
+  const displayPoint = toPointTypeDisplay(point);
+
   switch (point) {
     case "diamond":
     case "diamonds":
@@ -15,8 +18,9 @@ const NeteasePointType: React.FC<{ point: string | null | undefined }> = ({
       );
     default:
       return (
-        <div className="my-auto">
+        <div className="my-auto inline-flex items-center gap-1">
           <CircleQuestionMark />
+          <span>{displayPoint || "-"}</span>
         </div>
       );
   }

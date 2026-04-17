@@ -29,15 +29,15 @@ import {
   Menu,
   ArrowLeftRight,
   Calculator,
-  Coins,
   FolderKanban,
-  Landmark,
   PackageSearch,
   Parentheses,
   ChevronRight,
   Server,
   Layers,
   Library,
+  ListOrdered,
+  Users,
 } from "lucide-react";
 
 export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobile" | "both" } = {}) {
@@ -87,7 +87,7 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
       trigger: menus.revenueSharing,
       children: [
         {
-          icon: <Coins className="w-4 h-4" />,
+          icon: <ListOrdered className="w-4 h-4" />,
           title: items.commercial.neteaseOrders.title,
           href: "/commercial/orders",
           desc: items.commercial.neteaseOrders.desc,
@@ -99,7 +99,7 @@ export function NavigationBar({ layout = "both" }: { layout?: "desktop" | "mobil
           desc: items.commercial.checkout.desc,
         },
         {
-          icon: <Landmark className="w-4 h-4" />,
+          icon: <Users className="w-4 h-4" />,
           title: items.commercial.balances.title,
           href: "/commercial/balances",
           desc: items.commercial.balances.desc,

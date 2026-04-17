@@ -25,11 +25,11 @@ import { IDUNN_API } from "~/api";
 export default function NeteaseProductsRoute() {
   // 实现 ProductApi
 
-  document.title = "上架商品";
+  document.title = "商品管理";
 
   return (
     <div className="p-6">
-      <NeteaseProductManagerPage title="上架商品" />
+      <NeteaseProductManagerPage title="商品管理" />
     </div>
   );
 }

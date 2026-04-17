@@ -125,3 +125,4 @@ runs/
 /.gradle-user-home
 /.gradle-user-home-plugin-check
 .gradle-user-home-plugin-check/wrapper/dists/gradle-8.8-bin/dl7vupf4psengwqhwktix4v1/gradle-8.8-bin.zip.lck
+/.gradle-user-home-template-detail

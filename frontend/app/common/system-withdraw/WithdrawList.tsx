@@ -21,8 +21,8 @@ import {
   Eye,
   History,
   ArrowRight,
-  Wallet,
   Info,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -191,10 +191,10 @@ export function WithdrawList({ mode }: { mode: "user" | "admin" }) {
         open={!!activeContext}
         onOpenChange={(o) => !o && !isSubmitting && setActiveContext(null)}
       >
-        <DialogContent className="sm:max-w-155 p-0 overflow-hidden">
-          <DialogHeader className="p-6 bg-muted/30 border-b text-left">
-            <DialogTitle className="text-xl flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-primary" />
+          <DialogContent className="sm:max-w-155 p-0 overflow-hidden">
+            <DialogHeader className="p-6 bg-muted/30 border-b text-left">
+              <DialogTitle className="text-xl flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
               处理记录详情 #{activeContext?.data.id}
             </DialogTitle>
           </DialogHeader>

@@ -25,9 +25,13 @@ import {
 } from "../generic-crud-table/generic-crud-table";
 import { Link } from "react-router";
 import CheckoutDetails from "../checkout-details/CheckoutDetails";
-import { CircleDollarSign, Coins, DollarSign } from "lucide-react";
+import { BadgeInfo } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/axios";
+import {
+  fromPointTypeDisplay,
+  toPointTypeDisplay,
+} from "../util/point-type-display";
 
 // ---------- 辅助工具 ----------
 
@@ -173,22 +177,7 @@ export function OrderDisplay({
             filterable: true,
             sortable: true,
             render: (val, row) =>
-              val != null ? `${Number(val).toLocaleString()} ${row.pointType || ""}` : "待填写",
-          },
-          pointType: {
-            title: "类型",
-            filterable: true,
-            render: (val: string) =>
-              val.includes("付费") || val.includes("钻石") ? (
-                <Badge className="inline-flex items-center gap-1 rounded-full border border-blue-600 bg-blue-300/50 px-2 py-0.5 text-[11px] font-medium leading-4 text-blue-950 dark:text-blue-300">
-                  <DollarSign size={12} /> {val}
-                </Badge>
-              ) : (
-                <Badge className="inline-flex items-center gap-1 rounded-full border border-green-600 bg-green-400/50 px-2 py-0.5 text-[11px] font-medium leading-4 text-green-800 dark:text-green-300">
-                  <Coins size={12} /> {val}
-                </Badge>
-              ),
-            // sortable: true
+              val != null ? `${Number(val).toLocaleString()} ${toPointTypeDisplay(row.pointType) || ""}` : "待填写",
           },
           internalStatus: {
             title: "状态",
@@ -440,8 +429,8 @@ function UpdateOrderPointDialog({
           <div className="space-y-2">
             <div className="text-sm font-medium">点数类型</div>
             <Input
-              value={pointType}
-              onChange={(e) => setPointType(e.target.value)}
+              value={toPointTypeDisplay(pointType)}
+              onChange={(e) => setPointType(fromPointTypeDisplay(e.target.value))}
               placeholder="可选，不填则沿用现有类型"
             />
           </div>
