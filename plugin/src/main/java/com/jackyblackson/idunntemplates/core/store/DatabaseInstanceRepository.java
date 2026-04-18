@@ -2,6 +2,7 @@ package com.jackyblackson.idunntemplates.core.store;
 
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.store.dao.InstanceDao;
+import com.jackyblackson.idunntemplates.core.store.dao.InstanceDao;
 import com.jackyblackson.idunntemplates.manager.DatabaseManager;
 
 import java.sql.SQLException;
@@ -180,6 +181,30 @@ public class DatabaseInstanceRepository implements InstanceRepository {
                         .query();
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Failed to query active instances in world " + worldId, e);
+                return new ArrayList<>();
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Instance>> getActiveInstancesByTemplate(UUID templateId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return getDao().findActiveByTemplate(templateId);
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Failed to query active instances for template " + templateId, e);
+                return new ArrayList<>();
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Instance>> getActiveInstancesByParentTemplate(UUID parentTemplateId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return getDao().findByParentTemplate(parentTemplateId);
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Failed to query active child instances for parent template " + parentTemplateId, e);
                 return new ArrayList<>();
             }
         });

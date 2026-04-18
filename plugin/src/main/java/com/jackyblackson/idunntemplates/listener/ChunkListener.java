@@ -83,7 +83,9 @@ public class ChunkListener implements Listener {
                     IdunnTemplates.getInstance().getServer().getScheduler().runTask(IdunnTemplates.getInstance(), () -> {
                         for (Map.Entry<Template, List<Instance>> entry : updatesNeeded.entrySet()) {
                             Template tmpl = entry.getKey();
-                            templateUpdater.updateInstances(tmpl, tmpl.getLatestVersion(), entry.getValue());
+                            for (Instance instance : entry.getValue()) {
+                                templateUpdater.queueInstanceUpdate(tmpl, instance, tmpl.getLatestVersion(), "chunk-load");
+                            }
                         }
                     });
                 });

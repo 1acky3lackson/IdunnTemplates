@@ -27,6 +27,8 @@ body {
 
   /* 适配系统颜色方案 */
   color-scheme: light;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 @theme inline {
@@ -120,6 +122,14 @@ body {
   --sidebar-accent-foreground: oklch(0.25 0.1 285);
   --sidebar-border: oklch(0.9 0.03 285);
   --sidebar-ring: oklch(0.65 0.12 285);
+
+  /* Scrollbar */
+  --scrollbar-size: 0.5rem;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in oklch, var(--primary) 40%, var(--muted-foreground) 60%);
+  --scrollbar-thumb-hover: color-mix(in oklch, var(--primary) 62%, var(--muted-foreground) 38%);
+  --scrollbar-thumb-active: color-mix(in oklch, var(--primary) 78%, var(--foreground) 22%);
+  --scrollbar-corner: transparent;
 }
 
 .dark {
@@ -165,6 +175,19 @@ body {
   --sidebar-accent-foreground: oklch(0.95 0.03 285);
   --sidebar-border: oklch(0.3 0.05 285 / 50%);
   --sidebar-ring: oklch(0.75 0.14 285);
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in oklch, var(--primary) 32%, var(--muted-foreground) 68%);
+  --scrollbar-thumb-hover: color-mix(in oklch, var(--primary) 50%, var(--foreground) 50%);
+  --scrollbar-thumb-active: color-mix(in oklch, var(--primary) 68%, var(--foreground) 32%);
+  --scrollbar-corner: transparent;
+}
+
+.dark html,
+.dark body,
+html.dark,
+body.dark {
+  color-scheme: dark;
 }
 
 @layer base {
@@ -173,5 +196,46 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      var(--scrollbar-thumb) 0%,
+      color-mix(in oklch, var(--scrollbar-thumb) 88%, transparent 12%) 100%
+    );
+    border-radius: 999px;
+    border: 1px solid transparent;
+    min-height: 2.5rem;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      var(--scrollbar-thumb-hover) 0%,
+      color-mix(in oklch, var(--scrollbar-thumb-hover) 90%, transparent 10%) 100%
+    );
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(
+      180deg,
+      var(--scrollbar-thumb-active) 0%,
+      color-mix(in oklch, var(--scrollbar-thumb-active) 92%, transparent 8%) 100%
+    );
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: var(--scrollbar-corner);
   }
 }

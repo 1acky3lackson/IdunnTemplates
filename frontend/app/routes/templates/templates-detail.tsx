@@ -25,6 +25,9 @@ import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import SchematicViewer from "~/components/schematics/SchematicViewer";
+import { Switch } from "~/components/ui/switch";
+import { Slider } from "~/components/ui/slider";
+import { Label } from "~/components/ui/label";
 import {
   downloadTemplateFile,
   getSchemLinkForTemplateVersion,
@@ -38,8 +41,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
 import { toast } from "sonner";
+import { useTheme } from "~/components/theme/theme-provider";
 
 const RENDER_REFUSE_THRESHOLD = 100 * 60 * 100;
+const gradientAlphaDark = "80";
+const gradientAlphaLight = "25";
+const gradientRadius = 60;
 
 type TemplateInstanceDto = {
   id: string;
@@ -92,6 +99,68 @@ function getVersionDisplay(version?: TemplateVersion | null) {
   return version.versionId || "未命名版本";
 }
 
+const getSeed = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return hash;
+};
+
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+const generateRandomColor = (seed: number, alpha: number) => {
+  const hue = Math.floor(seededRandom(seed) * 360);
+  const saturation = Math.floor(seededRandom(seed) * 60) + 20;
+  const lightness = Math.floor(seededRandom(seed) * 80) + 10;
+  return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha / 100})`;
+};
+
+const generateMeshGradient = (colors: string[], id: string, theme?: string) => {
+  if (!colors.length) return undefined;
+
+  const alpha =
+    theme?.includes("dark")
+      ? gradientAlphaDark
+      : gradientAlphaLight;
+
+  const pool = [...colors];
+  while (pool.length < 6) {
+    pool.push(...colors);
+  }
+
+  let seed = getSeed(id);
+  let minValidIndex = -1;
+
+  return pool
+    .slice(0, 6)
+    .map((color, index) => {
+      let finalColorWithAlpha: string;
+
+      if (color.toLowerCase() === "#unknown") {
+        if (minValidIndex === -1) {
+          minValidIndex = index;
+        }
+        if (pool[index - minValidIndex] !== "#unknown") {
+          finalColorWithAlpha = `${pool[index - minValidIndex]}${alpha}`;
+        } else {
+          finalColorWithAlpha = generateRandomColor(seed++, Number.parseInt(alpha, 10));
+        }
+      } else {
+        finalColorWithAlpha = `${color}${alpha}`;
+      }
+
+      const posX = Math.floor(seededRandom(seed++) * 100);
+      const posY = Math.floor(seededRandom(seed++) * 100);
+
+      return `radial-gradient(at ${posX}% ${posY}%, ${finalColorWithAlpha} 0%, transparent ${gradientRadius}%)`;
+    })
+    .join(", ");
+};
+
 function TemplateViewerPanel({
   template,
   selectedVersion,
@@ -103,19 +172,37 @@ function TemplateViewerPanel({
   onDownloadLatest: () => void;
   onDownloadSelected: (version: TemplateVersion) => void;
 }) {
+  const { theme } = useTheme();
   const volume = getTemplateVolume(template);
   const tooLarge = volume >= RENDER_REFUSE_THRESHOLD;
   const schematicSrc = getSchemLinkForTemplateVersion(
     template.id,
     selectedVersion?.versionId,
   );
+  const [orbit, setOrbit] = useState(true);
+  const [orbitSpeed, setOrbitSpeed] = useState(0.015);
+  const normalizedColors = useMemo(
+    () =>
+      (template.colorSchemes ?? []).map((color) =>
+        color.startsWith("#") ? color : `#${color}`,
+      ),
+    [template.colorSchemes],
+  );
+  const backgroundStyle = useMemo(() => {
+    const gradient = generateMeshGradient(
+      normalizedColors,
+      `${template.id}-${selectedVersion?.versionId ?? "latest"}-detail-viewer`,
+      theme,
+    );
+    return gradient ? { backgroundImage: gradient } : undefined;
+  }, [normalizedColors, template.id, selectedVersion?.versionId, theme]);
 
   return (
     <Card className="h-full overflow-hidden">
       <CardHeader className="pb-3">
-        <CardTitle className="flex flex-wrap items-center justify-between gap-3">
+        <CardTitle className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span>模型预览</span>
               <Badge variant="secondary" className="font-mono">
                 {template.metadata.width} × {template.metadata.height} × {template.metadata.length}
@@ -126,24 +213,77 @@ function TemplateViewerPanel({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={onDownloadLatest}>
+          <div className="flex flex-wrap items-start justify-end gap-4">
+            <div className="min-w-[15rem] space-y-3 rounded-xl border bg-muted/20 px-3 py-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="template-orbit-switch" className="text-xs font-medium">
+                    自动旋转
+                  </Label>
+                  <div className="text-[11px] text-muted-foreground">
+                    控制模型是否持续缓慢旋转
+                  </div>
+                </div>
+                <Switch
+                  id="template-orbit-switch"
+                  checked={orbit}
+                  onCheckedChange={setOrbit}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium">旋转速度</span>
+                  <span className="font-mono text-muted-foreground">
+                    {orbitSpeed.toFixed(3)}
+                  </span>
+                </div>
+                <Slider
+                  value={[orbitSpeed]}
+                  min={0.005}
+                  max={0.05}
+                  step={0.001}
+                  disabled={!orbit}
+                  onValueChange={(values) => {
+                    const nextSpeed = values[0];
+                    if (typeof nextSpeed === "number") {
+                      setOrbitSpeed(nextSpeed);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={onDownloadLatest}>
               <Download className="mr-2 h-4 w-4" />
               下载最新版
-            </Button>
-            {selectedVersion?.versionId && (
-              <Button size="sm" onClick={() => onDownloadSelected(selectedVersion)}>
-                <Download className="mr-2 h-4 w-4" />
-                下载当前版本
               </Button>
-            )}
+              {selectedVersion?.versionId && (
+                <Button size="sm" onClick={() => onDownloadSelected(selectedVersion)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  下载当前版本
+                </Button>
+              )}
+            </div>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="h-[calc(100%-5.25rem)]">
-        <div className="h-full min-h-[360px] overflow-hidden rounded-xl border bg-muted/20">
+        <div
+          className="relative h-full min-h-[360px] overflow-hidden rounded-xl border bg-muted/20"
+          style={backgroundStyle}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-background/20 via-transparent to-background/35" />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")",
+            }}
+          />
           {tooLarge ? (
-            <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="relative z-10 flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
               <div className="rounded-full border border-orange-300/60 bg-orange-100/60 p-4 text-orange-600 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-300">
                 <AlertCircle className="h-7 w-7" />
               </div>
@@ -158,33 +298,35 @@ function TemplateViewerPanel({
               </div>
             </div>
           ) : (
-            <SchematicViewer
-              src={schematicSrc}
-              options={{
-                orbit: true,
-                orbitSpeed: 0.015,
-                renderArrow: false,
-                renderBars: false,
-                backgroundColor: "transparent",
-                antialias: true,
-              }}
-              loadingElement={
-                <div className="flex h-full flex-col items-center justify-center gap-3">
-                  <Box className="h-8 w-8 text-primary/60" />
-                  <div className="text-xs text-muted-foreground">
-                    正在加载模板模型...
+            <div className="relative z-10 h-full">
+              <SchematicViewer
+                src={schematicSrc}
+                options={{
+                  orbit,
+                  orbitSpeed,
+                  renderArrow: false,
+                  renderBars: false,
+                  backgroundColor: "transparent",
+                  antialias: true,
+                }}
+                loadingElement={
+                  <div className="flex h-full flex-col items-center justify-center gap-3">
+                    <Box className="h-8 w-8 text-primary/60" />
+                    <div className="text-xs text-muted-foreground">
+                      正在加载模板模型...
+                    </div>
                   </div>
-                </div>
-              }
-              errorElement={
-                <div className="flex h-full flex-col items-center justify-center gap-3">
-                  <AlertCircle className="h-8 w-8 text-destructive/70" />
-                  <div className="text-xs text-muted-foreground">
-                    模型渲染失败，请稍后重试
+                }
+                errorElement={
+                  <div className="flex h-full flex-col items-center justify-center gap-3">
+                    <AlertCircle className="h-8 w-8 text-destructive/70" />
+                    <div className="text-xs text-muted-foreground">
+                      模型渲染失败，请稍后重试
+                    </div>
                   </div>
-                </div>
-              }
-            />
+                }
+              />
+            </div>
           )}
         </div>
       </CardContent>

@@ -1,12 +1,18 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Buffer } from "buffer";
 import {
   renderSchematic,
   type SchematicHandles,
 } from "@enginehub/schematicwebviewer";
 import { fetchFileToBase64 } from "./fetchBase64";
 import { Loader2, AlertCircle } from "lucide-react";
+
+if (typeof window !== "undefined" && !("Buffer" in window)) {
+  // @ts-ignore
+  window.Buffer = Buffer;
+}
 
 /**
  * 渲染配置选项
@@ -35,7 +41,7 @@ type SchematicViewerProps = {
 };
 
 const DEFAULT_OPTIONS: SchematicViewRenderOptions = {
-  getClientJarUrl: async () => "/minecraft/schem-display/mc-assets-latest.zip",
+  getClientJarUrl: async () => "/mc-assets.zip",
   renderBars: false,
   renderArrow: false,
   orbit: true,
@@ -191,11 +197,11 @@ export default function JKSchematicViewer({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full flex items-center justify-center min-h-[inherit] overflow-hidden rounded-xl bg-background"
+      className="relative w-full h-full flex items-center justify-center min-h-[inherit] overflow-hidden rounded-xl"
     >
       {/* 错误状态 UI */}
       {isError && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/65 backdrop-blur-sm">
           {errorElement || (
             <div className="flex flex-col items-center gap-2 text-destructive">
               <AlertCircle className="w-8 h-8" />
@@ -207,7 +213,7 @@ export default function JKSchematicViewer({
 
       {/* 加载状态 UI */}
       {isLoading && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background gap-3">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/50 backdrop-blur-[1px] gap-3">
           {loadingElement || (
             <>
               <Loader2 className="w-8 h-8 animate-spin text-primary/60" />

@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class TemplateUpdater {
 
@@ -34,6 +32,7 @@ public class TemplateUpdater {
     private final DiffCalculator diffCalculator;
     private final Logger logger;
     private CascadingUpdateManager cascadingUpdateManager;
+    private InstanceUpdateScheduler instanceUpdateScheduler;
 
     public TemplateUpdater(TemplateStorage templateStorage, InstanceRepository instanceRepository, BlockComparator comparator, Logger logger) {
         this.templateStorage = templateStorage;
@@ -49,63 +48,64 @@ public class TemplateUpdater {
     public CascadingUpdateManager getCascadingUpdateManager() {
         return cascadingUpdateManager;
     }
+
+    public void setInstanceUpdateScheduler(InstanceUpdateScheduler instanceUpdateScheduler) {
+        this.instanceUpdateScheduler = instanceUpdateScheduler;
+    }
+
+    public InstanceUpdateScheduler getInstanceUpdateScheduler() {
+        return instanceUpdateScheduler;
+    }
     
     // Triggered by manual commit or scheduled check
     public void updateInstances(Template template, TemplateVersion newVersion, List<Instance> instances) {
-        logger.info("Starting update for template: " + template.getName() + " -> Ver: " + newVersion.getVersionId() + ". Target instances: " + instances.size());
-        AtomicInteger updatedCount = new AtomicInteger();
-        AtomicInteger skippedCount = new AtomicInteger();
-
-        Map<UUID, List<Instance>> result = instances.stream()
-                .collect(Collectors.groupingBy(Instance::getWorldId));
-        result.forEach((worldId, instanceList) -> {
-            World world = Bukkit.getWorld(worldId);
-            if (world == null) {
-                skippedCount.getAndAdd(instanceList.size());
-                logger.warning("Skipped updating " + instanceList.size() + " instances in world with id " + worldId + " because the world no longer exists. The instance ids:");
-                instanceList.forEach(instance -> {
-                    logger.warning(instance.getId());
-                });
-            }
-            try (
-                    EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))
-            ) {
-
-                for (Instance instance : instances) {
-                    // Only update if auto-update is on
-                    if (!instance.isAutoUpdate()) {
-                        skippedCount.getAndIncrement();
-                        continue;
-                    }
-
-                    // Check if version is different
-                    if (instance.getCurrentVersionId().equals(newVersion.getVersionId())) {
-                        skippedCount.getAndIncrement();
-                        continue;
-                    }
-
-                    if (!EntityHelper.canUpdate(instance)) {
-                        skippedCount.getAndIncrement();
-                        logger.info("Skip updating for instance because its parent is locked. Instance: " + instance.getId());
-                        continue;
-                    }
-
-                    updateSingleInstance(template, instance, newVersion, session);
-                    updatedCount.getAndIncrement();
+        if (instanceUpdateScheduler == null) {
+            logger.warning("InstanceUpdateScheduler is not configured; falling back to immediate updates.");
+            Map<UUID, List<Instance>> result = instances.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(Instance::getWorldId));
+            result.forEach((worldId, instanceList) -> {
+                World world = Bukkit.getWorld(worldId);
+                if (world == null) {
+                    logger.warning("Skipped updating " + instanceList.size() + " instances in world with id " + worldId + " because the world no longer exists.");
+                    return;
                 }
-            } catch (Exception e) {
-                logger.severe("Failed to apply updates to a instance because: " + e.getMessage());
-                e.printStackTrace();
-                return;
-            }
-        });
+                try (EditSession session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))) {
+                    for (Instance instance : instanceList) {
+                        updateSingleInstance(template, instance, newVersion, session);
+                    }
+                } catch (Exception e) {
+                    logger.severe("Failed to apply immediate instance updates because: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+            return;
+        }
+        for (Instance instance : instances) {
+            queueInstanceUpdate(template, instance, newVersion, "template-update");
+        }
+    }
 
-//        logger.info("Update batch complete. Processed: " + updatedCount + ", Skipped: " + skippedCount);
+    public void queueInstanceUpdate(Template template, Instance instance, TemplateVersion newVersion, String source) {
+        if (instanceUpdateScheduler == null || template == null || instance == null || newVersion == null) {
+            return;
+        }
+        instanceUpdateScheduler.enqueueInstanceUpdate(template, instance, newVersion, source);
+    }
+
+    public void queueTemplateInstancesUpdate(Template template, TemplateVersion newVersion, String source) {
+        if (instanceUpdateScheduler == null || template == null || newVersion == null) {
+            return;
+        }
+        List<Instance> loadedInstances = instanceRepository.getAllLoadedInstances().stream()
+                .filter(instance -> !instance.isDeleted())
+                .filter(instance -> template.getId().equals(instance.getTemplateId()))
+                .toList();
+        for (Instance instance : loadedInstances) {
+            instanceUpdateScheduler.enqueueInstanceUpdate(template, instance, newVersion, source);
+        }
     }
     
     public void updateSingleInstance(Template template, Instance instance, TemplateVersion newVersion, EditSession session) {
-        logger.info("Updating Instance [" + instance.getId() + "] (World: " + instance.getWorldId() + ") from " + instance.getCurrentVersionId() + " to " + newVersion.getVersionId());
-        
         // Load Variations
         int rot = instance.getRotationY();
         boolean flipX = instance.isFlipX();
@@ -141,9 +141,7 @@ public class TemplateUpdater {
         if (changes.isEmpty()) {
             // Just update version if no physical changes
             instance.setCurrentVersionId(newVersion.getVersionId());
-            instanceRepository.saveInstance(instance);
-            IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(instance);
-            logger.info("Instance " + instance.getId() + " updated version ID (No physical block changes).");
+            instanceRepository.saveInstance(instance).join();
             return;
         }
         
@@ -174,8 +172,7 @@ public class TemplateUpdater {
 
         // 6. Update Instance Record
         instance.setCurrentVersionId(newVersion.getVersionId());
-        instanceRepository.saveInstance(instance);
-        IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(instance);
+        instanceRepository.saveInstance(instance).join();
         
         // V2 FIX: Sync version to Child Template Metadata (parentTemplateInstances)
         // This ensures that the child template knows its instance in the parent has been updated.
@@ -225,14 +222,12 @@ public class TemplateUpdater {
             }
         }
         
-        logger.info("Successfully updated instance " + instance.getId() + " to version " + newVersion.getVersionId());
-
         // 7. Trigger Cascading Update (Phase 4)
         if (cascadingUpdateManager != null && !instance.isWild()) {
             TemplateManager tm2 = getTemplateManager();
             if (tm2 != null) {
                 Template parent = tm2.getTemplate(instance.getEmbeddedInTemplateId());
-                if (parent != null && !parent.getMetadata().isLocked()) {
+                if (parent != null) {
                     cascadingUpdateManager.scheduleUpdate(parent.getId());
                 }
             }

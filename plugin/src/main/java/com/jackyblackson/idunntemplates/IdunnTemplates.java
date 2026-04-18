@@ -180,14 +180,17 @@ public final class IdunnTemplates extends JavaPlugin {
         // 4. Setup Manager
         this.templateManager = new TemplateManager(templateStorage);
         this.templateManager.setUpdater(templateUpdater);
+        InstanceUpdateScheduler instanceUpdateScheduler = new InstanceUpdateScheduler(templateManager, templateUpdater, getLogger());
+        this.templateUpdater.setInstanceUpdateScheduler(instanceUpdateScheduler);
         // resize
         this.resizeConfigManager = new ResizeConfigManager(this);
         this.resizeManager = new ResizeManager(this);
         this.resizeConfigManager.loadConfig();
 
         // Setup Cascading Update Manager
-        CascadingUpdateManager cascadingUpdateManager = new CascadingUpdateManager(templateManager, getLogger());
+        CascadingUpdateManager cascadingUpdateManager = new CascadingUpdateManager(templateManager, instanceUpdateScheduler, getLogger());
         this.templateUpdater.setCascadingUpdateManager(cascadingUpdateManager);
+        instanceUpdateScheduler.startTask();
         cascadingUpdateManager.startTask();
         
         java.util.List<String> defaultEmptyBlocks = getConfig().getStringList("emptyBlocks");
@@ -218,7 +221,7 @@ public final class IdunnTemplates extends JavaPlugin {
         this.backendApiClient = new BackendApiClient(backendUrl, serverToken);
         this.projectCatalogManager = new ProjectCatalogManager(this, backendApiClient, getLogger());
         this.projectSettlementSyncManager = new ProjectSettlementSyncManager(
-                this, backendApiClient, templateManager, instanceRepository, blockComparator, getLogger());
+                this, backendApiClient, templateManager, instanceRepository, blockComparator, projectCatalogManager, getLogger());
         
         BrushManager brushManager = new BrushManager(sessionManager, templateManager, instanceManager, setManager);
         this.effectManager = new EffectManager(templateManager, instanceRepository, sessionManager, setManager, brushManager, projectCatalogManager);
@@ -240,6 +243,7 @@ public final class IdunnTemplates extends JavaPlugin {
         // Run particle effects every 10 ticks (0.5s)
         effectManager.runTaskTimer(this, 20L, 5L);
         projectCatalogManager.start();
+        projectSettlementSyncManager.startTask();
 
         // 8. Load Sessions for Online Players (Handle Reloads)
         for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
@@ -295,6 +299,10 @@ public final class IdunnTemplates extends JavaPlugin {
 
         if (projectCatalogManager != null) {
             projectCatalogManager.stop();
+        }
+
+        if (projectSettlementSyncManager != null) {
+            projectSettlementSyncManager.stopTask();
         }
 
         if (databaseManager != null) {

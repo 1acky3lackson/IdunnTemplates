@@ -1,94 +1,206 @@
 package com.jackyblackson.idunntemplates.manager;
 
 import com.jackyblackson.idunntemplates.IdunnTemplates;
-import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
+import com.jackyblackson.idunntemplates.core.domain.Template;
+import com.jackyblackson.idunntemplates.core.domain.TemplateVersion;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 public class CascadingUpdateManager {
-    private final TemplateManager templateManager;
-    private final Logger logger;
-    
-    // Queue of Parent Templates that need to be committed/updated.
-    private final Queue<UUID> updateQueue = new LinkedBlockingQueue<>();
-    
-    // Set to avoid adding the same parent multiple times in the queue (pending processing).
-    private final Set<UUID> pendingUpdates = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    
-    // History of updates in the current "chain" to detect cycles (though queue naturally handles it, we might want to log or limit depth).
-    // Actually, simple queue is BFS. A cycle means A updates B, B updates A.
-    // A -> Queue: [B]
-    // Process B -> Updates A -> Queue: [A]
-    // Process A -> Updates B -> Queue: [B]
-    // This is an infinite loop. We need a way to stop it.
-    // We can use a "Cool-down" map: Allow a template to be auto-updated only once every X seconds.
-    private final Map<UUID, Long> lastAutoUpdateTimestamp = new ConcurrentHashMap<>();
-    private static final long COOLDOWN_MS = 0; // 2 seconds cooldown
 
-    public CascadingUpdateManager(TemplateManager templateManager, Logger logger) {
+    private static final int MAX_BATCH_SIZE = 20;
+    private static final int INITIAL_BATCH_SIZE = 1;
+    private static final double TPS_GROWTH_THRESHOLD = 16.0d;
+    private static final double TPS_HALVE_THRESHOLD = 10.0d;
+
+    private final TemplateManager templateManager;
+    private final InstanceUpdateScheduler instanceUpdateScheduler;
+    private final Logger logger;
+    private final Queue<UUID> updateQueue = new LinkedBlockingQueue<>();
+    private final Set<UUID> pendingUpdates = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private int currentBatchSize = 0;
+    private boolean queuePreviouslyNonEmpty = false;
+
+    public CascadingUpdateManager(TemplateManager templateManager, InstanceUpdateScheduler instanceUpdateScheduler, Logger logger) {
         this.templateManager = templateManager;
+        this.instanceUpdateScheduler = instanceUpdateScheduler;
         this.logger = logger;
     }
 
     public void startTask() {
-        // Run every 5 ticks (0.25s) to process one batch
-        IdunnTemplates.getInstance().getServer().getScheduler().runTaskTimer(IdunnTemplates.getInstance(), this::processQueue, 20L, 5L);
+        IdunnTemplates.getInstance().getServer().getScheduler()
+                .runTaskTimer(IdunnTemplates.getInstance(), this::processQueue, 20L, 5L);
     }
 
     public void scheduleUpdate(UUID parentTemplateId) {
-        if (pendingUpdates.contains(parentTemplateId)) {
-            return; // Already queued
-        }
-        
-        // Cooldown Check
-        long now = System.currentTimeMillis();
-        long last = lastAutoUpdateTimestamp.getOrDefault(parentTemplateId, 0L);
-        if (now - last < COOLDOWN_MS) {
-            logger.warning("Skipping cascading update for Parent Template " + parentTemplateId + " due to cooldown (possible cycle).");
+        if (parentTemplateId == null) {
             return;
         }
-
+        if (!pendingUpdates.add(parentTemplateId)) {
+            return;
+        }
         updateQueue.offer(parentTemplateId);
-        pendingUpdates.add(parentTemplateId);
-        // logger.info("Scheduled cascading update for Parent Template: " + parentTemplateId);
     }
 
     private void processQueue() {
-        if (updateQueue.isEmpty()) return;
-
-        // Process 1 item per tick (or per run) as requested to spread load
-        UUID parentId = updateQueue.poll();
-        if (parentId == null) return;
-        
-        pendingUpdates.remove(parentId);
-        
-        try {
-            Template parent = templateManager.getTemplate(parentId);
-            if (parent == null) return;
-            if (parent.isLocked()) {
-                logger.info("Skipped cascading auto-commit for Parent Template: " + parent.getName() + ", because it is locked");
-                return;
+        if (updateQueue.isEmpty() && pendingUpdates.isEmpty()) {
+            if (queuePreviouslyNonEmpty) {
+                queuePreviouslyNonEmpty = false;
+                logger.info("Cascading update scheduler queue drained completely; no backlog remains.");
             }
-
-            // Mark timestamp
-            lastAutoUpdateTimestamp.put(parentId, System.currentTimeMillis());
-
-            // Trigger Auto-Commit
-            // This needs a new method in TemplateManager that doesn't require a Player object (system commit)
-            // Or we mock a system player/console.
-            logger.info("Executing cascading auto-commit for Parent Template: " + parent.getName());
-            
-            // We need to commit the current state of the parent's region (which now contains the updated child instance blocks)
-            // to a new version.
-            templateManager.commitTemplateSystem(parent, "Auto-commit: Cascading update from child instances.");
-            
-        } catch (Exception e) {
-            logger.severe("Failed to process cascading update for template " + parentId + ": " + e.getMessage());
-            e.printStackTrace();
+            return;
         }
+        queuePreviouslyNonEmpty = true;
+
+        double tps = readTps();
+        if (!Double.isNaN(tps) && tps < TPS_HALVE_THRESHOLD) {
+            currentBatchSize = 0;
+            return;
+        }
+        if (!Double.isNaN(tps) && tps < TPS_GROWTH_THRESHOLD) {
+            currentBatchSize = Math.max(INITIAL_BATCH_SIZE, currentBatchSize / 2);
+        } else {
+            if (currentBatchSize <= 0) {
+                currentBatchSize = INITIAL_BATCH_SIZE;
+            } else {
+                currentBatchSize = Math.min(MAX_BATCH_SIZE, currentBatchSize + 1);
+            }
+        }
+
+        int processed = 0;
+        while (processed < currentBatchSize) {
+            UUID templateId = updateQueue.poll();
+            if (templateId == null) {
+                break;
+            }
+            pendingUpdates.remove(templateId);
+            processed++;
+            processTemplate(templateId);
+        }
+    }
+
+    private void processTemplate(UUID templateId) {
+        Template template = templateManager.getTemplate(templateId);
+        if (template == null) {
+            return;
+        }
+
+        if (template.getMetadata().isLocked()) {
+            notifyLockedTemplate(template);
+            return;
+        }
+
+        TemplateVersion latestVersion = template.getLatestVersion();
+        if (latestVersion == null) {
+            logger.warning("Skipping cascading update for template " + template.getPath() + " because it has no version.");
+            return;
+        }
+
+        java.util.List<Instance> childInstances = IdunnTemplates.getInstance()
+                .getInstanceRepository()
+                .getActiveInstancesByParentTemplate(templateId)
+                .join();
+
+        boolean waitingForChildren = false;
+        for (Instance childInstance : childInstances) {
+            Template childTemplate = templateManager.getTemplate(childInstance.getTemplateId());
+            if (childTemplate == null) {
+                continue;
+            }
+            TemplateVersion latestChildVersion = childTemplate.getLatestVersion();
+            if (latestChildVersion == null) {
+                continue;
+            }
+            if (!latestChildVersion.getVersionId().equals(childInstance.getCurrentVersionId())) {
+                instanceUpdateScheduler.enqueueInstanceUpdate(childTemplate, childInstance, latestChildVersion, "cascading-child:" + templateId);
+                waitingForChildren = true;
+            } else if (instanceUpdateScheduler.hasPendingTask(childInstance.getId())) {
+                waitingForChildren = true;
+            }
+        }
+
+        if (waitingForChildren) {
+            scheduleUpdate(templateId);
+            return;
+        }
+
+        try {
+            templateManager.commitTemplateSystem(template, "自动级联更新");
+        } catch (Exception e) {
+            logger.severe("Failed to auto-commit cascading template " + template.getPath() + ": " + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
+
+        for (UUID parentId : template.getMetadata().getParentTemplateInstances().keySet()) {
+            scheduleUpdate(parentId);
+        }
+    }
+
+    private void notifyLockedTemplate(Template template) {
+        logger.info("Skipped cascading update for locked template " + template.getPath());
+        Player creator = Bukkit.getPlayer(template.getMetadata().getCreatorId());
+        if (creator != null && creator.isOnline()) {
+            creator.sendMessage(ChatColor.YELLOW + "[Idunn] "
+                    + ChatColor.RED + "模板 " + ChatColor.WHITE + template.getPath()
+                    + ChatColor.RED + " 因为已锁定，已拒绝一次级联更新。");
+        }
+    }
+
+    private double readTps() {
+        try {
+            Method method = Bukkit.getServer().getClass().getMethod("getTPS");
+            Object result = method.invoke(Bukkit.getServer());
+            if (result instanceof double[] values && values.length > 0) {
+                return values[0];
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            Method method = Bukkit.getServer().getClass().getMethod("recentTps");
+            Object result = method.invoke(Bukkit.getServer());
+            if (result instanceof double[] values && values.length > 0) {
+                return values[0];
+            }
+        } catch (Exception ignored) {
+        }
+
+        double mspt = readMspt();
+        if (Double.isNaN(mspt) || mspt <= 0.0d) {
+            return Double.NaN;
+        }
+        return Math.min(20.0d, 1000.0d / mspt);
+    }
+
+    private double readMspt() {
+        try {
+            Method method = Bukkit.getServer().getClass().getMethod("getAverageTickTime");
+            Object result = method.invoke(Bukkit.getServer());
+            if (result instanceof Number number) {
+                return number.doubleValue();
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            Method method = Bukkit.getServer().getClass().getMethod("getAverageTickMillis");
+            Object result = method.invoke(Bukkit.getServer());
+            if (result instanceof Number number) {
+                return number.doubleValue();
+            }
+        } catch (Exception ignored) {
+        }
+        return Double.NaN;
     }
 }

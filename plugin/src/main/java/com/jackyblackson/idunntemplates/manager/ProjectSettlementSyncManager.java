@@ -16,12 +16,27 @@ import com.sk89q.worldedit.math.transform.AffineTransform;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 public class ProjectSettlementSyncManager {
+
+    private static final long REFRESH_INTERVAL_TICKS = 20L * 60L;
+    private static final double ABSOLUTELY_HEALTHY_MSPT = 25.0d;
 
     private final IdunnTemplates plugin;
     private final BackendApiClient backendApiClient;
@@ -29,8 +44,13 @@ public class ProjectSettlementSyncManager {
     private final InstanceRepository instanceRepository;
     private final BlockComparator blockComparator;
     private final DiffCalculator diffCalculator;
+    private final ProjectCatalogManager projectCatalogManager;
     private final Logger logger;
     private final Map<Long, Long> refreshingProjects = new ConcurrentHashMap<>();
+    private final Map<Long, DirtyProjectState> dirtyProjects = new ConcurrentHashMap<>();
+    private final Queue<Long> dirtyOrder = new ConcurrentLinkedQueue<>();
+    private final Object dirtyLock = new Object();
+    private BukkitTask refreshTask;
 
     public ProjectSettlementSyncManager(
             IdunnTemplates plugin,
@@ -38,6 +58,7 @@ public class ProjectSettlementSyncManager {
             TemplateManager templateManager,
             InstanceRepository instanceRepository,
             BlockComparator blockComparator,
+            ProjectCatalogManager projectCatalogManager,
             Logger logger
     ) {
         this.plugin = plugin;
@@ -46,35 +67,92 @@ public class ProjectSettlementSyncManager {
         this.instanceRepository = instanceRepository;
         this.blockComparator = blockComparator;
         this.diffCalculator = new DiffCalculator(blockComparator, logger);
+        this.projectCatalogManager = projectCatalogManager;
         this.logger = logger;
     }
 
-    public void refreshProject(long projectId) {
-        if (refreshingProjects.putIfAbsent(projectId, System.currentTimeMillis()) != null) {
+    public void startTask() {
+        if (refreshTask != null) {
+            refreshTask.cancel();
+        }
+        refreshTask = Bukkit.getScheduler().runTaskTimerAsynchronously(
+                plugin,
+                this::processDirtyProjects,
+                REFRESH_INTERVAL_TICKS,
+                REFRESH_INTERVAL_TICKS
+        );
+    }
+
+    public void stopTask() {
+        if (refreshTask != null) {
+            refreshTask.cancel();
+            refreshTask = null;
+        }
+    }
+
+    public CompletableFuture<Boolean> refreshProject(long projectId) {
+        return refreshProject(projectId, RefreshSource.MANUAL);
+    }
+
+    public void markProjectDirty(long projectId) {
+        markProjectDirty(projectId, "unspecified");
+    }
+
+    public void markProjectDirty(long projectId, String reason) {
+        synchronized (dirtyLock) {
+            DirtyProjectState state = dirtyProjects.computeIfAbsent(projectId, ignored -> new DirtyProjectState(projectId));
+            state.mark(reason);
+            if (!state.queued) {
+                state.queued = true;
+                dirtyOrder.offer(projectId);
+            }
+        }
+    }
+
+    public void markProjectsDirty(Collection<Long> projectIds, String reason) {
+        if (projectIds == null) {
+            return;
+        }
+        for (Long projectId : projectIds) {
+            if (projectId != null) {
+                markProjectDirty(projectId, reason);
+            }
+        }
+    }
+
+    public void markProjectsOverlappingRegion(
+            String worldName,
+            int minX,
+            int minY,
+            int minZ,
+            int maxX,
+            int maxY,
+            int maxZ,
+            String reason
+    ) {
+        List<BackendApiClient.ProjectDetails> cachedProjects = projectCatalogManager.getCachedProjects();
+        if (cachedProjects.isEmpty()) {
             return;
         }
 
-        backendApiClient.getProject(projectId).thenAccept(project -> {
-            if (project == null) {
-                refreshingProjects.remove(projectId);
-                return;
+        Set<Long> overlapping = new LinkedHashSet<>();
+        for (BackendApiClient.ProjectDetails project : cachedProjects) {
+            if (project == null || project.id == null || !projectCatalogManager.hasBounds(project)) {
+                continue;
             }
+            if (!matchesWorld(project, worldName)) {
+                continue;
+            }
+            if (project.minX <= maxX && project.maxX >= minX
+                    && project.minY <= maxY && project.maxY >= minY
+                    && project.minZ <= maxZ && project.maxZ >= minZ) {
+                overlapping.add(project.id);
+            }
+        }
 
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                try {
-                    BackendApiClient.ProjectSettlementSnapshotRequest payload = scanProject(project);
-                    backendApiClient.uploadProjectSettlementSnapshot(projectId, payload)
-                            .whenComplete((ignored, throwable) -> refreshingProjects.remove(projectId));
-                } catch (Exception ex) {
-                    logger.warning("Failed to scan project " + projectId + ": " + ex.getMessage());
-                    refreshingProjects.remove(projectId);
-                }
-            });
-        }).exceptionally(ex -> {
-            logger.warning("Failed to fetch project " + projectId + " before settlement sync: " + ex.getMessage());
-            refreshingProjects.remove(projectId);
-            return null;
-        });
+        if (!overlapping.isEmpty()) {
+            markProjectsDirty(overlapping, reason);
+        }
     }
 
     public void refreshProjectsOverlappingInstance(Instance instance) {
@@ -101,28 +179,141 @@ public class ProjectSettlementSyncManager {
                     instance
             );
 
-            backendApiClient.findOverlappingProjects(
+            markProjectsOverlappingRegion(
                     world.getName(),
                     region.getMinimumPoint().x(),
                     region.getMinimumPoint().y(),
                     region.getMinimumPoint().z(),
                     region.getMaximumPoint().x(),
                     region.getMaximumPoint().y(),
-                    region.getMaximumPoint().z()
-            ).thenAccept(projects -> {
-                if (projects == null) return;
-                for (BackendApiClient.ProjectDetails project : projects) {
-                    if (project != null && project.id != null) {
-                        refreshProject(project.id);
-                    }
-                }
-            }).exceptionally(ex -> {
-                logger.warning("Failed to find overlapping projects for instance " + instance.getId() + ": " + ex.getMessage());
-                return null;
-            });
+                    region.getMaximumPoint().z(),
+                    "instance-overlap:" + instance.getId()
+            );
         } catch (Exception ex) {
-            logger.warning("Failed to trigger settlement sync for instance " + instance.getId() + ": " + ex.getMessage());
+            logger.warning("Failed to mark dirty projects for instance " + instance.getId() + ": " + ex.getMessage());
         }
+    }
+
+    private void processDirtyProjects() {
+        double mspt = readMspt();
+        if (!Double.isNaN(mspt) && mspt > ABSOLUTELY_HEALTHY_MSPT) {
+            return;
+        }
+
+        Long projectId = pollNextDirtyProject();
+        if (projectId == null) {
+            return;
+        }
+
+        refreshProject(projectId, RefreshSource.SCHEDULED).thenAccept(success -> {
+            if (!success) {
+                markProjectDirty(projectId, "scheduled-retry");
+            }
+        });
+    }
+
+    private CompletableFuture<Boolean> refreshProject(long projectId, RefreshSource source) {
+        if (refreshingProjects.putIfAbsent(projectId, System.currentTimeMillis()) != null) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        CompletableFuture<BackendApiClient.ProjectDetails> detailsFuture = resolveProject(projectId);
+        return detailsFuture.thenCompose(project -> {
+            if (project == null) {
+                refreshingProjects.remove(projectId);
+                return CompletableFuture.completedFuture(false);
+            }
+
+            CompletableFuture<Boolean> result = new CompletableFuture<>();
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                try {
+                    BackendApiClient.ProjectSettlementSnapshotRequest payload = scanProject(project);
+                    backendApiClient.uploadProjectSettlementSnapshot(projectId, payload)
+                            .whenComplete((success, throwable) -> {
+                                refreshingProjects.remove(projectId);
+                                boolean completed = throwable == null && Boolean.TRUE.equals(success);
+                                if (completed) {
+                                    clearDirtyProject(projectId);
+                                } else if (throwable != null) {
+                                    logger.warning("Failed to upload project snapshot for #" + projectId + " from " + source.name().toLowerCase() + ": " + throwable.getMessage());
+                                } else {
+                                    logger.warning("Project snapshot upload returned failure for #" + projectId + " from " + source.name().toLowerCase());
+                                }
+                                result.complete(completed);
+                            });
+                } catch (Exception ex) {
+                    logger.warning("Failed to scan project " + projectId + " from " + source.name().toLowerCase() + ": " + ex.getMessage());
+                    refreshingProjects.remove(projectId);
+                    result.complete(false);
+                }
+            });
+            return result;
+        }).exceptionally(ex -> {
+            logger.warning("Failed to resolve project " + projectId + " before settlement sync: " + ex.getMessage());
+            refreshingProjects.remove(projectId);
+            return false;
+        });
+    }
+
+    private CompletableFuture<BackendApiClient.ProjectDetails> resolveProject(long projectId) {
+        BackendApiClient.ProjectDetails cached = projectCatalogManager.getCachedProjects().stream()
+                .filter(project -> project != null && project.id != null && project.id == projectId)
+                .findFirst()
+                .orElse(null);
+        if (cached != null) {
+            return CompletableFuture.completedFuture(cached);
+        }
+        return backendApiClient.getProject(projectId);
+    }
+
+    private Long pollNextDirtyProject() {
+        synchronized (dirtyLock) {
+            while (true) {
+                Long projectId = dirtyOrder.poll();
+                if (projectId == null) {
+                    return null;
+                }
+                DirtyProjectState state = dirtyProjects.get(projectId);
+                if (state == null) {
+                    continue;
+                }
+                state.queued = false;
+                return projectId;
+            }
+        }
+    }
+
+    private void clearDirtyProject(long projectId) {
+        synchronized (dirtyLock) {
+            dirtyProjects.remove(projectId);
+        }
+    }
+
+    private boolean matchesWorld(BackendApiClient.ProjectDetails project, String worldName) {
+        if (worldName == null || worldName.isBlank()) {
+            return false;
+        }
+        return worldName.equals(project.worldName) || worldName.equals(project.worldMountName);
+    }
+
+    private double readMspt() {
+        try {
+            Method method = Bukkit.getServer().getClass().getMethod("getAverageTickTime");
+            Object result = method.invoke(Bukkit.getServer());
+            if (result instanceof Number number) {
+                return number.doubleValue();
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            Method method = Bukkit.getServer().getClass().getMethod("getAverageTickMillis");
+            Object result = method.invoke(Bukkit.getServer());
+            if (result instanceof Number number) {
+                return number.doubleValue();
+            }
+        } catch (Exception ignored) {
+        }
+        return Double.NaN;
     }
 
     private BackendApiClient.ProjectSettlementSnapshotRequest scanProject(BackendApiClient.ProjectDetails project) {
@@ -281,5 +472,39 @@ public class ProjectSettlementSyncManager {
         return project.minX <= instanceRegion.getMaximumPoint().x() && project.maxX >= instanceRegion.getMinimumPoint().x()
                 && project.minY <= instanceRegion.getMaximumPoint().y() && project.maxY >= instanceRegion.getMinimumPoint().y()
                 && project.minZ <= instanceRegion.getMaximumPoint().z() && project.maxZ >= instanceRegion.getMinimumPoint().z();
+    }
+
+    private enum RefreshSource {
+        MANUAL,
+        SCHEDULED
+    }
+
+    private static final class DirtyProjectState {
+        private final long projectId;
+        private long firstMarkedAtMs;
+        private long lastMarkedAtMs;
+        private int markCount;
+        private String lastReason = "unspecified";
+        private boolean queued;
+
+        private DirtyProjectState(long projectId) {
+            this.projectId = projectId;
+            long now = System.currentTimeMillis();
+            this.firstMarkedAtMs = now;
+            this.lastMarkedAtMs = now;
+            this.markCount = 0;
+        }
+
+        private void mark(String reason) {
+            long now = System.currentTimeMillis();
+            if (markCount == 0) {
+                firstMarkedAtMs = now;
+            }
+            lastMarkedAtMs = now;
+            markCount++;
+            if (reason != null && !reason.isBlank()) {
+                lastReason = reason;
+            }
+        }
     }
 }

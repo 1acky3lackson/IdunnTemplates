@@ -201,6 +201,22 @@ public class FileInstanceRepository implements InstanceRepository {
     }
 
     @Override
+    public CompletableFuture<List<Instance>> getActiveInstancesByTemplate(UUID templateId) {
+        return CompletableFuture.supplyAsync(() -> loadAllInstancesFromDisk().stream()
+                .filter(instance -> !instance.isDeleted())
+                .filter(instance -> templateId.equals(instance.getTemplateId()))
+                .toList(), ioExecutor);
+    }
+
+    @Override
+    public CompletableFuture<List<Instance>> getActiveInstancesByParentTemplate(UUID parentTemplateId) {
+        return CompletableFuture.supplyAsync(() -> loadAllInstancesFromDisk().stream()
+                .filter(instance -> !instance.isDeleted())
+                .filter(instance -> parentTemplateId.equals(instance.getEmbeddedInTemplateId()))
+                .toList(), ioExecutor);
+    }
+
+    @Override
     public CompletableFuture<Void> hardDelete(Instance instance) {
         return CompletableFuture.runAsync(() -> {
             UUID worldId = instance.getWorldId();
@@ -228,5 +244,31 @@ public class FileInstanceRepository implements InstanceRepository {
     
     public void shutdown() {
         ioExecutor.shutdown();
+    }
+
+    private List<Instance> loadAllInstancesFromDisk() {
+        List<Instance> result = new ArrayList<>();
+        File[] worldDirs = rootDirectory.listFiles(File::isDirectory);
+        if (worldDirs == null) {
+            return result;
+        }
+        for (File worldDir : worldDirs) {
+            File[] partitions = worldDir.listFiles((dir, name) -> name.startsWith("r.") && name.endsWith(".json"));
+            if (partitions == null) {
+                continue;
+            }
+            for (File partition : partitions) {
+                try (FileReader reader = new FileReader(partition)) {
+                    Type listType = new TypeToken<ArrayList<Instance>>(){}.getType();
+                    List<Instance> instances = gson.fromJson(reader, listType);
+                    if (instances != null) {
+                        result.addAll(instances);
+                    }
+                } catch (IOException e) {
+                    logger.severe("Failed to load instance partition " + partition.getPath() + ": " + e.getMessage());
+                }
+            }
+        }
+        return result;
     }
 }

@@ -331,19 +331,9 @@ public class TemplateManager {
 
         // 8. Trigger Update
         TemplateVersion newVer = template.getLatestVersion();
-        List<Instance> allLoaded = instanceRepository.getAllLoadedInstances();
-
-        List<Instance> targets = allLoaded.stream()
-                .filter(i -> i.getTemplateId().equals(template.getId()))
-                .filter(i ->
-                        i.isWild()
-                                || ((EntityHelper.getEmbeddedTemplate(i) != null) && !(EntityHelper.getEmbeddedTemplate(i).isLocked()))
-                )
-                .collect(Collectors.toList());
-
-        player.sendMessage(ChatColor.YELLOW + "Found " + targets.size() + " active instances. Updating...");
-        templateUpdater.updateInstances(template, newVer, targets);
-        player.sendMessage(ChatColor.GREEN + "Update process finished.");
+        templateUpdater.queueTemplateInstancesUpdate(template, newVer, "manual-commit");
+        player.sendMessage(ChatColor.YELLOW + "Queued loaded instances of this template for scheduled update.");
+        player.sendMessage(ChatColor.GREEN + "Loaded-instance update tasks have been enqueued.");
 
         // 9. Trigger Cascading Update
         if (updater != null && updater.getCascadingUpdateManager() != null) {
@@ -389,14 +379,7 @@ public class TemplateManager {
         storage.saveTemplateVersion(template, version, clipboard);
 
         TemplateVersion newVer = template.getLatestVersion();
-        List<Instance> allLoaded = instanceRepository.getAllLoadedInstances();
-        List<Instance> targets = allLoaded.stream()
-                .filter(i -> i.getTemplateId().equals(template.getId()))
-                .collect(Collectors.toList());
-
-        if (!targets.isEmpty()) {
-            templateUpdater.updateInstances(template, newVer, targets);
-        }
+        templateUpdater.queueTemplateInstancesUpdate(template, newVer, "system-commit");
 
 //        snapshotManager.checkAndGenerateThumbnails(template, true);
     }
