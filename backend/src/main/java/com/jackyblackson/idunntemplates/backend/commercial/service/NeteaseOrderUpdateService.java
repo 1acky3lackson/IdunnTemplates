@@ -131,13 +131,18 @@ public class NeteaseOrderUpdateService {
                         return false;
                 }
 
+                if (order.getProduct() == null) {
+                        log.warn("订单 {} 未关联商品，跳过结算等待下次", order.getId());
+                        return false;
+                }
+
                 Project project = order.getProduct().getProject();
                 if (project == null) {
                         log.warn("订单 {} 关联的产品项目为空，跳过结算等待下次", order.getId());
                         return false;
                 }
 
-                var contributors = userProjectContributionService.getContributionsGroupedByRole(project.getId());
+                var contributors = userProjectContributionService.getProductContributionsGroupedByRole(order.getProduct().getId());
                 var params = globalCheckoutParamContextService.getEffectiveConfig();
                 if (contributors == null || params == null) {
                         log.info("订单 {} 参与者或结算参数为空 (contributors={}, params={})，跳过结算等待下次",
@@ -152,7 +157,7 @@ public class NeteaseOrderUpdateService {
                                 || contributors.get(CommercialRoleType.MODIFIER).isEmpty() ||
                                 !contributors.containsKey(CommercialRoleType.UPLOADER)
                                 || contributors.get(CommercialRoleType.UPLOADER).isEmpty()) {
-                        log.info("订单 {} 项目 {} 缺少 BUILDER/MODIFIER/UPLOADER 参与者，跳过结算", order.getId(), project.getId());
+                        log.info("订单 {} 商品 {} 缺少 BUILDER/MODIFIER/UPLOADER 参与者，跳过结算", order.getId(), order.getProduct().getId());
                         return false;
                 }
 

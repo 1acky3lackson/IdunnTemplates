@@ -8,77 +8,61 @@ import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectCo
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/commercial/projects/{projectId}/contributions")
+@RequestMapping("/api/v1/commercial/products/{productId}/contributions")
 @AllArgsConstructor
-public class UserProjectContributionController {
+public class UserProductContributionController {
 
     private final UserProjectContributionService contributionService;
     private final LuckyPermAuthService luckyPermAuthService;
 
-    /**
-     * 1) 获取当前项目下的建筑制作贡献列表
-     */
     @GetMapping
     @AuthRequired
     public ResponseEntity<List<UserProjectContribution>> getContributions(
-            @PathVariable Long projectId,
+            @PathVariable Long productId,
             UserContext userContext
     ) {
-        List<UserProjectContribution> list = contributionService.getAllActiveProjectContributions(projectId);
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(contributionService.getAllActiveProductContributions(productId));
     }
 
-    /**
-     * 2) 添加新记录，并自动重算对应 Role 的占比
-     */
     @PostMapping
     @AuthRequired
     public ResponseEntity<Void> addContribution(
-            @PathVariable Long projectId,
+            @PathVariable Long productId,
             @Valid @RequestBody ContributionDto.AddRequest request,
             UserContext userContext
     ) {
         if (!luckyPermAuthService.checkPermission(userContext, PermissionNames.Commercial.Project.Contribution.add)) {
             return ResponseEntity.status(406).build();
         }
-        contributionService.addProjectContributionAndRecalculate(projectId, request, userContext.getUsername());
+        contributionService.addProductContributionAndRecalculate(productId, request, userContext.getUsername());
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * 3) 预览重新计算的过程（不写入数据库），供前端展示
-     */
     @GetMapping("/recalculate")
     @AuthRequired
     public ResponseEntity<Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse>> recalculation(
-            @PathVariable Long projectId,
+            @PathVariable Long productId,
             UserContext userContext
     ) {
         if (!luckyPermAuthService.checkPermission(userContext, PermissionNames.Commercial.Project.Contribution.recalculate)) {
             return ResponseEntity.status(406).build();
         }
-        Map<CommercialRoleType, ContributionDto.RecalculatePreviewResponse> result =
-                contributionService.recalculateProject(projectId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(contributionService.recalculateProduct(productId));
     }
 
-    /**
-     * 4) 软删除指定记录，并自动重算该 Role 剩余记录的占比
-     * 注意：这里把记录 id 放在了路径末尾
-     */
     @DeleteMapping("/{contributionId}")
     @AuthRequired
     public ResponseEntity<Void> deleteContribution(
-            @PathVariable Long projectId,
+            @PathVariable Long productId,
             @PathVariable Long contributionId,
             @Valid @RequestBody ContributionDto.DeleteRequest request,
             UserContext userContext
@@ -90,13 +74,10 @@ public class UserProjectContributionController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * 5) 修改指定记录的分数，并自动重算该 Role 记录的占比
-     */
     @PatchMapping("/{contributionId}")
     @AuthRequired
     public ResponseEntity<Void> updateContributionPoints(
-            @PathVariable Long projectId,
+            @PathVariable Long productId,
             @PathVariable Long contributionId,
             @Valid @RequestBody ContributionDto.UpdateRequest request,
             UserContext userContext
@@ -112,17 +93,12 @@ public class UserProjectContributionController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * 获取项目角色分组贡献记录
-     */
     @GetMapping("/grouped")
     @AuthRequired
     public ResponseEntity<Map<CommercialRoleType, List<UserProjectContribution>>> getContributionsGroupedByRole(
-            @PathVariable Long projectId,
+            @PathVariable Long productId,
             UserContext userContext
     ) {
-        Map<CommercialRoleType, List<UserProjectContribution>> grouped =
-                contributionService.getProjectContributionsGroupedByRole(projectId);
-        return ResponseEntity.ok(grouped);
+        return ResponseEntity.ok(contributionService.getProductContributionsGroupedByRole(productId));
     }
 }

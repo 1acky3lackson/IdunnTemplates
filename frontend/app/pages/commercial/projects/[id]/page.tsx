@@ -1,6 +1,5 @@
 // ~/common/project/ProjectDetail.tsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Link } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,12 +114,11 @@ export default function ProjectDetail({
 }: ProjectDetailProps & Route.ComponentProps) {
   const projectId = loaderData.id;
   const [project, setProject] = useState<Project | null>(null);
-  const [parentProject, setParentProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  document.title = `建造工程详情 - ${project?.displayName || projectId}`;
+  document.title = `建造项目详情 - ${project?.displayName || projectId}`;
 
   useEffect(() => {
     if (!projectId) return;
@@ -129,11 +127,7 @@ export default function ProjectDetail({
       .getProject(projectId)
       .then((data) => {
         setProject(data);
-        if (data.parentProjectId) {
-          return projectApi.getProject(data.parentProjectId);
-        }
       })
-      .then((parent) => parent && setParentProject(parent))
       .catch((err) => setError(err.message || "加载项目失败"))
       .finally(() => setLoading(false));
   }, [projectId, projectApi, refreshKey]);
@@ -180,21 +174,6 @@ export default function ProjectDetail({
             <InfoItem
               label="创建时间"
               value={formatTime(project?.createTimeMs)}
-            />
-            <InfoItem
-              label="父项目"
-              value={
-                project?.parentProjectId ? (
-                  <Link
-                    to={`/commercial/projects/${project.parentProjectId}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    {parentProject?.displayName || project.parentProjectId}
-                  </Link>
-                ) : (
-                  "无"
-                )
-              }
             />
           </div>
         </CardContent>

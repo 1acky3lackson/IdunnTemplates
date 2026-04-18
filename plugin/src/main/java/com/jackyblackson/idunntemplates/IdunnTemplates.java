@@ -208,8 +208,12 @@ public final class IdunnTemplates extends JavaPlugin {
         
         this.brushPresetManager = new BrushPresetManager(getDataFolder(), getLogger());
 
+        String backendUrl = getConfig().getString("services.backend.api-url", "http://localhost:8080/api/v1");
+        String serverToken = getConfig().getString("services.backend.server-token", "");
+        this.backendApiClient = new BackendApiClient(backendUrl, serverToken);
+
         // 5. Register Commands
-        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager, resizeManager, resizeConfigManager, languageManager));
+        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager, resizeManager, resizeConfigManager, languageManager, backendApiClient));
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
@@ -232,11 +236,6 @@ public final class IdunnTemplates extends JavaPlugin {
         this.permissionServerManager = new PermissionServerManager(this);
         this.permissionServerManager.start();
         
-        // 10. Init Backend API Client
-        String backendUrl = getConfig().getString("services.backend.api-url", "http://localhost:8080/api/v1");
-        String serverToken = getConfig().getString("services.backend.server-token", "");
-        this.backendApiClient = new BackendApiClient(backendUrl, serverToken);
-
         // 1. 初始化 VoxelWind 模块
         try {
             // 确保在 FAWE 加载后再进行注册

@@ -3,10 +3,12 @@ package com.jackyblackson.idunntemplates.command;
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetLoadCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetSaveCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetUpdateCommand;
+import com.jackyblackson.idunntemplates.command.sub.project.CreateProjectCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.*;
 import com.jackyblackson.idunntemplates.command.sub.internal.DeleteInstanceCommand;
 import com.jackyblackson.idunntemplates.command.sub.sets.*;
 import com.jackyblackson.idunntemplates.command.sub.*; // Restore this
+import com.jackyblackson.idunntemplates.core.api.BackendApiClient;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.manager.*;
 import org.bukkit.ChatColor;
@@ -22,7 +24,7 @@ public class IdunnCommand implements TabExecutor {
 
     private final Map<String, IdunnSubCommand> subCommands = new HashMap<>();
 
-    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager, ResizeManager resizeManager, ResizeConfigManager resizeConfigManager, LanguageManager languageManager) {
+    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager, ResizeManager resizeManager, ResizeConfigManager resizeConfigManager, LanguageManager languageManager, BackendApiClient backendApiClient) {
         // Template Group
         CommandGroup templateGroup = new CommandGroup();
         templateGroup.register("list", new ListCommand(templateManager));
@@ -79,6 +81,10 @@ public class IdunnCommand implements TabExecutor {
         brushGroup.register("preset", presetGroup);
         
         subCommands.put("brush", brushGroup);
+
+        CommandGroup projectGroup = new CommandGroup();
+        projectGroup.register("create", new CreateProjectCommand(backendApiClient));
+        subCommands.put("project", projectGroup);
 
         // Root Commands
         subCommands.put("reload", new ReloadCommand(templateManager));

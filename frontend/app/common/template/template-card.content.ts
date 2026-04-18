@@ -40,6 +40,48 @@ const templateCardContent = {
         [Locales.CHINESE_TRADITIONAL]: "管理範本",
         [Locales.ENGLISH]: "Manage Templates",
       }),
+      quickActions: t({
+        [Locales.CHINESE]: "常用操作",
+        [Locales.CHINESE_TRADITIONAL]: "常用操作",
+        [Locales.ENGLISH]: "Quick Actions",
+      }),
+      adminActions: t({
+        [Locales.CHINESE]: "管理操作",
+        [Locales.CHINESE_TRADITIONAL]: "管理操作",
+        [Locales.ENGLISH]: "Management",
+      }),
+      riskyActions: t({
+        [Locales.CHINESE]: "谨慎操作",
+        [Locales.CHINESE_TRADITIONAL]: "謹慎操作",
+        [Locales.ENGLISH]: "Use With Care",
+      }),
+      addToCollection: {
+        label: t({
+          [Locales.CHINESE]: "添加到合集",
+          [Locales.CHINESE_TRADITIONAL]: "添加到合集",
+          [Locales.ENGLISH]: "Add to Collection",
+        }),
+        title: t({
+          [Locales.CHINESE]: "添加到合集",
+          [Locales.CHINESE_TRADITIONAL]: "添加到合集",
+          [Locales.ENGLISH]: "Add to Collection",
+        }),
+        description: t({
+          [Locales.CHINESE]: "选择一个合集，完成本模板的收纳。",
+          [Locales.CHINESE_TRADITIONAL]: "選擇一個合集，完成此範本的收納。",
+          [Locales.ENGLISH]: "Choose a collection for this template.",
+        }),
+        successPrefix: t({
+          [Locales.CHINESE]: "已添加到合集：",
+          [Locales.CHINESE_TRADITIONAL]: "已添加到合集：",
+          [Locales.ENGLISH]: "Added to collection: ",
+        }),
+        failed: t({
+          [Locales.CHINESE]: "添加到合集失败",
+          [Locales.CHINESE_TRADITIONAL]: "添加到合集失敗",
+          [Locales.ENGLISH]: "Failed to add to collection",
+        }),
+      },
       move: {
         label: t({
           [Locales.CHINESE]: "移动位置",

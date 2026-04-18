@@ -69,8 +69,8 @@ public class NeteaseOrderController {
         if (product.getProject() == null) {
             return ResponseEntity.status(406).build();
         }
-        boolean participated = userProjectContributionService.isUserParticipant(user.getUsername(),
-                product.getProject().getId());
+        boolean participated = userProjectContributionService.isUserParticipantInProduct(user.getUsername(),
+                product.getId());
         if (!participated && !luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)) {
             return ResponseEntity.status(406).build();
         }
@@ -91,7 +91,7 @@ public class NeteaseOrderController {
             UserContext user) {
         var product = neteaseProductRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        if (product.getProject() == null || !canManageProductOrder(user, product.getProject().getId())) {
+        if (product.getProject() == null || !canManageProductOrder(user, product.getId())) {
             return ResponseEntity.status(406).build();
         }
 
@@ -170,8 +170,8 @@ public class NeteaseOrderController {
             if (project == null) {
                 return ResponseEntity.status(406).build();
             }
-            boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(),
-                    project.getId());
+            boolean isContributor = userProjectContributionService.isUserParticipantInProduct(user.getUsername(),
+                    order.getProduct().getId());
             if (!isContributor) {
                 return ResponseEntity.status(406).build();
             }
@@ -189,7 +189,7 @@ public class NeteaseOrderController {
         NeteaseOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (order.getProduct() == null || order.getProduct().getProject() == null
-                || !canManageProductOrder(user, order.getProduct().getProject().getId())) {
+                || !canManageProductOrder(user, order.getProduct().getId())) {
             return ResponseEntity.status(406).build();
         }
 
@@ -215,7 +215,7 @@ public class NeteaseOrderController {
         NeteaseOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         if (order.getProduct() == null || order.getProduct().getProject() == null
-                || !canManageProductOrder(user, order.getProduct().getProject().getId())) {
+                || !canManageProductOrder(user, order.getProduct().getId())) {
             return ResponseEntity.status(406).build();
         }
 
@@ -428,9 +428,9 @@ public class NeteaseOrderController {
         return request.getShipTimeMs();
     }
 
-    private boolean canManageProductOrder(UserContext user, Long projectId) {
+    private boolean canManageProductOrder(UserContext user, Long productId) {
         return luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll)
                 || luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Product.modify)
-                || userProjectContributionService.isUserParticipant(user.getUsername(), projectId);
+                || userProjectContributionService.isUserParticipantInProduct(user.getUsername(), productId);
     }
 }

@@ -70,6 +70,12 @@ export interface GenericCrudTableHandle {
   refreshPage: () => void;
   refreshGlobal: () => void;
   clearFilters: () => void;
+  setSearchFilter: (key: string, value: string) => void;
+  removeSearchFilter: (key: string) => void;
+  setSearchFilters: (filters: Record<string, string>) => void;
+  clearSearchFilters: () => void;
+  setSort: (field: string, direction: "asc" | "desc") => void;
+  clearSort: () => void;
 }
 
 export interface GenericCrudTableProps<T> {
@@ -377,8 +383,6 @@ const GenericCrudTableComponent = forwardRef(
       [fetchData, uid, updateUrl, sortState, activeSearchValues],
     );
 
-    useImperativeHandle(ref, () => tableActions);
-
     useEffect(() => {
       setPageInput(String(page + 1));
     }, [page]);
@@ -402,6 +406,37 @@ const GenericCrudTableComponent = forwardRef(
       }
     };
 
+    const setSearchFilter = (key: string, value: string) => {
+      const nextSearch = {
+        ...activeSearchValues,
+        [key]: value,
+      };
+      if (uid) updateUrl(0, sortState, nextSearch);
+      else {
+        setDraftSearchValues(nextSearch);
+        setActiveSearchValues(nextSearch);
+        setPage(0);
+      }
+    };
+
+    const setSearchFilters = (filters: Record<string, string>) => {
+      if (uid) updateUrl(0, sortState, filters);
+      else {
+        setDraftSearchValues(filters);
+        setActiveSearchValues(filters);
+        setPage(0);
+      }
+    };
+
+    const clearSearchFilters = () => {
+      if (uid) updateUrl(0, sortState, {});
+      else {
+        setDraftSearchValues({});
+        setActiveSearchValues({});
+        setPage(0);
+      }
+    };
+
     const handleSort = (fieldKey: string) => {
       let nextSort: SortState | null = null;
       if (sortState?.field === fieldKey) {
@@ -418,6 +453,45 @@ const GenericCrudTableComponent = forwardRef(
         setPage(0);
       }
     };
+
+    const setSort = (field: string, direction: "asc" | "desc") => {
+      const nextSort = { field, direction } as SortState;
+      if (uid) updateUrl(0, nextSort, activeSearchValues);
+      else {
+        setSortState(nextSort);
+        setPage(0);
+      }
+    };
+
+    const clearSort = () => {
+      if (uid) updateUrl(0, null, activeSearchValues);
+      else {
+        setSortState(null);
+        setPage(0);
+      }
+    };
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        ...tableActions,
+        setSearchFilter,
+        removeSearchFilter,
+        setSearchFilters,
+        clearSearchFilters,
+        setSort,
+        clearSort,
+      }),
+      [
+        tableActions,
+        setSearchFilter,
+        removeSearchFilter,
+        setSearchFilters,
+        clearSearchFilters,
+        setSort,
+        clearSort,
+      ],
+    );
 
     const handlePageChange = (nextPage: number) => {
       if (uid) updateUrl(nextPage, sortState, activeSearchValues);

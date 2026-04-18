@@ -3,26 +3,32 @@ package com.jackyblackson.idunntemplates.backend.commercial.repository.chekout;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CommercialRoleType;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.UserProjectContribution;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public interface UserProjectContributionRepository extends JpaRepository<UserProjectContribution, Long> {
 
-    // 1. 查询指定项目（及其父项目）下所有未删除的记录
-    List<UserProjectContribution> findByProjectIdInAndDeleteTimeMsIsNull(List<Long> projectIds);
-
-    // 2. 查询指定项目（及其父项目）下，特定 Role 的所有未删除记录
-    List<UserProjectContribution> findByProjectIdInAndRoleAndDeleteTimeMsIsNull(List<Long> projectIds, CommercialRoleType role);
     List<UserProjectContribution> findByProjectIdAndDeleteTimeMsIsNull(Long projectId);
     List<UserProjectContribution> findByProjectIdAndRoleAndDeleteTimeMsIsNull(Long projectId, CommercialRoleType role);
+    List<UserProjectContribution> findByProductIdAndDeleteTimeMsIsNull(Long productId);
+    List<UserProjectContribution> findByProductIdAndRoleAndDeleteTimeMsIsNull(Long productId, CommercialRoleType role);
 
     boolean existsByUsernameAndProjectIdInAndRoleInAndDeleteTimeMsIsNull(
+            String username,
+            Collection<Long> projectIds,
+            Collection<CommercialRoleType> roles
+    );
+
+    boolean existsByUsernameAndProductIdInAndRoleInAndDeleteTimeMsIsNull(
+            String username,
+            Collection<Long> productIds,
+            Collection<CommercialRoleType> roles
+    );
+
+    boolean existsByUsernameAndProduct_Project_IdInAndRoleInAndDeleteTimeMsIsNull(
             String username,
             Collection<Long> projectIds,
             Collection<CommercialRoleType> roles

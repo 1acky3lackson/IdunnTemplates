@@ -8,4 +8,5 @@ public interface WorldRepository extends
         JpaRepository<World, Long>,
         JpaSpecificationExecutor<World>
 {
+    java.util.Optional<World> findFirstByMountNameOrName(String mountName, String name);
 }

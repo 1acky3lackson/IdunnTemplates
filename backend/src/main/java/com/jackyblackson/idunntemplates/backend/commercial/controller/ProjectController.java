@@ -7,6 +7,7 @@ import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRep
 import com.jackyblackson.idunntemplates.backend.commercial.repository.WorldRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.UserProjectContributionRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
+import com.jackyblackson.idunntemplates.backend.dto.TrustedServerContext;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
 import com.jackyblackson.idunntemplates.core.domain.Template;
@@ -119,6 +120,52 @@ public class ProjectController {
 
         // 自动设置创建时间（毫秒）
         project.setCreateTimeMs(System.currentTimeMillis());
+
+        Project saved = projectRepository.save(project);
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(saved));
+    }
+
+    @PostMapping("/in-game")
+    @Transactional
+    @AuthRequired(allowServerToken = true)
+    public ResponseEntity<ProjectDto> createProjectInGame(
+            @RequestBody InGameProjectCreateRequest request,
+            UserContext user,
+            TrustedServerContext trustedServerContext
+    ) {
+        if (trustedServerContext == null && !authService.checkPermission(user, PermissionNames.Commercial.Project.create)) {
+            return ResponseEntity.status(406).build();
+        }
+
+        World world = resolveWorldForInGameRequest(request);
+
+        Project project = new Project();
+        project.setName(request.getName());
+        project.setDisplayName(request.getDisplayName());
+        project.setDescription(request.getDescription());
+        project.setPathName(request.getPathName());
+        project.setKind(request.getKind());
+        project.setModelKind(request.getModelKind());
+        project.setWorld(world);
+        project.setMinX(request.getMinX());
+        project.setMinY(request.getMinY());
+        project.setMinZ(request.getMinZ());
+        project.setMaxX(request.getMaxX());
+        project.setMaxY(request.getMaxY());
+        project.setMaxZ(request.getMaxZ());
+        project.setTpX(request.getTpX());
+        project.setTpY(request.getTpY());
+        project.setTpZ(request.getTpZ());
+        project.setTpYaw(request.getTpYaw());
+        project.setTpPitch(request.getTpPitch());
+        project.setCreateTimeMs(System.currentTimeMillis());
+
+        if (request.getParentProjectId() != null) {
+            Project parent = projectRepository.findById(request.getParentProjectId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Parent project not found with id: " + request.getParentProjectId()));
+            project.setParentProject(parent);
+        }
 
         Project saved = projectRepository.save(project);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(saved));
@@ -259,6 +306,43 @@ public class ProjectController {
         } else {
             project.setParentProject(null);
         }
+    }
+
+    private World resolveWorldForInGameRequest(InGameProjectCreateRequest request) {
+        if (request.getWorldId() != null) {
+            return worldRepository.findById(request.getWorldId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "World not found with id: " + request.getWorldId()));
+        }
+        if (request.getWorldName() != null && !request.getWorldName().isBlank()) {
+            String worldName = request.getWorldName().trim();
+            return worldRepository.findFirstByMountNameOrName(worldName, worldName)
+                    .map(existing -> {
+                        existing.setDetectTimeMs(System.currentTimeMillis());
+                        if (existing.getDisplayName() == null || existing.getDisplayName().isBlank()) {
+                            existing.setDisplayName(worldName);
+                        }
+                        if (existing.getMountName() == null || existing.getMountName().isBlank()) {
+                            existing.setMountName(worldName);
+                        }
+                        return worldRepository.save(existing);
+                    })
+                    .orElseGet(() -> {
+                        long now = System.currentTimeMillis();
+                        World world = World.builder()
+                                .name(worldName)
+                                .displayName(worldName)
+                                .description("Automatically created from in-game project creation")
+                                .mountName(worldName)
+                                .detectTimeMs(now)
+                                .createTimeMs(now)
+                                .permManaged(false)
+                                .mountManaged(true)
+                                .build();
+                        return worldRepository.save(world);
+                    });
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "worldId or worldName is required");
     }
 
     /**
@@ -411,6 +495,33 @@ public class ProjectController {
         private Double tpYaw;
         private Double tpPitch;
         private Long parentProjectId;   // 父项目ID，可选
+    }
+
+    @Getter
+    @Setter
+    public static class InGameProjectCreateRequest {
+        private String name;
+        private String displayName;
+        private String description;
+        private String pathName;
+        private String kind;
+        private String modelKind;
+        private Long worldId;
+        private String worldName;
+        private Integer minX;
+        private Integer minY;
+        private Integer minZ;
+        private Integer maxX;
+        private Integer maxY;
+        private Integer maxZ;
+        private Double tpX;
+        private Double tpY;
+        private Double tpZ;
+        private Double tpYaw;
+        private Double tpPitch;
+        private Long parentProjectId;
+        private String creatorUsername;
+        private String sourceServerName;
     }
 
     /**

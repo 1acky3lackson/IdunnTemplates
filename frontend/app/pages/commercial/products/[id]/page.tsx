@@ -34,6 +34,7 @@ import {
   OrderDisplay,
   type FetchOrders,
 } from "~/common/netease-order/OrderDisplay";
+import { ProductContributions } from "~/common/product/ProductContributions";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import {
@@ -182,6 +183,8 @@ export default function NeteaseProductDetail({
           </div>
         </CardContent>
       </Card>
+
+      <ProductContributions productId={id} />
 
       {/* 销售订单统计看板 (调用新API) */}
       <OrderStatsDashboard productId={id} />

@@ -16,6 +16,7 @@ import {
   FileInput,
   ArrowRightLeft,
   FolderPlus,
+  ShieldAlert,
 } from "lucide-react";
 import { useTheme } from "~/components/theme/theme-provider";
 import {
@@ -39,6 +40,7 @@ import { useUserInfoCache } from "../util/user-info-cache";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -336,10 +338,10 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       await IDUNN_API.apiV1CollectionsIdTemplatesPost(collection.id.toString(), {
         templateId: template.id
       });
-      toast.success(`Successfully added to collection: ${collection.name}`);
+      toast.success(`${templateCard.addToCollection.successPrefix}${collection.name}`);
       setIsAddToCollectionOpen(false);
     } catch (e) {
-      toast.error("Failed to add to collection");
+      toast.error(templateCard.addToCollection.failed);
     }
   };
 
@@ -449,23 +451,47 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{templateCard.manage}</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                {templateCard.riskyActions}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsAddToCollectionOpen(true)}>
-                <FolderPlus className="mr-2 h-4 w-4" />
-                <span>Add to Collection</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsMoveSheetOpen(true)}>
-                <FileInput className="mr-2 h-4 w-4" />
-                <span>{templateCard.move.label}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsTransferSheetOpen(true)}>
-                <ArrowRightLeft className="mr-2 h-4 w-4" />
-                <span>{templateCard.transfer.label}</span>
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => setIsMoveSheetOpen(true)}>
+                  <FileInput className="mr-2 h-4 w-4" />
+                  <span>{templateCard.move.label}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsTransferSheetOpen(true)}
+                  className="text-amber-700 focus:text-amber-800 dark:text-amber-400 dark:focus:text-amber-300"
+                >
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  <span>{templateCard.transfer.label}</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+
+        <div
+          className={cn(
+            "absolute bottom-3 right-3 z-40 transition-all duration-300",
+            isHovering ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1",
+          )}
+        >
+          <Button
+            type="button"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsAddToCollectionOpen(true);
+            }}
+            className="h-9 rounded-full bg-primary/90 px-3 text-primary-foreground shadow-lg backdrop-blur-md hover:bg-primary"
+          >
+            <FolderPlus className="mr-1.5 h-4 w-4" />
+            {templateCard.addToCollection.label}
+          </Button>
         </div>
 
         {/* 条件渲染：如果出错显示可爱图标，否则显示图片 */}
@@ -737,14 +763,14 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       </Sheet>
 
       <Sheet open={isAddToCollectionOpen} onOpenChange={setIsAddToCollectionOpen}>
-        <SheetContent className="w-[90vw] sm:max-w-3xl overflow-y-auto">
+        <SheetContent className="w-[90vw] sm:max-w-3xl overflow-y-auto px-0">
           <SheetHeader>
-            <SheetTitle>Add to Collection</SheetTitle>
+            <SheetTitle>{templateCard.addToCollection.title}</SheetTitle>
             <SheetDescription>
-              Select a collection to add template "{template.name}" to.
+              {templateCard.addToCollection.description} "{template.name}"
             </SheetDescription>
           </SheetHeader>
-          <div className="py-2">
+          <div className="px-6 pb-6 pt-2">
              <TemplateCollectionList onSelect={handleAddToCollection} />
           </div>
         </SheetContent>

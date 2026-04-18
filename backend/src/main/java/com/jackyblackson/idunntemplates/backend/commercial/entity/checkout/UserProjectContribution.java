@@ -1,6 +1,7 @@
 package com.jackyblackson.idunntemplates.backend.commercial.entity.checkout;
 
 import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseProduct;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,10 @@ public class UserProjectContribution {
     @ManyToOne(fetch = FetchType.EAGER)  // 默认关联查询为 LAZY 提升性能
     @JoinColumn(name = "project_id")    // 指定外键列名
     private Project project;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id")
+    private NeteaseProduct product;
 
     @Column(name = "delete_time_ms")
     private Long deleteTimeMs;

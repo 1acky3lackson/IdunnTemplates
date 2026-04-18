@@ -48,13 +48,13 @@ const navigationContent = {
       }),
       templateManagement: t({
         [Locales.ENGLISH]: "Template Management",
-        [Locales.CHINESE]: "模板管理",
-        [Locales.CHINESE_TRADITIONAL]: "模板管理",
+        [Locales.CHINESE]: "模板与合集管理",
+        [Locales.CHINESE_TRADITIONAL]: "模板與合集管理",
       }),
       projectCollab: t({
         [Locales.ENGLISH]: "Project Collaboration",
-        [Locales.CHINESE]: "建造工程协作",
-        [Locales.CHINESE_TRADITIONAL]: "建造工程協作",
+        [Locales.CHINESE]: "项目与商品管理",
+        [Locales.CHINESE_TRADITIONAL]: "項目與商品管理",
       }),
       revenueSharing: t({
         [Locales.ENGLISH]: "Revenue Sharing",
@@ -236,14 +236,14 @@ const navigationContent = {
         projects: {
           title: t({
             [Locales.ENGLISH]: "Construction Projects",
-            [Locales.CHINESE]: "建造工程",
-            [Locales.CHINESE_TRADITIONAL]: "建造工程",
+            [Locales.CHINESE]: "建造项目",
+            [Locales.CHINESE_TRADITIONAL]: "建造項目",
           }),
           desc: t({
             [Locales.ENGLISH]:
               "View the list of projects for commercialization",
-            [Locales.CHINESE]: "查看用于商业化的工程列表",
-            [Locales.CHINESE_TRADITIONAL]: "查看用於商業化的工程列表",
+            [Locales.CHINESE]: "查看用于商业化的项目列表",
+            [Locales.CHINESE_TRADITIONAL]: "查看用於商業化的項目列表",
           }),
         },
         neteaseProducts: {

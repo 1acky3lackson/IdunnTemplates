@@ -84,4 +84,109 @@ public class BackendApiClient {
             return CompletableFuture.completedFuture(null);
         }
     }
+
+    public CompletableFuture<ProjectCreateResponse> createInGameProject(ProjectCreateRequest payload) {
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            IdunnTemplates.getInstance().getLogger().warning("Backend API URL is not configured (services.backend.api-url)!");
+            return CompletableFuture.completedFuture(new ProjectCreateResponse(false, "Backend API URL is not configured", null, null));
+        }
+
+        String urlString = baseUrl + "/commercial/projects/in-game";
+
+        try {
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(urlString))
+                    .timeout(Duration.ofSeconds(5))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(payload)));
+
+            if (serverToken != null && !serverToken.isEmpty()) {
+                builder.header("Authorization", serverToken);
+            }
+
+            HttpRequest request = builder.build();
+
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                            ProjectSummary summary = gson.fromJson(response.body(), ProjectSummary.class);
+                            return new ProjectCreateResponse(true, null, summary, response.body());
+                        }
+                        IdunnTemplates.getInstance().getLogger().warning(
+                                "Failed to create in-game project. Status: " + response.statusCode() + ", body: " + response.body()
+                        );
+                        return new ProjectCreateResponse(false, response.body(), null, response.body());
+                    })
+                    .exceptionally(ex -> {
+                        IdunnTemplates.getInstance().getLogger().warning("Create in-game project request failed: " + ex.getMessage());
+                        return new ProjectCreateResponse(false, ex.getMessage(), null, null);
+                    });
+        } catch (IllegalArgumentException e) {
+            IdunnTemplates.getInstance().getLogger().warning("Invalid URL format for in-game project creation. " + e.getMessage());
+            return CompletableFuture.completedFuture(new ProjectCreateResponse(false, e.getMessage(), null, null));
+        }
+    }
+
+    public static class ProjectCreateRequest {
+        public String name;
+        public String displayName;
+        public String description;
+        public String pathName;
+        public String kind;
+        public String modelKind;
+        public String worldName;
+        public Integer minX;
+        public Integer minY;
+        public Integer minZ;
+        public Integer maxX;
+        public Integer maxY;
+        public Integer maxZ;
+        public Double tpX;
+        public Double tpY;
+        public Double tpZ;
+        public Double tpYaw;
+        public Double tpPitch;
+        public Long parentProjectId;
+        public String creatorUsername;
+        public String sourceServerName;
+    }
+
+    public static class ProjectSummary {
+        public Long id;
+        public String name;
+        public String displayName;
+        public String pathName;
+        public String kind;
+        public Long worldId;
+    }
+
+    public static class ProjectCreateResponse {
+        private final boolean success;
+        private final String errorMessage;
+        private final ProjectSummary project;
+        private final String rawBody;
+
+        public ProjectCreateResponse(boolean success, String errorMessage, ProjectSummary project, String rawBody) {
+            this.success = success;
+            this.errorMessage = errorMessage;
+            this.project = project;
+            this.rawBody = rawBody;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public ProjectSummary getProject() {
+            return project;
+        }
+
+        public String getRawBody() {
+            return rawBody;
+        }
+    }
 }
