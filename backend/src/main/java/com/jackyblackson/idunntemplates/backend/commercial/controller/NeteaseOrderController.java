@@ -1,12 +1,14 @@
 package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
+import com.jackyblackson.idunntemplates.backend.commercial.dto.checkout.SettlementBreakdownDto;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.netease.NeteaseOrderDto;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrder;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.netease.NeteaseOrderStatus;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseOrderRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.netease.NeteaseProductRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.OrderSettlementTriggerService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.OrderSettlementBreakdownService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.NeteaseOrderUpdateService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
@@ -45,6 +47,7 @@ public class NeteaseOrderController {
     private final LuckyPermAuthService luckyPermAuthService;
     private final OrderSettlementTriggerService orderSettlementTriggerService;
     private final NeteaseOrderUpdateService neteaseOrderUpdateService;
+    private final OrderSettlementBreakdownService orderSettlementBreakdownService;
 
     /**
      * 查询指定商品下的订单列表，支持分页和动态筛选。
@@ -177,6 +180,30 @@ public class NeteaseOrderController {
             }
         }
         return optional.map(order -> ResponseEntity.ok(convertToDto(order)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/netease-orders/{id}/settlement-breakdown")
+    @AuthRequired
+    public ResponseEntity<SettlementBreakdownDto> getSettlementBreakdown(@PathVariable Long id, UserContext user) {
+        boolean listAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Order.listAll);
+        Optional<NeteaseOrder> optional = orderRepository.findById(id);
+        if (optional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!listAll) {
+            var order = optional.get();
+            var product = order.getProduct();
+            if (product == null || product.getProject() == null) {
+                return ResponseEntity.status(406).build();
+            }
+            boolean isContributor = userProjectContributionService.isUserParticipantInProduct(user.getUsername(), product.getId());
+            if (!isContributor) {
+                return ResponseEntity.status(406).build();
+            }
+        }
+        return orderSettlementBreakdownService.buildForOrder(id)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 

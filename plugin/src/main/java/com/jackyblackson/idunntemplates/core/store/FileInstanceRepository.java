@@ -187,6 +187,20 @@ public class FileInstanceRepository implements InstanceRepository {
     }
 
     @Override
+    public CompletableFuture<List<Instance>> getActiveInstancesInWorld(UUID worldId) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Instance> all = new ArrayList<>();
+            Map<String, List<Instance>> worldCache = cache.get(worldId);
+            if (worldCache != null) {
+                for (List<Instance> list : worldCache.values()) {
+                    all.addAll(list.stream().filter(instance -> !instance.isDeleted()).toList());
+                }
+            }
+            return all;
+        }, ioExecutor);
+    }
+
+    @Override
     public CompletableFuture<Void> hardDelete(Instance instance) {
         return CompletableFuture.runAsync(() -> {
             UUID worldId = instance.getWorldId();

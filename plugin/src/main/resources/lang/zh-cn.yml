@@ -217,12 +217,12 @@ pref:
     not_in: "&c不在列表中。"
     remove_hover: "点击移除"
   particles:
-    usage: "&c用法: /idunn pref particles <template|instance|wand> <true|false>"
-    unknown_type: "&c未知粒子类型。选项: template, instance, wand"
+    usage: "&c用法: /idunn pref particles <template|instance|project|wand> <true|false>"
+    unknown_type: "&c未知粒子类型。选项: template, instance, project, wand"
     set: "&a已设置粒子首选项 '%1%' 为: %2%"
   bossbar:
-    usage: "&c用法: /idunn pref bossbar <template|instance|set> <true|false>"
-    unknown_type: "&c未知 bossbar 类型。选项: template, instance, set"
+    usage: "&c用法: /idunn pref bossbar <template|instance|project|set> <true|false>"
+    unknown_type: "&c未知 bossbar 类型。选项: template, instance, project, set"
     set: "&a已设置 bossbar 首选项 '%1%' 为: %2%"
 reload:
   success: "&a模板已从磁盘重新加载。"
@@ -275,6 +275,7 @@ effect:
   bossbar:
     template_master: "%1%&l模板母版区域: &f%2%"
     instance: "&9&l实例: &f%1%&7 (%2%)"
+    project: "&6&l建造项目: &f%1%&7 (#%2%)"
   action_bar:
     prefix: "&6[Idunn] "
     empty_only: "&e仅空位: %1%"

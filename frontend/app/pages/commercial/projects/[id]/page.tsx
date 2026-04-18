@@ -45,6 +45,7 @@ import {
 } from "~/common/util/search-test-utils";
 import { deepNullToUndefined } from "~/common/util/null-to-undefined";
 import { ProjectContributions } from "~/common/project/ProjectContributions";
+import { ProjectTemplateUsage } from "~/common/project/ProjectTemplateUsage";
 import type { Route } from "./+types/page";
 import { PlusCircle, Search, Package, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -180,6 +181,19 @@ export default function ProjectDetail({
       </Card>
 
       <ProjectContributions projectId={projectId} />
+
+      <ProjectTemplateUsage
+        projectId={projectId}
+        hasBounds={
+          !!project?.worldId &&
+          project?.minX != null &&
+          project?.minY != null &&
+          project?.minZ != null &&
+          project?.maxX != null &&
+          project?.maxY != null &&
+          project?.maxZ != null
+        }
+      />
 
       <WaterfallProvider
         key={refreshKey}

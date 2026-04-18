@@ -9,4 +9,7 @@ public interface WorldRepository extends
         JpaSpecificationExecutor<World>
 {
     java.util.Optional<World> findFirstByMountNameOrName(String mountName, String name);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(MAX(w.id), 0) FROM World w")
+    Long findMaxId();
 }

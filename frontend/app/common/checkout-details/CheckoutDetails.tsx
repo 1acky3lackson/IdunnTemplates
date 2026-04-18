@@ -23,6 +23,7 @@ import {
 } from "~/components/ui/tooltip";
 import { CircleQuestionMark } from "lucide-react";
 import { Link } from "react-router";
+import { SettlementBreakdownView } from "../settlement/SettlementBreakdownView";
 
 // ---------- 辅助工具 ----------
 
@@ -76,10 +77,14 @@ export default function CheckoutDetails({
   forceSearch,
   pageSize = 20,
   uid = "chkout",
+  hideHeader = false,
+  className = "",
 }: {
   forceSearch?: Record<string, string>;
   pageSize?: number;
   uid?: string;
+  hideHeader?: boolean;
+  className?: string;
 }) {
   // 详情弹窗的状态管理
   const [viewingDetail, setViewingDetail] = useState<CheckoutDetailDto | null>(
@@ -105,10 +110,12 @@ export default function CheckoutDetails({
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">收益分成记录列表</h1>
-      </div>
+    <div className={`space-y-4 ${className}`.trim()}>
+      {!hideHeader ? (
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">收益分成记录列表</h1>
+        </div>
+      ) : null}
 
       <GenericCrudTable<CheckoutDetailDto>
         uid={uid}
@@ -366,6 +373,11 @@ function CheckoutDetailDialog({
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="col-span-2 space-y-3">
+            <h4 className="font-semibold text-base border-b pb-2">结算过程公开视图</h4>
+            <SettlementBreakdownView checkoutDetailId={detail.id} />
           </div>
         </div>
       </DialogContent>

@@ -44,6 +44,8 @@ export default [
 
       // 订单列表
       route("/:lang?/commercial/orders", "pages/orders/page.tsx"),
+      route("/:lang?/orders", "pages/orders/list-page.tsx"),
+      route("/:lang?/orders/:id", "pages/orders/[id]/page.tsx"),
 
       // 全局参数管理
       route(

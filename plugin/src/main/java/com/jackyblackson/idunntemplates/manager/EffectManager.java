@@ -1,5 +1,6 @@
 package com.jackyblackson.idunntemplates.manager;
 
+import com.jackyblackson.idunntemplates.core.api.BackendApiClient;
 import com.jackyblackson.idunntemplates.core.domain.Instance;
 import com.jackyblackson.idunntemplates.core.domain.Template;
 import com.jackyblackson.idunntemplates.core.domain.TemplateMetadata;
@@ -37,6 +38,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
     private final SessionManager sessionManager;
     private final SetManager setManager;
     private final BrushManager brushManager;
+    private final ProjectCatalogManager projectCatalogManager;
     
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
     private final Map<UUID, List<BossBar>> activeSetBars = new ConcurrentHashMap<>();
@@ -52,12 +54,13 @@ public class EffectManager extends BukkitRunnable implements Listener {
     );
     
     // ... constructor ...
-    public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager) {
+    public EffectManager(TemplateManager templateManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, ProjectCatalogManager projectCatalogManager) {
         this.templateManager = templateManager;
         this.instanceRepository = instanceRepository;
         this.sessionManager = sessionManager;
         this.setManager = setManager;
         this.brushManager = brushManager;
+        this.projectCatalogManager = projectCatalogManager;
     }
 
     private Particle.DustOptions getParticleColor(Instance inst) {
@@ -339,7 +342,33 @@ public class EffectManager extends BukkitRunnable implements Listener {
                 }
             }
         }
-        
+
+        for (BackendApiClient.ProjectDetails project : projectCatalogManager.getCachedProjects()) {
+            if (!projectCatalogManager.hasBounds(project)) continue;
+            if (!projectCatalogManager.matchesWorld(pLoc, project)) continue;
+
+            Location min = new Location(pLoc.getWorld(), project.minX, project.minY, project.minZ);
+            Location max = new Location(pLoc.getWorld(), project.maxX + 1, project.maxY + 1, project.maxZ + 1);
+
+            if (distanceToAabbSquared(pLoc, min, max) > VIEW_DISTANCE * VIEW_DISTANCE * 4) continue;
+
+            if (pref != null && pref.isParticleProjectBoundaries()) {
+                Particle.DustOptions projectDust = new Particle.DustOptions(org.bukkit.Color.fromRGB(255, 186, 73), 1.1f);
+                ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.DUST, projectDust);
+            }
+
+            if (bossBarTitle == null && isInAABB(pLoc, min, max) && pref != null && pref.isBossBarProject()) {
+                String projectName = firstNonBlank(project.displayName, project.name, project.pathName, "#" + project.id);
+                bossBarTitle = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(
+                        player,
+                        "effect.bossbar.project",
+                        projectName,
+                        String.valueOf(project.id)
+                );
+                bossBarColor = BarColor.YELLOW;
+            }
+        }
+
         // Update BossBar
         updateBossBar(player, bossBarTitle, bossBarColor);
         
@@ -626,5 +655,27 @@ public class EffectManager extends BukkitRunnable implements Listener {
         return loc.getX() >= min.getX() && loc.getX() <= max.getX() &&
                loc.getY() >= min.getY() && loc.getY() <= max.getY() &&
                loc.getZ() >= min.getZ() && loc.getZ() <= max.getZ();
+    }
+
+    private double distanceToAabbSquared(Location point, Location min, Location max) {
+        double dx = axisDistance(point.getX(), min.getX(), max.getX());
+        double dy = axisDistance(point.getY(), min.getY(), max.getY());
+        double dz = axisDistance(point.getZ(), min.getZ(), max.getZ());
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private double axisDistance(double value, double min, double max) {
+        if (value < min) return min - value;
+        if (value > max) return value - max;
+        return 0;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return "";
     }
 }

@@ -169,6 +169,23 @@ public class DatabaseInstanceRepository implements InstanceRepository {
     }
 
     @Override
+    public CompletableFuture<List<Instance>> getActiveInstancesInWorld(UUID worldId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return getDao().queryBuilder()
+                        .where()
+                        .eq("world_id", worldId)
+                        .and()
+                        .isNull("deleted_timestamp")
+                        .query();
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Failed to query active instances in world " + worldId, e);
+                return new ArrayList<>();
+            }
+        });
+    }
+
+    @Override
     public CompletableFuture<Void> hardDelete(Instance instance) {
         return CompletableFuture.runAsync(() -> {
             try {

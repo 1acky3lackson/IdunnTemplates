@@ -4,6 +4,7 @@ import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.balance.BalanceInfo;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.balance.UserBalanceListItemDto;
 import com.jackyblackson.idunntemplates.backend.commercial.dto.balance.UserBalanceRecordDto;
+import com.jackyblackson.idunntemplates.backend.commercial.dto.checkout.SettlementBreakdownDto;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.balance.UserBalance;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.balance.UserBalanceRecord;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.CheckoutDetail;
@@ -12,6 +13,7 @@ import com.jackyblackson.idunntemplates.backend.commercial.repository.balance.Us
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.CheckoutDetailRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.service.BalanceService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.CheckoutDetailService;
+import com.jackyblackson.idunntemplates.backend.commercial.service.OrderSettlementBreakdownService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserBalanceService;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
 import com.jackyblackson.idunntemplates.backend.service.LuckyPermAuthService;
@@ -41,6 +43,7 @@ public class UserBalanceController {
     private final UserBalanceRecordRepository userBalanceRecordRepository;
     private final UserBalanceService userBalanceService;
     private final CheckoutDetailService checkoutDetailService;
+    private final OrderSettlementBreakdownService orderSettlementBreakdownService;
     private final LuckyPermAuthService luckyPermAuthService;
 
     // 辅助方法：将 CheckoutDetail 转换为 DTO
@@ -130,6 +133,24 @@ public class UserBalanceController {
         }
 
         return ResponseEntity.ok(dtoPage);
+    }
+
+    @GetMapping("/checkout-details/{id}/settlement-breakdown")
+    @AuthRequired
+    public ResponseEntity<SettlementBreakdownDto> getCheckoutDetailSettlementBreakdown(
+            @PathVariable Long id,
+            UserContext user) {
+        var detailOptional = checkoutDetailRepository.findById(id);
+        if (detailOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        boolean checkoutAll = luckyPermAuthService.checkPermission(user, PermissionNames.Commercial.Balance.checkoutAll);
+        if (!checkoutAll && !detailOptional.get().getUsername().equals(user.getUsername())) {
+            return ResponseEntity.status(406).build();
+        }
+        return orderSettlementBreakdownService.buildForCheckoutDetail(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // ---------- 4. 查看虚拟点数变动列表（分页、筛选、排序） ----------

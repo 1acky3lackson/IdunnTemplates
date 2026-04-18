@@ -142,6 +142,7 @@ public class TemplateUpdater {
             // Just update version if no physical changes
             instance.setCurrentVersionId(newVersion.getVersionId());
             instanceRepository.saveInstance(instance);
+            IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(instance);
             logger.info("Instance " + instance.getId() + " updated version ID (No physical block changes).");
             return;
         }
@@ -174,6 +175,7 @@ public class TemplateUpdater {
         // 6. Update Instance Record
         instance.setCurrentVersionId(newVersion.getVersionId());
         instanceRepository.saveInstance(instance);
+        IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(instance);
         
         // V2 FIX: Sync version to Child Template Metadata (parentTemplateInstances)
         // This ensures that the child template knows its instance in the parent has been updated.

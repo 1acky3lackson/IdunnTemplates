@@ -1,11 +1,14 @@
 package com.jackyblackson.idunntemplates.backend.commercial.controller;
 
 import com.jackyblackson.idunntemplates.backend.annotation.AuthRequired;
+import com.jackyblackson.idunntemplates.backend.commercial.dto.checkout.ProjectSettlementSnapshotPayload;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.Project;
 import com.jackyblackson.idunntemplates.backend.commercial.entity.World;
+import com.jackyblackson.idunntemplates.backend.commercial.entity.checkout.ProjectSettlementSnapshot;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.ProjectRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.WorldRepository;
 import com.jackyblackson.idunntemplates.backend.commercial.repository.chekout.UserProjectContributionRepository;
+import com.jackyblackson.idunntemplates.backend.commercial.service.ProjectSettlementSnapshotService;
 import com.jackyblackson.idunntemplates.backend.commercial.service.UserProjectContributionService;
 import com.jackyblackson.idunntemplates.backend.dto.TrustedServerContext;
 import com.jackyblackson.idunntemplates.backend.dto.UserContext;
@@ -47,6 +50,7 @@ public class ProjectController {
     private final LuckyPermAuthService authService;
     private final UserProjectContributionService userProjectContributionService;
     private final UserProjectContributionRepository userProjectContributionRepository;
+    private final ProjectSettlementSnapshotService projectSettlementSnapshotService;
 
     // ---------- 查询接口 ----------
 
@@ -59,13 +63,13 @@ public class ProjectController {
      * @return 分页的项目DTO
      */
     @GetMapping
-    @AuthRequired
+    @AuthRequired(allowServerToken = true)
     public ResponseEntity<Page<ProjectDto>> listProjects(
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
             UserContext user
     ) {
-        boolean canListAll = authService.checkPermission(user, PermissionNames.Commercial.Project.listAll);
+        boolean canListAll = user == null || authService.checkPermission(user, PermissionNames.Commercial.Project.listAll);
 
         Specification<Project> spec = buildSpecification(search);
         Page<Project> page = null;
@@ -86,9 +90,15 @@ public class ProjectController {
      * @return 项目DTO，若不存在返回404
      */
     @GetMapping("/{id}")
-    @AuthRequired
+    @AuthRequired(allowServerToken = true)
     @Transactional
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, UserContext user) {
+        if (user == null) {
+            return projectRepository.findById(id)
+                    .map(this::convertToDto)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
         boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(), id);
         boolean checkAll = authService.checkPermission(user, PermissionNames.Commercial.Project.listAll);
         if (!isContributor && !checkAll) {
@@ -169,6 +179,81 @@ public class ProjectController {
 
         Project saved = projectRepository.save(project);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(saved));
+    }
+
+    @GetMapping("/overlap")
+    @AuthRequired(allowServerToken = true)
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ProjectDto>> listOverlappingProjects(
+            @RequestParam String worldName,
+            @RequestParam Integer minX,
+            @RequestParam Integer minY,
+            @RequestParam Integer minZ,
+            @RequestParam Integer maxX,
+            @RequestParam Integer maxY,
+            @RequestParam Integer maxZ,
+            UserContext user,
+            TrustedServerContext trustedServerContext
+    ) {
+        if (trustedServerContext == null) {
+            if (user == null || !authService.checkPermission(user, PermissionNames.Commercial.Project.listAll)) {
+                return ResponseEntity.status(406).build();
+            }
+        }
+
+        Optional<World> world = worldRepository.findFirstByMountNameOrName(worldName, worldName);
+        if (world.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        List<ProjectDto> results = projectRepository.findOverlappingProjects(
+                        world.get().getId(), minX, minY, minZ, maxX, maxY, maxZ)
+                .stream()
+                .map(this::convertToDto)
+                .toList();
+        return ResponseEntity.ok(results);
+    }
+
+    @PostMapping("/{id}/settlement-snapshot")
+    @AuthRequired(allowServerToken = true)
+    @Transactional
+    public ResponseEntity<ProjectSettlementSnapshotDto> upsertSettlementSnapshot(
+            @PathVariable Long id,
+            @RequestBody ProjectSettlementSnapshotPayload payload,
+            TrustedServerContext trustedServerContext,
+            UserContext user
+    ) {
+        if (trustedServerContext == null) {
+            if (user == null || !authService.checkPermission(user, PermissionNames.Commercial.Project.modify)) {
+                return ResponseEntity.status(406).build();
+            }
+        }
+
+        ProjectSettlementSnapshot snapshot = projectSettlementSnapshotService.saveSnapshot(id, payload);
+        return ResponseEntity.ok(convertToSnapshotDto(snapshot));
+    }
+
+    @GetMapping("/{id}/settlement-snapshot")
+    @AuthRequired(allowServerToken = true)
+    @Transactional(readOnly = true)
+    public ResponseEntity<ProjectSettlementSnapshotPayload> getSettlementSnapshot(
+            @PathVariable Long id,
+            TrustedServerContext trustedServerContext,
+            UserContext user
+    ) {
+        if (trustedServerContext == null) {
+            if (user == null) {
+                return ResponseEntity.status(406).build();
+            }
+            boolean isContributor = userProjectContributionService.isUserParticipant(user.getUsername(), id);
+            boolean checkAll = authService.checkPermission(user, PermissionNames.Commercial.Project.listAll);
+            if (!isContributor && !checkAll) {
+                return ResponseEntity.status(406).build();
+            }
+        }
+        return projectSettlementSnapshotService.getPayloadByProjectId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // ---------- 更新接口 ----------
@@ -254,11 +339,24 @@ public class ProjectController {
         // 关联对象只保留ID
         if (project.getWorld() != null) {
             dto.setWorldId(project.getWorld().getId());
+            dto.setWorldName(project.getWorld().getName());
+            dto.setWorldMountName(project.getWorld().getMountName());
         }
         if (project.getParentProject() != null) {
             dto.setParentProjectId(project.getParentProject().getId());
         }
         // 不返回 childProjects 列表，避免数据量过大
+        return dto;
+    }
+
+    private ProjectSettlementSnapshotDto convertToSnapshotDto(ProjectSettlementSnapshot snapshot) {
+        ProjectSettlementSnapshotDto dto = new ProjectSettlementSnapshotDto();
+        dto.setId(snapshot.getId());
+        dto.setProjectId(snapshot.getProject().getId());
+        dto.setProjectEffectiveBlocks(snapshot.getProjectEffectiveBlocks());
+        dto.setScannedAtMs(snapshot.getScannedAtMs());
+        dto.setSourceServerName(snapshot.getSourceServerName());
+        dto.setUpdateTimeMs(snapshot.getUpdateTimeMs());
         return dto;
     }
 
@@ -329,7 +427,9 @@ public class ProjectController {
                     })
                     .orElseGet(() -> {
                         long now = System.currentTimeMillis();
+                        Long nextId = java.util.Optional.ofNullable(worldRepository.findMaxId()).orElse(0L) + 1L;
                         World world = World.builder()
+                                .id(nextId)
                                 .name(worldName)
                                 .displayName(worldName)
                                 .description("Automatically created from in-game project creation")
@@ -453,6 +553,8 @@ public class ProjectController {
         private String kind;
         private String modelKind;
         private Long worldId;
+        private String worldName;
+        private String worldMountName;
         private Integer minX;
         private Integer minY;
         private Integer minZ;
@@ -468,6 +570,17 @@ public class ProjectController {
         private Long createTimeMs;
         private Long deleteTimeMs;
         // 可选的格式化时间字段，由前端决定是否使用
+    }
+
+    @Getter
+    @Setter
+    public static class ProjectSettlementSnapshotDto {
+        private Long id;
+        private Long projectId;
+        private Long projectEffectiveBlocks;
+        private Long scannedAtMs;
+        private String sourceServerName;
+        private Long updateTimeMs;
     }
 
     /**

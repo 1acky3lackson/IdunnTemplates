@@ -13,6 +13,7 @@ import com.jackyblackson.idunntemplates.core.store.TemplateStorage;
 import com.jackyblackson.idunntemplates.core.util.TransformUtil;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
 import com.jackyblackson.idunntemplates.util.EntityHelper;
+import com.jackyblackson.idunntemplates.util.InstanceRegionUtil;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -346,6 +347,7 @@ public class InstanceManager {
             
             // Always save instance record (it exists in the world)
             if (parentTemplate != null) instanceRepository.saveInstance(instance);
+            IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(instance);
 
             IdunnTemplates.getInstance().getSessionManager().saveSession(player.getUniqueId());
             return instance;
@@ -406,6 +408,7 @@ public class InstanceManager {
 
         // Hard delete record
         instanceRepository.hardDelete(target);
+        IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(target);
     }
 
     public void softDelete(Instance target, Player player) {
@@ -414,6 +417,7 @@ public class InstanceManager {
         // Soft delete record
         target.setDeletedTimestamp(System.currentTimeMillis());
         instanceRepository.saveInstance(target);
+        IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProjectsOverlappingInstance(target);
     }
 
     public int removeInstanceBlocks(Instance instance, Player player) throws IOException {
@@ -591,69 +595,7 @@ public class InstanceManager {
     
     private com.sk89q.worldedit.regions.Region calculateWorldRegion(Clipboard clipboard, Location target, int rot, boolean flipX, boolean flipY, boolean flipZ,
                                                                     int mxn, int mxp, int myn, int myp, int mzn, int mzp) {
-        // 1. Local Bounds
-        BlockVector3 min = clipboard.getRegion().getMinimumPoint();
-        BlockVector3 max = clipboard.getRegion().getMaximumPoint();
-        
-        int minX = min.x() + mxn;
-        int maxX = max.x() - mxp;
-        int minY = min.y() + myn;
-        int maxY = max.y() - myp;
-        int minZ = min.z() + mzn;
-        int maxZ = max.z() - mzp;
-        
-        // Ensure bounds are valid (min <= max)
-        if (minX > maxX || minY > maxY || minZ > maxZ) {
-            // Return empty or very small region?
-            // Returning a 0-size region at target?
-            return new com.sk89q.worldedit.regions.CuboidRegion(BlockVector3.at(0,0,0), BlockVector3.at(0,0,0));
-        }
-
-        // 2. Transform Setup
-        com.sk89q.worldedit.math.transform.AffineTransform transform = new com.sk89q.worldedit.math.transform.AffineTransform();
-        transform = transform.rotateY(rot);
-        if (flipX) transform = transform.scale(BlockVector3.at(-1, 1, 1).toVector3());
-        if (flipY) transform = transform.scale(BlockVector3.at(1, -1, 1).toVector3());
-        if (flipZ) transform = transform.scale(BlockVector3.at(1, 1, -1).toVector3());
-
-        BlockVector3 origin = clipboard.getOrigin();
-        
-        // 3. Corners
-        BlockVector3[] corners = new BlockVector3[8];
-        corners[0] = BlockVector3.at(minX, minY, minZ);
-        corners[1] = BlockVector3.at(minX, minY, maxZ);
-        corners[2] = BlockVector3.at(minX, maxY, minZ);
-        corners[3] = BlockVector3.at(minX, maxY, maxZ);
-        corners[4] = BlockVector3.at(maxX, minY, minZ);
-        corners[5] = BlockVector3.at(maxX, minY, maxZ);
-        corners[6] = BlockVector3.at(maxX, maxY, minZ);
-        corners[7] = BlockVector3.at(maxX, maxY, maxZ);
-
-        int wMinX = Integer.MAX_VALUE, wMinY = Integer.MAX_VALUE, wMinZ = Integer.MAX_VALUE;
-        int wMaxX = Integer.MIN_VALUE, wMaxY = Integer.MIN_VALUE, wMaxZ = Integer.MIN_VALUE;
-
-        BlockVector3 targetVec = BlockVector3.at(target.getBlockX(), target.getBlockY(), target.getBlockZ());
-
-        for (BlockVector3 c : corners) {
-            // Rel to Origin
-            com.sk89q.worldedit.math.Vector3 v = c.toVector3().subtract(origin.toVector3());
-            // Transform
-            com.sk89q.worldedit.math.Vector3 t = transform.apply(v);
-            // Add to Target
-            BlockVector3 worldPos = t.toBlockPoint().add(targetVec);
-
-            if (worldPos.x() < wMinX) wMinX = worldPos.x();
-            if (worldPos.y() < wMinY) wMinY = worldPos.y();
-            if (worldPos.z() < wMinZ) wMinZ = worldPos.z();
-            if (worldPos.x() > wMaxX) wMaxX = worldPos.x();
-            if (worldPos.y() > wMaxY) wMaxY = worldPos.y();
-            if (worldPos.z() > wMaxZ) wMaxZ = worldPos.z();
-        }
-        
-        return new com.sk89q.worldedit.regions.CuboidRegion(
-                BlockVector3.at(wMinX, wMinY, wMinZ),
-                BlockVector3.at(wMaxX, wMaxY, wMaxZ)
-        );
+        return InstanceRegionUtil.calculateWorldRegion(clipboard, target, rot, flipX, flipY, flipZ, mxn, mxp, myn, myp, mzn, mzp);
     }
 
     public void placeInstance(Player player, Template template, Location location, int rot, boolean flipX, boolean flipY, boolean flipZ) throws Exception {

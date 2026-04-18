@@ -3,6 +3,7 @@ package com.jackyblackson.idunntemplates.command.sub.project;
 import com.jackyblackson.idunntemplates.IdunnTemplates;
 import com.jackyblackson.idunntemplates.command.sub.BaseSubCommand;
 import com.jackyblackson.idunntemplates.core.api.BackendApiClient;
+import com.jackyblackson.idunntemplates.manager.ProjectCatalogManager;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -23,9 +24,11 @@ import java.util.Map;
 public class CreateProjectCommand extends BaseSubCommand {
 
     private final BackendApiClient backendApiClient;
+    private final ProjectCatalogManager projectCatalogManager;
 
-    public CreateProjectCommand(BackendApiClient backendApiClient) {
+    public CreateProjectCommand(BackendApiClient backendApiClient, ProjectCatalogManager projectCatalogManager) {
         this.backendApiClient = backendApiClient;
+        this.projectCatalogManager = projectCatalogManager;
     }
 
     @Override
@@ -68,6 +71,22 @@ public class CreateProjectCommand extends BaseSubCommand {
                         player.sendMessage(ChatColor.GREEN + "Project created successfully: "
                                 + response.getProject().displayName
                                 + ChatColor.GRAY + " (#" + response.getProject().id + ")");
+                        BackendApiClient.ProjectDetails details = new BackendApiClient.ProjectDetails();
+                        details.id = response.getProject().id;
+                        details.name = response.getProject().name;
+                        details.displayName = response.getProject().displayName;
+                        details.pathName = response.getProject().pathName;
+                        details.kind = response.getProject().kind;
+                        details.worldId = response.getProject().worldId;
+                        details.worldName = request.worldName;
+                        details.minX = request.minX;
+                        details.minY = request.minY;
+                        details.minZ = request.minZ;
+                        details.maxX = request.maxX;
+                        details.maxY = request.maxY;
+                        details.maxZ = request.maxZ;
+                        projectCatalogManager.upsertProject(details);
+                        IdunnTemplates.getInstance().getProjectSettlementSyncManager().refreshProject(response.getProject().id);
                     } else {
                         player.sendMessage(ChatColor.RED + "Failed to create project: "
                                 + (response.getErrorMessage() != null ? response.getErrorMessage() : "unknown error"));

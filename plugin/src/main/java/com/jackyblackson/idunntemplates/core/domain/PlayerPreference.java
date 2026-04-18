@@ -21,11 +21,13 @@ public class PlayerPreference {
     // Effect Preferences
     private boolean particleTemplateBoundaries = true;
     private boolean particleInstanceBoundaries = true;
+    private boolean particleProjectBoundaries = true;
     private boolean particleWand = true;
 
     // BossBar Preferences
     private boolean bossBarTemplate = true;
     private boolean bossBarInstance = true;
+    private boolean bossBarProject = true;
     private boolean bossBarSet = true;
     
     // Action Bar Preference
@@ -107,6 +109,14 @@ public class PlayerPreference {
         this.particleInstanceBoundaries = particleInstanceBoundaries;
     }
 
+    public boolean isParticleProjectBoundaries() {
+        return particleProjectBoundaries;
+    }
+
+    public void setParticleProjectBoundaries(boolean particleProjectBoundaries) {
+        this.particleProjectBoundaries = particleProjectBoundaries;
+    }
+
     public boolean isParticleWand() {
         return particleWand;
     }
@@ -129,6 +139,14 @@ public class PlayerPreference {
 
     public void setBossBarInstance(boolean bossBarInstance) {
         this.bossBarInstance = bossBarInstance;
+    }
+
+    public boolean isBossBarProject() {
+        return bossBarProject;
+    }
+
+    public void setBossBarProject(boolean bossBarProject) {
+        this.bossBarProject = bossBarProject;
     }
 
     public boolean isBossBarSet() {

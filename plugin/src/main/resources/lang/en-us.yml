@@ -217,12 +217,12 @@ pref:
     not_in: "&cNot in list."
     remove_hover: "Click to remove"
   particles:
-    usage: "&cUsage: /idunn pref particles <template|instance|wand> <true|false>"
-    unknown_type: "&cUnknown particle type. Options: template, instance, wand"
+    usage: "&cUsage: /idunn pref particles <template|instance|project|wand> <true|false>"
+    unknown_type: "&cUnknown particle type. Options: template, instance, project, wand"
     set: "&aSet particle preference '%1%' to: %2%"
   bossbar:
-    usage: "&cUsage: /idunn pref bossbar <template|instance|set> <true|false>"
-    unknown_type: "&cUnknown bossbar type. Options: template, instance, set"
+    usage: "&cUsage: /idunn pref bossbar <template|instance|project|set> <true|false>"
+    unknown_type: "&cUnknown bossbar type. Options: template, instance, project, set"
     set: "&aSet bossbar preference '%1%' to: %2%"
 reload:
   success: "&aTemplates reloaded from disk."
@@ -275,6 +275,7 @@ effect:
   bossbar:
     template_master: "%1%&lTemplate Master: &f%2%"
     instance: "&9&lInstance: &f%1%&7 (%2%)"
+    project: "&6&lProject: &f%1%&7 (#%2%)"
   action_bar:
     prefix: "&6[Idunn] "
     empty_only: "&eEmptyOnly: %1%"

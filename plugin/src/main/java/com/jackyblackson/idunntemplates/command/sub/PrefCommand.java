@@ -130,6 +130,7 @@ public class PrefCommand extends BaseSubCommand {
             switch (type) {
                 case "template" -> pref.setParticleTemplateBoundaries(val);
                 case "instance" -> pref.setParticleInstanceBoundaries(val);
+                case "project" -> pref.setParticleProjectBoundaries(val);
                 case "wand" -> pref.setParticleWand(val);
                 default -> found = false;
             }
@@ -150,6 +151,7 @@ public class PrefCommand extends BaseSubCommand {
             switch (type) {
                 case "template" -> pref.setBossBarTemplate(val);
                 case "instance" -> pref.setBossBarInstance(val);
+                case "project" -> pref.setBossBarProject(val);
                 case "set" -> pref.setBossBarSet(val);
                 default -> found = false;
             }
@@ -187,12 +189,12 @@ public class PrefCommand extends BaseSubCommand {
             }
             if (args[1].equalsIgnoreCase("particles")) {
                 List<String> types = new ArrayList<>();
-                types.add("template"); types.add("instance"); types.add("wand");
+                types.add("template"); types.add("instance"); types.add("project"); types.add("wand");
                 return filter(types, args[2]);
             }
             if (args[1].equalsIgnoreCase("bossbar")) {
                 List<String> types = new ArrayList<>();
-                types.add("template"); types.add("instance"); types.add("set");
+                types.add("template"); types.add("instance"); types.add("project"); types.add("set");
                 return filter(types, args[2]);
             }
             if (args[1].equalsIgnoreCase("emptyBlocks")) {

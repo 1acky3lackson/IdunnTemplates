@@ -1,0 +1,16 @@
+3000 {
+    root  .
+
+    # 静态资源缓存 1 年
+    header assets {
+        Cache-Control public, max-age=31536000
+    }
+
+    # SPA 路由处理
+    try_files {path} index.html
+
+    # 启用压缩
+    encode gzip zstd
+
+    file_server
+}

@@ -38,6 +38,8 @@ public final class IdunnTemplates extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PermissionServerManager permissionServerManager;
     private BackendApiClient backendApiClient;
+    private ProjectSettlementSyncManager projectSettlementSyncManager;
+    private ProjectCatalogManager projectCatalogManager;
 
     public static IdunnTemplates getInstance() { return INSTANCE; }
 
@@ -107,6 +109,14 @@ public final class IdunnTemplates extends JavaPlugin {
 
     public PermissionServerManager getPermissionServerManager() {
         return permissionServerManager;
+    }
+
+    public ProjectSettlementSyncManager getProjectSettlementSyncManager() {
+        return projectSettlementSyncManager;
+    }
+
+    public ProjectCatalogManager getProjectCatalogManager() {
+        return projectCatalogManager;
     }
 
     @Override
@@ -203,17 +213,20 @@ public final class IdunnTemplates extends JavaPlugin {
         this.sessionManager.setTemplateManager(templateManager);
         this.sessionManager.setSetManager(setManager);
         
-        BrushManager brushManager = new BrushManager(sessionManager, templateManager, instanceManager, setManager);
-        this.effectManager = new EffectManager(templateManager, instanceRepository, sessionManager, setManager, brushManager);
-        
-        this.brushPresetManager = new BrushPresetManager(getDataFolder(), getLogger());
-
         String backendUrl = getConfig().getString("services.backend.api-url", "http://localhost:8080/api/v1");
         String serverToken = getConfig().getString("services.backend.server-token", "");
         this.backendApiClient = new BackendApiClient(backendUrl, serverToken);
+        this.projectCatalogManager = new ProjectCatalogManager(this, backendApiClient, getLogger());
+        this.projectSettlementSyncManager = new ProjectSettlementSyncManager(
+                this, backendApiClient, templateManager, instanceRepository, blockComparator, getLogger());
+        
+        BrushManager brushManager = new BrushManager(sessionManager, templateManager, instanceManager, setManager);
+        this.effectManager = new EffectManager(templateManager, instanceRepository, sessionManager, setManager, brushManager, projectCatalogManager);
+        
+        this.brushPresetManager = new BrushPresetManager(getDataFolder(), getLogger());
 
         // 5. Register Commands
-        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager, resizeManager, resizeConfigManager, languageManager, backendApiClient));
+        Objects.requireNonNull(getCommand("idunn")).setExecutor(new IdunnCommand(templateManager, instanceManager, instanceRepository, sessionManager, setManager, brushManager, brushPresetManager, resizeManager, resizeConfigManager, languageManager, backendApiClient, projectCatalogManager));
         
         // 6. Register Listeners
         getServer().getPluginManager().registerEvents(new ChunkListener(instanceRepository, templateManager, templateUpdater, getLogger()), this);
@@ -226,6 +239,7 @@ public final class IdunnTemplates extends JavaPlugin {
         // 7. Tasks
         // Run particle effects every 10 ticks (0.5s)
         effectManager.runTaskTimer(this, 20L, 5L);
+        projectCatalogManager.start();
 
         // 8. Load Sessions for Online Players (Handle Reloads)
         for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
@@ -277,6 +291,10 @@ public final class IdunnTemplates extends JavaPlugin {
 
         if (permissionServerManager != null) {
             permissionServerManager.stop();
+        }
+
+        if (projectCatalogManager != null) {
+            projectCatalogManager.stop();
         }
 
         if (databaseManager != null) {

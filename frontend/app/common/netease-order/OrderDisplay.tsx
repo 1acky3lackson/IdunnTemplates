@@ -24,8 +24,6 @@ import {
   type PageResponse,
 } from "../generic-crud-table/generic-crud-table";
 import { Link } from "react-router";
-import CheckoutDetails from "../checkout-details/CheckoutDetails";
-import { BadgeInfo } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/axios";
 import {
@@ -122,8 +120,6 @@ export function OrderDisplay({
   forceSearch,
   uid = "odr",
 }: OrderDisplayProps) {
-  // 详情弹窗的状态管理
-  const [viewingOrder, setViewingOrder] = useState<NeteaseOrder | null>(null);
   const [editingPointOrder, setEditingPointOrder] = useState<NeteaseOrder | null>(
     null,
   );
@@ -200,12 +196,8 @@ export function OrderDisplay({
         // 注入自定义操作列：查看详情
         rowActions={(row) => (
           <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setViewingOrder(row)}
-            >
-              详情
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/orders/${row.id}`}>详情</Link>
             </Button>
             {row.point == null ? (
               <Button
@@ -232,11 +224,6 @@ export function OrderDisplay({
         )}
       />
 
-      {/* 订单详情弹窗 */}
-      <OrderDetailsDialog
-        order={viewingOrder}
-        onClose={() => setViewingOrder(null)}
-      />
       <UpdateOrderPointDialog
         order={editingPointOrder}
         onClose={() => setEditingPointOrder(null)}
@@ -289,77 +276,6 @@ function CompactCopyValue({ value }: { value?: string | number | null }) {
         <TooltipContent>{fullValue}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
-}
-
-// ---------- 订单详情弹窗组件 ----------
-
-function OrderDetailsDialog({
-  order,
-  onClose,
-}: {
-  order: NeteaseOrder | null;
-  onClose: () => void;
-}) {
-  if (!order) return null;
-
-  return (
-    <Dialog open={!!order} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[min(96vw,72rem)] max-w-[96vw] max-h-[90vh] overflow-hidden sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>订单详情 - {order.id}</DialogTitle>
-        </DialogHeader>
-
-        {/* 使用 grid 布局紧凑展示详细信息 */}
-        <div className="grid max-h-[calc(90vh-5rem)] grid-cols-2 gap-y-4 gap-x-8 overflow-y-auto py-4 pr-2 text-sm">
-          <div>
-            <span className="text-muted-foreground block mb-1">数据库 ID</span>
-            <div className="font-medium">{order.id}</div>
-          </div>
-          <div>
-            <span className="text-muted-foreground block mb-1">系统状态</span>
-            <Badge className={orderStatusColor(order.internalStatus)}>
-              {orderStatusText(order.internalStatus)}
-            </Badge>
-          </div>
-
-          <div>
-            <span className="text-muted-foreground block mb-1">产品名称</span>
-            <div className="font-medium">{order.productName || "-"}</div>
-          </div>
-          <div>
-            <span className="text-muted-foreground block mb-1">APP UID</span>
-            <div className="font-medium">{order.appUid || "-"}</div>
-          </div>
-
-          <div>
-            <span className="text-muted-foreground block mb-1">订单虚拟点数</span>
-            <div className="font-medium text-lg text-blue-600">
-              {order.point ? order.point.toLocaleString() : "0"}
-            </div>
-          </div>
-          <div>
-            <span className="text-muted-foreground block mb-1">创建时间</span>
-            <div className="font-medium">
-              {order.shipTimeMs
-                ? new Date(order.shipTimeMs).toLocaleString()
-                : "-"}
-            </div>
-          </div>
-
-          {/* 你可以在这里扩展更多不适合放在表格里的长文本或附加信息 */}
-          {order && (
-            <div className="col-span-2">
-              <span className="text-muted-foreground block mb-1">备注信息</span>
-              <CheckoutDetails
-                forceSearch={{ "order.id": String(order.id) }}
-                pageSize={5}
-              />
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
 

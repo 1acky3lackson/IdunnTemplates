@@ -4,6 +4,7 @@ import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetLoad
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetSaveCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetUpdateCommand;
 import com.jackyblackson.idunntemplates.command.sub.project.CreateProjectCommand;
+import com.jackyblackson.idunntemplates.command.sub.project.RefreshProjectCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.*;
 import com.jackyblackson.idunntemplates.command.sub.internal.DeleteInstanceCommand;
 import com.jackyblackson.idunntemplates.command.sub.sets.*;
@@ -24,7 +25,7 @@ public class IdunnCommand implements TabExecutor {
 
     private final Map<String, IdunnSubCommand> subCommands = new HashMap<>();
 
-    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager, ResizeManager resizeManager, ResizeConfigManager resizeConfigManager, LanguageManager languageManager, BackendApiClient backendApiClient) {
+    public IdunnCommand(TemplateManager templateManager, InstanceManager instanceManager, InstanceRepository instanceRepository, SessionManager sessionManager, SetManager setManager, BrushManager brushManager, BrushPresetManager brushPresetManager, ResizeManager resizeManager, ResizeConfigManager resizeConfigManager, LanguageManager languageManager, BackendApiClient backendApiClient, ProjectCatalogManager projectCatalogManager) {
         // Template Group
         CommandGroup templateGroup = new CommandGroup();
         templateGroup.register("list", new ListCommand(templateManager));
@@ -83,7 +84,8 @@ public class IdunnCommand implements TabExecutor {
         subCommands.put("brush", brushGroup);
 
         CommandGroup projectGroup = new CommandGroup();
-        projectGroup.register("create", new CreateProjectCommand(backendApiClient));
+        projectGroup.register("create", new CreateProjectCommand(backendApiClient, projectCatalogManager));
+        projectGroup.register("refresh", new RefreshProjectCommand(projectCatalogManager));
         subCommands.put("project", projectGroup);
 
         // Root Commands

@@ -45,6 +45,8 @@ public interface InstanceRepository {
      */
     List<Instance> getAllLoadedInstances();
 
+    CompletableFuture<List<Instance>> getActiveInstancesInWorld(UUID worldId);
+
     /**
      * Permanently removes an instance from the repository.
      * @param instance The instance to remove
