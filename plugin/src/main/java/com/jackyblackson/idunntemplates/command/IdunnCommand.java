@@ -5,6 +5,7 @@ import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetSave
 import com.jackyblackson.idunntemplates.command.sub.brush.preset.BrushPresetUpdateCommand;
 import com.jackyblackson.idunntemplates.command.sub.project.CreateProjectCommand;
 import com.jackyblackson.idunntemplates.command.sub.project.RefreshProjectCommand;
+import com.jackyblackson.idunntemplates.command.sub.test.TemplateUpdatePressureTestCommand;
 import com.jackyblackson.idunntemplates.command.sub.brush.*;
 import com.jackyblackson.idunntemplates.command.sub.internal.DeleteInstanceCommand;
 import com.jackyblackson.idunntemplates.command.sub.sets.*;
@@ -87,6 +88,10 @@ public class IdunnCommand implements TabExecutor {
         projectGroup.register("create", new CreateProjectCommand(backendApiClient, projectCatalogManager));
         projectGroup.register("refresh", new RefreshProjectCommand(projectCatalogManager));
         subCommands.put("project", projectGroup);
+
+        CommandGroup testGroup = new CommandGroup();
+        testGroup.register("update", new TemplateUpdatePressureTestCommand(templateManager, instanceRepository));
+        subCommands.put("test", testGroup);
 
         // Root Commands
         subCommands.put("reload", new ReloadCommand(templateManager));

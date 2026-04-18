@@ -11,5 +11,9 @@ commands:
   idunn:
     description: Main command for IdunnTemplates
     usage: /idunn <subcommand> [args]
+permissions:
+  idunn.test.update:
+    description: Allows running the template update pressure test command
+    default: op
 description: 11111
 website: https://taixue.cc
