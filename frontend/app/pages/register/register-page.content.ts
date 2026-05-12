@@ -6,7 +6,7 @@ const registerContent = {
     // 页面标题与描述
     title: t({
       [Locales.ENGLISH]: "IdunnTemplates - Setup Password",
-      [Locales.CHINESE]: "Idunn 模板 - 设置密码",
+      [Locales.CHINESE]: "用户注册 - 设置密码",
       [Locales.CHINESE_TRADITIONAL]: "Idunn 模板 - 設定密碼",
     }),
     description: t({

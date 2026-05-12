@@ -330,7 +330,7 @@ export function SettlementBreakdownView({
                 <FormulaLine label="Rt = 𝔅 / B" value={formatPercent(data.project.templateRatio)} desc="模板在总分成中的占比" />
                 <FormulaLine label="1 - Rt" value={formatPercent(data.project.creationRatio)} desc="创作在总分成中的占比" />
                 <FormulaLine label="λ" value={toNumber(data.params.templateDefectParam).toFixed(2)} desc="统一衰减系数" />
-                <FormulaLine label="商务处比例" value={formatPercent(data.params.commercialRatio)} desc="创作/放置者分配中的辅助人员比例" />
+                <FormulaLine label="辅助人员比例" value={formatPercent(data.params.commercialRatio)} desc="创作/放置者分配中的辅助人员比例" />
                 <FormulaLine label="放置者比例" value={formatPercent(data.params.placerRatio)} desc="模板份额中放置者占比" />
                 <FormulaLine label="包装宣传比例" value={formatPercent(data.params.uploaderRatio)} desc="辅助人员中包装宣传占比" />
               </CardContent>

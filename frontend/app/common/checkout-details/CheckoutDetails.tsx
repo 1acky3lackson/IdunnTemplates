@@ -50,6 +50,7 @@ const roleColorMap: Record<string, string> = {
   MODIFIER: "bg-blue-100 text-blue-800 border-blue-200",
   UPLOADER: "bg-purple-100 text-purple-800 border-purple-200",
   SYSTEM: "bg-orange-100 text-orange-800 border-orange-200",
+  TEMPLATE_AUTHOR: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
 };
 
 const roleTextMap: Record<string, string> = {
@@ -57,6 +58,7 @@ const roleTextMap: Record<string, string> = {
   MODIFIER: "修改美化",
   UPLOADER: "包装宣传",
   SYSTEM: "系统",
+  TEMPLATE_AUTHOR: "模板作者",
 };
 
 // 时间格式化工具

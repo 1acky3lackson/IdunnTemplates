@@ -86,7 +86,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             if (serverOpt.isPresent()) {
                 TrustedServer server = serverOpt.get();
                 request.setAttribute("trustedServerContext", new TrustedServerContext(server.getId(), server.getName()));
-                request.setAttribute("userContext", new UserContext(IdunnConstants.INTERNAL_SUPER_USER_NAME, "00000000-0000-0000-0000-000000000000"));
+                request.setAttribute("userContext", new UserContext(IdunnConstants.INTERNAL_SUPER_USER_NAME, IdunnConstants.SUPER_USER_UUID));
                 return true;
             }
         }

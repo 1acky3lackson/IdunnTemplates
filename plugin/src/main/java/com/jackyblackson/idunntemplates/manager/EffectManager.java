@@ -10,6 +10,9 @@ import com.jackyblackson.idunntemplates.core.effect.ParticleUtil;
 import com.jackyblackson.idunntemplates.core.store.InstanceRepository;
 import com.jackyblackson.idunntemplates.core.util.ItemUtil;
 import com.jackyblackson.idunntemplates.core.permission.PermissionNames;
+import com.jackyblackson.idunntemplates.util.EntityHelper;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.math.BlockVector3;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -42,15 +45,21 @@ public class EffectManager extends BukkitRunnable implements Listener {
     
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
     private final Map<UUID, List<BossBar>> activeSetBars = new ConcurrentHashMap<>();
+    private final Map<UUID, List<BossBar>> activeInstanceBars = new ConcurrentHashMap<>();
 
     private static final double VIEW_DISTANCE = 48.0;
     private static final double GRID_SPACING = 10.0;
     
-    private static final List<org.bukkit.Color> COLOR_PALETTE = Arrays.asList(
-            org.bukkit.Color.WHITE, org.bukkit.Color.SILVER, org.bukkit.Color.GRAY, org.bukkit.Color.ORANGE,
-            org.bukkit.Color.RED, org.bukkit.Color.MAROON, org.bukkit.Color.YELLOW, org.bukkit.Color.OLIVE,
-            org.bukkit.Color.LIME, org.bukkit.Color.GREEN, org.bukkit.Color.AQUA, org.bukkit.Color.TEAL,
-            org.bukkit.Color.BLUE, org.bukkit.Color.NAVY, org.bukkit.Color.FUCHSIA, org.bukkit.Color.PURPLE
+    private static final List<InstanceVisualStyle> INSTANCE_VISUAL_STYLES = Arrays.asList(
+            new InstanceVisualStyle(org.bukkit.Color.RED, BarColor.RED),
+            new InstanceVisualStyle(org.bukkit.Color.ORANGE, BarColor.YELLOW),
+            new InstanceVisualStyle(org.bukkit.Color.YELLOW, BarColor.YELLOW),
+            new InstanceVisualStyle(org.bukkit.Color.LIME, BarColor.GREEN),
+            new InstanceVisualStyle(org.bukkit.Color.GREEN, BarColor.GREEN),
+            new InstanceVisualStyle(org.bukkit.Color.AQUA, BarColor.BLUE),
+            new InstanceVisualStyle(org.bukkit.Color.BLUE, BarColor.BLUE),
+            new InstanceVisualStyle(org.bukkit.Color.FUCHSIA, BarColor.PURPLE),
+            new InstanceVisualStyle(org.bukkit.Color.PURPLE, BarColor.PURPLE)
     );
     
     // ... constructor ...
@@ -63,10 +72,9 @@ public class EffectManager extends BukkitRunnable implements Listener {
         this.projectCatalogManager = projectCatalogManager;
     }
 
-    private Particle.DustOptions getParticleColor(Instance inst) {
+    private InstanceVisualStyle getInstanceVisualStyle(Instance inst) {
         int hash = Objects.hash(inst.getTemplateId(), inst.getWorldId(), inst.getX(), inst.getY(), inst.getZ());
-        org.bukkit.Color color = COLOR_PALETTE.get(Math.abs(hash) % COLOR_PALETTE.size());
-        return new Particle.DustOptions(color, 1.0f);
+        return INSTANCE_VISUAL_STYLES.get(Math.abs(hash) % INSTANCE_VISUAL_STYLES.size());
     }
 
     @Override
@@ -238,6 +246,8 @@ public class EffectManager extends BukkitRunnable implements Listener {
         if (!player.hasPermission(PermissionNames.Templates.place)) return;     // 玩家无权使用 idunn
         String bossBarTitle = null;
         BarColor bossBarColor = null;
+        List<String> instanceBarTitles = new ArrayList<>();
+        List<BarColor> instanceBarColors = new ArrayList<>();
         
         var session = sessionManager.getSession(player.getUniqueId());
         com.jackyblackson.idunntemplates.core.domain.PlayerPreference pref = (session != null) ? session.getPreference() : null;
@@ -281,6 +291,12 @@ public class EffectManager extends BukkitRunnable implements Listener {
             if (min.distance(pLoc) < VIEW_DISTANCE) {
                 if (pref != null && pref.isParticleTemplateBoundaries()) {
                     ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, particle);
+                    Location templateCenterBlock = calculateTemplateCenterBlock(t, pLoc.getWorld());
+                    Location templateAabbCenter = calculateAabbCenter(min, max);
+                    if (templateCenterBlock != null) {
+                        drawCenterMarker(templateCenterBlock, particle, null);
+                        ParticleUtil.drawLine(templateCenterBlock, templateAabbCenter, particle, 0.5, 0, 0, 0, 1, null);
+                    }
                 }
             }
             
@@ -317,10 +333,14 @@ public class EffectManager extends BukkitRunnable implements Listener {
                 // Draw Box
                 if (min.distance(pLoc) < VIEW_DISTANCE) {
                     if (pref != null && (pref.isParticleInstanceBoundaries() || holdingWand)) {
-                        Particle.DustOptions dustOptions = getParticleColor(inst);
+                        InstanceVisualStyle visualStyle = getInstanceVisualStyle(inst);
+                        Particle.DustOptions dustOptions = visualStyle.dustOptions();
                         ParticleUtil.drawSurfaceGridAABB(min, max, GRID_SPACING, Particle.DUST, dustOptions);
-                        // Draw Line to Center
-                        ParticleUtil.drawLine(player.getLocation().add(0, 1, 0), center, Particle.FLAME, 1.0, 0, 0, 0, 1, null);
+                        Location instanceCenterBlock = calculateInstanceCenterBlock(inst, t, pLoc.getWorld());
+                        if (instanceCenterBlock != null) {
+                            drawCenterMarker(instanceCenterBlock, Particle.DUST, dustOptions);
+                            ParticleUtil.drawLine(instanceCenterBlock, center, Particle.DUST, 0.5, 0, 0, 0, 1, dustOptions);
+                        }
                         
                         // Draw Masked Box
                         if (inst.getMaskXNeg() > 0 || inst.getMaskXPos() > 0 || inst.getMaskYNeg() > 0 || inst.getMaskYPos() > 0 || inst.getMaskZNeg() > 0 || inst.getMaskZPos() > 0) {
@@ -334,11 +354,17 @@ public class EffectManager extends BukkitRunnable implements Listener {
             }
             
             if (isInside) {
-                if (bossBarTitle == null) {
-                    if (pref != null && pref.isBossBarInstance()) {
-                        bossBarTitle = com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(player, "effect.bossbar.instance", t.getPath(), inst.getId().substring(0,8));
-                        bossBarColor = BarColor.BLUE;
-                    }
+                if (pref != null && pref.isBossBarInstance()) {
+                    InstanceVisualStyle visualStyle = getInstanceVisualStyle(inst);
+                    Location instanceCenterBlock = calculateInstanceCenterBlock(inst, t, pLoc.getWorld());
+                    String directionHint = instanceCenterBlock == null ? "" : " " + describeScreenDirection(player, instanceCenterBlock);
+                    instanceBarTitles.add(com.jackyblackson.idunntemplates.core.util.MessageUtil.getMessage(
+                            player,
+                            "effect.bossbar.instance",
+                            t.getPath(),
+                            inst.getId().substring(0, 8)
+                    ) + directionHint);
+                    instanceBarColors.add(visualStyle.barColor());
                 }
             }
         }
@@ -371,6 +397,7 @@ public class EffectManager extends BukkitRunnable implements Listener {
 
         // Update BossBar
         updateBossBar(player, bossBarTitle, bossBarColor);
+        updateInstanceBossBars(player, instanceBarTitles, instanceBarColors);
         
         // 4. Action Bar
         sendActionBar(player, pref, session);
@@ -500,6 +527,36 @@ public class EffectManager extends BukkitRunnable implements Listener {
             }
         }
     }
+
+    private void updateInstanceBossBars(Player player, List<String> titles, List<BarColor> colors) {
+        List<BossBar> bars = activeInstanceBars.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+
+        while (bars.size() < titles.size()) {
+            BossBar bar = Bukkit.createBossBar("", BarColor.BLUE, BarStyle.SOLID);
+            bar.addPlayer(player);
+            bars.add(bar);
+        }
+
+        while (bars.size() > titles.size()) {
+            BossBar bar = bars.remove(bars.size() - 1);
+            bar.removeAll();
+        }
+
+        for (int i = 0; i < titles.size(); i++) {
+            BossBar bar = bars.get(i);
+            bar.setTitle(titles.get(i));
+            bar.setColor(colors.get(i));
+            if (!bar.getPlayers().contains(player)) {
+                bar.addPlayer(player);
+            }
+        }
+    }
+
+    private record InstanceVisualStyle(org.bukkit.Color color, BarColor barColor) {
+        private Particle.DustOptions dustOptions() {
+            return new Particle.DustOptions(color, 1.0f);
+        }
+    }
     
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
@@ -509,6 +566,11 @@ public class EffectManager extends BukkitRunnable implements Listener {
         List<BossBar> setBars = activeSetBars.remove(event.getPlayer().getUniqueId());
         if (setBars != null) {
             for (BossBar b : setBars) b.removeAll();
+        }
+
+        List<BossBar> instanceBars = activeInstanceBars.remove(event.getPlayer().getUniqueId());
+        if (instanceBars != null) {
+            for (BossBar b : instanceBars) b.removeAll();
         }
     }
     
@@ -598,6 +660,163 @@ public class EffectManager extends BukkitRunnable implements Listener {
             z += c.getZ();
         }
         return new Location(corners[0].getWorld(), x/8, y/8, z/8);
+    }
+
+    private Location calculateAabbCenter(Location min, Location max) {
+        return new Location(
+                min.getWorld(),
+                (min.getX() + max.getX()) / 2.0,
+                (min.getY() + max.getY()) / 2.0,
+                (min.getZ() + max.getZ()) / 2.0
+        );
+    }
+
+    private Location calculateTemplateCenterBlock(Template template, World world) {
+        TemplateMetadata metadata = template.getMetadata();
+        Clipboard clipboard = resolveClipboard(template, null, 0, false, false, false);
+        if (clipboard == null) {
+            return null;
+        }
+        return calculateCenterBlockFromClipboard(
+                world,
+                clipboard,
+                metadata.getAnchorX(),
+                metadata.getAnchorY(),
+                metadata.getAnchorZ()
+        );
+    }
+
+    private Location calculateInstanceCenterBlock(Instance instance, Template template, World world) {
+        Clipboard clipboard = resolveClipboard(
+                template,
+                instance.getCurrentVersionId(),
+                instance.getRotationY(),
+                instance.isFlipX(),
+                instance.isFlipY(),
+                instance.isFlipZ()
+        );
+        if (clipboard == null) {
+            return null;
+        }
+        return calculateCenterBlockFromClipboard(world, clipboard, instance.getX(), instance.getY(), instance.getZ());
+    }
+
+    private Clipboard resolveClipboard(Template template, String versionId, int rotation, boolean flipX, boolean flipY, boolean flipZ) {
+        String resolvedVersionId = versionId;
+        if (resolvedVersionId == null || resolvedVersionId.isBlank()) {
+            if (template.getLatestVersion() == null) {
+                return null;
+            }
+            resolvedVersionId = template.getLatestVersion().getVersionId();
+        }
+        return EntityHelper.getClipboard(template, resolvedVersionId, rotation, flipX, flipY, flipZ);
+    }
+
+    private Location calculateCenterBlockFromClipboard(World world, Clipboard clipboard, int worldMinX, int worldMinY, int worldMinZ) {
+        BlockVector3 min = clipboard.getRegion().getMinimumPoint();
+        BlockVector3 origin = clipboard.getOrigin();
+        return new Location(
+                world,
+                worldMinX + (origin.x() - min.x()) + 0.5,
+                worldMinY + (origin.y() - min.y()) + 0.5,
+                worldMinZ + (origin.z() - min.z()) + 0.5
+        );
+    }
+
+    private void drawCenterMarker(Location location, Particle particle, Object data) {
+        World world = location.getWorld();
+        if (world == null) {
+            return;
+        }
+        double radius = Math.sqrt(3.0) / 2.0;
+        drawSphereSurface(world, location, radius, particle, data);
+        drawBlockOutline(world, location, particle, data);
+    }
+
+    private void drawSphereSurface(World world, Location center, double radius, Particle particle, Object data) {
+        int yawSteps = 8;
+        int pitchSteps = 4;
+        for (int pitchIndex = 1; pitchIndex < pitchSteps; pitchIndex++) {
+            double pitch = Math.PI * pitchIndex / pitchSteps;
+            double y = Math.cos(pitch) * radius;
+            double ringRadius = Math.sin(pitch) * radius;
+            for (int yawIndex = 0; yawIndex < yawSteps; yawIndex++) {
+                double yaw = 2.0 * Math.PI * yawIndex / yawSteps;
+                double x = Math.cos(yaw) * ringRadius;
+                double z = Math.sin(yaw) * ringRadius;
+                world.spawnParticle(particle, center.getX() + x, center.getY() + y, center.getZ() + z, 1, 0, 0, 0, 0, data);
+            }
+        }
+        world.spawnParticle(particle, center.getX(), center.getY() + radius, center.getZ(), 1, 0, 0, 0, 0, data);
+        world.spawnParticle(particle, center.getX(), center.getY() - radius, center.getZ(), 1, 0, 0, 0, 0, data);
+    }
+
+    private void drawBlockOutline(World world, Location center, Particle particle, Object data) {
+        double minX = center.getX() - 0.5;
+        double minY = center.getY() - 0.5;
+        double minZ = center.getZ() - 0.5;
+        double maxX = center.getX() + 0.5;
+        double maxY = center.getY() + 0.5;
+        double maxZ = center.getZ() + 0.5;
+
+        Location[] corners = new Location[8];
+        corners[0] = new Location(world, minX, minY, minZ);
+        corners[1] = new Location(world, maxX, minY, minZ);
+        corners[2] = new Location(world, maxX, minY, maxZ);
+        corners[3] = new Location(world, minX, minY, maxZ);
+        corners[4] = new Location(world, minX, maxY, minZ);
+        corners[5] = new Location(world, maxX, maxY, minZ);
+        corners[6] = new Location(world, maxX, maxY, maxZ);
+        corners[7] = new Location(world, minX, maxY, maxZ);
+
+        ParticleUtil.drawBox(corners, particle, data);
+    }
+
+    private String describeScreenDirection(Player player, Location target) {
+        Location eye = player.getEyeLocation();
+        Vector toTarget = target.toVector().subtract(eye.toVector());
+        if (toTarget.lengthSquared() < 1.0e-6) {
+            return "◎";
+        }
+
+        Vector forward = eye.getDirection().normalize();
+        Vector worldUp = new Vector(0, 1, 0);
+        Vector right = forward.clone().crossProduct(worldUp);
+        if (right.lengthSquared() < 1.0e-6) {
+            right = new Vector(1, 0, 0);
+        } else {
+            right.normalize();
+        }
+        Vector up = right.clone().crossProduct(forward).normalize();
+
+        Vector normalized = toTarget.clone().normalize();
+        double x = normalized.dot(right);
+        double y = normalized.dot(up);
+        double z = normalized.dot(forward);
+
+        boolean behind = z < -0.15;
+        if (Math.abs(x) < 0.18 && Math.abs(y) < 0.18 && z >= -0.15) {
+            return "◎";
+        }
+
+        String horizontal;
+        if (x > 0.22) horizontal = "→";
+        else if (x < -0.22) horizontal = "←";
+        else horizontal = "";
+
+        String vertical;
+        if (y > 0.22) vertical = "↑";
+        else if (y < -0.22) vertical = "↓";
+        else vertical = "";
+
+        String arrow = vertical + horizontal;
+        if (arrow.isEmpty()) {
+            arrow = z >= 0 ? "◎" : "↺";
+        }
+        if (behind) {
+            return "背" + arrow;
+        }
+        return arrow;
     }
     
     private boolean hasCommitPermission(Player p, Template t) {

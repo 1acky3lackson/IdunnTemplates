@@ -49,7 +49,7 @@ public class LuckyPermAuthService {
      * @return 是否拥有权限，如果请求失败默认返回 false
      */
     public boolean checkPermission(String uuid, String username, String permission) {
-        if (username.equalsIgnoreCase("jacky_blackson") || username.equalsIgnoreCase(IdunnConstants.INTERNAL_SUPER_USER_NAME)) {
+        if (isSuperUser(uuid, username)) {
             return true;
         }
         // 构建 URL: /?uuid=...&username=...&permission=...
@@ -102,7 +102,7 @@ public class LuckyPermAuthService {
             return Collections.emptyMap();
         }
 
-        if (username.equalsIgnoreCase("jacky_blackson") || username.equalsIgnoreCase(IdunnConstants.INTERNAL_SUPER_USER_NAME)) {
+        if (isSuperUser(uuid, username)) {
             Map<String, Boolean> res = new HashMap<>(permissions.size());
             permissions.forEach(perm -> res.put(perm, true));
             return res;
@@ -293,5 +293,10 @@ public class LuckyPermAuthService {
             System.err.println("User resolution failed: " + e.getMessage());
         }
         return Optional.empty();
+    }
+
+    private boolean isSuperUser(String uuid, String username) {
+        return IdunnConstants.SUPER_USER_UUID.equalsIgnoreCase(uuid)
+                || (username != null && username.equalsIgnoreCase(IdunnConstants.INTERNAL_SUPER_USER_NAME));
     }
 }

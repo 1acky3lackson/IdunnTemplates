@@ -144,7 +144,7 @@ export function GlobalParamManager({
           ) : current ? (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="font-medium">商务处比例：</span>
+                <span className="font-medium">辅助人员比例：</span>
                 {current.commercialRatio}
               </div>
               <div>
@@ -188,7 +188,7 @@ export function GlobalParamManager({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>商务处比例</TableHead>
+                  <TableHead>辅助人员比例</TableHead>
                   <TableHead>模板衰减参数</TableHead>
                   <TableHead>放置者比例</TableHead>
                   <TableHead>包装宣传比例</TableHead>
@@ -246,7 +246,7 @@ export function GlobalParamManager({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="commercialRatio" className="text-right">
-                商务处比例
+                辅助人员比例
               </Label>
               <Input
                 id="commercialRatio"

@@ -7,10 +7,11 @@ import java.util.UUID;
 public class PermissionCheckInterceptor {
 
     public static Boolean checkPermission(UUID uuid, String userName, String perm) {
-        String name = userName.toLowerCase();
+        String name = userName == null ? "" : userName.toLowerCase();
         String permission = perm.toLowerCase();
 
-        if (name.equals("jacky_blackson") || name.equals(IdunnConstants.INTERNAL_SUPER_USER_NAME.toLowerCase())) {
+        if ((uuid != null && IdunnConstants.SUPER_USER_UUID.equalsIgnoreCase(uuid.toString()))
+                || name.equals(IdunnConstants.INTERNAL_SUPER_USER_NAME.toLowerCase())) {
             return true;
         }
         // create to self namespace
